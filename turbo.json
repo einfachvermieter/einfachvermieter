@@ -1,21 +1,41 @@
 {
-  "$schema": "https://turborepo.dev/schema.json",
-  "ui": "tui",
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "NODE_ENV",
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD",
+    "DATA_DIR",
+    "DATABASE_URL",
+    "DB_DRIVER",
+    "PORT",
+    "WEB_ORIGIN",
+    "WEB_DIST_PATH",
+    "UPLOADS_DIR",
+    "MAX_ATTACHMENT_MB",
+    "MAX_LOGO_MB",
+    "SESSION_TTL_DAYS",
+    "MISTRAL_API_KEY",
+    "MISTRAL_API_BASE",
+    "MISTRAL_MODEL",
+    "MISTRAL_OCR_MODEL",
+    "MISTRAL_DEBUG"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
-    },
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
-    "check-types": {
-      "dependsOn": ["^check-types"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
     }
   }
 }

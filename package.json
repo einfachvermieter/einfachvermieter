@@ -1,24 +1,43 @@
 {
   "name": "einfachvermieter",
   "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
-  },
-  "devDependencies": {
-    "prettier": "^3.7.4",
-    "turbo": "^2.8.21",
-    "typescript": "^6.0.2"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "packageManager": "npm@10.8.2",
+  "version": "0.0.1",
+  "packageManager": "npm@11.15.0",
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "build": "TURBO_TELEMETRY_DISABLED=1 turbo run build",
+    "dev": "TURBO_TELEMETRY_DISABLED=1 turbo run dev",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "test": "TURBO_TELEMETRY_DISABLED=1 turbo run test",
+    "typecheck": "TURBO_TELEMETRY_DISABLED=1 turbo run typecheck",
+    "freeze-pdf-assets": "node scripts/freeze-pdf-assets.mjs",
+    "postinstall": "npm run freeze-pdf-assets",
+    "rebuild:native": "npm_config_ignore_scripts=false npm rebuild libsql argon2",
+    "setup": "npm run rebuild:native && npm run freeze-pdf-assets",
+    "db:generate": "npm run migration:create -w @einfachvermieter/db",
+    "db:migrate": "npm run migration:up -w @einfachvermieter/db",
+    "db:push": "npm run schema:fresh -w @einfachvermieter/db",
+    "db:wipe": "rm -f data/einfachvermieter.db data/einfachvermieter.db-shm data/einfachvermieter.db-wal && rm -rf data/uploads data/statements && npm run db:push",
+    "db:seed:minimal": "npm run seed:minimal -w @einfachvermieter/db",
+    "db:seed:demo": "npm run seed:demo -w @einfachvermieter/db",
+    "db:seed:local": "npm run seed:local -w @einfachvermieter/db",
+    "db:reset:minimal": "npm run db:wipe && npm run db:seed:minimal",
+    "db:reset:demo": "npm run db:wipe && npm run db:seed:demo",
+    "db:reset:local": "npm run db:wipe && npm run db:seed:local"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.9",
+    "turbo": "^2.8.21",
+    "typescript": "^6.0.2"
+  },
+  "overrides": {
+    "zod": "^4.3.6"
+  },
+  "engines": {
+    "node": ">=24.11.0"
+  }
 }

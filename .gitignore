@@ -1,40 +1,32 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# Dependencies
 node_modules
-.pnp
-.pnp.js
-
-# Local env files
+dist
+.turbo
+.vite
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Testing
-coverage
-
-# Turbo
-.turbo
-
-# Vercel
-.vercel
-
-# Build Outputs
-.next/
-out/
-build
-dist
-
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Misc
+data/
+*.db
+*.db-shm
+*.db-wal
 .DS_Store
-*.pem
+*.log
+coverage/
+nohup.out
+*.tsbuildinfo
+
+
+# Dynamische Dateien von npm run setup
+packages/pdf/assets/fonts/
+packages/pdf/assets/logo-pdf.svg
+
+
+# Lokaler Seed, nicht einchecken 
+packages/db/scripts/seed/local.ts
+packages/db/scripts/seed-fixtures/local/
+
+
+
+# Local scratch / verification artifacts (screenshots, throwaway files)
+tmp/
 
 package-lock.json
