@@ -1,0 +1,183 @@
+import { describe, expect, it } from "vitest";
+import type { CalcWarning, ReadingPoint } from "../types/index.js";
+import { sumDegreeDays } from "./heating.js";
+import { consumptionBetween, interpolateReading } from "./meters.js";
+
+const degreeDayWeight = (fromDate: string, toDate: string): number =>
+  sumDegreeDays({ start: fromDate, end: toDate });
+
+const reading = (date: string, value: number): ReadingPoint => ({
+  date,
+  value,
+  isCumulative: true,
+  isEstimated: false,
+});
+
+const estimated = (date: string, value: number): ReadingPoint => ({
+  ...reading(date, value),
+  isEstimated: true,
+});
+
+describe("interpolateReading", () => {
+  it("exakter Treffer", () => {
+    const readings = [reading("2025-01-01", 1000), reading("2025-12-31", 1100)];
+    expect(interpolateReading(readings, "2025-01-01")).toBe(1000);
+    expect(interpolateReading(readings, "2025-12-31")).toBe(1100);
+  });
+
+  it("lineare Interpolation in der Mitte", () => {
+    const readings = [reading("2025-01-01", 1000), reading("2025-12-31", 1365)];
+    // ca. Tag 180 von 364 -> ca. 1182
+    const mid = interpolateReading(readings, "2025-06-30");
+    expect(mid).toBeGreaterThan(1180);
+    expect(mid).toBeLessThan(1185);
+  });
+
+  it("wirft bei Extrapolation vor erstem Stand", () => {
+    const readings = [reading("2025-06-01", 1000), reading("2025-12-31", 1100)];
+    expect(() => interpolateReading(readings, "2025-01-01")).toThrow(
+      /before first reading/u,
+    );
+  });
+
+  it("wirft bei Extrapolation nach letztem Stand", () => {
+    const readings = [reading("2025-01-01", 1000), reading("2025-06-30", 1100)];
+    expect(() => interpolateReading(readings, "2025-12-31")).toThrow(
+      /after last reading/u,
+    );
+  });
+
+  it("wirft bei leerer Readings-Liste", () => {
+    expect(() => interpolateReading([], "2025-01-01")).toThrow(
+      /readingNoneAvailable/u,
+    );
+  });
+
+  it("gradtagsgewichtete Interpolation setzt Sommer-Stichtag höher an als linear", () => {
+    // § 9b HeizkostenV: ohne Zwischenablesung wird der Stand am Stichtag
+    // geschätzt. Bis Ende Juni ist der Großteil des Jahres-Heizbedarfs
+    // (Winter) bereits verbraucht -> der gradtagsgewichtete Schätzwert liegt
+    // über dem linearen.
+    const readings = [reading("2025-01-01", 1000), reading("2025-12-31", 1365)];
+    const linear = interpolateReading(readings, "2025-06-30");
+    const degreeDay = interpolateReading(readings, "2025-06-30", {
+      intervalWeight: degreeDayWeight,
+    });
+    // Summe Gradtage 01.01.-30.06. = 583 ‰ von 1.000 ‰ -> 1000 + 365 x 0,583.
+    expect(degreeDay).toBeGreaterThan(linear);
+    expect(degreeDay).toBeGreaterThan(1208);
+    expect(degreeDay).toBeLessThan(1216);
+  });
+});
+
+describe("consumptionBetween", () => {
+  it("berechnet Verbrauch über vollständige Periode mit bekannten Ständen", () => {
+    const readings = [reading("2025-01-01", 1000), reading("2025-12-31", 1100)];
+    expect(consumptionBetween(readings, "2025-01-01", "2025-12-31")).toBe(100);
+  });
+
+  it("interpoliert Start und Ende", () => {
+    const readings = [
+      reading("2024-07-01", 500),
+      reading("2025-07-01", 1000), // 500 m3 in einem Jahr
+    ];
+    // Teilperiode 01.01.2025 - 30.06.2025 = ca. halbes Jahr = ca. 250
+    const consumption = consumptionBetween(
+      readings,
+      "2025-01-01",
+      "2025-06-30",
+    );
+    expect(consumption).toBeGreaterThan(240);
+    expect(consumption).toBeLessThan(260);
+  });
+
+  it("gradtagsgewichtet ordnet dem Winter-Mieter mehr Verbrauch zu als linear", () => {
+    const readings = [reading("2025-01-01", 0), reading("2025-12-31", 1000)];
+    // Mieter A: 01.01.-30.06. (winterlastige Heizphase).
+    const linear = consumptionBetween(readings, "2025-01-01", "2025-06-30");
+    const degreeDay = consumptionBetween(readings, "2025-01-01", "2025-06-30", {
+      intervalWeight: degreeDayWeight,
+    });
+    expect(degreeDay).toBeGreaterThan(linear);
+    expect(degreeDay).toBeGreaterThan(550); // ~= 583 ‰
+    expect(degreeDay).toBeLessThan(600);
+  });
+});
+
+describe("readingEstimated-Kennzeichnung", () => {
+  it("exakter Treffer auf geschätztem Stand meldet Warnung", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      estimated("2025-01-01", 1000),
+      reading("2025-12-31", 1100),
+    ];
+    interpolateReading(readings, "2025-01-01", { warnings, label: "Küche" });
+    expect(warnings).toEqual([
+      {
+        code: "readingEstimated",
+        params: { date: "2025-01-01", label: "Küche" },
+      },
+    ]);
+  });
+
+  it("Interpolation über geschätzten Nachbar-Stand meldet Warnung", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      reading("2025-01-01", 1000),
+      estimated("2025-12-31", 1100),
+    ];
+    interpolateReading(readings, "2025-06-30", { warnings });
+    expect(warnings).toEqual([
+      { code: "readingEstimated", params: { date: "2025-12-31" } },
+    ]);
+  });
+
+  it("geclampter Randwert auf geschätztem Stand meldet beide Warnungen", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      estimated("2025-02-01", 1000),
+      reading("2025-12-31", 1100),
+    ];
+    interpolateReading(readings, "2025-01-01", { warnings });
+    expect(warnings).toContainEqual({
+      code: "readingEstimated",
+      params: { date: "2025-02-01" },
+    });
+    expect(warnings).toContainEqual({
+      code: "readingMissingBefore",
+      params: { date: "2025-02-01" },
+    });
+  });
+
+  it("dedupliziert: Periode-Start und -Ende über denselben geschätzten Stand", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      reading("2024-07-01", 500),
+      estimated("2025-03-01", 800),
+      reading("2025-07-01", 1000),
+    ];
+    // Start- und End-Interpolation berühren beide den Schätzwert vom 01.03.
+    consumptionBetween(readings, "2025-01-01", "2025-06-30", { warnings });
+    const estimatedWarnings = warnings.filter(
+      (warning) => warning.code === "readingEstimated",
+    );
+    expect(estimatedWarnings).toEqual([
+      { code: "readingEstimated", params: { date: "2025-03-01" } },
+    ]);
+  });
+
+  it("ohne geschätzte Stände keine Warnung", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [reading("2025-01-01", 1000), reading("2025-12-31", 1100)];
+    consumptionBetween(readings, "2025-01-01", "2025-12-31", { warnings });
+    expect(warnings).toEqual([]);
+  });
+
+  it("ohne warnings-Option wirft die Schätzungs-Erkennung nicht", () => {
+    const readings = [
+      estimated("2025-01-01", 1000),
+      estimated("2025-12-31", 1100),
+    ];
+    expect(consumptionBetween(readings, "2025-01-01", "2025-12-31")).toBe(100);
+  });
+});
