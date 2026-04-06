@@ -1,0 +1,1831 @@
+{
+  "common": {
+    "appName": {
+      "Einfach": "Einfach",
+      "Vermieter": "Vermieter",
+      "EinfachVermieter": "EinfachVermieter"
+    },
+    "save": "Speichern",
+    "saved": "Gespeichert",
+    "saveFailed": "Speichern fehlgeschlagen",
+    "deleted": "Gelöscht",
+    "deleteFailed": "Löschen fehlgeschlagen",
+    "loadingShort": "Laden …",
+    "yes": "Ja",
+    "no": "Nein",
+    "none": "-",
+    "unknown": "?",
+    "months": {
+      "jan": "Januar",
+      "feb": "Februar",
+      "mar": "März",
+      "apr": "April",
+      "may": "Mai",
+      "jun": "Juni",
+      "jul": "Juli",
+      "aug": "August",
+      "sep": "September",
+      "oct": "Oktober",
+      "nov": "November",
+      "dec": "Dezember"
+    },
+    "monthsShort": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mär",
+      "apr": "Apr",
+      "may": "Mai",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Okt",
+      "nov": "Nov",
+      "dec": "Dez"
+    }
+  },
+  "format": {
+    "money": "{amount, number, ::currency/EUR}"
+  },
+  "validation": {
+    "required": "Pflichtfeld",
+    "invalidEmail": "Ungültige E-Mail-Adresse",
+    "tooShort": "Mindestens {min, plural, one {# Zeichen} other {# Zeichen}}",
+    "tooLong": "Höchstens {max, plural, one {# Zeichen} other {# Zeichen}}",
+    "numberMin": "Muss mindestens {min, number} sein",
+    "numberMax": "Darf höchstens {max, number} sein",
+    "invalidDate": "Ungültiges Datum",
+    "nameTaken": "Der Name „{name}“ ist bereits vergeben",
+    "fixedUnitRequired": "Bitte wählen Sie für diese Pauschale eine Wohnung aus.",
+    "fixedUnitWrongBuilding": "Die gewählte Wohnung gehört nicht zum Gebäude dieser Kostenart.",
+    "unitOnlyForFixed": "Eine Wohnungs-Zuordnung ist nur bei pauschalen Kostenarten möglich.",
+    "generic": "Ungültiger Wert"
+  },
+  "entities": {
+    "building": {
+      "one": "Gebäude",
+      "other": "Gebäude"
+    },
+    "unit": {
+      "one": "Wohnung",
+      "other": "Wohnungen"
+    },
+    "tenant": {
+      "one": "Mietvertrag",
+      "other": "Mietverträge"
+    },
+    "resident": {
+      "one": "Bewohner",
+      "other": "Bewohner"
+    },
+    "meter": {
+      "one": "Zähler",
+      "other": "Zähler"
+    },
+    "reading": {
+      "one": "Zählerstand",
+      "other": "Zählerstände"
+    },
+    "payment": {
+      "one": "Zahlung",
+      "other": "Zahlungen"
+    },
+    "statement": {
+      "one": "Abrechnung",
+      "other": "Abrechnungen"
+    },
+    "costType": {
+      "one": "Kostenart",
+      "other": "Kostenarten"
+    },
+    "costEntry": {
+      "one": "Kosten",
+      "other": "Kosten"
+    },
+    "costEntryAttachment": {
+      "one": "Beleg",
+      "other": "Belege"
+    },
+    "externalHeatingEntry": {
+      "one": "Externer Heizkosten-Eintrag",
+      "other": "Externe Heizkosten-Einträge"
+    },
+    "heatingSettings": {
+      "one": "Heizkosten-Konfiguration",
+      "other": "Heizkosten-Konfigurationen"
+    }
+  },
+  "startup": {
+    "connecting": "Verbindung zum Server wird aufgebaut …",
+    "stillUnavailableTitle": "Server nicht erreichbar",
+    "stillUnavailable": "Der Server hat innerhalb der erwarteten Zeit nicht geantwortet. Bitte später erneut versuchen.",
+    "retry": "Erneut versuchen"
+  },
+  "errors": {
+    "notFound": "{entity} „{id}“ nicht gefunden",
+    "fileRequired": "Es wurde keine Datei übermittelt.",
+    "logoSvgText": "Das SVG enthält Text bzw. Schriftverweise. Bitte wandeln Sie die Schrift vor dem Hochladen in Pfade (Kurven) um.",
+    "logoSvgInvalid": "Die SVG-Datei konnte nicht verarbeitet werden. Bitte prüfen Sie, ob es sich um eine gültige SVG-Grafik handelt.",
+    "buildingHasUnits": "Gebäude mit Wohnungen kann nicht gelöscht werden",
+    "unitHasTenants": "Wohnung mit Mietverträgen kann nicht gelöscht werden",
+    "unitHasMeters": "Wohnung mit Zählern kann nicht gelöscht werden",
+    "tenantOverlapsExisting": "Mietvertrag überlappt mit bestehendem Vertrag {id} ({start} – {end}). Vorherigen Vertrag zuerst schließen.",
+    "tenantOpenEnd": "unbefristet",
+    "statementAlreadyFinalized": "Abrechnung ist bereits finalisiert",
+    "statementDeleteFinalized": "Finalisierte Abrechnungen können nicht gelöscht werden",
+    "statementNotCancellable": "Nur finalisierte Abrechnungen können storniert werden",
+    "statementNotCorrectable": "Zu dieser Abrechnung kann keine Korrektur erstellt werden (sie muss finalisiert oder storniert sein)",
+    "statementFinalizeCalculationIncomplete": "Berechnungsergebnis ist unvollständig, Finalisierung abgebrochen: {message}",
+    "tenantNotBillable": "Mietvertrag „{tenantId}“ ist im Zeitraum {periodStart}–{periodEnd} nicht abrechnungsberechtigt (Vertragszeitraum überlappt nicht).",
+    "tenantHasNoRent": "Mietvertrag „{tenantId}“ hat keinen Kaltmiet-Eintrag – Anpassung der Vorauszahlung nicht möglich.",
+    "statementAdjustmentValidFromBeforePeriodEnd": "Stichtag „{validFrom}“ liegt nicht nach dem Abrechnungsende „{periodEnd}“. Die Anpassung muss für einen späteren Zeitpunkt gelten.",
+    "statementAdjustmentNoMatchingRent": "Es gibt keinen Kaltmiet-Eintrag, der den Stichtag „{validFrom}“ abdeckt. Bitte Mietvertrag prüfen.",
+    "tenantHasPayments": "Mietvertrag hat Zahlungen und kann nicht gelöscht werden",
+    "tenantHasStatements": "Mietvertrag hat Abrechnungen und kann nicht gelöscht werden",
+    "residentHasTenant": "Bewohner ist noch einem Mietvertrag zugeordnet und kann nicht gelöscht werden",
+    "meterVirtualReadonly": "Differenzzähler sind virtuell. Stände werden aus anderen Zählern berechnet und dürfen nicht direkt erfasst werden.",
+    "meterHasReadings": "Zähler mit erfassten Ständen kann nicht gelöscht werden",
+    "meterUsedInDifference": "Zähler wird von einem Differenzzähler als Quelle verwendet und kann nicht gelöscht werden",
+    "meterSerialTaken": "Die Seriennummer „{serial}“ ist bereits vergeben",
+    "meterReadingDateTaken": "Für dieses Datum ist bereits ein Zählerstand erfasst.",
+    "costTypeNotFound": "Mindestens eine ausgewählte Kostenart existiert nicht",
+    "costTypeBuildingMismatch": "Kostenart gehört zu einem anderen Gebäude",
+    "paymentFinalizedImmutable": "Zahlung liegt in einer finalisierten Abrechnung und ist unveränderlich",
+    "paymentPurposeKindImmutable": "Die Zuordnung einer bestehenden Zahlung kann nicht in eine andere Art geändert werden",
+    "loginFailed": "Anmeldung fehlgeschlagen. Bitte Zugangsdaten prüfen.",
+    "residentLoginDisabled": "Die Anmeldung für Bewohner-Konten ist noch nicht freigeschaltet.",
+    "setupAlreadyDone": "Die Anwendung ist bereits eingerichtet. Bitte melden Sie sich an.",
+    "passwordCurrentWrong": "Das aktuelle Passwort ist nicht korrekt.",
+    "sessionUserMissing": "Ihr angemeldeter Benutzer existiert nicht mehr. Bitte melden Sie sich ab und erneut an.",
+    "notAuthenticated": "Sie sind nicht angemeldet.",
+    "insufficientPermission": "Sie haben keine Berechtigung für diese Aktion.",
+    "residentScopeMissing": "Es wurde kein Zugriffsbereich angegeben.",
+    "residentForbidden": "Sie dürfen nur auf Ihre eigenen Daten zugreifen.",
+    "logoNotSet": "Es ist kein Logo hinterlegt.",
+    "heatingNoConfigForDate": "Für den {date} existiert keine Heizkostenkonfiguration für dieses Gebäude. Frühestes „gültig ab“ ist der {earliest}. Bitte legen Sie eine Version an, deren „gültig ab“ auf oder vor dem {date} liegt.",
+    "upload": {
+      "unsupportedType": "Der Dateityp „{mimeType}“ wird nicht unterstützt.",
+      "tooLarge": "Die Datei ist zu groß (maximal {maxMb} MB)."
+    },
+    "ai": {
+      "notConfigured": "Die KI-Extraktion ist nicht konfiguriert (MISTRAL_API_KEY fehlt).",
+      "noResponse": "Der KI-Dienst lieferte keine verwertbare Antwort.",
+      "noText": "Die KI konnte aus dem Dokument keinen Text extrahieren.",
+      "invalidJson": "Die KI lieferte keine valide JSON-Antwort.",
+      "schemaMismatch": "Die KI-Antwort entspricht nicht dem erwarteten Schema.",
+      "itemMissingAmount": "Für die Position „{description}“ fehlt ein Betrag – die KI-Extraktion ist unvollständig.",
+      "upstreamError": "Der KI-Dienst hat einen Fehler gemeldet ({step}, Status {status}): {detail}"
+    },
+    "calc": {
+      "allocationKwhNotImplemented": "Der Verteilerschlüssel „nach Verbrauch (kWh)“ für die Kostenart „{costTypeName}“ wird noch nicht unterstützt. Bitte wählen Sie einen anderen Schlüssel.",
+      "waterNoMainMeter": "Für die Wasserabrechnung ist kein Hauptzähler hinterlegt. Bitte legen Sie mindestens einen Hauptwasserzähler an.",
+      "readingNoneAvailable": "Für mindestens einen Zähler sind keine Zählerstände erfasst – der Verbrauch zum {date} kann nicht ermittelt werden. Bitte erfassen Sie Zählerstände.",
+      "differenceMeterCyclic": "Die Differenzzähler-Konfiguration ist zyklisch ({chain}). Bitte prüfen Sie die Zuordnung von Basis- und Subtraktionszählern.",
+      "differenceMeterNoConfig": "Der Differenzzähler „{label}“ hat keine Konfiguration. Bitte hinterlegen Sie Basis- und Subtraktionszähler.",
+      "heatingMeterNoUnit": "Der Heizungszähler „{label}“ ist keiner Wohnung zugeordnet. Bitte ordnen Sie ihn einer Wohnung zu.",
+      "heatingAllocatorNoKTotal": "Für den Heizkostenverteiler „{label}“ fehlt der KGesamt-Bewertungsfaktor. Bitte tragen Sie ihn am Zähler nach."
+    },
+    "boundary": {
+      "title": "Etwas ist schiefgelaufen",
+      "backendUnavailable": "Der Server ist nicht erreichbar. Falls die Anwendung gerade gestartet wurde, dauert es einen Moment.",
+      "serverError": "Der Server konnte die Anfrage nicht verarbeiten (Fehler {status}).",
+      "generic": "Ein unerwarteter Fehler ist aufgetreten.",
+      "detailsLabel": "Fehlermeldung",
+      "retry": "Erneut versuchen",
+      "reload": "Seite neu laden"
+    }
+  },
+  "warnings": {
+    "line": "{category}: {message}",
+    "labeled": "{label}: {message}",
+    "category": {
+      "heating": "Heizkosten",
+      "water": "Wasser"
+    },
+    "readingMissingBefore": "Kein Zählerstand vor {date} – Verbrauch davor unbekannt, Abrechnung evtl. unvollständig.",
+    "readingMissingAfter": "Kein Zählerstand nach {date} – Verbrauch danach unbekannt, Abrechnung evtl. unvollständig.",
+    "readingEstimated": "Der Zählerstand vom {date} ist geschätzt – der ausgewiesene Verbrauch beruht teilweise auf Schätzwerten.",
+    "differenceMeterNegative": "Der Differenzzähler „{label}“ ergibt einen negativen Verbrauch – die Summe der Subtraktionszähler übersteigt den Basiszähler. Der Verbrauch wurde auf 0 m³ gesetzt. Bitte prüfen Sie die Quellzähler und deren Zählerstände.",
+    "commonConsumptionUnallocated": "Der Allgemeinzähler „{label}“ ist keiner Wohnung zugeordnet – sein Verbrauch wird nicht gesondert ausgewiesen, sondern anteilig auf alle Wohnungen mitverteilt. Bitte ordnen Sie ihn einer Wohnung zu oder prüfen Sie, ob ein Vorwegabzug gewünscht ist.",
+    "hotWaterTotalHeatMissing": "Zentrale Warmwasserbereitung erfasst, aber die Gesamt-Wärmemenge (kWh) fehlt – der Warmwasseranteil kann nicht nach § 9 Abs. 2 HeizkostenV herausgerechnet werden.",
+    "hotWaterSourceMissing": "Zentrale Warmwasserbereitung erfasst, aber weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch vorhanden – der Warmwasseranteil konnte nicht ermittelt werden.",
+    "hotWaterShareCapped": "Die geschätzte Warmwasser-Wärmemenge übersteigt die erfasste Gesamt-Wärmemenge – der Warmwasseranteil wurde auf 100 % begrenzt. Bitte Gesamt-Wärmemenge prüfen.",
+    "co2SplitMissingData": "CO₂-Kosten sind erfasst, aber CO₂-Menge oder Wohnfläche fehlt – eine Aufteilung nach CO2KostAufG ist nicht möglich.",
+    "consumptionFallbackZeroDelta": "Verbrauchsmessungen liefern Differenz von 0 für die Periode – Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt.",
+    "consumptionFallbackNoAllocators": "Keine Heizkostenverteiler erfasst – Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt.",
+    "consumptionFallbackNoHeatMeters": "Keine Wärmemengenzähler erfasst – Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt.",
+    "aiNoCostTypes": "Keine Kostenarten hinterlegt: Bitte zuerst Kostenarten anlegen, danach kann die KI eindeutig zuordnen.",
+    "aiUnknownCostType": "Position {position}: Die KI hat eine unbekannte Kostenart vorgeschlagen. Bitte manuell wählen.",
+    "aiGrossMismatch": "Brutto-Validierung fehlgeschlagen: Die Summe der Positionen weicht um {diffCents} ct vom Brutto-Endbetrag ab. Bitte Beträge manuell prüfen."
+  },
+  "ui": {
+    "navigation": {
+      "groups": {
+        "general": "Allgemein",
+        "masterData": "Stammdaten",
+        "costsBilling": "Kosten & Abrechnung"
+      },
+      "dashboard": "Übersicht",
+      "configuration": "Konfiguration",
+      "password": "Passwort",
+      "buildings": "Gebäude",
+      "units": "Wohnungen",
+      "meters": "Zähler",
+      "costTypes": "Kostenarten",
+      "heating": "Heizkosten",
+      "tenants": "Mieter",
+      "invoices": "Rechnungen",
+      "payments": "Zahlungen",
+      "account": "Mieterkonto",
+      "statements": "Abrechnungen",
+      "sender": "Absender",
+      "buildingSwitcher": {
+        "label": "Aktives Gebäude",
+        "empty": "Kein Gebäude",
+        "manage": "Gebäude verwalten",
+        "add": "Neues Gebäude"
+      }
+    },
+    "common": {
+      "separators": {
+        "bullet": " · ",
+        "dash": " – ",
+        "comma": ", "
+      },
+      "emptyValue": "—",
+      "periodLabel": "{start} – {end}",
+      "deductionAmount": "− {amount}",
+      "crumbs": {
+        "dashboard": "Übersicht",
+        "buildings": "Gebäude",
+        "buildingNew": "Neues Gebäude",
+        "units": "Wohnungen",
+        "unitNew": "Neue Wohnung",
+        "tenants": "Mieter",
+        "tenantNew": "Neuer Mieter",
+        "tenantContract": "Mietvertrag",
+        "payments": "Zahlungen",
+        "paymentNew": "Neue Zahlung",
+        "paymentEdit": "Zahlung bearbeiten",
+        "edit": "Bearbeiten",
+        "meters": "Zähler",
+        "meterNew": "Neuer Zähler",
+        "heating": "Heizkosten",
+        "heatingExternalEntries": "Externe Einträge",
+        "heatingVersionNew": "Neue Konfiguration",
+        "heatingVersionEdit": "Konfiguration bearbeiten",
+        "costTypes": "Kostenarten",
+        "costTypeNew": "Neue Kostenart",
+        "costTypeEdit": "Kostenart bearbeiten",
+        "invoices": "Rechnungen",
+        "invoiceNew": "Neue Rechnung",
+        "invoiceEdit": "Rechnung bearbeiten",
+        "statements": "Abrechnungen",
+        "statementNew": "Neue Abrechnung",
+        "statementDetail": "Detail",
+        "feeNew": "Neue Gebühr",
+        "feeEdit": "Gebühr bearbeiten",
+        "detail": "Detail",
+        "settings": "Einstellungen",
+        "settingsSender": "Absenderdaten",
+        "settingsPassword": "Passwort ändern",
+        "user": "Benutzer"
+      },
+      "columns": {
+        "label": "Bezeichnung",
+        "type": "Typ",
+        "role": "Verwendung",
+        "unit": "Wohnung",
+        "room": "Raum",
+        "date": "Datum",
+        "value": "Wert",
+        "estimated": "Geschätzt",
+        "notes": "Notizen",
+        "name": "Name",
+        "allocation": "Umlageschlüssel",
+        "amount": "Betrag",
+        "invoiceDate": "Rechnungsdatum",
+        "purpose": "Zweck",
+        "tenant": "Mieter",
+        "resident": "Bewohner",
+        "contractParty": "Vertragspartner",
+        "status": "Status",
+        "period": "Zeitraum"
+      },
+      "action": {
+        "delete": "Löschen",
+        "edit": "Bearbeiten",
+        "viewDetails": "Details ansehen",
+        "save": "Speichern",
+        "saving": "Wird gespeichert …",
+        "cancel": "Abbrechen",
+        "create": "Anlegen",
+        "generate": "Erstellen",
+        "add": "Hinzufügen",
+        "confirm": "Bestätigen",
+        "record": "Erfassen",
+        "logout": "Abmelden",
+        "close": "Schließen",
+        "backToOverview": "Zur Übersicht",
+        "backToHome": "Zur Startseite"
+      },
+      "a11y": {
+        "more": "Mehr",
+        "sidebar": "Seitenleiste",
+        "sidebarDescription": "Zeigt die mobile Seitenleiste an.",
+        "toggleSidebar": "Seitenleiste umschalten"
+      },
+      "forms": {
+        "unsavedTitle": "Ungespeicherte Änderungen",
+        "unsavedMessage": "Sie haben Änderungen vorgenommen, die noch nicht gespeichert sind. Wenn Sie die Seite verlassen, gehen diese Änderungen verloren.",
+        "unsavedStay": "Auf der Seite bleiben",
+        "unsavedDiscard": "Änderungen verwerfen",
+        "optionalSuffix": " (optional)",
+        "requiredMarker": " *",
+        "datePlaceholder": "TT.MM.JJJJ",
+        "monthPlaceholder": "MM.JJJJ",
+        "dateOpenPicker": "Datum wählen",
+        "monthOpenPicker": "Monat wählen",
+        "monthPreviousYear": "Vorheriges Jahr",
+        "monthNextYear": "Nächstes Jahr"
+      },
+      "srOnly": {
+        "openMenu": "Menü öffnen"
+      },
+      "pagination": {
+        "entriesPerPage": "Einträge pro Seite",
+        "pageOf": "Seite {page} von {total}",
+        "firstPage": "Erste Seite",
+        "previousPage": "Vorherige Seite",
+        "nextPage": "Nächste Seite",
+        "lastPage": "Letzte Seite"
+      },
+      "table": {
+        "empty": "Keine Einträge vorhanden",
+        "searchPlaceholder": "Suchen …",
+        "searchReset": "Suche zurücksetzen"
+      },
+      "loading": "Laden",
+      "help": "Hilfe anzeigen",
+      "routeNotFound": {
+        "title": "Seite nicht gefunden",
+        "description": "Die angeforderte Seite existiert nicht."
+      },
+      "formSync": {
+        "title": "Daten wurden zwischenzeitlich geändert",
+        "message": "Seit Sie das Formular geöffnet haben, wurden die Daten auf dem Server aktualisiert. Sie können die neue Version laden – dabei gehen Ihre Änderungen verloren – oder mit Ihren Änderungen weitermachen und die serverseitigen Updates beim Speichern überschreiben.",
+        "actionReload": "Vom Server neu laden",
+        "actionKeep": "Meine Änderungen behalten"
+      }
+    },
+    "meters": {
+      "title": "Zähler",
+      "createTitle": "Neuer Zähler",
+      "createDescription": "Wasser, Strom, Gas oder Wärmemengenzähler anlegen.",
+      "editTitle": "Zähler bearbeiten",
+      "listTitle": "Zählerliste",
+      "listDescription": "Wasser, Strom, Gas und Wärmemengenzähler. Klicken Sie einen Zähler an, um Stände zu erfassen.",
+      "add": "Zähler hinzufügen",
+      "viewReadings": "Stände",
+      "readingsTitle": "Zählerstände",
+      "addReading": "Zählerstand erfassen",
+      "noReadings": "Noch keine Stände erfasst",
+      "empty": "Noch keine Zähler angelegt",
+      "emptyForBuilding": "Noch keine Zähler in Gebäude „{building}“ angelegt",
+      "emptySearch": "Keine Zähler gefunden für „{query}“",
+      "emptySearchForBuilding": "Keine Zähler gefunden für „{query}“ in Gebäude „{building}“",
+      "confirmDelete": "Zähler löschen?",
+      "confirmDeleteMessage": "Soll „{label}“ wirklich gelöscht werden? Zähler mit erfassten Ständen können nicht gelöscht werden.",
+      "allBuildings": "Alle Gebäude",
+      "columns": {
+        "label": "Bezeichnung",
+        "serialNumber": "Seriennummer"
+      },
+      "serialNumberShort": "SN: {value}",
+      "fields": {
+        "type": "Art",
+        "role": "Rolle",
+        "serialNumber": "Seriennummer",
+        "unit": "Wohnung",
+        "unitOptional": "Wohnung (falls zugeordnet)",
+        "room": "Raum",
+        "area": "Bereich",
+        "roomPlaceholder": "Wohnzimmer, Bad, …",
+        "areaPlaceholder": "Keller, Treppenhaus, …",
+        "energyFactor": "Umrechnungsfaktor kWh/m³",
+        "energyFactorPlaceholder": "z. B. 11,22",
+        "energyFactorDescription": "Produkt aus Zustandszahl × Brennwert gemäß Gasrechnung. Wird benötigt, um m³ in kWh umzurechnen. Optional – leer lassen, wenn nur m³-Verteilung genügt.",
+        "validFrom": "Gültig ab",
+        "validUntil": "Gültig bis",
+        "radiator": "Heizkörper",
+        "radiatorPlaceholder": "z. B. Heizkörper Wohnzimmer Süd",
+        "kTotal": "KGesamt",
+        "kTotalPlaceholder": "z. B. 1,52",
+        "kTotalDescription": "Bewertungsfaktor des Heizkörpers (Hersteller­angabe). Wird zur Verbrauchs­umrechnung der HKV-Anzeigewerte verwendet.",
+        "radiatorManufacturer": "Hersteller Heizkörper",
+        "radiatorModel": "Modell Heizkörper",
+        "radiatorType": "Heizkörpertyp",
+        "radiatorTypePlaceholder": "z. B. Plattenheizkörper Typ 22",
+        "radiatorDimensions": "Maße Heizkörper",
+        "radiatorDimensionsPlaceholder": "z. B. 600 × 1000 × 100 mm",
+        "costTypes": "Verwendet für Kostenarten",
+        "costTypesDescription": "Kostenarten, für die dieser Zähler als Verbrauchsquelle dient. Der Umlageschlüssel der Kostenart steht jeweils darunter.",
+        "costTypesEmpty": "Keine verbrauchsbasierten Kostenarten mit Einheit {unit} für dieses Gebäude angelegt",
+        "baseMeter": "Basiszähler",
+        "baseMeterPlaceholder": "Basiszähler auswählen",
+        "subtractedMeters": "Abzuziehende Zähler",
+        "subtractedMetersEmpty": "Keine weiteren Zähler vom Typ {type} in diesem Gebäude verfügbar"
+      },
+      "costAllocationMode": {
+        "heatingCostBill": {
+          "title": "Teil der Heizkostenabrechnung",
+          "description": "Der Verbrauch fließt in die zentrale Heizkostenabrechnung nach Heizkostenverordnung ein."
+        },
+        "costTypes": {
+          "title": "Umlage über Kostenarten",
+          "description": "Der Verbrauch wird über die unten zugeordneten Kostenarten verteilt."
+        },
+        "lockedHint": "Dieser Zähler ist in einer Heizkosten-Konfiguration referenziert und muss daher Teil der Heizkostenabrechnung bleiben."
+      },
+      "differenceConfig": {
+        "title": "Differenzzähler-Konfiguration"
+      },
+      "gasFactors": {
+        "title": "Umrechnungsfaktoren",
+        "emptyHint": "Noch keine Periode hinterlegt. Fügen Sie eine Periode hinzu, sobald der Versorger einen Umrechnungsfaktor mitteilt.",
+        "addPeriod": "Periode hinzufügen",
+        "addPeriodTitle": "Periode hinzufügen",
+        "editPeriodTitle": "Periode bearbeiten",
+        "confirmRemovePeriod": "Periode entfernen?",
+        "validFrom": "Gültig ab",
+        "validUntil": "Gültig bis",
+        "lastValidUntilHint": "Leer lassen, wenn der Faktor bis auf Weiteres gilt.",
+        "openEnded": "offen",
+        "noFactor": "Ohne Umrechnungsfaktor",
+        "factorValue": "{value} kWh/m³",
+        "notes": "Notiz",
+        "notesPlaceholder": "z. B. Stadtwerke 2024"
+      },
+      "roleDescriptions": {
+        "main": "Gesamtverbrauch des Gebäudes",
+        "unit": "Verbrauch einer einzelnen Wohnung",
+        "sub": "Unterzähler innerhalb einer Wohnung",
+        "common": "Allgemeinverbrauch (z. B. Treppenhausstrom, Gartenwasser)",
+        "virtual_difference": "Wird automatisch berechnet, kein echter Zähler"
+      },
+      "hints": {
+        "virtualNoReadings": "Für diesen Zähler werden keine Zählerstände erfasst – der Wert wird aus dem Basiszähler abzüglich der ausgewählten Zähler berechnet.",
+        "differenceConfig": "Wählen Sie den Basiszähler und einen oder mehrere Zähler, die davon abgezogen werden. Es können nur Zähler derselben Art und desselben Gebäudes ausgewählt werden.",
+        "validUntil": "Nur ausfüllen, wenn der Zähler nicht mehr gültig ist (z. B. ausgebaut oder ersetzt). Abrechnungen berücksichtigen den Zähler nur bei Überschneidung mit dem Gültigkeitszeitraum."
+      },
+      "validation": {
+        "buildingRequired": "Gebäude erforderlich",
+        "unitRequired": "Wohnung erforderlich",
+        "energyFactorInvalid": "Umrechnungsfaktor als Zahl, z. B. 11,22",
+        "energyFactorPositive": "Umrechnungsfaktor muss größer als 0 sein",
+        "kTotalRequired": "KGesamt ist für Heizkostenverteiler Pflicht",
+        "kTotalInvalid": "KGesamt als Zahl, z. B. 1,52",
+        "kTotalPositive": "KGesamt muss größer als 0 sein",
+        "validFromRequired": "Gültig ab erforderlich",
+        "validUntilInvalid": "Gültig bis im Format YYYY-MM-DD",
+        "validUntilBeforeValidFrom": "Gültig bis darf nicht vor Gültig ab liegen",
+        "gasFactorsOnlyForGas": "Umrechnungsfaktoren sind nur für Gaszähler zulässig",
+        "gasFactorValidFromRequired": "Gültig ab erforderlich",
+        "gasFactorValidUntilBeforeFrom": "Gültig bis darf nicht vor Gültig ab liegen",
+        "virtualNoSerial": "Differenzzähler dürfen keine Seriennummer tragen",
+        "differenceUnsupportedType": "Differenzzähler sind für Heizkostenverteiler nicht möglich",
+        "differenceBaseRequired": "Bitte wählen Sie einen Basiszähler",
+        "differenceSubtractRequired": "Bitte wählen Sie mindestens einen abzuziehenden Zähler",
+        "differenceBaseInSubtract": "Der Basiszähler darf nicht zugleich abgezogen werden",
+        "differenceConfigOnlyVirtual": "Differenzkonfiguration nur für Differenzzähler erlaubt",
+        "differenceSourceNotFound": "Mindestens ein ausgewählter Zähler existiert nicht",
+        "differenceSourceTypeMismatch": "Alle ausgewählten Zähler müssen vom selben Medium sein",
+        "differenceSourceBuildingMismatch": "Alle ausgewählten Zähler müssen aus demselben Gebäude stammen",
+        "differenceCircular": "Die Auswahl würde eine zyklische Differenzzähler-Verkettung erzeugen"
+      },
+      "notFound": {
+        "title": "Zähler nicht gefunden",
+        "description": "Dieser Zähler existiert nicht oder wurde gelöscht."
+      }
+    },
+    "buildings": {
+      "title": "Gebäude",
+      "createTitle": "Neues Gebäude",
+      "add": "Gebäude hinzufügen",
+      "confirmDelete": "Gebäude löschen?",
+      "confirmDeleteWithUnits": "Soll „{name}“ wirklich gelöscht werden? Ein Gebäude mit Wohnungen kann nicht gelöscht werden.",
+      "empty": "Noch keine Gebäude angelegt",
+      "emptySearch": "Keine Gebäude gefunden für „{query}“",
+      "columns": {
+        "street": "Straße"
+      },
+      "fields": {
+        "name": "Bezeichnung",
+        "namePlaceholder": "z. B. MFH Musterstraße",
+        "nameDescription": "Bitte vergeben Sie einen eindeutigen, prägnanten Namen für das Gebäude. Dies wird in den Übersichten verwendet.",
+        "street": "Straße und Hausnummer",
+        "postalCode": "PLZ",
+        "city": "Ort"
+      },
+      "validation": {
+        "postalCodeFormat": "5-stellige PLZ erforderlich"
+      },
+      "notFound": {
+        "title": "Gebäude nicht gefunden",
+        "description": "Dieses Gebäude existiert nicht oder wurde gelöscht."
+      }
+    },
+    "units": {
+      "title": "Wohnungen",
+      "createTitle": "Neue Wohnung",
+      "add": "Wohnung hinzufügen",
+      "empty": "Noch keine Wohnungen angelegt",
+      "emptyForBuilding": "Noch keine Wohnungen in Gebäude „{building}“ angelegt",
+      "emptySearch": "Keine Wohnungen gefunden für „{query}“",
+      "emptySearchForBuilding": "Keine Wohnungen gefunden für „{query}“ in Gebäude „{building}“",
+      "confirmDelete": "Wohnung löschen?",
+      "confirmDeleteMessage": "Soll „{name}“ wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "allBuildings": "Alle Gebäude",
+      "fields": {
+        "name": "Bezeichnung",
+        "namePlaceholder": "z. B. EG oder OG/DG",
+        "unitNumber": "Mieteinheit",
+        "unitNumberDescription": "Bezeichnung der Mieteinheit in der Wohnanlage. Wird in der Nebenkostenabrechnung mit ausgewiesen.",
+        "unitNumberPlaceholder": "z. B. 3.07",
+        "area": "Wohnfläche",
+        "areaSqm": "Wohnfläche (m²)",
+        "heatingArea": "Heizfläche",
+        "heatingAreaSqm": "Heizfläche (m², optional)",
+        "heatingAreaDescription": "Wird für die Heizkostenabrechnung verwendet. Ohne Angabe wird die Wohnfläche verwendet.",
+        "heatingAreaPlaceholder": "Wohnfläche wird verwendet"
+      },
+      "validation": {
+        "buildingRequired": "Gebäude erforderlich",
+        "nameRequired": "Bezeichnung erforderlich",
+        "areaRequired": "Wohnfläche erforderlich",
+        "areaInvalid": "Fläche als Zahl, z. B. 120 oder 120,5",
+        "areaPositive": "Fläche muss größer als 0 sein",
+        "areaTooLarge": "Fläche darf höchstens 10.000 m² sein"
+      },
+      "notFound": {
+        "title": "Wohnung nicht gefunden",
+        "description": "Diese Wohnung existiert nicht oder wurde gelöscht."
+      }
+    },
+    "tenants": {
+      "title": "Mieter",
+      "tabs": {
+        "master": "Stammdaten",
+        "account": "Konto"
+      },
+      "openAccount": "Konto öffnen",
+      "createTitle": "Neuer Mieter",
+      "contractTitle": "Mietvertrag {unit} (ab {start})",
+      "identityTitle": "{residents} (Wohnung {unit})",
+      "identityTitleEmpty": "Wohnung {unit}",
+      "summary": "{unit} – {residents}",
+      "addTenant": "Vertrag anlegen",
+      "noUnits": "Für dieses Gebäude sind noch keine Wohnungen angelegt. Bitte zuerst {link} anlegen, bevor Verträge erfasst werden können.",
+      "confirmDeleteTenant": "Mietvertrag löschen?",
+      "confirmDeleteTenantMessage": "Vertrag für „{unit}“ ({start} – {end}) wirklich löschen?",
+      "empty": "Keine Mietverträge vorhanden",
+      "emptyForBuilding": "Noch keine Mietverträge in Gebäude „{building}“ angelegt",
+      "emptySearch": "Keine Mietverträge gefunden für „{query}“",
+      "emptySearchForBuilding": "Keine Mietverträge gefunden für „{query}“ in Gebäude „{building}“",
+      "allBuildings": "Alle Gebäude",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "columns": {
+        "kind": "Art",
+        "term": "Laufzeit",
+        "occupants": "Bewohner"
+      },
+      "notFound": {
+        "title": "Mietvertrag nicht gefunden",
+        "description": "Dieser Mietvertrag existiert nicht oder wurde gelöscht."
+      }
+    },
+    "payments": {
+      "title": "Zahlungseingänge",
+      "notFound": {
+        "title": "Zahlung nicht gefunden",
+        "description": "Diese Zahlung existiert nicht oder wurde gelöscht."
+      },
+      "createTitle": "Neue Zahlung",
+      "editTitle": "Zahlung bearbeiten",
+      "identityTitle": "Zahlung vom {date}",
+      "noTenant": "Kein Mieter",
+      "confirmDelete": "Zahlung löschen?",
+      "confirmDeleteMessage": "Soll die Zahlung vom {date} über {amount} wirklich gelöscht werden? Zahlungen, die in eine finalisierte Abrechnung fallen, können nicht gelöscht werden.",
+      "add": "Zahlung erfassen",
+      "noTenants": "Für dieses Gebäude sind noch keine Mieter angelegt. Bitte zuerst {link} anlegen, bevor Zahlungen erfasst werden können.",
+      "noTenantsTitle": "Noch keine Mietverträge",
+      "noTenantsDescription": "Zahlungen werden einem Mietvertrag zugeordnet. Legen Sie zuerst einen Mietvertrag an, um Zahlungen erfassen zu können.",
+      "noTenantsAction": "Mietvertrag anlegen",
+      "allTenants": "Alle Mieter",
+      "empty": "Noch keine Zahlungen erfasst",
+      "emptyForTenant": "Noch keine Zahlungen für „{tenant}“ erfasst",
+      "emptySearch": "Keine Zahlungen gefunden für „{query}“",
+      "emptySearchForTenant": "Keine Zahlungen gefunden für „{query}“ bei „{tenant}“",
+      "searchPlaceholder": "Referenz suchen …",
+      "columns": {
+        "date": "Datum",
+        "amount": "Betrag",
+        "baseRent": "Kaltmiete",
+        "advance": "Nebenkostenvorauszahlung",
+        "otherAmount": "Sonstiges",
+        "reference": "Referenz",
+        "purpose": "Zuordnung"
+      },
+      "fields": {
+        "purposeKind": "Zuordnung",
+        "forMonth": "Mietmonat",
+        "forMonthPlaceholder": "Monat auswählen …",
+        "forStatement": "Abrechnung",
+        "forFee": "Gebühr",
+        "inputModeSum": "Gesamtsumme",
+        "inputModeSumHint": "Eine Summe eingeben, Aufteilung in Kaltmiete und NK-Vorauszahlung erfolgt automatisch nach Vertrag.",
+        "inputModeSplit": "Getrennt erfassen",
+        "inputModeSplitHint": "Kaltmiete und NK-Vorauszahlung getrennt eingeben, falls die Zahlung abweicht.",
+        "sumEur": "Gesamtsumme",
+        "sumHint": "Wird nur akzeptiert, wenn sie der vertraglichen Monatsmiete entspricht.",
+        "baseRentEur": "Kaltmiete",
+        "advanceEur": "NK-Vorauszahlung",
+        "amountEur": "Betrag",
+        "amountSignHint": "Eingang vom Mieter positiv, Erstattung an den Mieter negativ.",
+        "reference": "Referenz",
+        "referencePlaceholder": "Verwendungszweck oder Buchungstext"
+      },
+      "purposeKinds": {
+        "month": "Laufende Miete",
+        "statement": "NK-Abrechnung",
+        "deposit": "Kaution",
+        "fee": "Gebühr"
+      },
+      "purposeSummaryMonth": "Mietmonat {month}",
+      "contract": {
+        "heading": "Vertragsmiete {month}",
+        "headingWithStatus": "Vertragsmiete {month} – {status}",
+        "summary": "{baseRent} Kaltmiete + {advance} NK-Voraus = {total}",
+        "baseRent": "Kaltmiete",
+        "advance": "NK-Vorauszahlung",
+        "total": "Summe",
+        "alreadyPaidHeading": "Bisher erfasst:",
+        "alreadyPaidHeadingInclCurrent": "Bisher erfasst (inkl. dieser Buchung):",
+        "alreadyPaidNone": "Noch keine Zahlungen erfasst.",
+        "alreadyPaidSummary": "{count} Zahlung(en): {baseRent} Kaltmiete + {advance} NK-Voraus = {total}"
+      },
+      "validation": {
+        "monthRequired": "Bitte einen Mietmonat im Format YYYY-MM angeben.",
+        "monthNotInContract": "Für diesen Monat ist kein Mietsatz im Vertrag hinterlegt.",
+        "amountRequired": "Bitte einen Betrag eingeben.",
+        "statementRequired": "Bitte eine Abrechnung auswählen.",
+        "feeRequired": "Bitte eine Gebühr auswählen.",
+        "sumMismatch": "Die Summe entspricht nicht der vertraglichen Monatsmiete. Bitte auf „Getrennt erfassen“ wechseln und Kaltmiete und NK-Vorauszahlung manuell eingeben."
+      }
+    },
+    "account": {
+      "title": "Mieterkonto",
+      "allBuildings": "Alle Gebäude",
+      "empty": "Keine Buchungen vorhanden",
+      "tabs": {
+        "rent": "Miete",
+        "payments": "Zahlungen",
+        "settlements": "Abrechnungen",
+        "deposit": "Kaution",
+        "fees": "Gebühren"
+      },
+      "balanceLabel": "Saldo",
+      "depositLabel": "Kaution (separat)",
+      "sollLabel": "Soll: {amount}",
+      "monthsHeading": "Mieteingänge pro Monat",
+      "monthsEmpty": "Noch keine Monate im Vertragszeitraum.",
+      "recordPayment": "Zahlung erfassen",
+      "paymentsRecorded": "{count} Buchung(en) erfasst",
+      "otherPaymentsHeading": "Weitere Zahlungen",
+      "otherPaymentsEmpty": "Keine weiteren Zahlungen erfasst",
+      "settlementsHeading": "NK-Abrechnungs-Saldi",
+      "settlementsEmpty": "Noch keine finalisierten NK-Abrechnungen für diesen Mieter.",
+      "depositHeading": "Kaution",
+      "depositEmpty": "Kaution-Daten konnten nicht geladen werden.",
+      "depositNone": "Für diesen Mietvertrag ist keine Kaution vereinbart.",
+      "depositSoll": "Vereinbart",
+      "depositIst": "Eingegangen",
+      "deposit": {
+        "record": "Kaution erfassen"
+      },
+      "feesHeading": "Gebühren",
+      "feesEmpty": "Keine offenen Gebühren erfasst.",
+      "status": {
+        "credit": "Guthaben",
+        "balanced": "Ausgeglichen",
+        "arrears": "Rückstand",
+        "partial": "Teilweise offen",
+        "open": "Offen"
+      },
+      "columns": {
+        "balance": "Saldo",
+        "deposit": "Kaution",
+        "month": "Monat",
+        "baseRent": "Kaltmiete",
+        "advance": "Nebenkostenvorauszahlung",
+        "ist": "Ist",
+        "soll": "Soll",
+        "date": "Datum",
+        "reason": "Grund",
+        "amount": "Betrag",
+        "actions": "Aktionen"
+      },
+      "fee": {
+        "add": "Gebühr erfassen",
+        "notFound": {
+          "title": "Gebühr nicht gefunden",
+          "description": "Diese Gebühr existiert nicht oder wurde gelöscht."
+        },
+        "edit": "Gebühr bearbeiten",
+        "recordPayment": "Zahlung erfassen",
+        "title": "Gebühr erfassen",
+        "editTitle": "Gebühr bearbeiten",
+        "identityTitle": "Gebühr vom {date}",
+        "description": "Gebühr (z. B. Mahn-/Rücklaufgebühr) erhöht die Mieterschuld; eine Gutschrift schreibt dem Mieter einen Betrag gut. Beides fließt nicht in die NK-Abrechnung.",
+        "kindLabel": "Art",
+        "kindCharge": "Gebühr (Forderung)",
+        "kindCredit": "Gutschrift",
+        "amountLabel": "Betrag",
+        "reason": "Begründung",
+        "confirmDelete": "Gebühr löschen?",
+        "confirmDeleteMessage": "Soll die Gebühr vom {date} über {amount} wirklich gelöscht werden?"
+      }
+    },
+    "costs": {
+      "title": "Kostenarten",
+      "add": "Kostenart hinzufügen",
+      "addType": "Kostenart hinzufügen",
+      "allBuildings": "Alle Gebäude",
+      "typeCreateTitle": "Neue Kostenart",
+      "typeCreateDescription": "Kategorie und Umlageschlüssel für eine neue Kostenart anlegen.",
+      "typeEditTitle": "Kostenart bearbeiten",
+      "entryCreateTitle": "Kostenrechnung",
+      "entryCreateDescription": "Eine einzelne Kostenrechnung erfassen.",
+      "typesTitle": "Kostenarten",
+      "typesDescription": "Definieren Sie Kategorien und Umlageschlüssel für jede Kostenart.",
+      "confirmDeleteType": "Kostenart löschen?",
+      "confirmDeleteTypeMessage": "Soll die Kostenart „{name}“ wirklich gelöscht werden? Kostenarten mit erfassten Rechnungen können nicht gelöscht werden.",
+      "entriesTitle": "Rechnungen",
+      "entriesDescription": "Einzelne Kostenrechnungen, die anteilig in die Abrechnung einfließen.",
+      "addEntry": "Rechnung erfassen",
+      "empty": "Noch keine Kostenarten angelegt",
+      "emptyForBuilding": "Noch keine Kostenarten in Gebäude „{building}“ angelegt",
+      "emptySearch": "Keine Kostenarten gefunden für „{query}“",
+      "emptySearchForBuilding": "Keine Kostenarten gefunden für „{query}“ in Gebäude „{building}“",
+      "allocationKeyNotApplicable": "—",
+      "allocationHeatingSettlement": "Heizkostenabrechnung",
+      "allocationHeatingSettlementTooltip": "Zur Heizkosten-Übersicht wechseln",
+      "columns": {
+        "costType": "Kostenart",
+        "invoiceNumber": "Rechnungsnr.",
+        "vendor": "Lieferant",
+        "allocation": "Umlage",
+        "category": "Kategorie"
+      },
+      "typeFields": {
+        "namePlaceholder": "z. B. Müllgebühr",
+        "category": "Kategorie",
+        "categoryDescription": {
+          "operating": "Eigene Verteilregel pro Kostenart (Wohnfläche, Personen, Verbrauch …).",
+          "heating": "Fließt in den Heizkostentopf des Gebäudes und wird zentral nach Heizkostenverordnung verteilt."
+        },
+        "allocationKeyPlaceholder": "Umlageschlüssel wählen",
+        "allocationKeyDescription": "Bestimmt, wie die Rechnungen dieser Kostenart auf die Mieter verteilt werden.",
+        "laborCostCategory": "Steuerlich begünstigt (§ 35a EStG)",
+        "laborCostCategoryDescription": "Wenn gesetzt, weisen Sie bei jeder Rechnung dieser Kostenart den Lohnkostenanteil aus. Er wird in der NK-Abrechnung als Bescheinigung für den Mieter ausgewiesen.",
+        "co2Tracked": "CO₂-Menge und -Kostenanteil auf den Rechnungen erfassen"
+      },
+      "laborCostCategoryOptions": {
+        "__none__": "Nicht begünstigt",
+        "craftsman": "Handwerkerleistung (§ 35a Abs. 3 EStG)",
+        "household_service": "Haushaltsnahe Dienstleistung (§ 35a Abs. 2 EStG)"
+      },
+      "entryFields": {
+        "costType": "Kostenart",
+        "amountGross": "Betrag (brutto)",
+        "priceMode": "Preisart",
+        "priceModeFixed": "Fixpreis",
+        "priceModeFixedDescription": "Pauschalbetrag wie Grundgebühr oder Jahresprämie – ohne Einheitspreis.",
+        "priceModePerUnit": "Verbrauchspreis",
+        "priceModePerUnitDescription": "Mit Tarif pro Einheit (€/m³, €/kWh …). Erlaubt den Tarifvergleich mit der nächsten Periode.",
+        "unitPrice": "Einheitspreis",
+        "unitPriceDescription": "Tarif pro Einheit. Wird für den Tarifvergleich zwischen Abrechnungszeiträumen verwendet.",
+        "unit": "Wohnung",
+        "unitDescription": "Diese Pauschale wird ausschließlich der gewählten Wohnung berechnet. Den Zeitraum (z. B. bei unterjähriger Abbestellung) steuern Sie über „Zeitraum von/bis“.",
+        "unitPlaceholder": "Wohnung wählen",
+        "periodFrom": "Zeitraum von",
+        "periodTo": "Zeitraum bis",
+        "invoiceNumber": "Rechnungsnummer",
+        "invoiceNumberPlaceholder": "z. B. RG-2025-0042",
+        "vendorPlaceholder": "z. B. Stadtwerke München",
+        "laborCosts": "Lohnkostenanteil",
+        "laborCostsDescription": "Auf der Rechnung ausgewiesener Lohnkostenanteil. Wird für die § 35a-Bescheinigung des Mieters herangezogen.",
+        "laborCostsPlaceholder": "z. B. 120,00",
+        "co2Amount": "CO₂-Menge",
+        "co2AmountDescription": "Auf der Brennstoffrechnung ausgewiesene CO₂-Menge in Kilogramm.",
+        "co2Cost": "Enthaltener CO₂-Kostenanteil",
+        "co2CostDescription": "Der bereits im Bruttobetrag enthaltene CO₂-Preisanteil – kein zusätzlicher Betrag."
+      },
+      "validation": {
+        "amountRequired": "Betrag erforderlich",
+        "periodStartRequired": "Zeitraumbeginn erforderlich",
+        "periodEndRequired": "Zeitraumende erforderlich",
+        "periodOrder": "Zeitraumende darf nicht vor dem Beginn liegen",
+        "invoiceDateRequired": "Rechnungsdatum erforderlich",
+        "costTypeRequired": "Kostenart wählen",
+        "buildingRequired": "Gebäude erforderlich",
+        "allocationKeyRequired": "Umlageschlüssel erforderlich",
+        "allocationKeyForbidden": "Heizkostenpositionen haben keinen eigenen Umlageschlüssel",
+        "co2TrackedHeatingOnly": "Die CO₂-Erfassung ist nur bei Heizkostenarten möglich.",
+        "co2AmountFormat": "Bitte eine Menge in kg eintragen (z. B. 2371 oder 2371,5).",
+        "co2CostFormat": "Bitte einen Geldbetrag eintragen (z. B. 130,44).",
+        "co2CostExceedsAmount": "Der CO₂-Kostenanteil darf den Rechnungsbetrag nicht übersteigen.",
+        "itemsMin": "Mindestens eine Position erforderlich",
+        "unitPriceFormat": "Bitte einen Geldbetrag eintragen (z. B. 4,93 oder 0,0123).",
+        "unitPriceRequired": "Bei Verbrauchspreis bitte den Einheitspreis angeben.",
+        "laborExceedsAmount": "Der Lohnkostenanteil darf den Rechnungsbetrag nicht übersteigen.",
+        "laborFormat": "Bitte einen Geldbetrag eintragen (z. B. 120,00).",
+        "laborOnlyWithCategory": "Der Lohnkostenanteil ist nur an Kostenarten mit § 35a-Kategorie wirksam."
+      },
+      "notFound": {
+        "title": "Kostenart nicht gefunden",
+        "description": "Diese Kostenart existiert nicht oder wurde gelöscht."
+      }
+    },
+    "invoices": {
+      "title": "Rechnungen",
+      "addEntry": "Rechnung erfassen",
+      "allBuildings": "Alle Gebäude",
+      "createTitle": "Neue Rechnung",
+      "editTitle": "Rechnung bearbeiten",
+      "identityTitle": "{vendor} ({date})",
+      "identityTitleNoVendor": "Rechnung vom {date}",
+      "empty": "Noch keine Rechnungen erfasst",
+      "emptyForBuilding": "Noch keine Rechnungen in Gebäude „{building}“ erfasst",
+      "emptySearch": "Keine Rechnungen gefunden für „{query}“",
+      "emptySearchForBuilding": "Keine Rechnungen gefunden für „{query}“ in Gebäude „{building}“",
+      "noCostTypes": "Bitte zuerst eine {link} anlegen.",
+      "confirmDelete": "Rechnung löschen?",
+      "confirmDeleteMessage": "Soll die Rechnung „{costType}“ über {amount} ({invoiceDate}) wirklich gelöscht werden?",
+      "itemCount": "{count, plural, one {1 Position} other {# Positionen}}",
+      "items": {
+        "title": "Positionen",
+        "description": "Eine Rechnung kann mehrere Kostenarten mit eigenem Betrag und Zeitraum enthalten.",
+        "add": "Position hinzufügen",
+        "remove": "Position entfernen",
+        "empty": "Noch keine Position angelegt. Fügen Sie mindestens eine Position hinzu.",
+        "positionLabel": "Position {index}"
+      },
+      "notFound": {
+        "title": "Rechnung nicht gefunden",
+        "description": "Diese Rechnung existiert nicht oder wurde gelöscht."
+      },
+      "categoryBadges": {
+        "byShare": "Anteil",
+        "byConsumption": "Verbrauch",
+        "heating": "Heizkosten"
+      },
+      "attachments": {
+        "title": "Belege",
+        "upload": "Beleg hochladen",
+        "uploading": "Wird hochgeladen …",
+        "hint": "PDF und Bilder, bis {limit} pro Datei.",
+        "hintDeferred": "PDF und Bilder, bis {limit} pro Datei. Werden nach dem Speichern hochgeladen.",
+        "empty": "Noch keine Belege hochgeladen.",
+        "preview": "Vorschau",
+        "delete": "Beleg entfernen",
+        "download": "Datei herunterladen",
+        "previewUnavailable": "Für diesen Dateityp ist keine Vorschau verfügbar.",
+        "uploadFailed": "Hochladen fehlgeschlagen",
+        "deleteFailed": "Beleg konnte nicht entfernt werden",
+        "invalidType": "„{filename}“ hat einen nicht unterstützten Dateityp.",
+        "tooLarge": "„{filename}“ überschreitet die maximale Dateigröße von {limit}.",
+        "partialUploadFailed": "Die Rechnung wurde gespeichert, aber einige Belege konnten nicht hochgeladen werden: {details}",
+        "confirmDelete": "Beleg entfernen?",
+        "confirmDeleteMessage": "Soll der Beleg „{filename}“ wirklich entfernt werden?"
+      },
+      "aiExtract": {
+        "button": "Mit KI vorausfüllen",
+        "buttonAriaLabel": "Felder mit KI aus diesem Beleg vorausfüllen",
+        "extracting": "Wird analysiert …",
+        "successToast": "Felder wurden vorausgefüllt. Bitte prüfen Sie alle Werte vor dem Speichern.",
+        "noCostTypes": "Bitte zuerst Kostenarten anlegen, dann ist die KI-Extraktion möglich.",
+        "unsupportedType": "Dieser Dateityp wird von der KI-Extraktion nicht unterstützt. Bitte als PDF, JPEG, PNG, WebP oder GIF hochladen.",
+        "failed": "Die KI-Extraktion ist fehlgeschlagen. Bitte erneut versuchen oder die Felder manuell ausfüllen.",
+        "notConfigured": "Die KI-Extraktion ist nicht konfiguriert.",
+        "warnings": {
+          "title": "Hinweise zur KI-Extraktion"
+        }
+      }
+    },
+    "heating": {
+      "title": "Heizkosten",
+      "description": "Pro Gebäude eine Konfiguration, wie Heizkosten abgerechnet werden.",
+      "editTitle": "Heizkosten bearbeiten",
+      "identityTitle": "Gültig ab {validFrom}",
+      "empty": "Noch keine Heizkosten-Konfigurationen angelegt. Wählen Sie oben rechts ein Gebäude, um eine erste Konfiguration anzulegen.",
+      "emptySearch": "Keine Konfigurationen gefunden für „{query}“",
+      "emptyForBuilding": "Noch keine Heizkosten-Konfiguration für Gebäude „{building}“ angelegt.",
+      "emptySearchForBuilding": "Keine Konfigurationen gefunden für „{query}“ in Gebäude „{building}“",
+      "allBuildings": "Alle Gebäude",
+      "columns": {
+        "mode": "Abrechnungsmodus",
+        "split": "Grund- / Verbrauchsanteil"
+      },
+      "modes": {
+        "internal": "Interne Abrechnung",
+        "external": "Externe Abrechnung"
+      },
+      "baseMethods": {
+        "area": "nach Fläche"
+      },
+      "consumptionMethods": {
+        "heat_meter": "Wärmemengenzähler",
+        "heat_cost_allocator": "Heizkostenverteiler (HKV)"
+      },
+      "prorationMethods": {
+        "linear": "Linear (tagesproportional)",
+        "degree_days": "Nach Heizgradtagszahlen (saisonal)"
+      },
+      "summary": {
+        "split": "{base} % Grund / {consumption} % Verbrauch",
+        "externalNoConfig": "Externe Abrechnung – keine interne Verteilung",
+        "none": "–"
+      },
+      "fields": {
+        "mode": "Abrechnungsmodus",
+        "modeDescription": "Interne Abrechnung: EinfachVermieter verteilt die Heizkosten selbst auf Basis von Zählern oder Heizkostenverteilern pro Wohnung. Externe Abrechnung: ein Dienstleister oder eine externe Berechnung liefert Endbeträge pro Wohnung, die hier manuell erfasst werden.",
+        "billingType": "Art der Heizkostenabrechnung",
+        "billingTypeDescription": "Wärmemengenzähler messen den Verbrauch direkt in kWh, Heizkostenverteiler erfassen Anzeigewerte je Heizkörper. Bei externer Abrechnung liefert ein Dienstleister Endbeträge pro Wohnung.",
+        "consumptionMethod": "Verbrauchserfassung",
+        "consumptionMethodDescription": "Wärmemengenzähler messen den Verbrauch direkt in kWh. Heizkostenverteiler erfassen Anzeigewerte je Heizkörper und werden mit dem Bewertungsfaktor (KGesamt) gewichtet.",
+        "consumptionSharePercent": "Verbrauchsanteil",
+        "splitDescription": "Die Heizkostenverordnung schreibt zwischen 50 % und 70 % Verbrauchsanteil vor. Üblich und Voreinstellung: 70 %.",
+        "baseSharePercent": "Grundkostenanteil",
+        "baseShareDescription": "Wird nach Fläche verteilt. Verbrauchs- und Grundkostenanteil ergeben zusammen 100 %.",
+        "prorationMethod": "Aufteilung bei Mieter-/Leerstandswechsel",
+        "prorationMethodDescription": "Wie werden Heizkostenrechnungen aufgeteilt, deren Zeitraum nur teilweise in die Mietzeit fällt? Linear verteilt tagesproportional, ignoriert aber die Wintersaisonalität. Heizgradtagszahlen folgen der Anlage zu § 9 Abs. 3 HeizkostenV (Promille-Verteilung, Σ = 1.000) und gewichten Wintertage stärker – rechtlich verbindliche Verteilung für tagesgenaue Abgrenzung.",
+        "validFrom": "Gültig ab",
+        "validFromDescription": "Datum, ab dem diese Konfiguration für Abrechnungen gilt.",
+        "validTo": "Gültig bis",
+        "validToDescription": "Leer lassen, wenn die Konfiguration noch offen ist.",
+        "heatingType": "Heizungsart",
+        "heatingTypeDescription": "Bauliche Art der Heizung. Bei zentraler Versorgung mit Warmwasser werden die Heizkosten später in Heizung und Warmwasser aufgeteilt.",
+        "fuelType": "Brennstoff",
+        "fuelTypeDescription": "Eingesetzter Energieträger. Pflichtangabe nach § 6a HeizkostenV gegenüber den Mietern.",
+        "hotWaterMeter": "WMZ am Warmwasserboiler",
+        "hotWaterMeterDescription": "Zähler am Warmwasserboiler, der die für die Warmwasserbereitung verbrauchte Wärmemenge misst. Ohne Zähler wird die Schätzformel nach § 9 Abs. 2 HeizkostenV angewendet.",
+        "hotWaterMeterNone": "Kein Zähler (Schätzformel)",
+        "hotWaterMeterMissing": "Für dieses Gebäude ist noch kein gebäudezentraler Wärmemengenzähler angelegt. Bitte legen Sie zunächst einen WMZ als Hauptzähler an, damit Sie ihn hier auswählen können. Ohne Zähler wird die Schätzformel nach § 9 Abs. 2 HeizkostenV verwendet.",
+        "hotWaterMeterMissingLink": "Wärmemengenzähler anlegen",
+        "hotWaterSupplyTemperature": "Warmwasservorlauftemperatur",
+        "hotWaterSupplyTemperatureDescription": "Üblich sind 60 °C. Wird in die Schätzformel und in die Mieter-Information übernommen.",
+        "totalHeatEnergyKwh": "Gesamt-Wärmemenge (kWh)",
+        "totalHeatEnergyKwhDescription": "Jahres-Wärmemenge der gesamten Heizungsanlage in kWh – Grundlage, um den Warmwasseranteil nach § 9 Abs. 2 HeizkostenV herauszurechnen. Entnehmen Sie den Wert Ihrer Energieabrechnung (Gas/Fernwärme weisen kWh aus). Liegt ein gebäudezentraler Wärmemengenzähler als Hauptzähler vor, wird ersatzweise dessen Verbrauch herangezogen.",
+        "co2CostShareEnabled": "CO₂-Kosten zwischen Vermieter und Mieter aufteilen (CO2KostAufG)"
+      },
+      "tabs": {
+        "settings": "Abrechnung",
+        "externalEntries": "Externe Einträge"
+      },
+      "billingTypes": {
+        "internal_heat_meter": "Interne Abrechnung – Wärmemengenzähler",
+        "internal_heat_cost_allocator": "Interne Abrechnung – Heizkostenverteiler",
+        "external": "Externe Abrechnung"
+      },
+      "validation": {
+        "percentRange": "Wert zwischen 0 und 100",
+        "percentSum": "Grund- und Verbrauchsanteil müssen zusammen 100 % ergeben",
+        "consumptionShareBandwidth": "Der Verbrauchsanteil muss zwischen 50 % und 70 % liegen (§ 7 Abs. 1 HeizkostenV)",
+        "tempRange": "Temperatur zwischen 20 und 95 °C",
+        "totalHeatEnergyInvalid": "Bitte geben Sie eine gültige Gesamt-Wärmemenge in kWh an (größer 0)",
+        "validToBeforeFrom": "Gültig-bis darf nicht vor Gültig-ab liegen"
+      },
+      "cards": {
+        "billing": "Abrechnung"
+      },
+      "versions": {
+        "createTitle": "Neue Heizkosten-Konfiguration",
+        "notFound": {
+          "title": "Konfiguration nicht gefunden",
+          "description": "Diese Heizkosten-Konfiguration existiert nicht oder wurde gelöscht."
+        },
+        "editTitle": "Heizkosten-Konfiguration bearbeiten",
+        "pickBuildingTitle": "Gebäude wählen",
+        "pickBuildingPlaceholder": "Gebäude auswählen …",
+        "description": "Konfigurationen mit Gültigkeitszeitraum. Eine neue Version verschiebt die alte automatisch ins Archiv, sobald deren Zeitraum endet.",
+        "empty": "Noch keine Heizkosten-Konfiguration angelegt. Bitte legen Sie eine erste Version an.",
+        "add": "Neue Konfiguration",
+        "openEnd": "offen",
+        "statusActive": "Aktiv",
+        "statusArchived": "Archiviert",
+        "columns": {
+          "validFrom": "Gültig ab",
+          "validTo": "Gültig bis",
+          "mode": "Modus",
+          "split": "Anteile",
+          "heatingType": "Heizungsart",
+          "status": "Status"
+        },
+        "confirmDelete": "Konfiguration wirklich löschen?",
+        "confirmDeleteMessage": "Heizkosten-Konfiguration ({from} – {to}) wird gelöscht."
+      },
+      "errors": {
+        "hotWaterMeterBuildingMismatch": "Der gewählte Zähler gehört nicht zu diesem Gebäude.",
+        "hotWaterMeterType": "Der gewählte Zähler ist kein Wärmemengenzähler.",
+        "hotWaterMeterScope": "Der gewählte Zähler ist einer Wohnung zugeordnet und kann nicht als Boiler-WMZ verwendet werden.",
+        "hotWaterMeterHasCostTypes": "Der gewählte Zähler ist bereits Kostenarten zugeordnet und kann nicht zugleich als Boiler-WMZ verwendet werden. Entfernen Sie die Kostenarten am Zähler oder wählen Sie einen anderen Zähler.",
+        "hotWaterMeterNotHeatingCostBill": "Der gewählte Zähler ist nicht als „Teil der Heizkostenabrechnung“ konfiguriert. Stellen Sie den Zähler entsprechend um oder wählen Sie einen anderen Zähler.",
+        "meterInUseAsHotWaterMeter": "Dieser Zähler ist als WMZ am Warmwasserboiler in den Heizkosten-Einstellungen hinterlegt. Entfernen Sie die Verknüpfung dort, bevor Sie diese Eigenschaft ändern.",
+        "versionOverlap": "Der gewählte Gültigkeitszeitraum überlappt mit einer anderen Konfiguration für dieses Gebäude. Bitte schließen Sie die vorherige Version oder verschieben Sie das Datum."
+      },
+      "installation": {
+        "title": "Heizung"
+      },
+      "heatingTypes": {
+        "central_with_hot_water": "Zentralheizung mit Warmwasser",
+        "central_without_hot_water": "Zentralheizung ohne Warmwasser",
+        "decentralized": "Dezentrale Heizung"
+      },
+      "fuelTypes": {
+        "gas": "Erdgas",
+        "oil": "Heizöl",
+        "district_heat": "Fernwärme",
+        "pellets": "Holzpellets",
+        "wood": "Holz / Scheitholz",
+        "electricity": "Strom",
+        "heat_pump": "Wärmepumpe",
+        "other": "Sonstige"
+      },
+      "external": {
+        "title": "Externe Heizkosten-Einträge",
+        "description": "Endbeträge aus externer Abrechnung pro Wohnung und Zeitraum. Optional zusätzlich aufteilbar in Grund- und Verbrauchskosten.",
+        "add": "Eintrag hinzufügen",
+        "empty": "Noch keine externen Heizkosten-Einträge erfasst.",
+        "columns": {
+          "period": "Zeitraum",
+          "unit": "Wohnung",
+          "total": "Endbetrag",
+          "base": "davon Grund",
+          "consumption": "davon Verbrauch"
+        },
+        "fields": {
+          "unit": "Wohnung",
+          "periodStart": "Zeitraum von",
+          "periodEnd": "Zeitraum bis",
+          "totalCents": "Endbetrag Heizkosten",
+          "baseCostCents": "Grundkostenanteil",
+          "consumptionCostCents": "Verbrauchskostenanteil",
+          "notes": "Notizen"
+        },
+        "confirmDelete": "Eintrag wirklich löschen?",
+        "confirmDeleteMessage": "Heizkosten-Eintrag für {unit} im Zeitraum {start}–{end} wird gelöscht.",
+        "validation": {
+          "splitExceedsTotal": "Grund- und Verbrauchskosten dürfen zusammen den Endbetrag nicht überschreiten.",
+          "periodRange": "Enddatum muss nach dem Startdatum liegen."
+        }
+      }
+    },
+    "statements": {
+      "pageTitle": "Abrechnungen",
+      "notFound": {
+        "title": "Abrechnung nicht gefunden",
+        "description": "Diese Abrechnung existiert nicht oder wurde gelöscht."
+      },
+      "createTitle": "Neue Abrechnung",
+      "createDescription": "Zeitraum und Mieter für eine neue Nebenkostenabrechnung festlegen.",
+      "listTitle": "Abrechnungen",
+      "listDescription": "Draft-Abrechnungen werden live aus den aktuellen Stammdaten berechnet. Finalisierte Abrechnungen sind unveränderlich.",
+      "addStatement": "Neue Abrechnung",
+      "searchPlaceholder": "Nach Mieter oder Wohnung suchen …",
+      "empty": "Noch keine Abrechnungen erstellt",
+      "emptySearch": "Keine Abrechnungen gefunden für „{query}“",
+      "emptyForBuilding": "Noch keine Abrechnungen für Gebäude „{building}“",
+      "open": "Öffnen",
+      "statusFinalized": "Finalisiert",
+      "statusDraft": "Entwurf",
+      "statusCancelled": "Storniert",
+      "statusSuperseded": "Ersetzt",
+      "columns": {
+        "balance": "Saldo"
+      },
+      "fields": {
+        "documentDate": "Ausstellungsdatum",
+        "documentDateHint": "Datum, das auf der Abrechnung erscheint. Standard ist heute – für vor- oder nachdatierte Dokumente anpassbar."
+      },
+      "validation": {
+        "tenantRequired": "Mieter wählen",
+        "buildingRequired": "Gebäude erforderlich",
+        "documentDateRequired": "Bitte ein Ausstellungsdatum angeben.",
+        "adjustmentBothOrNone": "Betrag und Gültig-ab-Datum müssen beide gesetzt oder beide leer sein."
+      },
+      "advanceAdjustment": {
+        "title": "Künftige Vorauszahlung",
+        "description": "Optional eine geänderte monatliche Vorauszahlung festlegen. Beim Finalisieren wird automatisch ein neuer Kaltmiet-Eintrag mit dem neuen Wert angelegt und der bisherige zum Vortag geschlossen.",
+        "currentLabel": "Aktuell vertraglich",
+        "suggestedLabel": "Vorschlag (Vorjahres-Ist auf 12 Monate hochgerechnet)",
+        "suggestedWithTariffsLabel": "Vorschlag mit Tarif-Erwartungen",
+        "adjustedLabel": "Neue Vorauszahlung ab {date}",
+        "noAdjustment": "Keine Anpassung festgelegt – die Vorauszahlung bleibt unverändert.",
+        "amountLabel": "Neue monatliche Vorauszahlung",
+        "amountBelowSuggestedWarning": "Der gewählte Betrag liegt unter dem Vorjahres-Vorschlag ({suggested}). Eine Senkung ist möglich, in der Regel wird die Vorauszahlung jedoch mindestens auf das auf 12 Monate hochgerechnete Vorjahres-Ist angepasst.",
+        "amountCustomInfo": "Der Betrag weicht von den Standard-Vorschlägen ab (aktuell, Vorjahres-Ist auf 12 Monate hochgerechnet, mit Tarif-Erwartungen). Er muss auf konkret belegbaren Werten beruhen (Bescheid, Vertrag, Versorger-Mitteilung) – pauschale Sicherheitszuschläge sind nach BGH-Rechtsprechung unzulässig.",
+        "applyCurrent": "Vertraglich beibehalten ({amount})",
+        "applySuggested": "Vorjahres-Ist auf 12 Monate hochgerechnet ({amount})",
+        "applySuggestedWithTariffs": "Mit Tarif-Erwartungen ({amount})",
+        "validFromLabel": "Gültig ab",
+        "validFromDescription": "Erster Tag des Monats, ab dem die neue Vorauszahlung gilt.",
+        "saveButton": "Anpassung speichern",
+        "removeButton": "Anpassung entfernen",
+        "tariffs": {
+          "sectionTitle": "Erwartete Tarifänderungen pro Kostenart",
+          "sectionDescription": "Diese Werte werden automatisch aus bereits erfassten Folge-Rechnungen abgeleitet. Liegt für die kommende Periode bereits ein Beleg vor (Bescheid, Vertrag, Versorger-Mitteilung), erfassen Sie ihn als Kosteneintrag – dann erscheint er hier. Pauschale Sicherheitszuschläge sind nach BGH-Rechtsprechung unzulässig.",
+          "emptyHint": "Keine Tarifänderungen aus Folge-Rechnungen ableitbar – die Vorjahres-Werte werden fortgeschrieben.",
+          "columnCostType": "Kostenart",
+          "columnPeriodCost": "Anteil Mieter im Zeitraum",
+          "columnAdjustment": "Tarifänderung",
+          "noChange": "—",
+          "heatingLabel": "Heizkosten"
+        },
+        "validation": {
+          "amountRequired": "Bitte einen Betrag angeben.",
+          "amountFormat": "Bitte einen Geldbetrag eintragen (z. B. 250 oder 250,00).",
+          "amountPositive": "Der Betrag muss größer als 0 sein.",
+          "validFromRequired": "Bitte einen Stichtag wählen.",
+          "validFromAfterPeriodEnd": "Der Stichtag muss nach dem Ende des Abrechnungszeitraums liegen."
+        }
+      },
+      "detail": {
+        "title": "Abrechnung {start} – {end}",
+        "identityTitle": "{residents} (Wohnung {unit}, {year})",
+        "identityTitleEmpty": "Wohnung {unit} ({year})",
+        "draftLive": "Entwurf – Live-Berechnung",
+        "finalizedAt": "Finalisiert am {date}",
+        "calculating": "wird berechnet …",
+        "confirmFinalize": "Abrechnung wirklich finalisieren? Danach sind keine Änderungen mehr möglich.",
+        "finalizing": "Wird finalisiert …",
+        "finalizeStatement": "Abrechnung finalisieren",
+        "correctionDraft": "Korrektur (Entwurf)",
+        "cancelledBadge": "Storniert",
+        "supersededBadge": "Ersetzt durch Korrektur",
+        "cancelStatement": "Stornieren",
+        "createCorrection": "Korrekturabrechnung erstellen",
+        "cancelDescription": "Die Stornierung nimmt das Abrechnungs-Soll auf dem Mieterkonto zurück. Die Abrechnung bleibt als Beleg erhalten. Bitte geben Sie eine Begründung an.",
+        "cancelReasonPlaceholder": "Grund der Stornierung (z. B. fehlerhafte Zählerstände)",
+        "cancelledTitle": "Diese Abrechnung wurde storniert",
+        "cancelledReason": "Grund: {reason}",
+        "tabs": {
+          "overview": "Übersicht",
+          "operatingCosts": "Betriebskosten",
+          "heating": "Heizkosten",
+          "occupancy": "Belegung",
+          "taxableLabor": "§ 35a EStG",
+          "payments": "Zahlungen",
+          "advance": "Künftige Vorauszahlung",
+          "pdf": "PDF-Vorschau"
+        },
+        "overviewTitle": "Übersicht",
+        "overviewDescription": "Zusammenfassung der umgelegten Kosten und des Abrechnungssaldos.",
+        "operatingCostsTitle": "Betriebskosten",
+        "operatingCostsDescription": "Detail-Aufstellung der umgelegten Betriebskosten (ohne Heizkosten).",
+        "operatingCostsSum": "Summe Betriebskosten",
+        "heatingTabTitle": "Heizkostenberechnung",
+        "heatingTabDescription": "Aufschlüsselung nach Verbrauchs- und Grundkostenanteil, Verteilung pro Wohnung und HKV-/WMZ-Details.",
+        "occupancyMeterUnitColumn": "Wohnung",
+        "summaryOperatingCosts": "Betriebskosten",
+        "summaryHeatingCosts": "Heizkosten",
+        "breakdown": "Aufstellung",
+        "breakdownDescription": "Berechnung aus aktuellen Stammdaten",
+        "costItems": "Kostenpositionen",
+        "sum": "Summe",
+        "columnCostType": "Kostenart",
+        "columnTotal": "Gesamt",
+        "columnYourShare": "Anteil Mieter",
+        "columnAmount": "Betrag",
+        "columnAllocation": "Umlage",
+        "columnTotalCosts": "Gesamtkosten",
+        "columnBemessungTotal": "Bemessung gesamt",
+        "columnBemessungTenant": "Bemessung Mieter",
+        "columnDaysTotal": "Tage gesamt",
+        "columnDaysTenant": "Tage anteilig",
+        "columnYourCosts": "Kosten Mieter",
+        "ofTotal": "von {amount}",
+        "totalCosts": "Summe Kosten",
+        "advances": "Vorauszahlungen",
+        "additionalPayment": "Nachzahlung",
+        "refund": "Rückzahlung",
+        "pdfPreview": "PDF-Vorschau",
+        "pdfPreviewDescription": "Exakt wie das finale Dokument nach dem Finalisieren",
+        "downloadPdf": "PDF herunterladen",
+        "pdfFilename": "Nebenkostenabrechnung_{start}_{end}.pdf",
+        "loadingData": "Lade Daten …",
+        "computing": "Berechnung läuft …",
+        "warningsTitle": "Hinweise zur Berechnung",
+        "warningsDescription": "Folgende Punkte sollten Sie vor dem Finalisieren prüfen:",
+        "calculationErrorTitle": "Berechnung nicht möglich",
+        "paymentsTitle": "Mieteingänge",
+        "paymentsDescription": "Erfasste Mietzahlungen mit Kalt- und NK-Voraus-Anteil im Abrechnungszeitraum.",
+        "paymentsEmpty": "Keine Mieteingänge im Abrechnungszeitraum verbucht.",
+        "paymentsTotal": "Summe Mieteingänge: {total}",
+        "paymentsColumnMonth": "Mietmonat",
+        "paymentsColumnDate": "Buchungsdatum",
+        "paymentsColumnReference": "Referenz",
+        "paymentsColumnBaseRent": "Kaltmiete",
+        "paymentsColumnAdvance": "NK-Voraus",
+        "occupancyTitle": "Belegung im Abrechnungszeitraum",
+        "occupancyDescription": "Aufschlüsselung der Personen-, Wohnungs- und Flächentage, anonym je Wohnung.",
+        "occupancyColumnUnit": "Wohnung",
+        "occupancyColumnResident": "Bewohner",
+        "occupancyColumnSpan": "Zeitraum",
+        "occupancyColumnDays": "Tage",
+        "occupancyColumnPersonDays": "Personentage",
+        "occupancyTotalPersonDays": "Summe Personentage (inkl. Vermieter-Basis)",
+        "occupancyTotalOccupiedDays": "Summe Wohnungstage (belegt)",
+        "occupancyPersonSingular": "1 Person",
+        "occupancyPersonPlural": "{count} Personen",
+        "occupancyDaysGroup": "{count}× {days}",
+        "occupancyLandlordPersonDays": "davon Vermieter (1 Basis-Person × Leerstandstage)",
+        "occupancyLandlordDays": "Vermieter-Anteil Leerstand (Wohnungstage)",
+        "occupancyPeriodTotal": "Periodentage gesamt ({units} × {days})"
+      }
+    },
+    "password": {
+      "policy": {
+        "minLength": "Mindestens {min} Zeichen",
+        "uppercase": "Mindestens ein Großbuchstabe",
+        "lowercase": "Mindestens ein Kleinbuchstabe",
+        "digit": "Mindestens eine Ziffer",
+        "special": "Mindestens ein Sonderzeichen"
+      }
+    },
+    "setup": {
+      "title": "Einrichtung",
+      "description": "Willkommen! Richten Sie hier Ihr Administrator-Konto ein. Absender und erstes Gebäude können Sie überspringen und später ergänzen.",
+      "stepIndicator": "Schritt {current} von {total}",
+      "requiredBadge": "Erforderlich",
+      "optionalBadge": "Optional",
+      "requiredHint": "Bitte füllen Sie alle Pflichtfelder (mit *) aus.",
+      "optionalHint": "Dieser Schritt ist optional. Lassen Sie alle Felder leer, um ihn zu überspringen – oder füllen Sie sie vollständig aus.",
+      "admin": {
+        "heading": "Administrator-Konto",
+        "email": "E-Mail-Adresse des Administrators",
+        "password": "Passwort",
+        "passwordConfirm": "Passwort bestätigen"
+      },
+      "sender": {
+        "heading": "Absender",
+        "name": "Absender (Name)",
+        "street": "Straße und Hausnummer",
+        "postalCode": "Postleitzahl",
+        "city": "Ort"
+      },
+      "building": {
+        "heading": "Erstes Gebäude",
+        "name": "Bezeichnung des Gebäudes",
+        "street": "Straße und Hausnummer",
+        "postalCode": "Postleitzahl",
+        "city": "Ort"
+      },
+      "action": {
+        "back": "Zurück",
+        "next": "Weiter",
+        "skip": "Überspringen",
+        "skipAndFinish": "Überspringen & abschließen",
+        "finish": "Einrichtung abschließen",
+        "finishing": "Wird eingerichtet …"
+      },
+      "validation": {
+        "emailFormat": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+        "passwordMismatch": "Die Passwörter stimmen nicht überein.",
+        "required": "Dieses Feld ist erforderlich.",
+        "postalCodeFormat": "Bitte geben Sie eine fünfstellige Postleitzahl ein."
+      },
+      "error": {
+        "alreadyDone": "Die Anwendung ist bereits eingerichtet. Bitte melden Sie sich an.",
+        "generic": "Die Einrichtung ist fehlgeschlagen. Bitte versuchen Sie es erneut."
+      }
+    },
+    "auth": {
+      "login": "Anmelden",
+      "loggingIn": "Anmelden …",
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "emailInvalid": "Ungültige E-Mail-Adresse",
+      "passwordRequired": "Passwort erforderlich",
+      "welcome": "Willkommen zurück",
+      "subtitle": "Melden Sie sich bei Ihrem EinfachVermieter-Konto an",
+      "brandTagline": "Hausverwaltung, einfach digital."
+    },
+    "form": {
+      "dateFormat": "Datum im Format YYYY-MM-DD",
+      "amountFormat": "Betrag im Format 123,45",
+      "firstNameRequired": "Vorname erforderlich",
+      "lastNameRequired": "Nachname erforderlich",
+      "unitRequired": "Bitte Wohnung wählen",
+      "tenantRequired": "Bitte Mieter wählen",
+      "residentRequired": "Bitte legen Sie mindestens einen Bewohner an.",
+      "labelRequired": "Bezeichnung erforderlich",
+      "nameRequired": "Name erforderlich",
+      "dateRequired": "Datum erforderlich",
+      "valueRequired": "Zählerstand erforderlich",
+      "numberRequired": "Zahl erforderlich, z. B. 1234,5"
+    },
+    "tenant": {
+      "validation": {
+        "startDateRequired": "Vertragsbeginn erforderlich",
+        "rentRequired": "Bitte legen Sie mindestens einen Mietsatz an.",
+        "ibanRequired": "IBAN erforderlich",
+        "accountHolderRequired": "Kontoinhaber erforderlich",
+        "invalidEmail": "Ungültige E-Mail",
+        "contractPartyCoverage": "Zu jedem Zeitpunkt des Vertragsverhältnisses muss mindestens ein Bewohner Vertragspartner sein.",
+        "residentOutsideTenant": "Bewohner-Zeitraum darf nicht vor dem Vertragsbeginn liegen und nicht nach dem Vertragsende enden.",
+        "rentOutsideTenant": "Mietsatz-Zeitraum darf nicht vor dem Vertragsbeginn liegen und nicht nach dem Vertragsende enden.",
+        "rentOverlap": "Mietsätze dürfen sich nicht überlappen – es darf nur eine gültige Miete gleichzeitig geben.",
+        "rentCoverage": "Mietsätze müssen den gesamten Vertragszeitraum lückenlos abdecken (erster Mietsatz am Vertragsbeginn, weitere Mietsätze schließen tagesgenau an, letzter endet am Vertragsende).",
+        "bankAccountOutsideTenant": "Bankverbindungs-Zeitraum darf nicht vor dem Vertragsbeginn liegen und nicht nach dem Vertragsende enden.",
+        "bankAccountOverlap": "Bankverbindungen dürfen sich nicht überlappen – es darf maximal eine gleichzeitig gültig sein.",
+        "mandateReferenceRequired": "Mandatsreferenz erforderlich",
+        "mandateSignedAtRequired": "Datum der Mandatserteilung erforderlich",
+        "invalidIban": "Ungültige IBAN",
+        "residentRequired": "Bitte legen Sie mindestens einen Bewohner an.",
+        "endDateAfterStart": "Enddatum muss am oder nach Startdatum liegen",
+        "residentActiveRequired": "Mindestens ein Bewohner muss im Vertragszeitraum aktiv sein.",
+        "moveInBeforeStart": "Einzug liegt vor Vertragsbeginn",
+        "moveInAfterEnd": "Einzug liegt nach Vertragsende",
+        "moveOutBeforeMoveIn": "Auszug liegt vor Einzug",
+        "moveOutAfterEnd": "Auszug liegt nach Vertragsende",
+        "ownerNoRents": "Eigentümer-Vertrag darf keine Mietsätze enthalten",
+        "rentStartBeforeTenantStart": "Mietsatz beginnt vor Vertragsbeginn",
+        "rentEndAfterTenantEnd": "Mietsatz endet nach Vertragsende",
+        "endBeforeStart": "Enddatum liegt vor Startdatum",
+        "firstRentAtTenantStart": "Der erste Mietsatz muss am Vertragsbeginn starten",
+        "lastRentAtTenantEnd": "Der letzte Mietsatz muss am Vertragsende enden",
+        "rentEndDateMissing": "Enddatum fehlt (Folge-Mietsatz existiert)",
+        "startDateMissing": "Startdatum fehlt",
+        "rentChainGap": "Lücke in der Mietsatz-Historie – Folgemietsatz muss am Tag nach dem vorherigen starten",
+        "bankAccountStartBeforeTenantStart": "Bankverbindung beginnt vor Vertragsbeginn",
+        "bankAccountEndAfterTenantEnd": "Bankverbindung endet nach Vertragsende",
+        "addressOverlap": "Abweichende Anschriften dürfen sich nicht überlappen – es darf nur eine gleichzeitig gültig sein.",
+        "streetRequired": "Straße und Hausnummer erforderlich",
+        "postalCodeRequired": "PLZ erforderlich",
+        "cityRequired": "Ort erforderlich",
+        "advanceRequired": "Eine monatliche Nebenkostenvorauszahlung größer 0 ist Pflicht."
+      },
+      "fields": {
+        "unit": "Wohnung",
+        "kind": "Art des Vertrags",
+        "start": "Vertragsbeginn",
+        "end": "Vertragsende",
+        "deposit": "Kaution",
+        "depositHint": "Vereinbarte Kaution. 0 = keine Kaution.",
+        "residents": "Bewohner",
+        "coldRent": "Kaltmiete",
+        "coldRentEuros": "Kaltmiete",
+        "advanceEuros": "Nebenkostenvorauszahlung",
+        "reductionReason": "Begründung Reduktion",
+        "reductionReasonHint": "Optional: Begründung, falls dieser Mietsatz eine einvernehmlich vereinbarte Reduktion gegenüber dem Vorgänger ist (z. B. „Sanierung Q1/2025“).",
+        "accountHolder": "Kontoinhaber",
+        "notes": "Notizen",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "moveIn": "Einzug",
+        "moveOut": "Auszug",
+        "isContractParty": "Vertragspartner",
+        "bankAccount": "Bankverbindung",
+        "validFrom": "Gültig ab",
+        "validFromContractStart": "Gültig ab (Vertragsbeginn)",
+        "validTo": "Gültig bis",
+        "iban": "IBAN",
+        "bic": "BIC",
+        "sepaEnabled": "SEPA-Lastschriftmandat erfassen",
+        "mandateReference": "SEPA-Mandatsreferenz",
+        "mandateSignedAt": "Datum der Mandatserteilung",
+        "address": "Abweichende Anschrift",
+        "addressStreet": "Straße und Hausnummer",
+        "addressStreetPlaceholder": "z. B. Musterstraße 12",
+        "addressPostalCode": "PLZ",
+        "addressCity": "Ort"
+      },
+      "addResident": "Bewohner hinzufügen",
+      "editResident": "Bewohner bearbeiten",
+      "removeResident": "Bewohner {index} entfernen",
+      "confirmRemoveResident": "Bewohner aus Vertrag entfernen?",
+      "confirmRemoveRent": "Mietsatz entfernen?",
+      "confirmRemoveBankAccount": "Bankverbindung entfernen?",
+      "residentIndex": "Bewohner {index}",
+      "residentsEmptyHint": "Es muss mindestens ein Bewohner angelegt werden.",
+      "residentsHelp": "Mindestens ein Bewohner muss als Vertragspartner geführt sein. Vertragspartner müssen den gesamten Vertragszeitraum lückenlos abdecken – bei Wechsel können sich mehrere Vertragspartner nahtlos ablösen.\n\nEinzug und Auszug liegen innerhalb des Vertragszeitraums. Ohne Einzug gilt der Vertragsbeginn, ohne Auszug das Vertragsende.",
+      "active": "aktiv",
+      "lastResident": "zuletzt",
+      "openEnded": "unbefristet",
+      "rentsTitle": "Mietsätze",
+      "rentsHelp": "Mietsätze decken den gesamten Vertragszeitraum lückenlos ab. Der erste Mietsatz beginnt am Vertragsbeginn, der letzte endet am Vertragsende.\n\nZeiträume dürfen sich nicht überlappen – Folgemietsätze starten am Tag nach dem Ende des vorherigen.\n\nOhne Startdatum gilt ein Mietsatz ab Vertragsbeginn, ohne Enddatum bis zum Vertragsende.",
+      "addRent": "Mietsatz hinzufügen",
+      "editRent": "Mietsatz bearbeiten",
+      "removeRent": "Mietsatz {index} entfernen",
+      "rentIndex": "Mietsatz {index}",
+      "rentsEmptyHint": "Es muss mindestens ein Mietsatz angelegt werden, der den Vertragszeitraum lückenlos abdeckt.",
+      "rentCurrent": "aktuell",
+      "lastRent": "zuletzt",
+      "bankAccountsEmptyHint": "Bankverbindungen sind optional und können bei Bedarf hinterlegt werden.",
+      "bankAccountsHelp": "Bankverbindungen sind optional. Es können mehrere Einträge mit unterschiedlichen Gültigkeitszeiträumen erfasst werden, z. B. bei einem Bankwechsel.\n\nZeiträume dürfen sich nicht überlappen – zu jedem Zeitpunkt darf nur eine Bankverbindung aktiv sein.\n\nOhne Startdatum gilt eine Bankverbindung ab Vertragsbeginn, ohne Enddatum bis zum Vertragsende.\n\nFür Lastschrifteinzug zusätzlich Mandatsreferenz und Datum der Mandatserteilung hinterlegen.",
+      "addBankAccount": "Bankverbindung hinzufügen",
+      "editBankAccount": "Bankverbindung bearbeiten",
+      "removeBankAccount": "Bankverbindung {index} entfernen",
+      "bankAccountIndex": "Bankverbindung {index}",
+      "bankAccountCurrent": "aktuell",
+      "lastBankAccount": "zuletzt",
+      "bankNameHint": "Bank: {name}",
+      "mandateBadge": "SEPA-Mandat",
+      "addressesEmptyHint": "Ohne Eintrag wird die Wohnungsadresse als Postanschrift verwendet. Tragen Sie nur dann eine abweichende Anschrift ein, wenn die Post für einen Zeitraum woandershin gehen soll.",
+      "addressesHelp": "Abweichende Anschriften sind optional. Standardmäßig gilt die Wohnungsadresse als Postanschrift des Mieters – solange für einen Zeitraum kein Eintrag hinterlegt ist, wird automatisch darauf zurückgegriffen.\n\nEinträge sind sinnvoll, wenn der Mieter noch nicht eingezogen oder schon ausgezogen ist, oder wenn z. B. die Eltern Vertragspartner sind und die Post an deren Adresse gehen soll.\n\nMehrere Einträge mit unterschiedlichen Gültigkeitszeiträumen sind möglich; Zeiträume dürfen sich nicht überlappen. Ohne Startdatum gilt eine Anschrift ab Vertragsbeginn, ohne Enddatum bis zum Vertragsende.",
+      "addAddress": "Abweichende Anschrift hinzufügen",
+      "editAddress": "Abweichende Anschrift bearbeiten",
+      "removeAddress": "Abweichende Anschrift {index} entfernen",
+      "confirmRemoveAddress": "Abweichende Anschrift entfernen?",
+      "addressIndex": "Anschrift {index}",
+      "addressCurrent": "aktuell",
+      "lastAddress": "zuletzt"
+    },
+    "reading": {
+      "createTitle": "Zählerstand erfassen",
+      "editTitle": "Zählerstand bearbeiten",
+      "confirmDelete": "Zählerstand löschen?",
+      "confirmDeleteMessage": "Soll der Zählerstand vom {date} wirklich gelöscht werden?",
+      "olderDateWarningTitle": "Datum liegt vor letzter Ablesung",
+      "olderDateWarningDescription": "Das eingegebene Datum liegt vor der zuletzt erfassten Ablesung am {date}. Bitte prüfen Sie, ob das beabsichtigt ist.",
+      "fields": {
+        "value": "Zählerstand",
+        "valueWithUnit": "Zählerstand ({unit})",
+        "estimatedHint": "Geschätzter Wert (z. B. kein Zugang zur Wohnung)",
+        "readBy": "Abgelesen von",
+        "note": "Notiz"
+      },
+      "readBy": {
+        "landlord": "Vermieter",
+        "tenant": "Mieter",
+        "utility": "Versorger",
+        "metering_service": "Messdienstleister",
+        "property_management": "Hausverwaltung"
+      },
+      "tabs": {
+        "configuration": "Konfiguration",
+        "readings": "Zählerstände"
+      }
+    },
+    "dashboard": {
+      "title": "Übersicht",
+      "stats": {
+        "buildings": "Gebäude",
+        "units": "Wohnungen",
+        "tenants": "Mieter",
+        "openStatements": "Offene Abrechnungen"
+      },
+      "quickstart": {
+        "title": "Schnellstart",
+        "description": "Häufige Aufgaben direkt aus der Übersicht starten.",
+        "newStatement": "Neue Abrechnung erstellen",
+        "recordCost": "Kostenrechnung erfassen",
+        "recordReading": "Zählerstand eintragen",
+        "recordPayment": "Zahlung erfassen"
+      }
+    },
+    "settings": {
+      "password": {
+        "title": "Passwort ändern",
+        "description": "Ändern Sie das Passwort Ihres Anmelde-Kontos. Nach dem Speichern bleibt die aktuelle Sitzung angemeldet.",
+        "fields": {
+          "current": "Aktuelles Passwort",
+          "new": "Neues Passwort",
+          "newDescription": "Mindestens {min} Zeichen.",
+          "confirm": "Neues Passwort wiederholen"
+        },
+        "validation": {
+          "currentRequired": "Bitte geben Sie Ihr aktuelles Passwort ein.",
+          "tooShort": "Das neue Passwort muss mindestens {min} Zeichen lang sein.",
+          "mustDiffer": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
+          "confirmMismatch": "Die Wiederholung stimmt nicht mit dem neuen Passwort überein."
+        },
+        "saveSuccess": "Passwort geändert."
+      },
+      "sender": {
+        "title": "Absenderdaten",
+        "description": "Diese Angaben erscheinen im Briefkopf und im Footer Ihrer Nebenkostenabrechnungen.",
+        "saveSuccess": "Absenderdaten gespeichert.",
+        "sections": {
+          "contact": "Kontaktdaten",
+          "bank": "Bankdaten"
+        },
+        "fields": {
+          "name": "Name",
+          "namePlaceholder": "z. B. Max Mustermann oder Mustermann Hausverwaltung",
+          "addressStreet": "Straße und Hausnummer",
+          "addressStreetPlaceholder": "z. B. Musterstraße 12",
+          "addressPostalCode": "PLZ",
+          "addressCity": "Ort",
+          "phone": "Telefon",
+          "phonePlaceholder": "z. B. 0201 1234567",
+          "fax": "Telefax",
+          "faxPlaceholder": "z. B. 0201 1234568",
+          "email": "E-Mail",
+          "emailPlaceholder": "z. B. post@beispiel.de",
+          "bankName": "Bank",
+          "bankNamePlaceholder": "z. B. Volksbank Musterstadt",
+          "bankIban": "IBAN",
+          "bankIbanPlaceholder": "z. B. DE89 3704 0044 0532 0130 00",
+          "bankBic": "BIC",
+          "bankBicPlaceholder": "z. B. COBADEFFXXX",
+          "useLogo": "Logo im Briefkopf verwenden",
+          "useLogoDescription": "Wenn aktiv, wird das hochgeladene Logo verwendet. Ohne hochgeladenes Logo wird das App-Logo eingesetzt."
+        },
+        "validation": {
+          "emailFormat": "Bitte eine gültige E-Mail-Adresse angeben.",
+          "invalidIban": "Bitte eine gültige IBAN angeben."
+        },
+        "logo": {
+          "title": "Firmenlogo",
+          "description": "PNG, JPEG, WebP oder SVG, maximal 2 MB. Empfohlen: ca. 600 × 200 px.",
+          "current": "Aktuelles Logo",
+          "fallback": "Kein eigenes Logo hochgeladen – das App-Logo wird verwendet.",
+          "uploadAction": "Logo hochladen",
+          "replaceAction": "Logo ersetzen",
+          "removeAction": "Logo entfernen",
+          "pendingHint": "Die Änderung wird erst beim Speichern übernommen.",
+          "previewLoading": "Vorschau wird erstellt …",
+          "previewError": "Die Vorschau konnte nicht erstellt werden."
+        }
+      }
+    }
+  },
+  "meters": {
+    "types": {
+      "electricity": "Strom",
+      "water_cold": "Kaltwasser",
+      "water_hot": "Warmwasser",
+      "gas": "Gas",
+      "heat_meter": "Wärmemengenzähler",
+      "heat_cost_allocator": "Heizkostenverteiler"
+    },
+    "roles": {
+      "main": "Hauptzähler",
+      "unit": "Wohnungszähler",
+      "sub": "Unterzähler",
+      "common": "Allgemeinzähler",
+      "virtual_difference": "Differenzzähler (virtuell)"
+    },
+    "measurementUnits": {
+      "m3": "m³",
+      "kwh": "kWh",
+      "units": "Einheiten"
+    }
+  },
+  "tenants": {
+    "kinds": {
+      "private": "Privater Mieter",
+      "commercial": "Gewerblicher Mieter",
+      "owner": "Selbstnutzung"
+    }
+  },
+  "costs": {
+    "allocations": {
+      "perLivingArea": "Wohnfläche",
+      "perHeatingArea": "Heizfläche",
+      "perPerson": "Personen",
+      "perUnit": "Wohnung",
+      "perConsumptionM3": "Verbrauch (m³)",
+      "perConsumptionKwh": "Verbrauch (kWh)",
+      "heizkostenV": "Heizkostenverordnung",
+      "fixed": "fix"
+    },
+    "allocationsBy": {
+      "perLivingArea": "nach Wohn-/Nutzfläche",
+      "perHeatingArea": "nach Heizfläche",
+      "perPerson": "nach Personen",
+      "perUnit": "nach Wohnung",
+      "perConsumptionM3": "nach Verbrauch (m³)",
+      "perConsumptionKwh": "nach Verbrauch (kWh)",
+      "heizkostenV": "nach Heizkostenverordnung",
+      "fixed": "fix"
+    },
+    "units": {
+      "person": "{count, plural, one {Person} other {Personen}}"
+    },
+    "allocationGroups": {
+      "byShare": "Nach Anteil",
+      "byConsumption": "Nach Verbrauch",
+      "other": "Sonstige"
+    },
+    "categories": {
+      "operating": "Betriebskosten",
+      "heating": "Heizkosten"
+    }
+  },
+  "statements": {
+    "pdf": {
+      "settlementOverview": "Übersicht der umgelegten Kosten",
+      "settlementBalance": "Abrechnungssaldo",
+      "draftWatermark": "ENTWURF",
+      "correctionNote": "Diese Abrechnung ersetzt die Abrechnung Nr. {reference} und tritt vollständig an deren Stelle.",
+      "documentType": "Nebenkostenabrechnung",
+      "subject": "Ihre Nebenkostenabrechnung",
+      "subjectPeriod": "für den Abrechnungszeitraum {start} – {end}",
+      "subjectUnit": "Wohnung {unit}, {address}",
+      "introPartial": "Da Ihr Mietverhältnis nicht den gesamten Abrechnungszeitraum umfasst, wurden die Kosten anteilig für Ihre Mietzeit berücksichtigt.",
+      "metaTable": {
+        "reference": "Abrechnungs-Nr.",
+        "unit": "Wohnung",
+        "unitArea": "Wohnfläche",
+        "buildingArea": "Gesamtfläche Haus",
+        "period": "Abrechnung",
+        "periodDays": "Abrechnungstage",
+        "tenantPeriod": "Nutzung",
+        "tenantPeriodDays": "Nutzungstage",
+        "areaSqm": "{value} m²"
+      },
+      "appendixHint": "Die ausführliche Aufstellung der umgelegten Kosten und alle Details finden Sie auf den folgenden Seiten.",
+      "appendixDetail": "Betriebskosten",
+      "appendixConsumption": "Verbrauchsdetails",
+      "appendixHeating": "Heizkostenabrechnung",
+      "appendixPayments": "Zahlungseingänge",
+      "appendixOccupancy": "Belegung",
+      "appendixTaxableLabor": "Steuerlich begünstigte Lohnkosten nach § 35a EStG",
+      "summary": {
+        "operatingCosts": "Betriebskosten",
+        "heatingCosts": "Heizkosten",
+        "totalCosts": "Summe umgelegter Kosten",
+        "advances": "Geleistete Vorauszahlungen"
+      },
+      "paymentInfo": {
+        "transferDebit": "Bitte überweisen Sie den Nachzahlungsbetrag innerhalb von 14 Tagen auf unser Konto{variant, select, iban { IBAN {iban}} ibanBank { IBAN {iban} ({bankName})} ibanBic { IBAN {iban} (BIC: {bic})} ibanBankBic { IBAN {iban} ({bankName}, BIC: {bic})} other {}}.",
+        "transferRefund": "Wir überweisen den Rückzahlungsbetrag auf Ihr hinterlegtes Konto.",
+        "transferRefundNoAccount": "Bitte teilen Sie uns Ihre aktuelle Bankverbindung mit, damit wir Ihnen den Rückzahlungsbetrag überweisen können.",
+        "sepaDebit": "Der sich aus dieser Abrechnung ergebende Nachzahlungsbetrag wird per SEPA-Lastschrift von Ihrem Konto eingezogen.",
+        "sepaRefund": "Der Rückzahlungsbetrag wird auf das uns vorliegende Konto überwiesen.",
+        "balanced": "Vorauszahlungen und tatsächliche Kosten gleichen sich aus. Es ist keine Zahlung erforderlich."
+      },
+      "advanceAdjustment": "Auf Basis der Werte aus dieser Nebenkostenabrechnung beträgt Ihre monatliche Zahlung ab dem **{validFrom}** insgesamt **{total}** ({baseRent} Kaltmiete + {advance} Nebenkostenvorauszahlung). Bitte passen Sie Ihren Dauerauftrag entsprechend an.",
+      "advanceAdjustmentSepa": "Auf Basis der Werte aus dieser Nebenkostenabrechnung beträgt Ihre monatliche Zahlung ab dem **{validFrom}** insgesamt **{total}** ({baseRent} Kaltmiete + {advance} Nebenkostenvorauszahlung). Der Betrag wird automatisch per SEPA-Lastschrift eingezogen.",
+      "advanceAdjustmentWithTariffsIntro": "Die monatliche Vorauszahlung wurde auf Basis der aktuellen Jahreskosten unter Berücksichtigung bereits bekannter Preisänderungen neu berechnet. {count, plural, =1 {Dies betrifft {positions}.} other {Dies betrifft insbesondere {positions}.}}",
+      "advanceAdjustmentWithTariffsClosing": "Ab dem **{validFrom}** beträgt Ihre monatliche Zahlung insgesamt **{total}** ({baseRent} Kaltmiete + {advance} Nebenkostenvorauszahlung). Bitte passen Sie Ihren Dauerauftrag entsprechend an.",
+      "advanceAdjustmentWithTariffsClosingSepa": "Ab dem **{validFrom}** beträgt Ihre monatliche Zahlung insgesamt **{total}** ({baseRent} Kaltmiete + {advance} Nebenkostenvorauszahlung). Der Betrag wird automatisch per SEPA-Lastschrift eingezogen.",
+      "payments": {
+        "title": "Geleistete Vorauszahlungen",
+        "intro": "Im Abrechnungszeitraum haben Sie für die Betriebs- und Heizkosten folgende Vorauszahlungen geleistet:",
+        "empty": "Im Abrechnungszeitraum wurden keine Vorauszahlungen für Betriebs- und Heizkosten erfasst.",
+        "columnDate": "Datum",
+        "columnReference": "Verwendungszweck",
+        "columnPurpose": "Tilgung",
+        "columnAmount": "Betrag",
+        "purposeNone": "—",
+        "flagReversal": "(Storno)",
+        "flagReservation": "(Vorbehalt)",
+        "total": "Summe Vorauszahlungen"
+      },
+      "categories": {
+        "base_rent": "Kaltmiete",
+        "advance": "NK-Vorauszahlung",
+        "fees": "Gebühren",
+        "deposit": "Kaution",
+        "settlement": "Abrechnungs-Saldo",
+        "correction": "Korrektur"
+      },
+      "pagination": "Seite {page} von {total}",
+      "paginationLabel": "Seite",
+      "paginationOf": "von",
+      "statementLabel": "Abrechnung",
+      "appendixLabel": "Anhang",
+      "senderLine": "{name} – {address}",
+      "senderContact": {
+        "phone": "Tel. {value}",
+        "fax": "Fax {value}"
+      },
+      "footerAppendix": "{sender} – {statementLabel} {number} – {appendixLabel}",
+      "balanceCredit": "Der Rückzahlungsbetrag wird zeitnah auf Ihr hinterlegtes Konto überwiesen.",
+      "balanceDebit": "Bitte überweisen Sie den Nachzahlungsbetrag innerhalb von 30 Tagen.",
+      "balanceZero": "Vorauszahlungen und tatsächliche Kosten gleichen sich aus.",
+      "balanceSettle": "Nachzahlung",
+      "balanceRefund": "Rückzahlung",
+      "balanceBalanced": "Ausgeglichen",
+      "totalPassThrough": "Summe umgelegte Kosten",
+      "totalAdvancesMade": "Geleistete Vorauszahlungen",
+      "costTable": {
+        "costTypeAllocation": "Kostenart und\nUmlageschlüssel",
+        "totalCosts": "Gesamt-\nkosten",
+        "totalBase": "Gesamt",
+        "bemessung": "Ihre Bemessung/\nGesamtbemessung",
+        "tage": "Tage anteilig/\nTage gesamt",
+        "yourShare": "Ihr Anteil",
+        "quota": "Quote",
+        "amount": "Betrag",
+        "yourCosts": "Ihre\nKosten",
+        "ofTotal": "von {amount}",
+        "total": "Summe umgelegter Betriebskosten",
+        "operatorDivide": "÷",
+        "operatorMultiply": "×",
+        "operatorEquals": "=",
+        "personDaysNote": "PT = Personentage. Berechnung siehe Tabelle „Belegung“."
+      },
+      "heating": {
+        "breakdown": {
+          "title": "Zusammensetzung der Heizkosten",
+          "position": "Kostenposition",
+          "amount": "Betrag",
+          "co2LandlordShare": "CO₂-Kostenanteil Vermieter",
+          "total": "Summe"
+        },
+        "co2": {
+          "title": "CO₂-Kostenaufteilung",
+          "totalCost": "CO₂-Kosten gesamt",
+          "emissions": "CO₂-Ausstoß Gebäude",
+          "tier": "Einstufung des Gebäudes",
+          "tierBelow": "< {max} kg/m²a",
+          "tierRange": "{min} bis < {max} kg/m²a",
+          "tierAbove": "≥ {min} kg/m²a",
+          "sharePair": "Anteil Mieter/Vermieter",
+          "landlordDeduction": "Abzug Vermieter"
+        },
+        "distributionPerUnit": "Verteilung pro Wohnung",
+        "unit": "Wohnung",
+        "heatingArea": "Heizfläche",
+        "targetUnitLabel": "{unit} (Ihre Wohnung)",
+        "otherUnitsPlural": "Übrige Wohnungen ({count})",
+        "consumptionKwh": "Verbrauch (kWh)",
+        "consumptionUnits": "Bewertungs-\npunkte",
+        "consumptionUnitsRaw": "Verbrauchs-\neinheiten",
+        "consumptionShareHeader": "{percent} % nach\nVerbrauch",
+        "basicShareHeader": "{percent} % nach\nFläche",
+        "total": "Summe",
+        "totalHouse": "Haus gesamt",
+        "hotWater": {
+          "title": "Warmwasser",
+          "consumptionM3": "Warmwasser (m³)",
+          "consumptionFallbackArea": "Mangels Warmwasserzählern wurde auch der Verbrauchsanteil des Warmwassers nach Wohnfläche verteilt.",
+          "method": {
+            "boiler_meter": "Der Warmwasseranteil wurde nach § 9 Abs. 2 HeizkostenV abgespalten: am Warmwasserzähler gemessene {heat} kWh von insgesamt {total} kWh = {share} % der Heizkosten ({pot}).",
+            "estimated": "Der Warmwasseranteil wurde nach der Schätzformel des § 9 Abs. 2 HeizkostenV ermittelt: {heat} kWh von insgesamt {total} kWh = {share} % der Heizkosten ({pot})."
+          }
+        },
+        "consumptionDistributionHeatingArea": "Verbrauchsanteil ersatzweise nach Heizfläche verteilt (keine bzw. Differenz von 0 bei den Verbrauchsmessern).",
+        "heatingAreaNote": "Die Heizfläche umfasst ausschließlich die beheizten Räume und kann von der Wohnfläche abweichen.",
+        "prorationNoteLinearBase": "Da das Mietverhältnis nicht den gesamten Abrechnungszeitraum umfasste, wurde der Grundkostenanteil der Heizkosten zeitanteilig nach Nutzungstagen verteilt.",
+        "prorationNoteDegreeDaysBase": "Da das Mietverhältnis nicht den gesamten Abrechnungszeitraum umfasste, wurde der Grundkostenanteil der Heizkosten zeitanteilig anhand der Gradtagszahlen verteilt: {months}.",
+        "prorationNoteLinearAll": "Da das Mietverhältnis nicht den gesamten Abrechnungszeitraum umfasste und kein wohnungsbezogener Verbrauch erfasst wurde, wurden die gesamten Heizkosten zeitanteilig nach Nutzungstagen verteilt.",
+        "prorationNoteDegreeDaysAll": "Da das Mietverhältnis nicht den gesamten Abrechnungszeitraum umfasste und kein wohnungsbezogener Verbrauch erfasst wurde, wurden die gesamten Heizkosten zeitanteilig anhand der Gradtagszahlen verteilt: {months}.",
+        "perMeterHeading": "Verbrauch pro Zähler",
+        "perMeterHeadingHkv": "Verbrauch pro Heizkostenverteiler",
+        "perMeterMeter": "Zähler",
+        "perMeterSerial": "Zählernummer",
+        "perMeterDelta": "Anzeigewert",
+        "perMeterKTotal": "KGesamt",
+        "perMeterWeighted": "Verbrauchs-\neinheiten",
+        "perMeterEmpty": "Keine Verbrauchsmessungen vorhanden.",
+        "valuationPointsNote": "Bewertungspunkte = Verbrauchseinheiten ÷ 1.000. Die Skalierung erleichtert das Lesen großer Verbrauchssummen und beeinflusst die Kostenverteilung nicht."
+      },
+      "water": {
+        "title": "Wasserverbrauch im Detail",
+        "totalConsumption": "Gesamtverbrauch laut Hauptzähler:",
+        "unit": "Wohnung",
+        "method": "Ermittlung",
+        "consumption": "Verbrauch (m³)",
+        "share": "Anteil",
+        "difference": "Differenz",
+        "measured": "gemessen",
+        "wasteWaterHint": "Hinweis: Der Schmutzwasseranteil wird im gleichen Prozentverhältnis wie der Frischwasserverbrauch umgelegt.",
+        "wasteWaterNote": "Schmutzwasserverbrauch entspricht dem Frischwasserverbrauch.",
+        "calculationNote": "Frischwasserverbrauch ermittelt durch:"
+      },
+      "occupancy": {
+        "intro": "Personenbezogene Kostenarten werden anhand der folgenden Personentage je Wohnung umgelegt.",
+        "personSingular": "1 Person",
+        "personPlural": "{count} Personen",
+        "unit": "Wohnung",
+        "resident": "Bewohner",
+        "span": "Zeitraum",
+        "personDays": "Personentage",
+        "targetUnitLabel": "{unit} (Ihre Wohnung)",
+        "otherUnitsPlural": "Übrige Wohnungen ({count})",
+        "totalPersonDays": "Summe Personentage",
+        "landlordDays": "Leerstand",
+        "landlordFootnote": "Leerstand wird pro Wohnung fiktiv mit einer Person zu Lasten des Vermieters gerechnet."
+      },
+      "taxableLabor": {
+        "title": "Steuerlich begünstigte Lohnkosten nach § 35a EStG",
+        "intro": "Folgende auf Sie umgelegte Lohnkostenanteile können Sie in Ihrer Einkommensteuererklärung gemäß § 35a EStG geltend machen. Die Beträge sind anteilig nach Ihrem Anteil an der jeweiligen Kostenart berechnet.",
+        "craftsman": "Handwerkerleistungen (§ 35a Abs. 3 EStG)",
+        "householdService": "Haushaltsnahe Dienstleistungen (§ 35a Abs. 2 EStG)",
+        "position": "Kostenart",
+        "tenantAmount": "Ihr Lohnkostenanteil",
+        "subtotal": "Summe",
+        "disclaimer": "Diese Aufstellung dient als Nachweis gegenüber dem Finanzamt. Die zugrundeliegenden Originalrechnungen sind beim Vermieter hinterlegt und können auf Wunsch eingesehen werden."
+      }
+    }
+  }
+}
