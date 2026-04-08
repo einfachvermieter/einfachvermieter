@@ -1,0 +1,41 @@
+{
+  "name": "@einfachvermieter/db",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "typecheck": "tsc --noEmit",
+    "migration:create": "tsx scripts/migration.ts create",
+    "migration:up": "tsx scripts/migration.ts up",
+    "schema:fresh": "tsx scripts/schema.ts fresh",
+    "seed:minimal": "tsx scripts/seed/minimal.ts",
+    "seed:demo": "tsx scripts/seed/demo.ts",
+    "seed:local": "tsx scripts/seed/local.ts",
+    "check:consistency": "tsx scripts/check-consistency.ts"
+  },
+  "dependencies": {
+    "@einfachvermieter/shared": "*",
+    "@mikro-orm/core": "^7.0.6",
+    "@mikro-orm/libsql": "^7.0.6",
+    "@mikro-orm/mariadb": "^7.0.6",
+    "@mikro-orm/migrations": "^7.0.6",
+    "@mikro-orm/postgresql": "^7.0.6",
+    "argon2": "^0.44.0"
+  },
+  "devDependencies": {
+    "@mikro-orm/cli": "^7.0.6",
+    "@types/node": "^24.12.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
