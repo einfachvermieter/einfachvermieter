@@ -1,0 +1,51 @@
+{
+  "name": "@einfachvermieter/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nest build",
+    "dev": "node scripts/dev.mjs",
+    "start": "node dist/main.js",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@einfachvermieter/db": "*",
+    "@einfachvermieter/i18n": "*",
+    "@einfachvermieter/pdf": "*",
+    "@einfachvermieter/shared": "*",
+    "@mikro-orm/core": "^7.0.6",
+    "@mikro-orm/nestjs": "^7.0.1",
+    "@nestjs/common": "^11.1.17",
+    "@nestjs/core": "^11.1.17",
+    "@nestjs/platform-express": "^11.1.17",
+    "@nestjs/serve-static": "^5.0.4",
+    "@nestjs/throttler": "^6.5.0",
+    "@react-pdf/renderer": "^4.3.2",
+    "argon2": "^0.44.0",
+    "cookie-parser": "^1.4.7",
+    "culori": "^4.0.2",
+    "dompurify": "^3.3.3",
+    "helmet": "^8.1.0",
+    "jsdom": "^29.0.1",
+    "react": "^19.2.4",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.16",
+    "@nestjs/testing": "^11.1.17",
+    "@swc/core": "^1.15.21",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/culori": "^4.0.1",
+    "@types/express": "^5.0.6",
+    "@types/jsdom": "^28.0.1",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "typescript": "^6.0.2",
+    "unplugin-swc": "^1.5.9",
+    "vitest": "^4.1.2"
+  }
+}
