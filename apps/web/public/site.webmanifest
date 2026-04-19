@@ -1,0 +1,14 @@
+{
+  "name": "EinfachVermieter",
+  "short_name": "EinfachVermieter",
+  "icons": [
+    { "src": "/logo_16x16.png", "sizes": "16x16", "type": "image/png" },
+    { "src": "/logo_32x32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/logo_48x48.png", "sizes": "48x48", "type": "image/png" },
+    { "src": "/logo_64x64.png", "sizes": "64x64", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "lang": "de"
+}

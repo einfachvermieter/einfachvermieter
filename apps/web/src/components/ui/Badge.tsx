@@ -1,0 +1,62 @@
+import { cva, type VariantProps } from "class-variance-authority";
+import { Slot } from "radix-ui";
+import type { ComponentProps } from "react";
+import { cn } from "@/lib/utils";
+
+const badgeVariants = cva(
+  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-semibold whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
+        secondary:
+          "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+        destructive:
+          "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
+        outline:
+          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
+        ghost:
+          "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
+        link: "text-primary underline-offset-4 hover:underline",
+        lightBlue:
+          "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400",
+        darkBlue: "bg-sky-700 text-sky-50 dark:bg-sky-800 dark:text-sky-100",
+        lightGreen:
+          "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
+        darkGreen:
+          "bg-teal-700 text-teal-50 dark:bg-teal-800 dark:text-teal-100",
+        lightYellow:
+          "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+        darkYellow:
+          "bg-amber-600 text-amber-50 dark:bg-amber-700 dark:text-amber-100",
+        lightRed:
+          "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
+        darkRed: "bg-rose-700 text-rose-50 dark:bg-rose-800 dark:text-rose-100",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  },
+);
+
+const Badge = ({
+  className,
+  variant = "default",
+  asChild = false,
+  ...props
+}: ComponentProps<"span"> &
+  VariantProps<typeof badgeVariants> & { asChild?: boolean }) => {
+  const Comp = asChild ? Slot.Root : "span";
+
+  return (
+    <Comp
+      data-slot="badge"
+      data-variant={variant}
+      className={cn(badgeVariants({ variant }), className)}
+      {...props}
+    />
+  );
+};
+
+export { Badge, badgeVariants };
