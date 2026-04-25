@@ -1,0 +1,47 @@
+import type { PasswordChangeDto } from "@einfachvermieter/shared";
+import { RiLockPasswordLine } from "@remixicon/react";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Description } from "@/components/common/Description";
+import { Heading1 } from "@/components/common/Heading1";
+import { Spinner } from "@/components/common/Spinner";
+import { changePassword, passwordPolicyQueryOptions } from "@/lib/auth";
+import { t } from "@/lib/i18n";
+import { useGoBack } from "@/lib/useGoBack";
+import { PasswordChangeForm } from "./PasswordChangeForm";
+
+export const PasswordSettingsPage = () => {
+  const { data: policy } = useQuery(passwordPolicyQueryOptions);
+
+  const goHome = useGoBack("/");
+
+  // Fehler laufen über das Form-Error-Handling (inline am Feld), daher
+  // hier nur der Erfolgs-Toast, kein useCrudMutation nötig (keine
+  // Query-Invalidierung, das Passwort liegt in keiner Query).
+  const handleSubmit = async (values: PasswordChangeDto) => {
+    await changePassword(values);
+    toast.success(t("ui.settings.password.saveSuccess"));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Heading1 icon={<RiLockPasswordLine />}>
+          {t("ui.settings.password.title")}
+        </Heading1>
+        <Description>{t("ui.settings.password.description")}</Description>
+      </div>
+      {policy ? (
+        <PasswordChangeForm
+          policy={policy}
+          onSubmit={handleSubmit}
+          onCancel={goHome}
+        />
+      ) : (
+        <div className="flex justify-center py-6">
+          <Spinner className="size-6 text-muted-foreground" />
+        </div>
+      )}
+    </div>
+  );
+};
