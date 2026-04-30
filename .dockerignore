@@ -1,0 +1,42 @@
+# Abhaengigkeiten und Build-Artefakte werden im Image neu erzeugt
+node_modules
+**/node_modules
+dist
+**/dist
+.turbo
+**/.turbo
+
+# Versionierung und Editor
+.git
+.gitignore
+.vscode
+.idea
+
+# Secrets und lokale Konfiguration (nie ins Image)
+.env
+.env.*
+!.env.example
+
+# Logs, Coverage, Caches
+*.log
+npm-debug.log*
+coverage
+**/coverage
+.DS_Store
+
+# Lokale Daten (SQLite etc.)
+data
+*.db
+*.db-*
+
+# Generierte PDF-Assets (gespiegelt aus .gitignore): werden im Build frisch
+# erzeugt (Font-tnum-Freeze, Logo mit oklch->rgb). Host-Stand darf nicht
+# reinrutschen, sonst ueberspringt das idempotente Skript die Erzeugung.
+packages/pdf/assets/fonts/
+packages/pdf/assets/logo-pdf.svg
+
+# Doku, die fuer den Build irrelevant ist
+docs
+README.md
+
+tmp/

@@ -1,0 +1,54 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: einfachvermieter
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Einzige Daten-Wurzel (SQLite-DB, Uploads, Abrechnungs-PDFs).
+      - DATA_DIR=/data
+      # Standard: SQLite unter ${DATA_DIR}/einfachvermieter.db (kein DATABASE_URL noetig).
+      # Fuer Postgres/MariaDB die naechsten zwei Zeilen einkommentieren:
+      # - DB_DRIVER=postgres
+      # - DATABASE_URL=postgres://user:pass@db:5432/einfachvermieter
+      - WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:3000}
+      # Passwort-Richtlinie. Per Host-ENV/.env ueberschreibbar; Defaults bewusst
+      # lasch (lokal gehostet). Fuer exponierte Deployments verschaerfen.
+      - PASSWORD_MIN_LENGTH=${PASSWORD_MIN_LENGTH:-8}
+      - PASSWORD_REQUIRE_UPPERCASE=${PASSWORD_REQUIRE_UPPERCASE:-false}
+      - PASSWORD_REQUIRE_LOWERCASE=${PASSWORD_REQUIRE_LOWERCASE:-false}
+      - PASSWORD_REQUIRE_DIGIT=${PASSWORD_REQUIRE_DIGIT:-false}
+      - PASSWORD_REQUIRE_SPECIAL=${PASSWORD_REQUIRE_SPECIAL:-false}
+      # Optional: internen Port aendern (sonst per Port-Mapping oben verbiegen).
+      # - PORT=3000
+    volumes:
+      # Bind-Mount auf ZFS-Dataset. Pfad auf Host-System anpassen.
+      - /tank/docker/einfachvermieter/data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: einfachvermieter-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  caddy_data:
+  caddy_config:
