@@ -1,12 +1,98 @@
 # EinfachVermieter
 
-Software für private Vermieter: Immobilien, Mieter, Zählerstände und
+Software für private Vermieter: Immobilien, Mieter, Verträge, Zählerstände und
 Betriebskosten verwalten und daraus Nebenkostenabrechnungen als PDF erstellen.
 
-Das ganze ist aud einem privaten "Hobby" Projekt entstanden. Es ist
-gewachsen und es wird Zeit das ganze Mal irgendwie in ein richtiges
-ordentliches Repo zu überführen. (Und in diesem vielleicht später mal
-öffentlichen Repo auch ohne meine privaten Mieterdaten irgendwo in
-alten Commits).
+## Hintergrund
 
-Richtiges README folgt, sobald alles drüben ist.
+2022 haben wir ein Haus in der Familie übernommen und saniert, ein Teil davon
+ist vermietet. Einmal im Jahr steht seitdem eine Nebenkostenabrechnung an,
+inklusive HeizkostenV, CO2-Kostenaufteilung, etc.
+
+Anstatt ein paar Euro in eine kommerzielle Software zu investieren oder es einfach
+weiter mit Excel zu machen, habe ich mich als Programmierer lieber hingesetzt und
+monatelang eine eigene Software gebaut.
+
+Das Projekt war gar nicht so groß geplant. Aber da hatte ich unterschätzt, wie
+komplex das Thema doch ist. Ich hatte ein paar Repos und viel zu viele Dinge von
+uns hardcoded im Code oder irgendwo in der Git-History. Also habe ich mich mal
+hingesetzt und das ganze sauber in einem Mono-Repo zusammengeführt.
+
+Auch wenn die Software primär den Bedarf in unserem eigenen Haus abdeckt, habe
+ich inzwischen auch ein paar darüber hinausgehende Fälle bereits umgesetzt, und
+ich versuche, den Funktionsumfang künftig weiter auszubauen.
+
+## Funktionsumfang
+
+- Gebäude, Wohnungen und Mieter verwalten
+- Zahlungseingänge den Mieten und Nebenkosten-Vorauszahlungen zuordnen
+- Zählerstände: Wasser (mit Differenzzähler-Logik), Strom, Gas, Heizkostenverteiler
+- Betriebskosten mit verschiedenen Umlageschlüsseln (qm, Personen, pro Wohnung,
+  Verbrauch, HeizkostenV, fest)
+- Abrechnungen mit Live-PDF-Vorschau, finalisierbar und unveränderlich
+  (inkl. Storno-/Korrektur-Workflow)
+- Heizkosten nach HeizkostenV inkl. Warmwasser-Abspaltung und CO2-Kostenaufteilung
+- Optionales KI-Vorausfüllen von Lieferantenrechnungen (Mistral OCR)
+
+## Stack
+
+- Monorepo (Turborepo + npm workspaces)
+- **Backend:** NestJS 11 + MikroORM 7
+- **Datenbank:** SQLite/libsql (Default), PostgreSQL oder MariaDB
+- **Frontend:** React 19 + Vite + TanStack Query/Router/Table + Tailwind v4 + shadcn
+- **PDF:** React-PDF
+- **Auth:** Serverseitige Session im httpOnly-Cookie, Argon2id
+
+## Projektstruktur
+
+```text
+apps/
+  api/       NestJS Backend
+  web/       React Frontend
+packages/
+  db/        MikroORM EntitySchemas, Migrations, Seed-Profile
+  shared/    Zod-Schemas, Domain-Typen, reine Berechnungslogik
+  pdf/       React-PDF Komponenten
+  i18n/      Deutsche UI-Strings
+```
+
+## Setup (Development)
+
+Voraussetzungen: Node 24.11+ (siehe `.nvmrc`), npm 11+
+
+```bash
+nvm use
+npm install
+npm run setup            # Build-Schritte freigeben (.npmrc setzt ignore-scripts)
+cp .env.example .env     # Defaults reichen für lokale Entwicklung
+npm run db:reset:demo    # Schema + Daten (:minimal | :demo | :local)
+npm run dev              # Web :7272, API :7273
+```
+
+Login nach Demo-Seed: `demo@einfachvermieter.local` / `demo`.
+
+Ohne Demo-Daten (`:minimal`) führt beim ersten Start ein Assistent durch das
+Anlegen des Administrator-Kontos.
+
+## Deployment
+
+```bash
+docker compose up -d
+```
+
+Der Container legt die Datenbank an und wendet Migrationen beim Start an. Beim
+ersten Aufruf im Browser legt der Assistent das Administrator-Konto an.
+
+## Tests
+
+```bash
+npm test
+```
+
+Die Berechnungsmodule in `packages/shared` (Umlageschlüssel, HeizkostenV,
+CO2-Aufteilung, Differenzzähler, Zahlungszuordnung) sind unit-getestet,
+inklusive End-to-End-Szenario über eine komplette Abrechnungsperiode.
+
+## Lizenz
+
+Proprietär, siehe [LICENSE](LICENSE). OSS später mal.
