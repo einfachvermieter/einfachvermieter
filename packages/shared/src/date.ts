@@ -3,7 +3,11 @@
  */
 export const todayIso = (): string => new Date().toISOString().slice(0, 10);
 
-const pad2 = (value: number): string => value.toString().padStart(2, "0");
+/**
+ * Zahl zweistellig mit führender Null (für `YYYY-MM`-Keys)
+ */
+export const pad2 = (value: number): string =>
+  value.toString().padStart(2, "0");
 
 const pad4 = (value: number): string => value.toString().padStart(4, "0");
 
