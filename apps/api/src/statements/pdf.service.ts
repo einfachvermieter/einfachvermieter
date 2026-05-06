@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import {
   type OperatingCostStatement,
@@ -35,6 +36,22 @@ import { UnitsService } from "../units/units.service.js";
 import { StatementsService } from "./statements.service.js";
 
 const FAR_FUTURE = "9999-12-31";
+
+/**
+ * Bessere Fehlermeldung, falls Assets nicht gebaut wurden.
+ */
+const missingPdfAssets = [
+  appLogoPath,
+  geistNormalPath,
+  geistSemiboldPath,
+  geistTnumNormalPath,
+  geistTnumSemiboldPath,
+].filter((assetPath) => !existsSync(assetPath));
+if (missingPdfAssets.length > 0) {
+  throw new Error(
+    `PDF-Assets fehlen! Bitte \`npm run setup\` im Repo-Root ausführen. Fehlende Dateien:\n${missingPdfAssets.join("\n")}`,
+  );
+}
 
 // Modul-weite Font-Registrierung: react-pdf hält die Font-Registry global,
 // mehrfaches `Font.register` ist idempotent. Beim ersten Import des Services
