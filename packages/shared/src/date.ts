@@ -9,7 +9,11 @@ export const todayIso = (): string => new Date().toISOString().slice(0, 10);
 export const pad2 = (value: number): string =>
   value.toString().padStart(2, "0");
 
-const pad4 = (value: number): string => value.toString().padStart(4, "0");
+/**
+ * Zahl vierstellig mit führenden Nullen (für ISO-Jahresanteile)
+ */
+export const pad4 = (value: number): string =>
+  value.toString().padStart(4, "0");
 
 /**
  * Frühestes von mehreren ISO-Daten
