@@ -1738,6 +1738,7 @@
           "title": "Zusammensetzung der Heizkosten",
           "position": "Kostenposition",
           "amount": "Betrag",
+          "fuelTypeNote": "Energieträger: {fuel}",
           "co2LandlordShare": "CO₂-Kostenanteil Vermieter",
           "total": "Summe"
         },
@@ -1763,6 +1764,7 @@
         "consumptionShareHeader": "{percent} % nach\nVerbrauch",
         "basicShareHeader": "{percent} % nach\nFläche",
         "total": "Summe",
+        "landlordShare": "Vermieteranteil (Leerstand/Mieterwechsel)",
         "totalHouse": "Haus gesamt",
         "hotWater": {
           "title": "Warmwasser",
