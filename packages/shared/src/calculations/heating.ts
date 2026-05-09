@@ -409,6 +409,12 @@ export type HotWaterInput = {
   hotWaterVolumeM3: number | null;
   supplyTemperatureCelsius: number;
   unitHotWaterM3: Array<{ unitId: string; m3: number }>;
+
+  /**
+   * Warmwasserverbrauch der Ziel-Wohnung außerhalb der Mietzeit
+   * (Vor-/Nachmieter, Leerstand). Fällt als Kostenanteil auf den Vermieter.
+   */
+  landlordM3?: number;
 };
 
 /**
@@ -420,7 +426,10 @@ export type HotWaterInput = {
  *      automatisch aus dem Zähler-Delta.
  *    - Verteilung anhand der Zählerwerte: Ziel-Wohnung liest über die
  *      Mietzeit (Zwischenablesung), andere Wohnungen über die volle
- *      Statement-Periode.
+ *      Statement-Periode. Der Nenner enthält zusätzlich den Verbrauch der
+ *      Ziel-Wohnung außerhalb der Mietzeit (Vor-/Nachmieter, Leerstand);
+ *      dieser Anteil fällt auf den Vermieter und wird über das Statement
+ *      des anderen Mieters wieder eingesammelt.
  *
  * 2. **Grundkostenanteil** (1 − consumptionShareBps, typ. 30 %):
  *    - Topf = `totalHeatingCostsCents x (1 − consumptionFactor)` -
@@ -524,6 +533,7 @@ type HotWaterDistributionInput = {
   consumptionShareBps: number;
   units: UnitInfo[];
   unitHotWaterM3: Map<string, number>;
+  landlordM3: number;
   areaWeightsWithLandlord: number[];
   totalAreaDays: number;
   heatingAreaFor: (unit: UnitInfo) => number;
@@ -551,6 +561,7 @@ const distributeHotWater = (
     consumptionShareBps,
     units,
     unitHotWaterM3,
+    landlordM3,
     areaWeightsWithLandlord,
     totalAreaDays,
     heatingAreaFor,
@@ -559,13 +570,17 @@ const distributeHotWater = (
   const consumptionPortionCents = Math.round(potCents * consumptionFactor);
   const basicPortionCents = potCents - consumptionPortionCents;
 
-  const wwWeights = units.map((unit) => unitHotWaterM3.get(unit.id) ?? 0);
+  // Vermieter-Slot (letzte Position) = Warmwasserverbrauch der Ziel-Wohnung
+  // außerhalb der Mietzeit (Vor-/Nachmieter, Leerstand).
+  const wwWeights = [
+    ...units.map((unit) => unitHotWaterM3.get(unit.id) ?? 0),
+    landlordM3,
+  ];
   const totalWw = wwWeights.reduce((acc, value) => acc + value, 0);
 
   let consumptionDistributionMethod: "consumption" | "heating_area" =
     "consumption";
   let consumptionShares: number[];
-  let landlordConsumptionCostCents = 0;
 
   if (totalWw > 0) {
     consumptionShares = distributeCents(consumptionPortionCents, wwWeights);
@@ -575,8 +590,9 @@ const distributeHotWater = (
       totalAreaDays > 0
         ? distributeCents(consumptionPortionCents, areaWeightsWithLandlord)
         : [...units.map(() => 0), 0];
-    landlordConsumptionCostCents = consumptionShares.at(-1) ?? 0;
   }
+
+  const landlordConsumptionCostCents = consumptionShares.at(-1) ?? 0;
 
   const basicShares =
     totalAreaDays > 0
@@ -644,10 +660,41 @@ const computeCo2Deduction = (
 };
 
 /**
+ * Voll-Perioden-Verbrauch eines Ziel-Wohnungs-Zählers abzüglich des bereits
+ * dem Mieter zugerechneten Mietzeit-Anteils (gewichtet). Existieren nur
+ * Ablesungen innerhalb der Mietzeit (Zähler ab Einzug/bis Auszug), clampt
+ * `interpolateReading` und die Differenz bleibt 0.
+ */
+const residualTargetConsumption = (params: {
+  readings: ReadingPoint[];
+  weighted: number;
+  kTotal: number | null;
+  periodStart: string;
+  periodEnd: string;
+  intervalWeight?: (fromDate: string, toDate: string) => number;
+}): number => {
+  const { readings, weighted, kTotal, periodStart, periodEnd, intervalWeight } =
+    params;
+
+  const fullDelta = consumptionBetween(readings, periodStart, periodEnd, {
+    warnings: [],
+    intervalWeight,
+  });
+
+  const fullWeighted = kTotal === null ? fullDelta : fullDelta * kTotal;
+
+  return Math.max(0, fullWeighted - weighted);
+};
+
+/**
  * Liest den (gewichteten) Verbrauch je Zähler ab und aggregiert ihn pro
- * Wohnung. Ziel-Wohnung: nur Mieter-Zeitraum; andere Wohnungen: voller
- * Statement-Zeitraum (konsistenter Verteilungs-Nenner). HKV werden mit
- * `kTotal` gewichtet; WMZ liefern kWh direkt.
+ * Wohnung. Ziel-Wohnung: Mieter-Zeitraum als Zähler, zusätzlich volle
+ * Statement-Periode für den Verteilungs-Nenner. Die Differenz (Verbrauch
+ * von Vor-/Nachmieter bzw. Leerstand) fällt als `landlordConsumption` auf
+ * den Vermieter, damit die Summe über alle Statements einer Wohnung den
+ * Topf nicht übersteigt (Mieterwechsel-Fall). Andere Wohnungen: voller
+ * Statement-Zeitraum. HKV werden mit `kTotal` gewichtet; WMZ liefern kWh
+ * direkt.
  */
 const measureUnitConsumption = (params: {
   consumptionMeters: HeatingCalculationInput["consumptionMeters"];
@@ -664,6 +711,7 @@ const measureUnitConsumption = (params: {
   unitConsumption: Map<string, number>;
   perMeter: NonNullable<HeatingDetail["perMeter"]>;
   totalConsumption: number;
+  landlordConsumption: number;
 } => {
   const {
     consumptionMeters,
@@ -697,6 +745,7 @@ const measureUnitConsumption = (params: {
       : "heat_meter";
 
   const perMeter: NonNullable<HeatingDetail["perMeter"]> = [];
+  let landlordConsumption = 0;
 
   for (const { meter, readings } of consumptionMeters) {
     if (!meter.unitId) {
@@ -743,6 +792,17 @@ const measureUnitConsumption = (params: {
       weighted = delta;
     }
 
+    if (isTarget) {
+      landlordConsumption += residualTargetConsumption({
+        readings,
+        weighted,
+        kTotal,
+        periodStart,
+        periodEnd,
+        intervalWeight: consumptionIntervalWeight,
+      });
+    }
+
     const unitSum = unitConsumption.get(meter.unitId) ?? 0;
     unitConsumption.set(meter.unitId, unitSum + weighted);
     const unitForMeter = units.find((u) => u.id === meter.unitId);
@@ -759,12 +819,11 @@ const measureUnitConsumption = (params: {
     });
   }
 
-  const totalConsumption = [...unitConsumption.values()].reduce(
-    (acc, v) => acc + v,
-    0,
-  );
+  const totalConsumption =
+    [...unitConsumption.values()].reduce((acc, v) => acc + v, 0) +
+    landlordConsumption;
 
-  return { unitConsumption, perMeter, totalConsumption };
+  return { unitConsumption, perMeter, totalConsumption, landlordConsumption };
 };
 
 /**
@@ -827,6 +886,7 @@ const computeConsumptionShares = (params: {
   consumptionPortionCents: number;
   units: UnitInfo[];
   unitConsumption: Map<string, number>;
+  landlordConsumption: number;
   areaWeightsWithLandlord: number[];
   totalAreaDays: number;
   consumptionMeters: HeatingCalculationInput["consumptionMeters"];
@@ -841,6 +901,7 @@ const computeConsumptionShares = (params: {
     consumptionPortionCents,
     units,
     unitConsumption,
+    landlordConsumption,
     areaWeightsWithLandlord,
     totalAreaDays,
     consumptionMeters,
@@ -849,7 +910,10 @@ const computeConsumptionShares = (params: {
   } = params;
 
   if (totalConsumption > 0) {
-    const consumptionWeights = units.map((u) => unitConsumption.get(u.id) ?? 0);
+    const consumptionWeights = [
+      ...units.map((u) => unitConsumption.get(u.id) ?? 0),
+      landlordConsumption,
+    ];
 
     return {
       consumptionDistributionMethod: "consumption",
@@ -922,6 +986,7 @@ const buildHotWaterDetail = (params: {
           entry.m3,
         ]),
       ),
+      landlordM3: hotWater?.landlordM3 ?? 0,
       areaWeightsWithLandlord,
       totalAreaDays,
       heatingAreaFor,
@@ -975,7 +1040,7 @@ export const calculateHeating = (
   );
   const basicPortionCents = heatingPotCents - consumptionPortionCents;
 
-  const { unitConsumption, perMeter, totalConsumption } =
+  const { unitConsumption, perMeter, totalConsumption, landlordConsumption } =
     measureUnitConsumption({
       consumptionMeters,
       units,
@@ -1001,6 +1066,7 @@ export const calculateHeating = (
       consumptionPortionCents,
       units,
       unitConsumption,
+      landlordConsumption,
       areaWeightsWithLandlord,
       totalAreaDays,
       consumptionMeters,
@@ -1027,12 +1093,11 @@ export const calculateHeating = (
     };
   });
 
-  // Vermieter-Anteil (Leerstand) = letzte Share-Array-Position.
+  // Vermieter-Anteil = letzte Share-Array-Position: Leerstand bei den
+  // Grundkosten, Vor-/Nachmieter-/Leerstandsverbrauch der Ziel-Wohnung bei
+  // den Verbrauchskosten.
   const landlordBasicCostCents = basicShares.at(-1) ?? 0;
-  const landlordConsumptionCostCents =
-    consumptionDistributionMethod === "heating_area"
-      ? (consumptionShares.at(-1) ?? 0)
-      : 0;
+  const landlordConsumptionCostCents = consumptionShares.at(-1) ?? 0;
 
   const hotWaterDetail = buildHotWaterDetail({
     hotWaterSplit,

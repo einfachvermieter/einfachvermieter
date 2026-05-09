@@ -444,15 +444,158 @@ describe("calculateHeating", () => {
     });
     const egLinear = linear.perUnit.find((u) => u.unitId === "unit-eg");
     const egDegree = degreeDays.perUnit.find((u) => u.unitId === "unit-eg");
-    // Linear: Delta ~= 1200 x 180/364 ~= 593 kWh -> ~2.607 €.
-    expect(egLinear?.consumptionCostCents).toBeGreaterThan(258_000);
-    expect(egLinear?.consumptionCostCents).toBeLessThan(263_000);
-    // degree_days: Delta ~= 1200 x 0,583 ~= 700 kWh -> ~2.881 €.
-    expect(egDegree?.consumptionCostCents).toBeGreaterThan(285_000);
-    expect(egDegree?.consumptionCostCents).toBeLessThan(291_000);
+    // Nenner = volle Periode: EG 1.200 + OG 1.000 = 2.200 kWh; der Verbrauch
+    // nach dem Auszug (~600 kWh) fällt als Vermieteranteil an.
+    // Linear: Delta ~= 1200 x 180/364 ~= 593 kWh -> 593/2200 x 7.000 € ~= 1.888 €.
+    expect(egLinear?.consumptionCostCents).toBeGreaterThan(186_000);
+    expect(egLinear?.consumptionCostCents).toBeLessThan(191_000);
+    // degree_days: Delta ~= 1200 x 0,583 ~= 700 kWh -> 700/2200 x 7.000 € ~= 2.227 €.
+    expect(egDegree?.consumptionCostCents).toBeGreaterThan(220_000);
+    expect(egDegree?.consumptionCostCents).toBeLessThan(226_000);
     expect(egDegree?.consumptionCostCents ?? 0).toBeGreaterThan(
       egLinear?.consumptionCostCents ?? 0,
     );
+    // Der nicht dem Mieter zurechenbare EG-Verbrauch gehört dem Vermieter.
+    expect(linear.landlordConsumptionCostCents ?? 0).toBeGreaterThan(185_000);
+  });
+
+  it("Mieterwechsel mit Nachmieter: Summen-Invariante über beide Statements", () => {
+    // Wohnung X: Mieter A (01.01.-30.06., 181 Tage), Nachmieter B
+    // (01.07.-31.12., 184 Tage). Wohnung Y ganzjährig belegt. Beide 100 qm.
+    // X verbraucht je 500 kWh pro Halbjahr (Zwischenablesung am Wechsel),
+    // Y 1.000 kWh. Topf 10.000 €, 70/30.
+    //
+    // Verbrauch: Nenner in beiden Statements = 2.000 kWh (X voll + Y voll)
+    // -> A und B je 500/2000 x 7.000 € = 1.750 €, Y 3.500 €. Grundkosten:
+    // X-Gewicht auf die Mietzeit geclippt, der Rest fällt im jeweiligen
+    // Statement dem Vermieter zu und wird über das andere Statement wieder
+    // eingesammelt. Vor dem Fix kassierte jedes Statement den vollen
+    // X-Jahresanteil (Verbrauch: 500/1500 x 7.000 € = 2.333 €).
+    const unitX = (occupiedDays: number): UnitInfo => ({
+      id: "unit-x",
+      name: "X",
+      areaSqm: 100,
+      occupantCount: 1,
+      personDays: occupiedDays,
+      occupiedDays,
+      periodDays: 365,
+    });
+    const unitY: UnitInfo = {
+      id: "unit-y",
+      name: "Y",
+      areaSqm: 100,
+      occupantCount: 1,
+      personDays: 365,
+      occupiedDays: 365,
+      periodDays: 365,
+    };
+    const consumptionMeters = [
+      {
+        meter: heatMeter("wmz-x", "unit-x"),
+        readings: [
+          reading("2025-01-01", 0),
+          reading("2025-06-30", 500),
+          reading("2025-07-01", 500),
+          reading("2025-12-31", 1000),
+        ],
+      },
+      {
+        meter: heatMeter("wmz-y", "unit-y"),
+        readings: [reading("2025-01-01", 0), reading("2025-12-31", 1000)],
+      },
+    ];
+    const baseInput = {
+      totalHeatingCostsCents: 1_000_000,
+      config: { consumptionShareBps: 7000 },
+      consumptionMethod: "heat_meter" as const,
+      consumptionMeters,
+      periodStart: "2025-01-01",
+      periodEnd: "2025-12-31",
+      targetUnitId: "unit-x",
+    };
+    const statementA = calculateHeating({
+      ...baseInput,
+      units: [unitX(181), unitY],
+      tenantPeriodStart: "2025-01-01",
+      tenantPeriodEnd: "2025-06-30",
+    });
+    const statementB = calculateHeating({
+      ...baseInput,
+      units: [unitX(184), unitY],
+      tenantPeriodStart: "2025-07-01",
+      tenantPeriodEnd: "2025-12-31",
+    });
+
+    const xInA = statementA.perUnit.find((u) => u.unitId === "unit-x");
+    const xInB = statementB.perUnit.find((u) => u.unitId === "unit-x");
+    const yInA = statementA.perUnit.find((u) => u.unitId === "unit-y");
+
+    // Verbrauchsanteile exakt: je 500 von 2.000 kWh.
+    expect(xInA?.consumptionCostCents).toBe(175_000);
+    expect(xInB?.consumptionCostCents).toBe(175_000);
+    expect(yInA?.consumptionCostCents).toBe(350_000);
+    // Nachmieter-Verbrauch fällt in Statement A dem Vermieter zu.
+    expect(statementA.landlordConsumptionCostCents).toBe(175_000);
+
+    // Jedes Statement verteilt exakt den Topf (Mieter + Vermieter).
+    for (const statement of [statementA, statementB]) {
+      const distributed =
+        statement.perUnit.reduce((acc, u) => acc + u.totalCents, 0) +
+        (statement.landlordBasicCostCents ?? 0) +
+        (statement.landlordConsumptionCostCents ?? 0);
+      expect(distributed).toBe(1_000_000);
+    }
+
+    // Summen-Invariante über die Statements: A + B + Y == Topf, die Wohnung
+    // wird nicht doppelt kassiert (vorher: X-Anteil in beiden Statements
+    // jeweils voll).
+    expect(
+      (xInA?.totalCents ?? 0) +
+        (xInB?.totalCents ?? 0) +
+        (yInA?.totalCents ?? 0),
+    ).toBe(1_000_000);
+  });
+
+  it("Warmwasser: Verbrauch außerhalb der Mietzeit fällt dem Vermieter zu", () => {
+    // WW-Topf: Q_WW 250 von 1.000 kWh -> 25 % von 10.000 € = 2.500 €;
+    // davon 70 % Verbrauch = 1.750 €. Gewichte: X-Mieter 10 m3, Y 20 m3,
+    // Vermieter (Vor-/Nachmieter der Ziel-Wohnung) 10 m3.
+    const result = calculateHeating({
+      totalHeatingCostsCents: 1_000_000,
+      config: { consumptionShareBps: 7000 },
+      units: [unitEg, unitOg],
+      consumptionMethod: "heat_meter",
+      consumptionMeters: [
+        {
+          meter: heatMeter("wmz-eg", "unit-eg"),
+          readings: [reading("2025-01-01", 0), reading("2025-12-31", 100)],
+        },
+        {
+          meter: heatMeter("wmz-og", "unit-og"),
+          readings: [reading("2025-01-01", 0), reading("2025-12-31", 100)],
+        },
+      ],
+      periodStart: "2025-01-01",
+      periodEnd: "2025-12-31",
+      hotWater: {
+        totalHeatEnergyKwh: 1000,
+        boilerHeatKwh: 250,
+        hotWaterVolumeM3: 40,
+        supplyTemperatureCelsius: 60,
+        unitHotWaterM3: [
+          { unitId: "unit-eg", m3: 10 },
+          { unitId: "unit-og", m3: 20 },
+        ],
+        landlordM3: 10,
+      },
+    });
+
+    const hotWater = result.hotWaterDetail;
+    expect(hotWater?.consumptionPortionCents).toBe(175_000);
+    const eg = hotWater?.perUnit.find((u) => u.unitId === "unit-eg");
+    // 10 von 40 m3 statt 10 von 30 m3 (vorher: 58.333).
+    expect(eg?.consumptionCostCents).toBe(43_750);
+    expect(hotWater?.landlordConsumptionCostCents).toBe(43_750);
   });
 });
 

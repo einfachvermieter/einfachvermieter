@@ -4,6 +4,7 @@ import {
   formatEur,
   formatNumber,
   HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
+  landlordShareRow,
   type Period,
   type StatementResult,
 } from "@einfachvermieter/shared";
@@ -82,6 +83,7 @@ const formatCo2TierLabel = (emissionsKgPerSqmYear: number): string => {
  * fremder Wohnungen) zeigt diese Card alle Wohnungen und alle Zähler.
  * Die Übersicht ist nur für den Vermieter sichtbar.
  */
+// biome-ignore lint/complexity/noExcessiveLinesPerFunction: Länge liegt am Markup
 export const HeatingCard = ({
   detail,
   tenantPeriod,
@@ -109,6 +111,11 @@ export const HeatingCard = ({
     : detail.totalHeatingCostsCents;
   const hotWaterConsumptionPct = hw ? hw.consumptionShareBps / 100 : 0;
   const hotWaterBasicPct = 100 - hotWaterConsumptionPct;
+
+  // Vermieteranteil (Leerstand/Mieterwechsel) als eigene Tabellenzeile,
+  // damit die Wohnungszeilen sichtbar auf "Haus gesamt" aufsummieren.
+  const landlordRow = landlordShareRow(detail);
+  const hwLandlordRow = hw ? landlordShareRow(hw) : null;
 
   // Einstufungs-Label (Stufe des Gebäude-Ausstoßes), analog zur PDF-Anlage.
   const co2TierLabel = co2 ? formatCo2TierLabel(co2.emissionsKgPerSqmYear) : "";
@@ -431,6 +438,28 @@ export const HeatingCard = ({
                   </td>
                 </tr>
               ))}
+              {landlordRow ? (
+                <tr className="border-b border-border">
+                  <td className="py-1.5">
+                    {t("statements.pdf.heating.landlordShare")}
+                  </td>
+                  <td className="py-1.5 text-right tabular-nums">
+                    {t("ui.common.emptyValue")}
+                  </td>
+                  <td className="py-1.5 text-right tabular-nums">
+                    {t("ui.common.emptyValue")}
+                  </td>
+                  <td className="py-1.5 text-right tabular-nums">
+                    {formatEur(landlordRow.consumptionCostCents)}
+                  </td>
+                  <td className="py-1.5 text-right tabular-nums">
+                    {formatEur(landlordRow.basicCostCents)}
+                  </td>
+                  <td className="py-1.5 text-right font-semibold tabular-nums">
+                    {formatEur(landlordRow.totalCents)}
+                  </td>
+                </tr>
+              ) : null}
               {/* "Haus gesamt": Summenzeile (vormals die separate
                   Übersichtstabelle). EUR-Werte aus den maßgeblichen
                   Gesamtsummen, nicht aus den gerundeten Zeilenwerten. */}
@@ -535,6 +564,25 @@ export const HeatingCard = ({
                     </td>
                   </tr>
                 ))}
+                {hwLandlordRow ? (
+                  <tr className="border-b border-border">
+                    <td className="py-1.5">
+                      {t("statements.pdf.heating.landlordShare")}
+                    </td>
+                    <td className="py-1.5 text-right tabular-nums">
+                      {t("ui.common.emptyValue")}
+                    </td>
+                    <td className="py-1.5 text-right tabular-nums">
+                      {formatEur(hwLandlordRow.consumptionCostCents)}
+                    </td>
+                    <td className="py-1.5 text-right tabular-nums">
+                      {formatEur(hwLandlordRow.basicCostCents)}
+                    </td>
+                    <td className="py-1.5 text-right font-semibold tabular-nums">
+                      {formatEur(hwLandlordRow.totalCents)}
+                    </td>
+                  </tr>
+                ) : null}
                 <tr className="border-t-2 border-foreground font-semibold">
                   <td className="py-1.5">
                     {t("statements.pdf.heating.totalHouse")}

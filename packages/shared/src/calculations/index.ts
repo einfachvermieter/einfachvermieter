@@ -3,6 +3,7 @@ export * from "./advance.js";
 export * from "./allocation.js";
 export * from "./diagnostics.js";
 export * from "./heating.js";
+export * from "./heatingDisplay.js";
 export * from "./meters.js";
 export * from "./money.js";
 export * from "./period.js";

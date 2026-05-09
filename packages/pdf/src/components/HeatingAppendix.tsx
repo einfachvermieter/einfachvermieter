@@ -5,6 +5,7 @@ import {
   formatNumber,
   type HeatingDetail,
   HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
+  landlordShareRow,
   type Period,
 } from "@einfachvermieter/shared";
 import { Text, View } from "@react-pdf/renderer";
@@ -541,6 +542,41 @@ export const HeatingAppendix = ({
             </View>
           ));
         })()}
+        {(() => {
+          // Vermieteranteil (Leerstand/Mieterwechsel), damit die Zeilen
+          // sichtbar auf "Haus gesamt" aufsummieren.
+          const landlord = landlordShareRow(hw);
+          if (!landlord) {
+            return null;
+          }
+          return (
+            <View style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeft, DIST_COL_UNIT]}>
+                <Text>{t("statements.pdf.heating.landlordShare")}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+              >
+                <Text>{t("ui.common.emptyValue")}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+              >
+                <Text>{formatEur(landlord.consumptionCostCents)}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+              >
+                <Text>{formatEur(landlord.basicCostCents)}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, DIST_COL_TOTAL]}
+              >
+                <Text>{formatEur(landlord.totalCents)}</Text>
+              </View>
+            </View>
+          );
+        })()}
         <View style={[styles.row, styles.rowDividerStrong]}>
           <View style={[styles.cellLeft, styles.bold, DIST_COL_UNIT]}>
             <Text>{t("statements.pdf.heating.totalHouse")}</Text>
@@ -853,6 +889,46 @@ export const HeatingAppendix = ({
                 </View>
               </View>
             ));
+          })()}
+          {(() => {
+            // Vermieteranteil (Leerstand/Mieterwechsel), damit die Zeilen
+            // sichtbar auf "Haus gesamt" aufsummieren.
+            const landlord = landlordShareRow(detail);
+            if (!landlord) {
+              return null;
+            }
+            return (
+              <View style={[styles.row, styles.rowDivider]}>
+                <View style={[styles.cellLeft, DIST_COL_UNIT]}>
+                  <Text>{t("statements.pdf.heating.landlordShare")}</Text>
+                </View>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, DIST_COL_AREA]}
+                >
+                  <Text>{t("ui.common.emptyValue")}</Text>
+                </View>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+                >
+                  <Text>{t("ui.common.emptyValue")}</Text>
+                </View>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+                >
+                  <Text>{formatEur(landlord.consumptionCostCents)}</Text>
+                </View>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+                >
+                  <Text>{formatEur(landlord.basicCostCents)}</Text>
+                </View>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, DIST_COL_TOTAL]}
+                >
+                  <Text>{formatEur(landlord.totalCents)}</Text>
+                </View>
+              </View>
+            );
           })()}
           {/* "Haus gesamt": Summenzeile der Verteilungstabelle (vormals
               die separate Übersichtstabelle). EUR-Werte aus den maßgeblichen

@@ -563,13 +563,18 @@ export class StatementsService {
     };
     const statementPeriod = { start: periodStart, end: periodEnd };
 
-    const { unitsRaw, units, occupantsByUnitFull, occupancyDaysByUnitFull } =
-      await this.buildUnitInfos(
-        buildingId,
-        statementPeriod,
-        effectivePeriod,
-        targetUnitId,
-      );
+    const {
+      unitsRaw,
+      units,
+      occupantsByUnitFull,
+      occupancyDaysByUnitFull,
+      occupancyDaysByUnitTenant,
+    } = await this.buildUnitInfos(
+      buildingId,
+      statementPeriod,
+      effectivePeriod,
+      targetUnitId,
+    );
     const periodDays = daysBetween(periodStart, periodEnd);
 
     const {
@@ -601,6 +606,7 @@ export class StatementsService {
       statementPeriod,
       effectivePeriod,
       occupancyDaysByUnitFull,
+      occupancyDaysByUnitTenant,
       occupantsByUnitFull,
       targetUnitId,
     });
@@ -693,6 +699,9 @@ export class StatementsService {
     occupancyDaysByUnitFull: Awaited<
       ReturnType<TenantsService["getOccupancyDaysPerUnit"]>
     >;
+    occupancyDaysByUnitTenant: Awaited<
+      ReturnType<TenantsService["getOccupancyDaysPerUnit"]>
+    >;
   }> {
     const unitsRaw = await this.em.find(UnitSchema, { buildingId });
 
@@ -747,7 +756,13 @@ export class StatementsService {
       };
     });
 
-    return { unitsRaw, units, occupantsByUnitFull, occupancyDaysByUnitFull };
+    return {
+      unitsRaw,
+      units,
+      occupantsByUnitFull,
+      occupancyDaysByUnitFull,
+      occupancyDaysByUnitTenant,
+    };
   }
 
   /**
@@ -1240,6 +1255,8 @@ export class StatementsService {
     metersRaw: Meter[];
     readingsByMeter: Map<string, ReadingPoint[]>;
     statementPeriod: { start: string; end: string };
+    effectivePeriod: { start: string; end: string };
+    targetUnitId: string;
   }): HotWaterInput | undefined {
     const {
       heatingSettings,
@@ -1247,16 +1264,23 @@ export class StatementsService {
       metersRaw,
       readingsByMeter,
       statementPeriod,
+      effectivePeriod,
+      targetUnitId,
     } = input;
     if (heatingSettings.heatingType !== "central_with_hot_water") {
       return;
     }
-    const deltaOverPeriod = (meterId: string): number =>
+    const deltaBetween = (
+      meterId: string,
+      period: { start: string; end: string },
+    ): number =>
       consumptionBetween(
         readingsByMeter.get(meterId) ?? [],
-        statementPeriod.start,
-        statementPeriod.end,
+        period.start,
+        period.end,
       );
+    const deltaOverPeriod = (meterId: string): number =>
+      deltaBetween(meterId, statementPeriod);
 
     let { totalHeatEnergyKwh } = heatingSettings;
     if (totalHeatEnergyKwh === null) {
@@ -1273,20 +1297,30 @@ export class StatementsService {
       ? deltaOverPeriod(heatingSettings.hotWaterMeterId)
       : null;
 
+    // Ziel-Wohnung: Zähler = Mietzeit-Delta, der Rest der vollen Periode
+    // (Vor-/Nachmieter, Leerstand) fällt als `landlordM3` auf den Vermieter.
+    // Q_WW/Gesamtvolumen bleiben Voll-Perioden-Werte (Jahres-Topf-Split).
+    let landlordM3 = 0;
     const unitHotWaterM3 = unitsRaw.map((u) => {
-      const m3 = metersRaw
-        .filter(
-          (m) =>
-            m.type === "water_hot" && m.role === "unit" && m.unitId === u.id,
-        )
-        .reduce((acc, m) => acc + deltaOverPeriod(m.id), 0);
+      const isTarget = u.id === targetUnitId;
+      let fullM3 = 0;
+      let m3 = 0;
+      for (const m of metersRaw) {
+        if (m.type !== "water_hot" || m.role !== "unit" || m.unitId !== u.id) {
+          continue;
+        }
+        const meterFullM3 = deltaOverPeriod(m.id);
+        fullM3 += meterFullM3;
+        m3 += isTarget ? deltaBetween(m.id, effectivePeriod) : meterFullM3;
+      }
+      if (isTarget) {
+        landlordM3 += Math.max(0, fullM3 - m3);
+      }
       return { unitId: u.id, m3 };
     });
 
-    const totalHotWaterM3 = unitHotWaterM3.reduce(
-      (acc, entry) => acc + entry.m3,
-      0,
-    );
+    const totalHotWaterM3 =
+      unitHotWaterM3.reduce((acc, entry) => acc + entry.m3, 0) + landlordM3;
 
     return {
       totalHeatEnergyKwh,
@@ -1295,6 +1329,7 @@ export class StatementsService {
       supplyTemperatureCelsius:
         heatingSettings.hotWaterSupplyTemperatureCelsius,
       unitHotWaterM3,
+      landlordM3,
     };
   }
 
@@ -1318,6 +1353,9 @@ export class StatementsService {
     occupancyDaysByUnitFull: Awaited<
       ReturnType<TenantsService["getOccupancyDaysPerUnit"]>
     >;
+    occupancyDaysByUnitTenant: Awaited<
+      ReturnType<TenantsService["getOccupancyDaysPerUnit"]>
+    >;
     occupantsByUnitFull: Awaited<
       ReturnType<TenantsService["getOccupantCountPerUnit"]>
     >;
@@ -1336,6 +1374,7 @@ export class StatementsService {
       statementPeriod,
       effectivePeriod,
       occupancyDaysByUnitFull,
+      occupancyDaysByUnitTenant,
       occupantsByUnitFull,
       targetUnitId,
     } = input;
@@ -1408,7 +1447,14 @@ export class StatementsService {
     const statementPeriodDegreeDayPromille = sumDegreeDays(statementPeriod);
 
     const unitsForHeating: UnitInfo[] = unitsRaw.map((u) => {
-      const days = occupancyDaysByUnitFull.get(u.id) ?? {
+      // Ziel-Wohnung: Belegung auf die Mietzeit geclippt, damit der
+      // Grundkostenanteil außerhalb der Mietzeit (Vor-/Nachmieter, Leerstand)
+      // dem Vermieter zufällt statt doppelt kassiert zu werden.
+      const daysSource =
+        u.id === targetUnitId
+          ? occupancyDaysByUnitTenant
+          : occupancyDaysByUnitFull;
+      const days = daysSource.get(u.id) ?? {
         personDays: 0,
         occupiedDays: 0,
         occupiedDegreeDayPromille: 0,
@@ -1437,6 +1483,8 @@ export class StatementsService {
       metersRaw,
       readingsByMeter,
       statementPeriod,
+      effectivePeriod,
+      targetUnitId,
     });
 
     try {
