@@ -39,9 +39,5 @@
   "devDependencies": {
     "typescript": "^6.0.2",
     "vitest": "^4.1.2"
-  },
-  "description": "",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  }
 }
