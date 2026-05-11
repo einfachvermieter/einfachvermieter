@@ -649,4 +649,133 @@ describe("End-to-End Abrechnung 2025", () => {
 
     expect(() => calculateStatement(input)).not.toThrow();
   });
+
+  // Bei unterjährigem Mietverhältnis darf die Verbrauchs-Quote
+  // der Mietzeit nicht auf die Jahres-Kosten angewendet werden. Nenner läuft
+  // über die volle Periode, nur die Ziel-Wohnung wird auf die Mietzeit
+  // geklemmt; ihr Rest-Verbrauch fällt auf den Vermieter.
+  it("Wasser bei Mieterwechsel: Jahresmengen-Quote statt Raten-Quote, Summen-Invariante", () => {
+    const period = { start: periodStart, end: periodEnd };
+
+    // Konstanter Verbrauch: EG und OG je 73 m3/Jahr (0,2 m3/Tag), Haupt 146.
+    const waterMetersLinear = [
+      {
+        meter: meter(
+          "w-main",
+          "water_cold",
+          "main",
+          null,
+          "Hauptzähler Keller",
+        ),
+        readings: [reading("2025-01-01", 0), reading("2025-12-31", 146)],
+      },
+      {
+        meter: meter("w-eg", "water_cold", "unit", "u-eg", "EG Wohnung"),
+        readings: [reading("2025-01-01", 0), reading("2025-12-31", 73)],
+      },
+      {
+        meter: meter("w-og", "water_cold", "unit", "u-og", "OG Wohnung"),
+        readings: [reading("2025-01-01", 0), reading("2025-12-31", 73)],
+      },
+    ];
+
+    const emptyHeating = calculateHeating({
+      totalHeatingCostsCents: 0,
+      config: { consumptionShareBps: 7000 },
+      units,
+      consumptionMethod: "heat_meter",
+      consumptionMeters: [],
+      periodStart,
+      periodEnd,
+    });
+
+    const buildWaterInput = (
+      targetUnitId: string,
+      targetTenantId: string,
+      tenantPeriod: { start: string; end: string } | undefined,
+      occupiedDaysEg: number,
+    ): StatementCalculationInput => ({
+      period,
+      tenantPeriod,
+      units: [
+        {
+          ...unitEg,
+          personDays: occupiedDaysEg,
+          occupiedDays: occupiedDaysEg,
+          periodDays: PERIOD_DAYS_2025,
+        },
+        unitOg,
+      ],
+      targetTenantId,
+      targetUnitId,
+      costTypes: [
+        {
+          id: "ct-water",
+          name: "Frischwasser",
+          allocationKey: "per_consumption_m3",
+          costs: [{ ...waterCost, amountCents: 60_000 }],
+        },
+      ],
+      waterMeters: waterMetersLinear,
+      heatingDetail: emptyHeating,
+      totalAdvancesCents: 0,
+    });
+
+    // Mieter A: EG 01.01.-30.06. Sein Verbrauch (~36,1 m3) ist ~25 % des
+    // Jahresverbrauchs (146 m3) -> ~150 EUR, nicht 50 % (300 EUR, alter Bug).
+    const statementA = calculateStatement(
+      buildWaterInput(
+        "u-eg",
+        "t-mieter-a",
+        { start: "2025-01-01", end: "2025-06-30" },
+        181,
+      ),
+    );
+    const waterA = statementA.lines.find(
+      (l) => l.costTypeName === "Frischwasser",
+    );
+    expect(statementA.waterDetail?.totalConsumptionM3).toBe(146);
+    expect(statementA.waterDetail?.landlordConsumptionM3).toBeCloseTo(36.9, 1);
+    expect(waterA?.tenantAmountCents).toBeCloseTo(14_835, 0);
+    // Rest-Verbrauch der EG (Nachmieter) als Vermieteranteil in A's Statement.
+    expect(waterA?.landlordAmountCents).toBeCloseTo(15_165, 0);
+    // Zeile bilanziert: Mieter + OG-Anteil + Vermieter = Gesamtkosten.
+    expect(
+      (waterA?.tenantAmountCents ?? 0) + (waterA?.landlordAmountCents ?? 0),
+    ).toBeCloseTo(30_000, 0);
+
+    // Nachmieter B: EG 01.07.-31.12.
+    const statementB = calculateStatement(
+      buildWaterInput(
+        "u-eg",
+        "t-mieter-b",
+        { start: "2025-07-01", end: "2025-12-31" },
+        184,
+      ),
+    );
+    const waterB = statementB.lines.find(
+      (l) => l.costTypeName === "Frischwasser",
+    );
+    expect(waterB?.tenantAmountCents).toBeCloseTo(15_082, 0);
+
+    // OG-Mieter: ganzjährig, keine Klemmung -> exakt 50 %.
+    const statementOg = calculateStatement(
+      buildWaterInput("u-og", "t-mieter2", undefined, PERIOD_DAYS_2025),
+    );
+    const waterOg = statementOg.lines.find(
+      (l) => l.costTypeName === "Frischwasser",
+    );
+    expect(statementOg.waterDetail?.landlordConsumptionM3).toBe(0);
+    expect(waterOg?.tenantAmountCents).toBe(30_000);
+
+    // Summen-Invariante: Alle Mieter-Anteile zusammen überschreiten die
+    // Jahres-Kosten nicht. Die kleine Lücke (~83 Cent) ist der nicht
+    // zugerechnete Verbrauchs-Tag zwischen Auszug A und Einzug B (N2).
+    const tenantSum =
+      (waterA?.tenantAmountCents ?? 0) +
+      (waterB?.tenantAmountCents ?? 0) +
+      (waterOg?.tenantAmountCents ?? 0);
+    expect(tenantSum).toBeLessThanOrEqual(60_000);
+    expect(tenantSum).toBeGreaterThan(59_800);
+  });
 });

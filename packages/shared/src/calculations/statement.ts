@@ -22,9 +22,10 @@ export type StatementCalculationInput = {
    */
   period: Period;
   /**
-   * Schnittmenge aus Mieter-Vertragslaufzeit und Statement-Periode. Wird für
-   * Wasser-Zählerstand-Extrapolation (Verbrauch nur in Mietzeit) sowie für
-   * den Mieter-Anteil-Bezug in der Anzeige verwendet.
+   * Schnittmenge aus Mieter-Vertragslaufzeit und Statement-Periode. Setzt
+   * die Wasserzähler der Ziel-Wohnung auf die Mietzeit (Verbrauch außerhalb
+   * fällt auf den Vermieter) und dient als Mieter-Anteil-Bezug in der
+   * Anzeige.
    */
   tenantPeriod?: Period;
   units: UnitInfo[];
@@ -264,14 +265,19 @@ export const calculateStatement = (
   } = input;
   const consumptionPeriod = tenantPeriod ?? period;
 
-  // 1. Wasserverbrauch - Zählerstände nur über den Mieter-Zeitraum
-  // ablesen, damit Verbrauch vor Einzug bzw. nach Auszug nicht
-  // extrapoliert wird.
+  // 1. Wasserverbrauch - Nenner (Hauptzähler, andere Wohnungen) über die
+  // volle Statement-Periode, nur die Zähler der Ziel-Wohnung über den
+  // Mieter-Zeitraum. Der Rest-Verbrauch der Ziel-Wohnung fällt als
+  // Vermieteranteil an (Mieterwechsel/Leerstand) - sonst würde die
+  // Verbrauchs-Quote der Mietzeit auf die Jahres-Kosten angewendet.
   const waterDetail: WaterDetail = calculateWater({
     units,
     waterMeters,
-    periodStart: consumptionPeriod.start,
-    periodEnd: consumptionPeriod.end,
+    periodStart: period.start,
+    periodEnd: period.end,
+    targetUnitId,
+    tenantPeriodStart: tenantPeriod?.start,
+    tenantPeriodEnd: tenantPeriod?.end,
   });
 
   // 2. Kostenzeilen: Heizkosten (aus HeatingDetail) + umgelegte Betriebskosten.

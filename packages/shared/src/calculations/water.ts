@@ -44,6 +44,169 @@ type WaterCalculationInput = {
   waterMeters: WaterMeterBundle[];
   periodStart: string;
   periodEnd: string;
+  targetUnitId?: string;
+  tenantPeriodStart?: string;
+  tenantPeriodEnd?: string;
+};
+
+/**
+ * Liefert die Wohnung, der der Zähler zuzurechnen ist oder null, wenn er
+ * für die Verbrauchs-Aggregation irrelevant ist.
+ */
+const allocatableUnitId = (
+  meter: WaterMeterBundle["meter"],
+  periodStart: string,
+  periodEnd: string,
+  warnings: CalcWarning[],
+): string | null => {
+  if (
+    meter.role !== "unit" &&
+    meter.role !== "common" &&
+    meter.role !== "virtual_difference"
+  ) {
+    return null;
+  }
+
+  if (!meter.unitId) {
+    if (meter.role === "unit") {
+      throw new Error(`Unit meter ${meter.id} has no unitId`);
+    }
+
+    // Ein Allgemeinzähler ohne Unit-Zuordnung wird keiner Wohnung gutge-
+    // schrieben, sein Verbrauch steckt aber im Hauptzähler-Total und wird
+    // dadurch bei `per_consumption_m3` lautlos anteilig auf alle Mieter
+    // mitverteilt (kein Vorwegabzug).
+    if (meter.role === "common") {
+      warnings.push({
+        code: "commonConsumptionUnallocated",
+        params: { label: meter.label },
+      });
+    }
+
+    return null;
+  }
+
+  // Zähler, deren Gültigkeit die Statement-Periode nicht schneidet,
+  // tragen weder zum Verbrauch noch zur Fußnoten-Liste bei.
+  const { validFrom, validUntil } = meter;
+  const overlapStart = validFrom > periodStart ? validFrom : periodStart;
+  const overlapEnd =
+    validUntil && validUntil < periodEnd ? validUntil : periodEnd;
+
+  return overlapStart > overlapEnd ? null : meter.unitId;
+};
+
+/**
+ * Liest Wohnungs-, Allgemein- und Differenzzähler ab und aggregiert den
+ * Verbrauch je Wohnung. Rest-Verbrauch der vollen Periode (Vor-/Nachmieter,
+ * Leerstand) fällt als auf den Vermieter, damit die Summe über alle
+ * Statements einer Wohnung die Jahres-Kosten nicht übersteigt
+ * (Mieterwechsel-Fall). Andere Wohnungen: volle Statement-Periode.
+ */
+const aggregateUnitConsumption = (params: {
+  units: UnitInfo[];
+  waterMeters: WaterMeterBundle[];
+  bundles: Map<string, WaterMeterBundle>;
+  periodStart: string;
+  periodEnd: string;
+  targetUnitId: string | undefined;
+  tenantStart: string;
+  tenantEnd: string;
+  warnings: CalcWarning[];
+}): {
+  unitConsumption: Map<string, number>;
+  unitDifferential: Map<string, WaterMeterBundle>;
+  unitMeters: Map<string, Array<{ label: string; consumptionM3: number }>>;
+  landlordConsumptionM3: number;
+} => {
+  const {
+    units,
+    waterMeters,
+    bundles,
+    periodStart,
+    periodEnd,
+    targetUnitId,
+    tenantStart,
+    tenantEnd,
+    warnings,
+  } = params;
+  const hasTenantClamp = tenantStart > periodStart || tenantEnd < periodEnd;
+
+  const unitConsumption = new Map<string, number>();
+  const unitDifferential = new Map<string, WaterMeterBundle>();
+  // Pro Wohnung die beitragenden Wasserzähler mit ihrem Einzelverbrauch.
+  // Die PDF-Fußnote weist diese Liste aus ("ermittelt durch ..."). Wichtig:
+  // Differenzzähler erscheinen hier als *ein* Eintrag mit ihrem End-
+  // Verbrauch, die innere Differenz-Formel wird bewusst nicht offengelegt,
+  // weil sie Zählerstände anderer Wohnungen preisgeben würde.
+  const unitMeters = new Map<
+    string,
+    Array<{ label: string; consumptionM3: number }>
+  >();
+  for (const unit of units) {
+    unitConsumption.set(unit.id, 0);
+    unitMeters.set(unit.id, []);
+  }
+
+  let landlordConsumptionM3 = 0;
+
+  for (const bundle of waterMeters) {
+    const { meter } = bundle;
+
+    const unitId = allocatableUnitId(meter, periodStart, periodEnd, warnings);
+    if (unitId === null) {
+      continue;
+    }
+
+    const isTarget = targetUnitId !== undefined && unitId === targetUnitId;
+
+    // Kein eigenes `label`: `computeMeterConsumption` benennt physische
+    // Zähler selbst (bundle.meter.label). Ein Label würde zu
+    // "Küche (Küche)"-Doppelungen führen.
+    const consumption = computeMeterConsumption(
+      meter.id,
+      bundles,
+      isTarget ? tenantStart : periodStart,
+      isTarget ? tenantEnd : periodEnd,
+      undefined,
+      { warnings },
+    );
+
+    if (isTarget && hasTenantClamp) {
+      // Lücken/Klemmungen außerhalb der Mietzeit sind für den Ziel-Mieter
+      // irrelevant - Warnungen des Voll-Perioden-Reads verwerfen.
+      const fullConsumption = computeMeterConsumption(
+        meter.id,
+        bundles,
+        periodStart,
+        periodEnd,
+        undefined,
+        { warnings: [] },
+      );
+
+      landlordConsumptionM3 += Math.max(0, fullConsumption - consumption);
+    }
+
+    unitConsumption.set(
+      unitId,
+      (unitConsumption.get(unitId) ?? 0) + consumption,
+    );
+
+    unitMeters
+      .get(unitId)
+      ?.push({ label: meter.label, consumptionM3: consumption });
+
+    if (meter.role === "virtual_difference") {
+      unitDifferential.set(unitId, bundle);
+    }
+  }
+
+  return {
+    unitConsumption,
+    unitDifferential,
+    unitMeters,
+    landlordConsumptionM3,
+  };
 };
 
 /**
@@ -61,7 +224,9 @@ type WaterCalculationInput = {
  * Wohnungszähler und werden hier nicht separat addiert.
  */
 export const calculateWater = (input: WaterCalculationInput): WaterDetail => {
-  const { units, waterMeters, periodStart, periodEnd } = input;
+  const { units, waterMeters, periodStart, periodEnd, targetUnitId } = input;
+  const tenantStart = input.tenantPeriodStart ?? periodStart;
+  const tenantEnd = input.tenantPeriodEnd ?? periodEnd;
 
   const mainMeters = waterMeters.filter((m) => m.meter.role === "main");
   if (mainMeters.length === 0) {
@@ -92,89 +257,22 @@ export const calculateWater = (input: WaterCalculationInput): WaterDetail => {
     0,
   );
 
-  const unitConsumption = new Map<string, number>();
-  const unitDifferential = new Map<string, WaterMeterBundle>();
-  // Pro Wohnung die beitragenden Wasserzähler mit ihrem Einzelverbrauch.
-  // Die PDF-Fußnote weist diese Liste aus ("ermittelt durch ..."). Wichtig:
-  // Differenzzähler erscheinen hier als **ein** Eintrag mit ihrem End-
-  // Verbrauch - die innere Differenz-Formel wird bewusst nicht offengelegt,
-  // weil sie Zählerstände anderer Wohnungen preisgeben würde.
-  const unitMeters = new Map<
-    string,
-    Array<{ label: string; consumptionM3: number }>
-  >();
-  for (const unit of units) {
-    unitConsumption.set(unit.id, 0);
-    unitMeters.set(unit.id, []);
-  }
-
-  // Wohnungs-, Allgemein- und Differenzzähler aggregieren.
-  for (const bundle of waterMeters) {
-    const { meter } = bundle;
-
-    if (
-      meter.role !== "unit" &&
-      meter.role !== "common" &&
-      meter.role !== "virtual_difference"
-    ) {
-      continue;
-    }
-
-    if (!meter.unitId) {
-      if (meter.role === "unit") {
-        throw new Error(`Unit meter ${meter.id} has no unitId`);
-      }
-
-      // Ein Allgemeinzähler ohne Unit-Zuordnung wird keiner Wohnung gutge-
-      // schrieben, sein Verbrauch steckt aber im Hauptzähler-Total und wird
-      // dadurch bei `per_consumption_m3` lautlos anteilig auf alle Mieter
-      // mitverteilt (kein Vorwegabzug).
-      if (meter.role === "common") {
-        warnings.push({
-          code: "commonConsumptionUnallocated",
-          params: { label: meter.label },
-        });
-      }
-
-      continue;
-    }
-
-    // Zähler, deren Gültigkeit die Statement-Periode nicht schneidet,
-    // tragen weder zum Verbrauch noch zur Fußnoten-Liste bei.
-    const { validFrom, validUntil } = meter;
-    const overlapStart = validFrom > periodStart ? validFrom : periodStart;
-    const overlapEnd =
-      validUntil && validUntil < periodEnd ? validUntil : periodEnd;
-
-    if (overlapStart > overlapEnd) {
-      continue;
-    }
-
-    // Kein eigenes `label`: `computeMeterConsumption` benennt physische
-    // Zähler selbst (bundle.meter.label). Ein Label würde zu
-    // "Küche (Küche)"-Doppelungen führen.
-    const consumption = computeMeterConsumption(
-      meter.id,
-      bundles,
-      periodStart,
-      periodEnd,
-      undefined,
-      { warnings },
-    );
-
-    unitConsumption.set(
-      meter.unitId,
-      (unitConsumption.get(meter.unitId) ?? 0) + consumption,
-    );
-
-    unitMeters
-      .get(meter.unitId)
-      ?.push({ label: meter.label, consumptionM3: consumption });
-
-    if (meter.role === "virtual_difference") {
-      unitDifferential.set(meter.unitId, bundle);
-    }
-  }
+  const {
+    unitConsumption,
+    unitDifferential,
+    unitMeters,
+    landlordConsumptionM3,
+  } = aggregateUnitConsumption({
+    units,
+    waterMeters,
+    bundles,
+    periodStart,
+    periodEnd,
+    targetUnitId,
+    tenantStart,
+    tenantEnd,
+    warnings,
+  });
 
   const perUnit: WaterDetail["perUnit"] = units.map((unit) => {
     const consumptionM3 = unitConsumption.get(unit.id) ?? 0;
@@ -196,6 +294,7 @@ export const calculateWater = (input: WaterCalculationInput): WaterDetail => {
   return {
     totalConsumptionM3,
     perUnit,
+    landlordConsumptionM3,
     ...(dedupedWarnings.length > 0 ? { warnings: dedupedWarnings } : {}),
   };
 };

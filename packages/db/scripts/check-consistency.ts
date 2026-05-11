@@ -47,7 +47,7 @@ const main = async () => {
   }
 
   if (findings.length === 0) {
-    console.log("[check-consistency] OK – keine Auffälligkeiten.");
+    console.log("[check-consistency] OK - keine Auffälligkeiten.");
     return;
   }
   console.log(
@@ -115,7 +115,7 @@ const checkFinalizedStatementsHaveVersion = async (
       findings.push({
         level: "warn",
         area: "statements",
-        message: `Finalized Statement ${s.id} (Tenant ${s.tenantId}) hat keine gültige Snapshot-Version (aktuell: ${String(version)}). Altbestand – PDF bleibt gültig, aber Reporting sollte diesen Fall kennen.`,
+        message: `Finalized Statement ${s.id} (Tenant ${s.tenantId}) hat keine gültige Snapshot-Version (aktuell: ${String(version)}). PDF (Altbestand) bleibt gültig, aber Reporting sollte diesen Fall kennen.`,
       });
     }
   }

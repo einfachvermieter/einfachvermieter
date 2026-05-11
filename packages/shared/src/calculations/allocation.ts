@@ -263,7 +263,11 @@ const allocatePerUnit = ({
 };
 
 /**
- * per_consumption_m3: Verteilung nach gemessenem Wasserverbrauch.
+ * per_consumption_m3: Verteilung nach gemessenem Wasserverbrauch. Der
+ * Verbrauch der Ziel-Wohnung außerhalb der Mietzeit
+ * (`landlordConsumptionM3`, Vor-/Nachmieter oder Leerstand) fällt als
+ * Kostenanteil auf den Vermieter und wird über das Statement des anderen
+ * Mieters wieder eingesammelt.
  */
 const allocatePerConsumptionM3 = ({
   costTypeName,
@@ -279,19 +283,28 @@ const allocatePerConsumptionM3 = ({
   }
 
   const totalBase = waterDetail.totalConsumptionM3;
+  const landlordConsumptionM3 = waterDetail.landlordConsumptionM3 ?? 0;
   const weights = units.map((u) => {
     const entry = waterDetail.perUnit.find((p) => p.unitId === u.id);
     return entry?.consumptionM3 ?? 0;
   });
-  const shares = distributeCents(totalAmountCents, weights);
+  const shares = distributeCents(totalAmountCents, [
+    ...weights,
+    landlordConsumptionM3,
+  ]);
   const idx = units.findIndex((u) => u.id === targetUnitId);
   const tenantEntry = waterDetail.perUnit.find(
     (p) => p.unitId === targetUnitId,
   );
   const tenantBase = tenantEntry?.consumptionM3 ?? 0;
   const tenantAmountCents = shares[idx] ?? 0;
+  const landlordAmountCents = shares.at(-1) ?? 0;
   const shareBps =
     totalBase > 0 ? Math.round((tenantBase / totalBase) * 10_000) : 0;
+  const landlordShareBps =
+    totalBase > 0
+      ? Math.round((landlordConsumptionM3 / totalBase) * 10_000)
+      : 0;
 
   return {
     costTypeName,
@@ -302,8 +315,8 @@ const allocatePerConsumptionM3 = ({
     shareBps,
     tenantAmountCents,
     baseUnit: "m³",
-    landlordAmountCents: 0,
-    landlordShareBps: 0,
+    landlordAmountCents,
+    landlordShareBps,
     bemessungTotal: totalBase,
     bemessungTenant: tenantBase,
     bemessungUnit: "m³",

@@ -55,6 +55,7 @@ const waterDetailSchema = z.object({
       ),
     }),
   ),
+  landlordConsumptionM3: z.number().optional(),
   warnings: z.array(calcWarningSchema).optional(),
 });
 

@@ -318,6 +318,11 @@ export type WaterDetail = {
     }>;
   }>;
   /**
+   * Verbrauch der Ziel-Wohnung außerhalb der Mietzeit (Vor-/Nachmieter,
+   * Leerstand) fällt als Kostenanteil auf den Vermieter.
+   */
+  landlordConsumptionM3?: number;
+  /**
    * Hinweise der Wasserberechnung (z. B. Stände decken Periode nicht ab).
    */
   warnings?: CalcWarning[];
