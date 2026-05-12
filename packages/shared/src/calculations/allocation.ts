@@ -113,7 +113,9 @@ const allocatePerLivingArea = ({
 };
 
 /**
- * per_heating_area: Verteilung nach Heizfläche (Fallback Wohnfläche).
+ * per_heating_area: wie per_living_area, nur mit Heizfläche (Fallback
+ * Wohnfläche) als Flächenbasis. Leerstand fällt als Differenz dem
+ * Vermieter zu.
  */
 const allocatePerHeatingArea = ({
   costTypeName,
@@ -123,31 +125,41 @@ const allocatePerHeatingArea = ({
   targetUnit,
 }: ResolvedAllocation): AllocatedLine => {
   const heatingArea = (u: UnitInfo) => u.heatingAreaSqm ?? u.areaSqm;
-  const totalBase = units.reduce((acc, u) => acc + heatingArea(u), 0);
-  const weights = units.map(heatingArea);
-  const shares = distributeCents(totalAmountCents, weights);
   const idx = units.findIndex((u) => u.id === targetUnitId);
+  const tenantWeights = units.map((u) => heatingArea(u) * u.occupiedDays);
+  const totalHeatingAreaSqm = units.reduce((acc, u) => acc + heatingArea(u), 0);
+  const { periodDays } = targetUnit;
+  const maxBase = totalHeatingAreaSqm * periodDays;
+  const sumTenantWeights = tenantWeights.reduce((a, b) => a + b, 0);
+  const landlordWeight = Math.max(0, maxBase - sumTenantWeights);
+  const allWeights = [...tenantWeights, landlordWeight];
+  const shares = distributeCents(totalAmountCents, allWeights);
   const tenantAmountCents = shares[idx] ?? 0;
-  const tenantBase = heatingArea(targetUnit);
+  const landlordAmountCents = shares.at(-1) ?? 0;
+  const tenantBase = heatingArea(targetUnit) * targetUnit.occupiedDays;
   const shareBps =
-    totalBase > 0 ? Math.round((tenantBase / totalBase) * 10_000) : 0;
+    maxBase > 0 ? Math.round((tenantBase / maxBase) * 10_000) : 0;
+  const landlordShareBps =
+    maxBase > 0 ? Math.round((landlordWeight / maxBase) * 10_000) : 0;
 
   return {
     costTypeName,
     allocationKey: "per_heating_area",
     totalAmountCents,
-    totalBase,
+    totalBase: maxBase,
     tenantBase,
     shareBps,
     tenantAmountCents,
-    baseUnit: "m²",
-    landlordAmountCents: 0,
-    landlordShareBps: 0,
-    bemessungTotal: totalBase,
-    bemessungTenant: tenantBase,
+    baseUnit: "m²·Tage",
+    landlordAmountCents,
+    landlordShareBps,
+    tenantBaseExplain: `${formatNumberLoose(heatingArea(targetUnit))} m² × ${targetUnit.occupiedDays} Tage`,
+    totalBaseExplain: `${formatNumberLoose(totalHeatingAreaSqm)} m² × ${periodDays} Tage`,
+    bemessungTotal: totalHeatingAreaSqm,
+    bemessungTenant: heatingArea(targetUnit),
     bemessungUnit: "m²",
-    daysTotal: null,
-    daysTenant: null,
+    daysTotal: periodDays,
+    daysTenant: targetUnit.occupiedDays,
   };
 };
 

@@ -133,8 +133,9 @@ describe("allocateCost per_heating_area", () => {
     // Ohne heatingAreaSqm -> fallback auf areaSqm: 80/200 = 40 %
     expect(result.tenantAmountCents).toBe(4000);
     expect(result.shareBps).toBe(4000);
-    expect(result.totalBase).toBe(200);
-    expect(result.tenantBase).toBe(80);
+    expect(result.totalBase).toBe(200 * PERIOD_DAYS); // m2 x Tage
+    expect(result.tenantBase).toBe(80 * PERIOD_DAYS);
+    expect(result.landlordAmountCents).toBe(0);
   });
 
   it("nutzt heatingAreaSqm wenn gesetzt", () => {
@@ -148,8 +149,31 @@ describe("allocateCost per_heating_area", () => {
     });
     // EG: 60/150 = 40 %
     expect(result.tenantAmountCents).toBe(4000);
-    expect(result.totalBase).toBe(150);
-    expect(result.tenantBase).toBe(60);
+    expect(result.totalBase).toBe(150 * PERIOD_DAYS);
+    expect(result.tenantBase).toBe(60 * PERIOD_DAYS);
+  });
+
+  // M4-Regression: unterjähriges Mietverhältnis zahlt nur Flächentage der
+  // Mietzeit, der Leerstand fällt dem Vermieter zu (analog per_living_area).
+  it("zeitanteilig: EG nur 182 Tage bewohnt -> Vermieter-Anteil für Leerstand", () => {
+    const unitsPartial: UnitInfo[] = [
+      { ...unitEg, heatingAreaSqm: 60, personDays: 182, occupiedDays: 182 },
+      { ...unitOg, heatingAreaSqm: 90 },
+    ];
+    const result = allocateCost("Wartung Heizung", "per_heating_area", 10_000, {
+      units: unitsPartial,
+      targetUnitId: "unit-eg",
+    });
+    // maxBase = 150 x 365 = 54750
+    // EG-Weight = 60 x 182 = 10920; OG-Weight = 90 x 365 = 32850
+    // Vermieter = 54750 - 43770 = 10980
+    // EG-Anteil = 10920/54750 ~= 19,95 % -> 1995 ct (alter Bug: 40 % = 4000)
+    expect(result.totalBase).toBe(54_750);
+    expect(result.tenantBase).toBe(10_920);
+    expect(result.tenantAmountCents).toBeCloseTo(1995, 0);
+    expect(result.landlordAmountCents).toBeCloseTo(2005, 0);
+    expect(result.daysTenant).toBe(182);
+    expect(result.daysTotal).toBe(PERIOD_DAYS);
   });
 });
 
