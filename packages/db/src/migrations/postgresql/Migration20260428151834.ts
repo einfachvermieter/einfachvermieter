@@ -81,6 +81,7 @@ export class Migration20260428151834 extends Migration {
     this.addSql(`create table "account_settlements" ("id" varchar(255) not null, "tenant_id" varchar(255) not null, "statement_id" varchar(255) not null, "date" varchar(255) not null, "amount_cents" int not null, "created_at" varchar(255) not null default current_timestamp, primary key ("id"));`);
     this.addSql(`create index "account_settlements_tenant_id" on "account_settlements" ("tenant_id");`);
     this.addSql(`create index "account_settlements_statement_id" on "account_settlements" ("statement_id");`);
+    this.addSql(`alter table "account_settlements" add constraint "account_settlements_statement_id_unique" unique ("statement_id");`);
 
     this.addSql(`alter table "cost_entry_attachments" add constraint "cost_entry_attachments_cost_entry_id_foreign" foreign key ("cost_entry_id") references "cost_entries" ("id") on delete cascade;`);
 

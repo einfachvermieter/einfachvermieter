@@ -97,6 +97,7 @@ export class Migration20260428151822 extends Migration {
     this.addSql(`create table \`account_settlements\` (\`id\` text not null primary key, \`tenant_id\` text not null, \`statement_id\` text not null, \`date\` text not null, \`amount_cents\` integer not null, \`created_at\` text not null default current_timestamp, constraint \`account_settlements_tenant_id_foreign\` foreign key (\`tenant_id\`) references \`tenants\` (\`id\`) on delete restrict, constraint \`account_settlements_statement_id_foreign\` foreign key (\`statement_id\`) references \`operating_cost_statements\` (\`id\`) on delete restrict);`);
     this.addSql(`create index \`account_settlements_tenant_id\` on \`account_settlements\` (\`tenant_id\`);`);
     this.addSql(`create index \`account_settlements_statement_id\` on \`account_settlements\` (\`statement_id\`);`);
+    this.addSql(`create unique index \`account_settlements_statement_id_unique\` on \`account_settlements\` (\`statement_id\`);`);
   }
 
   override down(): void | Promise<void> {

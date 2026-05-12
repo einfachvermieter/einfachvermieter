@@ -76,4 +76,12 @@ export const AccountSettlementSchema = new EntitySchema<AccountSettlement>({
     { name: "account_settlements_tenant_id", properties: ["tenantId"] },
     { name: "account_settlements_statement_id", properties: ["statementId"] },
   ],
+  uniques: [
+    // Pro Abrechnung höchstens ein Settlement
+    // (doppelte Finalize-Buchungen verhindern)
+    {
+      name: "account_settlements_statement_id_unique",
+      properties: ["statementId"],
+    },
+  ],
 });

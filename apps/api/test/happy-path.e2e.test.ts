@@ -282,10 +282,22 @@ describe("Happy Path", () => {
     });
     expect(statement.status).toBe("draft");
 
-    const finalized = await api(`/statements/${statement.id}/finalize`, {
-      method: "POST",
-      expect: 201,
-    });
+    // H2-Regression (integritaet.md): zwei parallele Finalize-Requests
+    // (Doppelklick/Retry) dürfen nur einmal buchen: genau ein 201, und
+    // weiter unten genau ein Settlement auf dem Mieterkonto.
+    const finalizeResponses = await Promise.all(
+      [0, 1].map(() =>
+        fetch(`${baseUrl}/api/statements/${statement.id}/finalize`, {
+          method: "POST",
+          headers: { cookie: authCookie },
+        }),
+      ),
+    );
+    const finalizeWinners = finalizeResponses.filter(
+      (response) => response.status === 201,
+    );
+    expect(finalizeWinners).toHaveLength(1);
+    const finalized = await finalizeWinners[0].json();
 
     expect(finalized.status).toBe("finalized");
     expect(finalized.totalCostsCents).toBe(12_000);

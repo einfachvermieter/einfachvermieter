@@ -52,7 +52,7 @@ import {
   todayIso,
   type UnitInfo,
 } from "@einfachvermieter/shared";
-import { EntityManager } from "@mikro-orm/core";
+import { EntityManager, LockMode } from "@mikro-orm/core";
 import {
   BadRequestException,
   Injectable,
@@ -1715,6 +1715,23 @@ export class StatementsService {
     const yearEnd = `${periodYear}-12-31`;
 
     const updated = await this.em.transactional(async (em) => {
+      // Status erneut checken: zwei parallele Finalize-Requests
+      // (z.B. Doppelklick, Retry) könnten sonst doppelt Soll buchen etc.
+      const row = await em.findOne(
+        OperatingCostStatementSchema,
+        { id },
+        { lockMode: LockMode.PESSIMISTIC_WRITE },
+      );
+      if (!row) {
+        throw new NotFoundException(notFoundMessage("statement", id));
+      }
+
+      if (row.status !== "draft") {
+        throw new BadRequestException(
+          getI18n().t("errors.statementAlreadyFinalized"),
+        );
+      }
+
       if (needsRentRotation) {
         await this.rotateTenantRents(
           em,
@@ -1736,11 +1753,6 @@ export class StatementsService {
         0,
       );
       const sequenceNumber = maxSeq + 1;
-
-      const row = await em.findOne(OperatingCostStatementSchema, { id });
-      if (!row) {
-        throw new NotFoundException(notFoundMessage("statement", id));
-      }
 
       // Korrekturkette: ersetzt diese Abrechnung eine frühere, wird die alte
       // auf `superseded` gesetzt und die Revisionsnummer hochgezählt.
