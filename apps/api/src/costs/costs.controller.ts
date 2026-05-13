@@ -39,6 +39,7 @@ const MAX_ATTACHMENT_BYTES = attachmentMaxBytesFromEnv(process.env);
 
 @Controller("costs")
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class CostsController {
   constructor(
     private readonly costsService: CostsService,

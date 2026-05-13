@@ -22,6 +22,7 @@ import { AccountsService } from "./accounts.service.js";
 
 @Controller("accounts")
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 

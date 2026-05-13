@@ -33,6 +33,7 @@ export class AiExtractionController {
 
   @Get("config")
   @UseGuards(SessionAuthGuard, RolesGuard)
+  @Roles("admin")
   config() {
     return { mistralConfigured: this.service.isConfigured() };
   }

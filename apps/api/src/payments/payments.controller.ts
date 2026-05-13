@@ -22,6 +22,7 @@ import { PaymentsService } from "./payments.service.js";
 
 @Controller("payments")
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 

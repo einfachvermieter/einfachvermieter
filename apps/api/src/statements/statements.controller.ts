@@ -37,6 +37,7 @@ import { StatementsService } from "./statements.service.js";
 
 @Controller("statements")
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class StatementsController {
   private readonly logger = new Logger(StatementsController.name);
 

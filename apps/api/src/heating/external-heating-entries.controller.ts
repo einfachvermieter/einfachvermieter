@@ -20,6 +20,7 @@ import { ExternalHeatingEntriesService } from "./external-heating-entries.servic
 
 @Controller()
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class ExternalHeatingEntriesController {
   constructor(private readonly service: ExternalHeatingEntriesService) {}
 

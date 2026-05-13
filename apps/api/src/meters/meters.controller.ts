@@ -26,6 +26,7 @@ import { MetersService } from "./meters.service.js";
 
 @Controller("meters")
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class MetersController {
   constructor(private readonly metersService: MetersService) {}
 

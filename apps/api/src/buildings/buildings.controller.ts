@@ -22,6 +22,7 @@ import { BuildingsService } from "./buildings.service.js";
 
 @Controller("buildings")
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class BuildingsController {
   constructor(private readonly buildingsService: BuildingsService) {}
 

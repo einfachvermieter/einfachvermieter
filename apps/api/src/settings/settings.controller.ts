@@ -27,6 +27,7 @@ import { MAX_LOGO_BYTES, SettingsService } from "./settings.service.js";
 
 @Controller("settings")
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 

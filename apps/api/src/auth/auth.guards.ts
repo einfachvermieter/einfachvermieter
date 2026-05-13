@@ -56,7 +56,10 @@ export class RolesGuard implements CanActivate {
     >(ROLES_KEY, [context.getHandler(), context.getClass()]);
 
     if (!required || required.length === 0) {
-      return true;
+      // Deny-by-default: @Roles muss am Endpunkt definiert sein.
+      throw new ForbiddenException(
+        getI18n().t("errors.insufficientPermission"),
+      );
     }
 
     const { user } = context.switchToHttp().getRequest<{ user?: AuthUser }>();

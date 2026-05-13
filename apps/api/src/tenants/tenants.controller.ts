@@ -17,6 +17,7 @@ import { TenantsService } from "./tenants.service.js";
 
 @Controller("tenants")
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}
 

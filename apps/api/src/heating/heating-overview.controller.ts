@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
-import { RolesGuard, SessionAuthGuard } from "../auth/auth.guards.js";
+import { Roles, RolesGuard, SessionAuthGuard } from "../auth/auth.guards.js";
 import { parsePaginationQuery } from "../common/pagination.js";
 import { HeatingService, type HeatingSort } from "./heating.service.js";
 
@@ -14,6 +14,7 @@ const ALLOWED_SORTS: ReadonlySet<HeatingSort> = new Set([
  */
 @Controller("heating")
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class HeatingOverviewController {
   constructor(private readonly heatingService: HeatingService) {}
 

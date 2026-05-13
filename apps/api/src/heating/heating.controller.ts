@@ -20,6 +20,7 @@ import { HeatingService } from "./heating.service.js";
 
 @Controller("buildings/:buildingId/heating")
 @UseGuards(SessionAuthGuard, RolesGuard)
+@Roles("admin")
 export class HeatingController {
   constructor(private readonly heatingService: HeatingService) {}
 
