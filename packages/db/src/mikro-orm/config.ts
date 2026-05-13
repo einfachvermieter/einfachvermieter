@@ -79,5 +79,37 @@ export const createOrmOptions = async (): Promise<Options> => {
   }
 
   const { defineConfig } = await import("@mikro-orm/libsql");
-  return defineConfig({ ...common, dbName: resolveDbPath() }) as Options;
+  return defineConfig({
+    ...common,
+    dbName: resolveDbPath(),
+    onCreateConnection: applySqlitePragmas,
+  }) as Options;
+};
+
+/**
+ * Kysely-Connection-Wrapper des libsql-Treibers (nur `executeQuery` genutzt). */
+type LibSqlRawConnection = {
+  executeQuery: (query: {
+    sql: string;
+    parameters: readonly unknown[];
+  }) => Promise<unknown>;
+};
+
+/**
+ * WAL + `busy_timeout` pro Verbindung setzen,
+ * um vereinzelte `SQLITE_BUSY` (sporadische 500er) zu verhindern.
+ */
+const applySqlitePragmas = async (connection: unknown): Promise<void> => {
+  const pragmas = [
+    "pragma journal_mode = wal",
+    "pragma busy_timeout = 5000",
+    "pragma synchronous = normal",
+  ];
+
+  for (const pragma of pragmas) {
+    await (connection as LibSqlRawConnection).executeQuery({
+      sql: pragma,
+      parameters: [],
+    });
+  }
 };
