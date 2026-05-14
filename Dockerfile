@@ -56,7 +56,7 @@ RUN npm_config_ignore_scripts=false npm rebuild libsql argon2
 # Stage 3: Runtime
 FROM node:24-alpine AS runtime
 
-RUN apk add --no-cache libc6-compat sqlite
+RUN apk add --no-cache libc6-compat sqlite su-exec
 
 WORKDIR /app
 
@@ -75,6 +75,8 @@ COPY --from=builder /app/packages/pdf/assets ./packages/pdf/assets
 COPY --from=builder /app/packages/i18n/package.json ./packages/i18n/
 COPY --from=builder /app/packages/i18n/dist ./packages/i18n/dist
 COPY --from=prod-deps /app/node_modules ./node_modules
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && chown -R node:node /app
 
 ENV NODE_ENV=production
 # Wurzel fuer alle volatilen Daten: SQLite-DB (Default), Uploads und erstellte
@@ -87,6 +89,9 @@ EXPOSE 3000
 
 # Einziges Daten-Volume (DB falls sqlite, uploads/, statements/)
 VOLUME ["/data"]
+
+# Berechtigungen für /data Entrypoint setzen
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Default-Command: API starten. Das Web-Build wird von der API als Static
 # ausgeliefert oder von einem vorgelagerten Reverse Proxy (Caddy, Traefik).

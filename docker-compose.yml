@@ -5,8 +5,9 @@ services:
       dockerfile: Dockerfile
     container_name: einfachvermieter
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    # Nur im Compose-Netz sichtbar; Caddy proxy auf app:3000.
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
       # Einzige Daten-Wurzel (SQLite-DB, Uploads, Abrechnungs-PDFs).
@@ -23,7 +24,8 @@ services:
       - PASSWORD_REQUIRE_LOWERCASE=${PASSWORD_REQUIRE_LOWERCASE:-false}
       - PASSWORD_REQUIRE_DIGIT=${PASSWORD_REQUIRE_DIGIT:-false}
       - PASSWORD_REQUIRE_SPECIAL=${PASSWORD_REQUIRE_SPECIAL:-false}
-      # Optional: internen Port aendern (sonst per Port-Mapping oben verbiegen).
+      # Optional: internen Port aendern (dann in expose oben und im Caddyfile
+      # nachziehen).
       # - PORT=3000
     volumes:
       # Bind-Mount auf ZFS-Dataset. Pfad auf Host-System anpassen.
