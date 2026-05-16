@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import {
   type OperatingCostStatement,
@@ -7,11 +6,6 @@ import {
 } from "@einfachvermieter/db";
 import {
   appLogoPath,
-  geistNormalPath,
-  geistSemiboldPath,
-  geistTnumNormalPath,
-  geistTnumSemiboldPath,
-  StatementDocument,
   type StatementDocumentProps,
 } from "@einfachvermieter/pdf";
 import {
@@ -23,9 +17,8 @@ import {
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { type DocumentProps, Font, renderToBuffer } from "@react-pdf/renderer";
-import { createElement, type ReactElement } from "react";
 import { BuildingsService } from "../buildings/buildings.service.js";
+import { renderStatementDocument } from "../common/pdf-worker.js";
 import { SettingsService } from "../settings/settings.service.js";
 import {
   STATEMENT_STORAGE,
@@ -36,44 +29,6 @@ import { UnitsService } from "../units/units.service.js";
 import { StatementsService } from "./statements.service.js";
 
 const FAR_FUTURE = "9999-12-31";
-
-/**
- * Bessere Fehlermeldung, falls Assets nicht gebaut wurden.
- */
-const missingPdfAssets = [
-  appLogoPath,
-  geistNormalPath,
-  geistSemiboldPath,
-  geistTnumNormalPath,
-  geistTnumSemiboldPath,
-].filter((assetPath) => !existsSync(assetPath));
-if (missingPdfAssets.length > 0) {
-  throw new Error(
-    `PDF-Assets fehlen! Bitte \`npm run setup\` im Repo-Root ausführen. Fehlende Dateien:\n${missingPdfAssets.join("\n")}`,
-  );
-}
-
-// Modul-weite Font-Registrierung: react-pdf hält die Font-Registry global,
-// mehrfaches `Font.register` ist idempotent. Beim ersten Import des Services
-// einmalig ausführen, damit der erste Render-Call nicht erst die Files lädt.
-Font.register({
-  family: "Geist",
-  fonts: [
-    { src: geistNormalPath, fontWeight: 400 },
-    { src: geistSemiboldPath, fontWeight: 600 },
-  ],
-});
-Font.register({
-  family: "Geist Tnum",
-  fonts: [
-    { src: geistTnumNormalPath, fontWeight: 400 },
-    { src: geistTnumSemiboldPath, fontWeight: 600 },
-  ],
-});
-
-// Selbe Regel wie im Frontend (apps/web/src/lib/pdfFonts.ts): keine
-// Hyphenation, sonst trennt react-pdf Tabellen-Zellen mit Bindestrich.
-Font.registerHyphenationCallback((word) => [word]);
 
 type StatementRow = OperatingCostStatement;
 
@@ -98,16 +53,7 @@ export class PdfService {
     const result = await this.resolveResult(statement);
     const meta = await this.buildMeta(statement);
 
-    // `StatementDocument` returnt intern ein `<Document>`-Element, aber
-    // dessen Props sind nicht `DocumentProps`. Die react-pdf-Signatur
-    // verlangt das aber. Cast über `unknown` weil die Formableitung hier
-    // nicht durchgreifen kann.
-    const element = createElement(StatementDocument, {
-      result,
-      meta,
-    }) as unknown as ReactElement<DocumentProps>;
-
-    return renderToBuffer(element);
+    return renderStatementDocument({ result, meta });
   }
 
   /**

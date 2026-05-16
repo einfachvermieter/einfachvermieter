@@ -3,20 +3,20 @@ import {
   type AppSettings,
   AppSettingsSchema,
 } from "@einfachvermieter/db";
-import { LogoPreviewDocument } from "@einfachvermieter/pdf";
 import type {
   SenderSettingsDto,
   SenderSettingsUpdateDto,
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { type DocumentProps, renderToBuffer } from "@react-pdf/renderer";
-import type { ReactElement } from "react";
-import { createElement } from "react";
+import {
+  renderLogoDocument,
+  sanitizeSvgInWorker,
+} from "../common/pdf-worker.js";
 import { assertUploadAllowed } from "../common/upload-guard.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { StorageService } from "../storage/storage.service.js";
-import { SvgSanitizeError, sanitizeSvgLogo } from "./sanitize-svg.js";
+import { SvgSanitizeError } from "./sanitize-svg.js";
 
 export const ALLOWED_LOGO_MIME_TYPES = new Set([
   "image/png",
@@ -57,15 +57,10 @@ const storageKeyForLogo = (extension: string): string => {
  * Bettet die Logo-Bytes als Data-URI in ein react-pdf-Vorschaudokument ein
  * und rendert es zu einem PDF-Buffer.
  */
-const renderLogoPdf = (data: Buffer, mimeType: string): Promise<Buffer> => {
-  const logoDataUri = `data:${mimeType};base64,${data.toString("base64")}`;
-
-  const element = createElement(LogoPreviewDocument, {
-    logoDataUri,
-  }) as unknown as ReactElement<DocumentProps>;
-
-  return renderToBuffer(element);
-};
+const renderLogoPdf = (data: Buffer, mimeType: string): Promise<Buffer> =>
+  renderLogoDocument({
+    logoDataUri: `data:${mimeType};base64,${data.toString("base64")}`,
+  });
 
 type LogoUploadInput = {
   buffer: Buffer;
@@ -142,7 +137,7 @@ export class SettingsService {
    * ggf. vorhandene Datei mit abweichendem Key.
    */
   async uploadLogo(file: LogoUploadInput): Promise<SenderSettingsDto> {
-    const data = this.prepareLogoData(file);
+    const data = await this.prepareLogoData(file);
 
     const row = await this.ensureRow();
     const extension = MIME_TO_EXT[file.mimetype] ?? "bin";
@@ -167,8 +162,8 @@ export class SettingsService {
   /**
    * Rendert die noch nicht gespeicherte Datei als PDF-Vorschau.
    */
-  renderLogoPreview(file: LogoUploadInput): Promise<Buffer> {
-    const data = this.prepareLogoData(file);
+  async renderLogoPreview(file: LogoUploadInput): Promise<Buffer> {
+    const data = await this.prepareLogoData(file);
     return renderLogoPdf(data, file.mimetype);
   }
 
@@ -186,7 +181,7 @@ export class SettingsService {
   /**
    * Validiert Typ/Größe und härtet SVGs; liefert die zu speichernden Bytes.
    */
-  private prepareLogoData(file: LogoUploadInput): Buffer {
+  private async prepareLogoData(file: LogoUploadInput): Promise<Buffer> {
     assertUploadAllowed(
       file.mimetype,
       file.size,
@@ -197,7 +192,7 @@ export class SettingsService {
     // SVGs werden gehärtet (Skripte/externe Refs entfernt), auf RGB-Farben
     // normalisiert und bei Live-Text abgelehnt. Sonst crasht die PDF-Erzeugung.
     return file.mimetype === "image/svg+xml"
-      ? Buffer.from(this.sanitizeSvg(file.buffer))
+      ? Buffer.from(await this.sanitizeSvg(file.buffer))
       : file.buffer;
   }
 
@@ -205,9 +200,9 @@ export class SettingsService {
    * Härtet ein SVG und übersetzt Sanitize-Fehler in lokalisierte
    * `BadRequestException`s (Live-Text vs. ungültiges SVG).
    */
-  private sanitizeSvg(buffer: Buffer): string {
+  private async sanitizeSvg(buffer: Buffer): Promise<string> {
     try {
-      return sanitizeSvgLogo(buffer.toString("utf8"));
+      return await sanitizeSvgInWorker(buffer.toString("utf8"));
     } catch (error) {
       if (error instanceof SvgSanitizeError) {
         const messageKey =
