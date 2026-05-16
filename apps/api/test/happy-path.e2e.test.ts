@@ -563,3 +563,58 @@ describe("Happy Path", () => {
     expect(preview.totalCostsCents).toBeGreaterThan(0);
   }, 120_000);
 });
+
+// Läuft nach dem Happy Path (ändert das Admin-Passwort und verwirft dabei
+// alle Sessions, deshalb als letztes).
+describe("Passwortwechsel invalidiert bestehende Sessions", () => {
+  const cookieOf = (response: globalThis.Response) =>
+    (response.headers.get("set-cookie") ?? "").split(";")[0] ?? "";
+
+  const login = async (password: string) =>
+    fetch(`${baseUrl}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: ADMIN_EMAIL, password }),
+    });
+
+  const NEW_PASSWORD = "e2e-neues-passwort-456";
+
+  it("macht die alte Session ungültig und stellt eine neue aus", async () => {
+    // Zwei separate Sessions öffnen: die eine ändert das Passwort, die
+    // andere ist die „gestohlene" und muss danach tot sein.
+    const changerLogin = await login(ADMIN_PASSWORD);
+    const changerCookie = cookieOf(changerLogin);
+    const stolenLogin = await login(ADMIN_PASSWORD);
+    const stolenCookie = cookieOf(stolenLogin);
+
+    const changeResponse = await fetch(`${baseUrl}/api/auth/change-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie: changerCookie },
+      body: JSON.stringify({
+        currentPassword: ADMIN_PASSWORD,
+        newPassword: NEW_PASSWORD,
+      }),
+    });
+    expect(changeResponse.status).toBe(200);
+
+    // Der ändernde Client bekommt ein frisches Cookie und bleibt eingeloggt.
+    const refreshedCookie = cookieOf(changeResponse);
+    expect(refreshedCookie).toContain("EVAuth=");
+    const meRefreshed = await fetch(`${baseUrl}/api/auth/me`, {
+      headers: { cookie: refreshedCookie },
+    });
+    expect(meRefreshed.status).toBe(200);
+
+    // Die parallele (gestohlene) Session ist verworfen.
+    const meStolen = await fetch(`${baseUrl}/api/auth/me`, {
+      headers: { cookie: stolenCookie },
+    });
+    expect(meStolen.status).toBe(401);
+
+    // Und das alte Passwort funktioniert nicht mehr.
+    const oldPasswordLogin = await login(ADMIN_PASSWORD);
+    expect(oldPasswordLogin.status).toBe(401);
+    const newPasswordLogin = await login(NEW_PASSWORD);
+    expect(newPasswordLogin.status).toBe(200);
+  }, 60_000);
+});

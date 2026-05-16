@@ -120,8 +120,9 @@ export class AuthController {
   @Post("change-password")
   @HttpCode(HttpStatus.OK)
   @UseGuards(SessionAuthGuard)
-  changePassword(
+  async changePassword(
     @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
     @Body(
       new ZodValidationPipe(
         makePasswordChangeSchema(passwordPolicyFromEnv(process.env)),
@@ -131,6 +132,13 @@ export class AuthController {
   ) {
     const user = request.user as AuthUser;
 
-    return this.authService.changePassword(user.userId, dto);
+    const result = await this.authService.changePassword(user.userId, dto);
+
+    // changePassword verwirft alle Sessions des Users; dem ändernden Client
+    // ein frisches Cookie ausstellen, damit er eingeloggt bleibt.
+    const token = await this.sessionService.create(user.userId);
+    setAuthCookie(response, token);
+
+    return result;
   }
 }

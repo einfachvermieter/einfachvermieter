@@ -1,4 +1,4 @@
-import { hashPassword, UserSchema } from "@einfachvermieter/db";
+import { hashPassword, SessionSchema, UserSchema } from "@einfachvermieter/db";
 import type { PasswordChangeDto } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
@@ -58,6 +58,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException(getI18n().t("errors.sessionUserMissing"));
     }
+
     const valid = await argon2.verify(user.passwordHash, dto.currentPassword);
     if (!valid) {
       throw new FieldValidationException([
@@ -67,10 +68,14 @@ export class AuthService {
         },
       ]);
     }
+
     this.em.assign(user, {
       passwordHash: await hashPassword(dto.newPassword),
       updatedAt: new Date().toISOString(),
     });
+
+    // Alle bestehenden Sessions verwerfen
+    await this.em.nativeDelete(SessionSchema, { userId });
 
     await this.em.flush();
 
