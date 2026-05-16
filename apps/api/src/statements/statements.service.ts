@@ -319,6 +319,21 @@ export class StatementsService {
     const statements = await this.em.find(
       OperatingCostStatementSchema,
       buildingId ? { buildingId } : {},
+      {
+        fields: [
+          // snapshotData brauchen wir hier nicht
+          "id",
+          "buildingId",
+          "tenantId",
+          "periodStart",
+          "periodEnd",
+          "documentDate",
+          "status",
+          "totalCostsCents",
+          "balanceCents",
+          "finalizedAt",
+        ],
+      },
     );
     if (statements.length === 0) {
       return { items: [], total: 0 };

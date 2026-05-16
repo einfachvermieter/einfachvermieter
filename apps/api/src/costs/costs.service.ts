@@ -214,11 +214,16 @@ export class CostsService {
       q,
     } = params;
 
-    const [entries, items, costTypes] = await Promise.all([
-      this.em.find(CostEntrySchema, {}),
-      this.em.find(CostEntryItemSchema, {}),
-      this.em.find(CostTypeSchema, {}),
-    ]);
+    const costTypes = await this.em.find(
+      CostTypeSchema,
+      buildingId ? { buildingId } : {},
+    );
+    const items = await this.em.find(CostEntryItemSchema, {
+      costTypeId: { $in: costTypes.map((ct) => ct.id) },
+    });
+    const entries = await this.em.find(CostEntrySchema, {
+      id: { $in: [...new Set(items.map((item) => item.costEntryId))] },
+    });
 
     const costTypeById = new Map(costTypes.map((ct) => [ct.id, ct]));
     const itemsByEntry = new Map<string, CostEntryItem[]>();

@@ -364,15 +364,27 @@ export class TenantsService {
     } = params;
     const today = todayIso();
 
-    const [tenants, units, buildings, residentLinks, residents, rents] =
-      await Promise.all([
-        this.em.find(TenantSchema, {}),
-        this.em.find(UnitSchema, {}),
-        this.em.find(BuildingSchema, {}),
-        this.em.find(TenantResidentSchema, {}),
-        this.em.find(ResidentSchema, {}),
-        this.em.find(TenantRentSchema, {}, { orderBy: { startDate: "asc" } }),
-      ]);
+    const units = await this.em.find(
+      UnitSchema,
+      buildingId ? { buildingId } : {},
+    );
+    const tenants = await this.em.find(
+      TenantSchema,
+      buildingId ? { unitId: { $in: units.map((unit) => unit.id) } } : {},
+    );
+    const tenantIds = tenants.map((tenant) => tenant.id);
+    const [buildings, residentLinks, rents] = await Promise.all([
+      this.em.find(BuildingSchema, {}),
+      this.em.find(TenantResidentSchema, { tenantId: { $in: tenantIds } }),
+      this.em.find(
+        TenantRentSchema,
+        { tenantId: { $in: tenantIds } },
+        { orderBy: { startDate: "asc" } },
+      ),
+    ]);
+    const residents = await this.em.find(ResidentSchema, {
+      id: { $in: [...new Set(residentLinks.map((link) => link.residentId))] },
+    });
 
     const unitById = new Map(units.map((u) => [u.id, u]));
     const buildingById = new Map(buildings.map((b) => [b.id, b]));
