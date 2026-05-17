@@ -433,11 +433,13 @@ const checkAddresses = (data: TenantSaveData, ctx: z.RefinementCtx): void => {
   }
 };
 
-export const tenantSaveSchema = tenantSaveObject.superRefine((data, ctx) => {
-  checkTenantDates(data, ctx);
-  checkResidents(data, ctx);
-  checkRents(data, ctx);
-  checkBankAccounts(data, ctx);
-  checkAddresses(data, ctx);
-});
+export const tenantSaveSchema = tenantSaveObject
+  .strict()
+  .superRefine((data, ctx) => {
+    checkTenantDates(data, ctx);
+    checkResidents(data, ctx);
+    checkRents(data, ctx);
+    checkBankAccounts(data, ctx);
+    checkAddresses(data, ctx);
+  });
 export type TenantSaveDto = z.infer<typeof tenantSaveSchema>;

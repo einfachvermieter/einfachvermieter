@@ -73,28 +73,32 @@ export type HeatingFuelType = (typeof heatingFuelTypes)[number];
  * - Im Modus "external" sind die Verteilungsfelder bedeutungslos;
  *   Endbeträge werden über externalHeatingEntries erfasst.
  */
-const internalSchema = z.object({
-  mode: z.literal("internal"),
-  validFrom: isoDate(),
-  validTo: isoDate().nullable(),
-  baseSharePercent: z.number().int().min(0).max(100),
-  consumptionSharePercent: z.number().int().min(0).max(100),
-  baseMethod: z.enum(heatingBaseMethods),
-  consumptionMethod: z.enum(heatingConsumptionMethods),
-  prorationMethod: z.enum(heatingProrationMethods),
-  heatingType: z.enum(heatingTypes),
-  fuelType: z.enum(heatingFuelTypes),
-  hotWaterMeterId: z.guid().nullable(),
-  hotWaterSupplyTemperatureCelsius: z.number().int().min(20).max(95),
-  totalHeatEnergyKwh: z.number().positive().nullable(),
-  co2CostShareEnabled: z.boolean(),
-});
+const internalSchema = z
+  .object({
+    mode: z.literal("internal"),
+    validFrom: isoDate(),
+    validTo: isoDate().nullable(),
+    baseSharePercent: z.number().int().min(0).max(100),
+    consumptionSharePercent: z.number().int().min(0).max(100),
+    baseMethod: z.enum(heatingBaseMethods),
+    consumptionMethod: z.enum(heatingConsumptionMethods),
+    prorationMethod: z.enum(heatingProrationMethods),
+    heatingType: z.enum(heatingTypes),
+    fuelType: z.enum(heatingFuelTypes),
+    hotWaterMeterId: z.guid().nullable(),
+    hotWaterSupplyTemperatureCelsius: z.number().int().min(20).max(95),
+    totalHeatEnergyKwh: z.number().positive().nullable(),
+    co2CostShareEnabled: z.boolean(),
+  })
+  .strict();
 
-const externalSchema = z.object({
-  mode: z.literal("external"),
-  validFrom: isoDate(),
-  validTo: isoDate().nullable(),
-});
+const externalSchema = z
+  .object({
+    mode: z.literal("external"),
+    validFrom: isoDate(),
+    validTo: isoDate().nullable(),
+  })
+  .strict();
 
 export const heatingSettingsWriteSchema = z
   .discriminatedUnion("mode", [internalSchema, externalSchema])
@@ -495,6 +499,7 @@ const externalEntryBaseSchema = z
     consumptionCostCents: z.number().int().nonnegative().nullable().optional(),
     notes: z.string().max(2000).nullable().optional(),
   })
+  .strict()
   .superRefine((value, ctx) => {
     if (value.periodEnd < value.periodStart) {
       ctx.addIssue({

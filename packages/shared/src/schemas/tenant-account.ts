@@ -14,17 +14,19 @@ import { isoDate } from "./common.js";
  * Kaution wird im Mieter-Gesamtsaldo getrennt geführt (Sondervermögen)
  */
 
-export const accountFeeCreateSchema = z.object({
-  tenantId: z.guid(),
-  date: isoDate(),
-  // Positiv = Forderung (Soll), negativ = Gutschrift (Guthaben für den
-  // Mieter, z. B. rückwirkende Korrektur). 0 ist bedeutungslos
-  amountCents: z
-    .number()
-    .int()
-    .refine((value) => value !== 0, messageKey("validation.required")),
-  reason: z.string().min(1, messageKey("validation.required")).max(500),
-});
+export const accountFeeCreateSchema = z
+  .object({
+    tenantId: z.guid(),
+    date: isoDate(),
+    // Positiv = Forderung (Soll), negativ = Gutschrift (Guthaben für den
+    // Mieter, z. B. rückwirkende Korrektur). 0 ist bedeutungslos
+    amountCents: z
+      .number()
+      .int()
+      .refine((value) => value !== 0, messageKey("validation.required")),
+    reason: z.string().min(1, messageKey("validation.required")).max(500),
+  })
+  .strict();
 export type AccountFeeCreateDto = z.infer<typeof accountFeeCreateSchema>;
 
 export const accountFeeUpdateSchema = accountFeeCreateSchema

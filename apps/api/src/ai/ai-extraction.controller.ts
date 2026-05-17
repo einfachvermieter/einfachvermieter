@@ -19,11 +19,13 @@ import { AiExtractionService } from "./ai-extraction.service.js";
 
 const MAX_ATTACHMENT_BYTES = attachmentMaxBytesFromEnv(process.env);
 
-const fromAttachmentSchema = z.object({
-  costEntryId: z.string().min(1),
-  attachmentId: z.string().min(1),
-  buildingId: z.string().optional(),
-});
+const fromAttachmentSchema = z
+  .object({
+    costEntryId: z.string().min(1),
+    attachmentId: z.string().min(1),
+    buildingId: z.string().optional(),
+  })
+  .strict();
 
 type FromAttachmentDto = z.infer<typeof fromAttachmentSchema>;
 
@@ -46,7 +48,8 @@ export class AiExtractionController {
   )
   extractFromUpload(
     @UploadedFile() file: UploadedMulterFile | undefined,
-    @Body("buildingId") buildingId?: string,
+    @Body("buildingId", new ZodValidationPipe(z.string().optional()))
+    buildingId?: string,
   ) {
     if (!file) {
       throw new BadRequestException(getI18n().t("errors.fileRequired"));

@@ -1,6 +1,7 @@
 import {
   type HeatingSettingsWriteDto,
   heatingSettingsWriteSchema,
+  isoDate,
 } from "@einfachvermieter/shared";
 import {
   Body,
@@ -14,9 +15,12 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
+import { z } from "zod";
 import { Roles, RolesGuard, SessionAuthGuard } from "../auth/auth.guards.js";
 import { ZodValidationPipe } from "../common/zod-validation.pipe.js";
 import { HeatingService } from "./heating.service.js";
+
+const atQuerySchema = z.object({ at: isoDate().optional() });
 
 @Controller("buildings/:buildingId/heating")
 @UseGuards(SessionAuthGuard, RolesGuard)
@@ -29,9 +33,13 @@ export class HeatingController {
    * gültige Version (`?at=YYYY-MM-DD`).
    */
   @Get()
-  list(@Param("buildingId") buildingId: string, @Query("at") at?: string) {
-    if (at) {
-      return this.heatingService.getForBuildingAt(buildingId, at);
+  list(
+    @Param("buildingId") buildingId: string,
+    @Query(new ZodValidationPipe(atQuerySchema))
+    query: z.infer<typeof atQuerySchema>,
+  ) {
+    if (query.at) {
+      return this.heatingService.getForBuildingAt(buildingId, query.at);
     }
 
     return this.heatingService.listForBuilding(buildingId);

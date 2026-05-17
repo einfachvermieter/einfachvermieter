@@ -30,33 +30,37 @@ const optionalIban = z
       .nullable(),
   );
 
-export const senderSettingsUpdateSchema = z.object({
-  senderName: z
-    .string()
-    .max(200, messageKey("validation.tooLong", { max: 200 })),
-  senderAddressStreet: z
-    .string()
-    .max(200, messageKey("validation.tooLong", { max: 200 })),
-  senderAddressPostalCode: z
-    .string()
-    .max(20, messageKey("validation.tooLong", { max: 20 })),
-  senderAddressCity: z
-    .string()
-    .max(100, messageKey("validation.tooLong", { max: 100 })),
-  senderPhone: optionalText(50),
-  senderFax: optionalText(50),
-  senderEmail: z
-    .union([
-      z.literal(""),
-      z.string().email(messageKey("ui.settings.sender.validation.emailFormat")),
-    ])
-    .nullable()
-    .optional(),
-  senderBankName: optionalText(200),
-  senderBankIban: optionalIban,
-  senderBankBic: optionalText(20),
-  useLogo: z.boolean(),
-});
+export const senderSettingsUpdateSchema = z
+  .object({
+    senderName: z
+      .string()
+      .max(200, messageKey("validation.tooLong", { max: 200 })),
+    senderAddressStreet: z
+      .string()
+      .max(200, messageKey("validation.tooLong", { max: 200 })),
+    senderAddressPostalCode: z
+      .string()
+      .max(20, messageKey("validation.tooLong", { max: 20 })),
+    senderAddressCity: z
+      .string()
+      .max(100, messageKey("validation.tooLong", { max: 100 })),
+    senderPhone: optionalText(50),
+    senderFax: optionalText(50),
+    senderEmail: z
+      .union([
+        z.literal(""),
+        z
+          .string()
+          .email(messageKey("ui.settings.sender.validation.emailFormat")),
+      ])
+      .nullable()
+      .optional(),
+    senderBankName: optionalText(200),
+    senderBankIban: optionalIban,
+    senderBankBic: optionalText(20),
+    useLogo: z.boolean(),
+  })
+  .strict();
 
 export type SenderSettingsUpdateDto = z.infer<
   typeof senderSettingsUpdateSchema

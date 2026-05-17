@@ -191,7 +191,7 @@ const meterBaseShape = {
   differenceConfig: meterDifferenceConfigSchema.nullable().optional(),
 } as const;
 
-const meterBaseObject = z.object(meterBaseShape);
+const meterBaseObject = z.object(meterBaseShape).strict();
 
 const unitRequiredRolesNeedUnit = (data: {
   role: MeterRole;
@@ -278,24 +278,28 @@ export const meterReadBySources = [
 ] as const;
 export type MeterReadBy = (typeof meterReadBySources)[number];
 
-export const meterReadingCreateSchema = z.object({
-  meterId: z.guid(),
-  readingDate: isoDate(),
-  value: z.number().nonnegative(),
-  isCumulative: z.boolean().default(true),
-  isEstimated: z.boolean().default(false),
-  readBy: z.enum(meterReadBySources).default("landlord"),
-  notes: z.string().max(500).optional().nullable(),
-});
+export const meterReadingCreateSchema = z
+  .object({
+    meterId: z.guid(),
+    readingDate: isoDate(),
+    value: z.number().nonnegative(),
+    isCumulative: z.boolean().default(true),
+    isEstimated: z.boolean().default(false),
+    readBy: z.enum(meterReadBySources).default("landlord"),
+    notes: z.string().max(500).optional().nullable(),
+  })
+  .strict();
 export type MeterReadingCreateDto = z.infer<typeof meterReadingCreateSchema>;
 
-export const meterReadingUpdateSchema = z.object({
-  readingDate: isoDate().optional(),
-  value: z.number().nonnegative().optional(),
-  isEstimated: z.boolean().optional(),
-  readBy: z.enum(meterReadBySources).optional(),
-  notes: z.string().max(500).optional().nullable(),
-});
+export const meterReadingUpdateSchema = z
+  .object({
+    readingDate: isoDate().optional(),
+    value: z.number().nonnegative().optional(),
+    isEstimated: z.boolean().optional(),
+    readBy: z.enum(meterReadBySources).optional(),
+    notes: z.string().max(500).optional().nullable(),
+  })
+  .strict();
 export type MeterReadingUpdateDto = z.infer<typeof meterReadingUpdateSchema>;
 
 const decimalRegex = /^-?\d+([.,]\d+)?$/u;

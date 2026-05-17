@@ -27,6 +27,7 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import type { Response } from "express";
+import { z } from "zod";
 import { Roles, RolesGuard, SessionAuthGuard } from "../auth/auth.guards.js";
 import { parsePaginationQuery } from "../common/pagination.js";
 import type { UploadedMulterFile } from "../common/uploaded-file.js";
@@ -172,7 +173,8 @@ export class CostsController {
   uploadAttachment(
     @Param("id") id: string,
     @UploadedFile() file: UploadedMulterFile | undefined,
-    @Body("ocrText") ocrText?: string,
+    @Body("ocrText", new ZodValidationPipe(z.string().optional()))
+    ocrText?: string,
   ) {
     if (!file) {
       throw new BadRequestException(getI18n().t("errors.fileRequired"));

@@ -23,38 +23,46 @@ const monthKeyRegex = /^\d{4}-(0[1-9]|1[0-2])$/u;
 export const monthKey = () =>
   z.string().regex(monthKeyRegex, "expected YYYY-MM");
 
-const monthPayloadSchema = z.object({
-  kind: z.literal("month"),
-  forMonth: monthKey(),
-  baseRentCents: z.number().int(),
-  advanceCents: z.number().int(),
-});
+const monthPayloadSchema = z
+  .object({
+    kind: z.literal("month"),
+    forMonth: monthKey(),
+    baseRentCents: z.number().int(),
+    advanceCents: z.number().int(),
+  })
+  .strict();
 
-const statementPayloadSchema = z.object({
-  kind: z.literal("statement"),
-  forStatementId: z.guid(),
-  amountCents: z
-    .number()
-    .int()
-    .refine((value) => value !== 0, { message: "amount must not be zero" }),
-});
+const statementPayloadSchema = z
+  .object({
+    kind: z.literal("statement"),
+    forStatementId: z.guid(),
+    amountCents: z
+      .number()
+      .int()
+      .refine((value) => value !== 0, { message: "amount must not be zero" }),
+  })
+  .strict();
 
-const depositPayloadSchema = z.object({
-  kind: z.literal("deposit"),
-  amountCents: z
-    .number()
-    .int()
-    .refine((value) => value !== 0, { message: "amount must not be zero" }),
-});
+const depositPayloadSchema = z
+  .object({
+    kind: z.literal("deposit"),
+    amountCents: z
+      .number()
+      .int()
+      .refine((value) => value !== 0, { message: "amount must not be zero" }),
+  })
+  .strict();
 
-const feePayloadSchema = z.object({
-  kind: z.literal("fee"),
-  forFeeId: z.guid(),
-  amountCents: z
-    .number()
-    .int()
-    .refine((value) => value !== 0, { message: "amount must not be zero" }),
-});
+const feePayloadSchema = z
+  .object({
+    kind: z.literal("fee"),
+    forFeeId: z.guid(),
+    amountCents: z
+      .number()
+      .int()
+      .refine((value) => value !== 0, { message: "amount must not be zero" }),
+  })
+  .strict();
 
 export const paymentPurposeSchema = z.discriminatedUnion("kind", [
   monthPayloadSchema,
@@ -64,17 +72,21 @@ export const paymentPurposeSchema = z.discriminatedUnion("kind", [
 ]);
 export type PaymentPurpose = z.infer<typeof paymentPurposeSchema>;
 
-export const paymentCreateSchema = z.object({
-  tenantId: z.guid(),
-  paymentDate: isoDate(),
-  reference: z.string().max(500).optional().nullable(),
-  purpose: paymentPurposeSchema,
-});
+export const paymentCreateSchema = z
+  .object({
+    tenantId: z.guid(),
+    paymentDate: isoDate(),
+    reference: z.string().max(500).optional().nullable(),
+    purpose: paymentPurposeSchema,
+  })
+  .strict();
 export type PaymentCreateDto = z.infer<typeof paymentCreateSchema>;
 
-export const paymentUpdateSchema = z.object({
-  paymentDate: isoDate().optional(),
-  reference: z.string().max(500).optional().nullable(),
-  purpose: paymentPurposeSchema.optional(),
-});
+export const paymentUpdateSchema = z
+  .object({
+    paymentDate: isoDate().optional(),
+    reference: z.string().max(500).optional().nullable(),
+    purpose: paymentPurposeSchema.optional(),
+  })
+  .strict();
 export type PaymentUpdateDto = z.infer<typeof paymentUpdateSchema>;

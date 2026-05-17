@@ -3,6 +3,7 @@ import {
   type AccountFeeUpdateDto,
   accountFeeCreateSchema,
   accountFeeUpdateSchema,
+  isoDate,
   todayIso,
 } from "@einfachvermieter/shared";
 import {
@@ -16,9 +17,19 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
+import { z } from "zod";
 import { Roles, RolesGuard, SessionAuthGuard } from "../auth/auth.guards.js";
 import { ZodValidationPipe } from "../common/zod-validation.pipe.js";
 import { AccountsService } from "./accounts.service.js";
+
+const balancesQuerySchema = z.object({
+  asOf: isoDate().optional(),
+  buildingId: z.string().min(1).optional(),
+});
+
+const asOfQuerySchema = z.object({ asOf: isoDate().optional() });
+
+const monthGridQuerySchema = z.object({ from: isoDate(), to: isoDate() });
 
 @Controller("accounts")
 @UseGuards(SessionAuthGuard, RolesGuard)
@@ -28,29 +39,30 @@ export class AccountsController {
 
   @Get("balances")
   getAllBalances(
-    @Query("asOf") asOfDate?: string,
-    @Query("buildingId") buildingId?: string,
+    @Query(new ZodValidationPipe(balancesQuerySchema))
+    query: z.infer<typeof balancesQuerySchema>,
   ) {
-    const date = asOfDate ?? todayIso();
-    return this.accountsService.getAllBalances(date, buildingId);
+    const date = query.asOf ?? todayIso();
+    return this.accountsService.getAllBalances(date, query.buildingId);
   }
 
   @Get(":tenantId/balance")
   getBalance(
     @Param("tenantId") tenantId: string,
-    @Query("asOf") asOfDate?: string,
+    @Query(new ZodValidationPipe(asOfQuerySchema))
+    query: z.infer<typeof asOfQuerySchema>,
   ) {
-    const date = asOfDate ?? todayIso();
+    const date = query.asOf ?? todayIso();
     return this.accountsService.getTenantBalance(tenantId, date);
   }
 
   @Get(":tenantId/months")
   getMonthGrid(
     @Param("tenantId") tenantId: string,
-    @Query("from") rangeStart: string,
-    @Query("to") rangeEnd: string,
+    @Query(new ZodValidationPipe(monthGridQuerySchema))
+    query: z.infer<typeof monthGridQuerySchema>,
   ) {
-    return this.accountsService.getMonthGrid(tenantId, rangeStart, rangeEnd);
+    return this.accountsService.getMonthGrid(tenantId, query.from, query.to);
   }
 
   @Get(":tenantId/settlements")

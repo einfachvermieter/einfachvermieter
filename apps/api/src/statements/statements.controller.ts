@@ -1,5 +1,6 @@
 import {
   formatStatementReference,
+  isoDate,
   type OperatingCostStatementAdvanceAdjustmentDto,
   type OperatingCostStatementCancelDto,
   type OperatingCostStatementCreateDto,
@@ -24,6 +25,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import type { Request, Response } from "express";
+import { z } from "zod";
 import { Roles, RolesGuard, SessionAuthGuard } from "../auth/auth.guards.js";
 import type { AuthUser } from "../auth/auth.service.js";
 import { parsePaginationQuery } from "../common/pagination.js";
@@ -34,6 +36,13 @@ import {
 } from "../storage/storage.service.js";
 import { PdfService } from "./pdf.service.js";
 import { StatementsService } from "./statements.service.js";
+
+const previewQuerySchema = z.object({
+  buildingId: z.string().min(1),
+  tenantId: z.string().min(1),
+  from: isoDate(),
+  to: isoDate(),
+});
 
 @Controller("statements")
 @UseGuards(SessionAuthGuard, RolesGuard)
@@ -92,16 +101,14 @@ export class StatementsController {
    */
   @Get("preview/calculate")
   preview(
-    @Query("buildingId") buildingId: string,
-    @Query("tenantId") tenantId: string,
-    @Query("from") periodStart: string,
-    @Query("to") periodEnd: string,
+    @Query(new ZodValidationPipe(previewQuerySchema))
+    query: z.infer<typeof previewQuerySchema>,
   ) {
     return this.statementsService.calculate(
-      buildingId,
-      tenantId,
-      periodStart,
-      periodEnd,
+      query.buildingId,
+      query.tenantId,
+      query.from,
+      query.to,
     );
   }
 

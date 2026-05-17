@@ -30,6 +30,7 @@ const costTypeFieldsSchema = z.object({
 
 export const costTypeCreateSchema = costTypeFieldsSchema
   .extend({ buildingId: z.guid() })
+  .strict()
   .refine(
     (data) =>
       data.category !== "operating" || data.defaultAllocationKey !== null,
@@ -52,6 +53,7 @@ export const costTypeCreateSchema = costTypeFieldsSchema
 export type CostTypeCreateDto = z.infer<typeof costTypeCreateSchema>;
 
 export const costTypeUpdateSchema = costTypeFieldsSchema
+  .strict()
   .refine(
     (data) =>
       data.category !== "operating" || data.defaultAllocationKey !== null,
@@ -129,28 +131,32 @@ export const costEntryItemSchema = z
   );
 export type CostEntryItemDto = z.infer<typeof costEntryItemSchema>;
 
-export const costEntryCreateSchema = z.object({
-  invoiceDate: isoDate(),
-  invoiceNumber: z.string().max(100).optional().nullable(),
-  vendor: z.string().max(200).optional().nullable(),
-  notes: z.string().max(1000).optional().nullable(),
-  items: z
-    .array(costEntryItemSchema)
-    .min(1, messageKey("ui.costs.validation.itemsMin")),
-});
+export const costEntryCreateSchema = z
+  .object({
+    invoiceDate: isoDate(),
+    invoiceNumber: z.string().max(100).optional().nullable(),
+    vendor: z.string().max(200).optional().nullable(),
+    notes: z.string().max(1000).optional().nullable(),
+    items: z
+      .array(costEntryItemSchema)
+      .min(1, messageKey("ui.costs.validation.itemsMin")),
+  })
+  .strict();
 
 export type CostEntryCreateDto = z.infer<typeof costEntryCreateSchema>;
 
-export const costEntryUpdateSchema = z.object({
-  invoiceDate: isoDate().optional(),
-  invoiceNumber: z.string().max(100).optional().nullable(),
-  vendor: z.string().max(200).optional().nullable(),
-  notes: z.string().max(1000).optional().nullable(),
-  items: z
-    .array(costEntryItemSchema)
-    .min(1, messageKey("ui.costs.validation.itemsMin"))
-    .optional(),
-});
+export const costEntryUpdateSchema = z
+  .object({
+    invoiceDate: isoDate().optional(),
+    invoiceNumber: z.string().max(100).optional().nullable(),
+    vendor: z.string().max(200).optional().nullable(),
+    notes: z.string().max(1000).optional().nullable(),
+    items: z
+      .array(costEntryItemSchema)
+      .min(1, messageKey("ui.costs.validation.itemsMin"))
+      .optional(),
+  })
+  .strict();
 
 export type CostEntryUpdateDto = z.infer<typeof costEntryUpdateSchema>;
 
@@ -163,6 +169,7 @@ export const operatingCostStatementCreateSchema = z
     documentDate: isoDate().optional(),
     notes: z.string().max(2000).optional().nullable(),
   })
+  .strict()
   .refine((d) => d.periodStart < d.periodEnd, {
     message: "periodStart muss < periodEnd sein",
   });
@@ -188,6 +195,7 @@ export const operatingCostStatementAdvanceAdjustmentSchema = z
      */
     tariffAdjustmentBps: z.record(z.string(), z.number().int()).nullable(),
   })
+  .strict()
   .refine(
     (d) =>
       (d.adjustedMonthlyAdvanceCents === null &&
@@ -208,9 +216,11 @@ export type OperatingCostStatementAdvanceAdjustmentDto = z.infer<
  * (revisionssichere Dokumentation, warum die Abrechnung zurückgenommen wurde)
  * und wird am Datensatz festgehalten.
  */
-export const operatingCostStatementCancelSchema = z.object({
-  reason: z.string().trim().min(1).max(2000),
-});
+export const operatingCostStatementCancelSchema = z
+  .object({
+    reason: z.string().trim().min(1).max(2000),
+  })
+  .strict();
 export type OperatingCostStatementCancelDto = z.infer<
   typeof operatingCostStatementCancelSchema
 >;

@@ -1,20 +1,22 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import { z } from "zod";
 
-export const unitCreateSchema = z.object({
-  buildingId: z.guid(),
-  name: z
-    .string()
-    .min(1, messageKey("validation.required"))
-    .max(100, messageKey("validation.tooLong", { max: 100 })),
-  unitNumber: z
-    .string()
-    .max(50, messageKey("validation.tooLong", { max: 50 }))
-    .nullable()
-    .optional(),
-  areaSqm: z.number().positive().max(10_000),
-  heatingAreaSqm: z.number().positive().max(10_000).nullable().optional(),
-});
+export const unitCreateSchema = z
+  .object({
+    buildingId: z.guid(),
+    name: z
+      .string()
+      .min(1, messageKey("validation.required"))
+      .max(100, messageKey("validation.tooLong", { max: 100 })),
+    unitNumber: z
+      .string()
+      .max(50, messageKey("validation.tooLong", { max: 50 }))
+      .nullable()
+      .optional(),
+    areaSqm: z.number().positive().max(10_000),
+    heatingAreaSqm: z.number().positive().max(10_000).nullable().optional(),
+  })
+  .strict();
 export type UnitCreateDto = z.infer<typeof unitCreateSchema>;
 
 export const unitUpdateSchema = unitCreateSchema
