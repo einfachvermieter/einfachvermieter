@@ -6,6 +6,8 @@ import {
   type PaymentFormValues,
   type PaymentPurposeKind,
   type PotState,
+  pad2,
+  pad4,
   paymentFormSchema,
   paymentPurposeKinds,
   splitSumByContract,
@@ -36,14 +38,6 @@ import {
 } from "../../../lib/accounts";
 import { t } from "../../../lib/i18n";
 
-const today = new Date();
-const calendarStart = new Date(today.getFullYear() - 20, 0, 1);
-// Letzter Tag des übernächsten Monats: erlaubt Eingabe von Zahlungen für
-// Mietmonate bis +2 Monate in der Zukunft
-const monthRangeEndIso = new Date(today.getFullYear(), today.getMonth() + 3, 0)
-  .toISOString()
-  .slice(0, 10);
-
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/u;
 
 type Props = {
@@ -73,6 +67,20 @@ export const PaymentForm = ({
     reValidateMode: "onSubmit",
     defaultValues,
   });
+  // Bei jedem Mount neu berechnen, damit längere Sessions nicht auf
+  // einem veralteten „heute" hängen.
+  const { calendarStart, calendarEnd, monthRangeEndIso } = useMemo(() => {
+    const now = new Date();
+    // Letzter Tag des übernächsten Monats: erlaubt Eingabe von Zahlungen für
+    // Mietmonate bis +2 Monate in der Zukunft
+    const rangeEnd = new Date(now.getFullYear(), now.getMonth() + 3, 0);
+    return {
+      calendarStart: new Date(now.getFullYear() - 20, 0, 1),
+      calendarEnd: now,
+      monthRangeEndIso: `${pad4(rangeEnd.getFullYear())}-${pad2(rangeEnd.getMonth() + 1)}-${pad2(rangeEnd.getDate())}`,
+    };
+  }, []);
+
   const submitting = form.formState.isSubmitting;
   const purposeKind = form.watch("purposeKind");
   const tenantId = form.watch("tenantId");
@@ -224,7 +232,7 @@ export const PaymentForm = ({
                 name="paymentDate"
                 label={t("ui.payments.columns.date")}
                 startMonth={calendarStart}
-                endMonth={today}
+                endMonth={calendarEnd}
               />
               <SelectInput
                 control={form.control}

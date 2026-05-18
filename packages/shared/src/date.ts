@@ -1,9 +1,4 @@
 /**
- * Heutiges Datum als ISO `YYYY-MM-DD` (UTC).
- */
-export const todayIso = (): string => new Date().toISOString().slice(0, 10);
-
-/**
  * Zahl zweistellig mit führender Null (für `YYYY-MM`-Keys)
  */
 export const pad2 = (value: number): string =>
@@ -14,6 +9,15 @@ export const pad2 = (value: number): string =>
  */
 export const pad4 = (value: number): string =>
   value.toString().padStart(4, "0");
+
+/**
+ * Heutiges Datum als ISO `YYYY-MM-DD` in lokaler Zeitzone. Serverseitig
+ * setzt das `TZ=Europe/Berlin` im Container voraus, sonst gilt dort UTC.
+ */
+export const todayIso = (): string => {
+  const now = new Date();
+  return `${pad4(now.getFullYear())}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+};
 
 /**
  * Frühestes von mehreren ISO-Daten
