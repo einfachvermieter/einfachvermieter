@@ -7,6 +7,7 @@
     "build": "nest build",
     "dev": "node scripts/dev.mjs",
     "start": "node dist/main.js",
+    "prune:attachments": "node dist/prune-attachments.js",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
   },

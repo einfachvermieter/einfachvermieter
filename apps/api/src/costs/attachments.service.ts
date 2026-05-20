@@ -7,7 +7,7 @@ import {
   attachmentMaxBytesFromEnv,
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { assertUploadAllowed } from "../common/upload-guard.js";
 import { notFoundMessage } from "../i18n/notFound.js";
 import {
@@ -51,6 +51,8 @@ type UploadInput = {
 
 @Injectable()
 export class AttachmentsService {
+  private readonly logger = new Logger(AttachmentsService.name);
+
   constructor(
     private readonly em: EntityManager,
     private readonly storage: StorageService,
@@ -121,7 +123,12 @@ export class AttachmentsService {
       };
     } catch (error) {
       // DB-Insert fehlgeschlagen -> Datei wieder entfernen
-      await this.storage.delete(storageKey).catch(() => undefined);
+      await this.storage.delete(storageKey).catch((err) => {
+        this.logger.warn(
+          `Beleg-Rollback fehlgeschlagen, Datei ${storageKey} bleibt verwaist`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      });
       throw error;
     }
   }
@@ -176,7 +183,12 @@ export class AttachmentsService {
     this.em.remove(attachment);
 
     await this.em.flush();
-    await this.storage.delete(storageKey).catch(() => undefined);
+    await this.storage.delete(storageKey).catch((err) => {
+      this.logger.warn(
+        `Belegdatei ${storageKey} konnte nicht gelöscht werden`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    });
 
     return { id: attachmentId };
   }

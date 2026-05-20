@@ -8,7 +8,7 @@ import type {
   SenderSettingsUpdateDto,
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import {
   renderLogoDocument,
   sanitizeSvgInWorker,
@@ -91,6 +91,8 @@ const toDto = (row: AppSettings): SenderSettingsDto => ({
 
 @Injectable()
 export class SettingsService {
+  private readonly logger = new Logger(SettingsService.name);
+
   constructor(
     private readonly em: EntityManager,
     private readonly storage: StorageService,
@@ -146,7 +148,12 @@ export class SettingsService {
     await this.storage.write(newKey, data);
 
     if (row.logoStorageKey && row.logoStorageKey !== newKey) {
-      await this.storage.delete(row.logoStorageKey).catch(() => undefined);
+      await this.storage.delete(row.logoStorageKey).catch((err) => {
+        this.logger.warn(
+          `Altes Logo ${row.logoStorageKey} konnte nicht gelöscht werden`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      });
     }
 
     this.em.assign(row, {
@@ -224,7 +231,12 @@ export class SettingsService {
   async deleteLogo(): Promise<SenderSettingsDto> {
     const row = await this.ensureRow();
     if (row.logoStorageKey) {
-      await this.storage.delete(row.logoStorageKey).catch(() => undefined);
+      await this.storage.delete(row.logoStorageKey).catch((err) => {
+        this.logger.warn(
+          `Logo ${row.logoStorageKey} konnte nicht gelöscht werden`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      });
     }
 
     this.em.assign(row, {

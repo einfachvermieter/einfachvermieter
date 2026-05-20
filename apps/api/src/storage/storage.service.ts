@@ -1,5 +1,5 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, isAbsolute, join, resolve } from "node:path";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDir } from "@einfachvermieter/db";
 import { Injectable } from "@nestjs/common";
@@ -84,6 +84,34 @@ export class StorageService {
    */
   async deleteDirectory(prefix: string): Promise<void> {
     await rm(this.resolveSafe(prefix), { force: true, recursive: true });
+  }
+
+  /**
+   * Listet alle Datei-Keys (rekursiv, relativ zur Wurzel) im Store auf.
+   * Existiert die Wurzel nicht, ist das Ergebnis leer.
+   */
+  async listKeys(): Promise<string[]> {
+    const keys: string[] = [];
+
+    const walk = async (dir: string): Promise<void> => {
+      const entries = await readdir(dir, { withFileTypes: true }).catch(
+        () => [],
+      );
+
+      for (const entry of entries) {
+        const abs = join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+          await walk(abs);
+        } else if (entry.isFile()) {
+          keys.push(relative(this.baseDir, abs).split(sep).join("/"));
+        }
+      }
+    };
+
+    await walk(this.baseDir);
+
+    return keys;
   }
 
   /**

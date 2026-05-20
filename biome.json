@@ -288,6 +288,7 @@
       "includes": [
         "packages/db/scripts/**",
         "packages/db/src/cli.ts",
+        "apps/api/src/prune-attachments.ts",
         "scripts/**"
       ],
       "linter": {
