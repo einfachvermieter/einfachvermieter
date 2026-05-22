@@ -1,5 +1,5 @@
 import {
-  co2Tier,
+  co2TierLabel,
   degreeDaysMonthlyBreakdown,
   formatEur,
   formatNumber,
@@ -7,6 +7,8 @@ import {
   HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
   landlordShareRow,
   type Period,
+  perMeterDisplayDigits,
+  prepareHeatingDisplay,
 } from "@einfachvermieter/shared";
 import { Text, View } from "@react-pdf/renderer";
 import { calcWarningKey, formatCalcWarning } from "../calcWarnings.js";
@@ -111,21 +113,6 @@ const prorationNote = (detail: HeatingDetail, tenantPeriod: Period): string => {
     : t("statements.pdf.heating.prorationNoteLinearBase");
 };
 
-/**
- * Anzeige als "Bewertungspunkte" (/ 1.000) lohnt sich nur bei sehr großen
- * Roh-Summen, solange überflüssige Nachkommastellen (siehe `allInteger`)
- * unterdrückt werden, bleiben auch sechsstellige Ganzzahlen lesbar.
- */
-const VALUATION_POINTS_THRESHOLD = 10_000_000;
-
-/**
- * Pro Spalte entscheiden: wenn alle Werte ganzzahlig sind, Nachkommastellen
- * komplett weglassen. So bleibt die Tabelle bündig (Pro-Spalten-Entscheidung
- * statt Pro-Zelle).
- */
-const allInteger = (values: number[]): boolean =>
-  values.every((v) => Number.isInteger(v));
-
 const distributionConsumptionHeader = (
   method: HeatingDetail["consumptionMethod"],
   useValuationPoints: boolean,
@@ -144,55 +131,22 @@ export const HeatingAppendix = ({
   tenantPeriod,
   statementPeriod,
   targetUnitId,
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Verzweigung ist Anzeige-Logik (Fußnoten/Nachkommastellen/CO2/Warmwasser).
 }: Props) => {
-  const consumptionPct = detail.consumptionShareBps / 100;
-  const basicPct = 100 - consumptionPct;
-  // Unterjährige Nutzung: Mietzeit deckt die Abrechnungsperiode nicht voll ab.
-  // Nur dann wurde der zeitanteilig verteilt. Sonst entfällt der Hinweis.
-  const isPartialPeriod =
-    tenantPeriod.start !== statementPeriod.start ||
-    tenantPeriod.end !== statementPeriod.end;
-  const isHkv = detail.consumptionMethod === "heat_cost_allocator";
-  const distributionMethod =
-    detail.consumptionDistributionMethod ?? "consumption";
-  const totalConsumption = detail.perUnit.reduce(
-    (acc, row) => acc + row.consumptionKwh,
-    0,
-  );
-  // Bei HKVs werden aggregierte Werte als "Bewertungspunkte" angezeigt:
-  // (Anzeigewert x KGesamt) / 1.000. Reine Anzeige-Skalierung. Die
-  // Kostenverteilung läuft weiter über die rohen bewerteten Einheiten. Die
-  // Skalierung lohnt sich erst ab einer Roh-Summe von 10.000.
-  // Darunter bleibt die Anzeige bei rohen Verbrauchseinheiten. Bei
-  // Wärmemengenzählern bleibt der kWh-Wert unskaliert.
-  const useValuationPoints =
-    isHkv && totalConsumption >= VALUATION_POINTS_THRESHOLD;
-  // Aggregierte Verbrauchseinheiten (Summary + Verteilung pro Wohnung). Bei
-  // ganzzahligen Einzelwerten sind Teilsummen ebenfalls ganzzahlig. Bei
-  // aktivierten Bewertungspunkten bleibt es bei 3 Stellen, weil / 1.000 fast
-  // immer Float ergibt.
-  const aggregatedAllInteger = allInteger(
-    detail.perUnit.map((u) => u.consumptionKwh),
-  );
-
-  let aggregatedConsumptionDigits = 2;
-  if (useValuationPoints) {
-    aggregatedConsumptionDigits = 3;
-  } else if (aggregatedAllInteger) {
-    aggregatedConsumptionDigits = 0;
-  }
-
-  const formatAggregatedConsumption = (value: number): string => {
-    if (!isHkv) {
-      return formatNumber(value, aggregatedConsumptionDigits);
-    }
-    return useValuationPoints
-      ? formatNumber(value / 1000, 3)
-      : formatNumber(value, aggregatedConsumptionDigits);
-  };
-
-  const totalArea = detail.perUnit.reduce((acc, row) => acc + row.areaSqm, 0);
+  // Gemeinsames Anzeige-View-Model (WYSIWYG-Pflicht Web <-> PDF).
+  const {
+    consumptionPct,
+    basicPct,
+    isHkv,
+    distributionMethod,
+    totalConsumption,
+    totalArea,
+    useValuationPoints,
+    heatingPotForDisplay,
+    isPartialPeriod,
+    hotWaterConsumptionPct,
+    hotWaterBasicPct,
+    formatAggregatedConsumption,
+  } = prepareHeatingDisplay(detail, tenantPeriod, statementPeriod);
 
   // Spalten-Fußnoten in Spalten-Reihenfolge (Heizfläche -> Bewertungspunkte).
   // Werden nur angezeigt, wenn die jeweilige Bedingung erfüllt ist; die
@@ -232,23 +186,8 @@ export const HeatingAppendix = ({
     (row) => row.unitId === targetUnitId,
   );
 
-  const perMeterKTotalValues = perMeter
-    .map((row) => row.kTotal)
-    .filter((v): v is number => v !== null && v !== undefined);
-
-  const consumptionRawDigits = allInteger(
-    perMeter.map((row) => row.consumptionRaw),
-  )
-    ? 0
-    : 2;
-
-  const kTotalDigits = allInteger(perMeterKTotalValues) ? 0 : 3;
-
-  const consumptionWeightedDigits = allInteger(
-    perMeter.map((row) => row.consumptionWeighted),
-  )
-    ? 0
-    : 2;
+  const { consumptionRawDigits, kTotalDigits, consumptionWeightedDigits } =
+    perMeterDisplayDigits(perMeter);
 
   // CO2KostAufG-Aufteilung (Wohngebäude). Nur gesetzt, wenn die Aufteilung
   // aktiv ist und CO2-Kosten + -Menge im Topf erfasst sind (siehe
@@ -261,10 +200,6 @@ export const HeatingAppendix = ({
   // sich die Heizungs-Verteilungstabelle nur noch auf den um das Warmwasser
   // reduzierten Topf; das Warmwasser erscheint in einer eigenen Sektion.
   const hw = detail.hotWaterDetail;
-  const heatingPotForDisplay = hw
-    ? (detail.heatingPotCents ??
-      detail.totalHeatingCostsCents - hw.hotWaterPotCents)
-    : detail.totalHeatingCostsCents;
 
   // Aufschlüsselung der Heizkosten-Gesamtsumme nach Kostenarten, stellt
   // sicher, dass der Mieter nachvollziehen kann, woraus sich der "Heizkosten
@@ -349,23 +284,10 @@ export const HeatingAppendix = ({
   // CO2-Aufteilungstabelle (Header-Zellen in der linken Spalte).
   // Einstufungs-Label (Stufe, in die der Gebäude-Ausstoß fällt), eine der
   // drei Bereichsformen (unterste/mittlere/oberste Stufe).
-  const co2TierLabel = co2
+  const co2TierText = co2
     ? (() => {
-        const tier = co2Tier(co2.emissionsKgPerSqmYear);
-        if (!Number.isFinite(tier.maxExclusive)) {
-          return t("statements.pdf.heating.co2.tierAbove", {
-            min: formatNumber(tier.minInclusive, 0),
-          });
-        }
-        if (tier.minInclusive === 0) {
-          return t("statements.pdf.heating.co2.tierBelow", {
-            max: formatNumber(tier.maxExclusive, 0),
-          });
-        }
-        return t("statements.pdf.heating.co2.tierRange", {
-          min: formatNumber(tier.minInclusive, 0),
-          max: formatNumber(tier.maxExclusive, 0),
-        });
+        const label = co2TierLabel(co2.emissionsKgPerSqmYear);
+        return t(label.key, label.params);
       })()
     : "";
 
@@ -400,7 +322,7 @@ export const HeatingAppendix = ({
             <Text>{t("statements.pdf.heating.co2.tier")}</Text>
           </View>
           <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-            <Text>{renderSuperscripts(co2TierLabel)}</Text>
+            <Text>{renderSuperscripts(co2TierText)}</Text>
           </View>
         </View>
         <View style={[styles.row, styles.rowDivider]}>
@@ -426,8 +348,6 @@ export const HeatingAppendix = ({
   // Warmwasser-Sektion (§ 9 Abs. 2 HeizkostenV): Zerlegung Q_WW/Q_gesamt plus
   // eigene Verteilungstabelle. DSGVO-Hybrid wie bei der Heizung, eigene
   // Wohnung detailliert, übrige aggregiert.
-  const hotWaterConsumptionPct = hw ? hw.consumptionShareBps / 100 : 0;
-  const hotWaterBasicPct = 100 - hotWaterConsumptionPct;
   const hotWaterSection = hw ? (
     <View>
       <Text style={styles.sectionHeading}>

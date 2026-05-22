@@ -1,5 +1,6 @@
 import {
   type CostLineResult,
+  formatBemessung,
   formatEur,
   formatNumber,
   type StatementResult,
@@ -26,29 +27,6 @@ const ALLOCATION_BY_LABEL_KEY: Record<CostLineResult["allocationKey"], string> =
     // biome-ignore-end lint/style/useNamingConvention: domain bedingte keys
     fixed: "costs.allocationsBy.fixed",
   };
-
-const PLURAL_BEMESSUNG_UNIT_KEYS = new Set(["person"]);
-
-const bemessungDigitsForUnit = (unit: string | null | undefined): number =>
-  unit === "m²" || unit === "m³" ? 2 : 0;
-
-// "Personentage" ist in der schmalen Spalte zu lang, "PT" plus Fußnote.
-const displayBemessungUnit = (unit: string): string =>
-  unit === "Personentage" ? "PT" : unit;
-
-const formatBemessung = (
-  value: number,
-  unit: string | null | undefined,
-): string => {
-  const digits = bemessungDigitsForUnit(unit);
-  if (!unit) {
-    return formatNumber(value, digits);
-  }
-  const unitText = PLURAL_BEMESSUNG_UNIT_KEYS.has(unit)
-    ? t(`costs.units.${unit}`, { count: value })
-    : displayBemessungUnit(unit);
-  return `${formatNumber(value, digits)} ${unitText}`;
-};
 
 const isWasteWaterName = (name: string): boolean =>
   /schmutzwasser|abwasser/iu.test(name);
@@ -222,10 +200,12 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
                             top={formatBemessung(
                               line.bemessungTenant as number,
                               line.bemessungUnit,
+                              t,
                             )}
                             bottom={formatBemessung(
                               line.bemessungTotal as number,
                               line.bemessungUnit,
+                              t,
                             )}
                           />
                           {isFixed ? null : (

@@ -1,11 +1,13 @@
 import {
-  co2Tier,
+  co2TierLabel,
   degreeDaysMonthlyBreakdown,
   formatEur,
   formatNumber,
   HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
   landlordShareRow,
   type Period,
+  perMeterDisplayDigits,
+  prepareHeatingDisplay,
   type StatementResult,
 } from "@einfachvermieter/shared";
 import { Description } from "../../../../components/common/Description";
@@ -32,15 +34,6 @@ const MONTH_LABELS_DE = [
   "Dez",
 ];
 
-// Synchronisiert mit `VALUATION_POINTS_THRESHOLD` in
-// packages/pdf/src/components/HeatingAppendix.tsx, solange Ganzzahlen
-// ohne Nachkommastellen gerendert werden, bleibt selbst die roh-Anzeige
-// gut lesbar; daher praktisch oft nie aktiv.
-const VALUATION_POINTS_THRESHOLD = 10_000_000;
-
-const allInteger = (values: number[]): boolean =>
-  values.every((v) => Number.isInteger(v));
-
 const consumptionUnitHeader = (
   method: NonNullable<StatementResult["heatingDetail"]>["consumptionMethod"],
   useValuationPoints: boolean,
@@ -54,36 +47,11 @@ const consumptionUnitHeader = (
 };
 
 /**
- * CO2KostAufG-Einstufungs-Label (Stufe des Gebäude-Ausstoßes), analog zur
- * PDF-Anlage.
- */
-const formatCo2TierLabel = (emissionsKgPerSqmYear: number): string => {
-  const tier = co2Tier(emissionsKgPerSqmYear);
-  if (!Number.isFinite(tier.maxExclusive)) {
-    return t("statements.pdf.heating.co2.tierAbove", {
-      min: formatNumber(tier.minInclusive, 0),
-    });
-  }
-
-  if (tier.minInclusive === 0) {
-    return t("statements.pdf.heating.co2.tierBelow", {
-      max: formatNumber(tier.maxExclusive, 0),
-    });
-  }
-
-  return t("statements.pdf.heating.co2.tierRange", {
-    min: formatNumber(tier.minInclusive, 0),
-    max: formatNumber(tier.maxExclusive, 0),
-  });
-};
-
-/**
  * Spiegel der PDF-Anlage `HeatingAppendix` im Browser. Im Gegensatz zur
  * PDF-Variante (für den Mieter, mit § 12 HeizkostenV-Anonymisierung
  * fremder Wohnungen) zeigt diese Card alle Wohnungen und alle Zähler.
  * Die Übersicht ist nur für den Vermieter sichtbar.
  */
-// biome-ignore lint/complexity/noExcessiveLinesPerFunction: Länge liegt am Markup
 export const HeatingCard = ({
   detail,
   tenantPeriod,
@@ -94,23 +62,27 @@ export const HeatingCard = ({
   statementPeriod: Period;
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Spiegel der PDF-Anlage.
 }) => {
-  const consumptionPct = detail.consumptionShareBps / 100;
-  const basicPct = 100 - consumptionPct;
+  // Gemeinsames Anzeige-View-Model (WYSIWYG-Pflicht Web <-> PDF).
+  const {
+    consumptionPct,
+    basicPct,
+    isHkv,
+    distributionMethod,
+    totalConsumption,
+    totalArea,
+    useValuationPoints,
+    heatingPotForDisplay,
+    isPartialPeriod,
+    hotWaterConsumptionPct,
+    hotWaterBasicPct,
+    formatAggregatedConsumption,
+  } = prepareHeatingDisplay(detail, tenantPeriod, statementPeriod);
 
   // CO2KostAufG-Aufteilung (nur bei aktiver Aufteilung mit erfassten CO2-
   // Werten gesetzt). Steuert die Abzugszeile im Breakdown und die separate
   // CO2-Tabelle daneben.
   const co2 = detail.co2Detail;
-
-  // Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV): reduziert die Heizungs-
-  // Verteilung auf den Heiztopf und erhält eine eigene Sektion.
   const hw = detail.hotWaterDetail;
-  const heatingPotForDisplay = hw
-    ? (detail.heatingPotCents ??
-      detail.totalHeatingCostsCents - hw.hotWaterPotCents)
-    : detail.totalHeatingCostsCents;
-  const hotWaterConsumptionPct = hw ? hw.consumptionShareBps / 100 : 0;
-  const hotWaterBasicPct = 100 - hotWaterConsumptionPct;
 
   // Vermieteranteil (Leerstand/Mieterwechsel) als eigene Tabellenzeile,
   // damit die Wohnungszeilen sichtbar auf "Haus gesamt" aufsummieren.
@@ -118,57 +90,16 @@ export const HeatingCard = ({
   const hwLandlordRow = hw ? landlordShareRow(hw) : null;
 
   // Einstufungs-Label (Stufe des Gebäude-Ausstoßes), analog zur PDF-Anlage.
-  const co2TierLabel = co2 ? formatCo2TierLabel(co2.emissionsKgPerSqmYear) : "";
+  const co2TierText = co2
+    ? (() => {
+        const label = co2TierLabel(co2.emissionsKgPerSqmYear);
+        return t(label.key, label.params);
+      })()
+    : "";
 
-  // Unterjährige Nutzung: Mietzeit deckt die Abrechnungsperiode nicht voll ab.
-  const isPartialPeriod =
-    tenantPeriod.start !== statementPeriod.start ||
-    tenantPeriod.end !== statementPeriod.end;
-  const isHkv = detail.consumptionMethod === "heat_cost_allocator";
-  const distributionMethod =
-    detail.consumptionDistributionMethod ?? "consumption";
-  const totalConsumption = detail.perUnit.reduce(
-    (acc, row) => acc + row.consumptionKwh,
-    0,
-  );
-  const totalArea = detail.perUnit.reduce((acc, row) => acc + row.areaSqm, 0);
-  const useValuationPoints =
-    isHkv && totalConsumption >= VALUATION_POINTS_THRESHOLD;
   const perMeter = detail.perMeter ?? [];
-  const perMeterKTotalValues = perMeter
-    .map((row) => row.kTotal)
-    .filter((v): v is number => v !== null && v !== undefined);
-  const consumptionRawDigits = allInteger(
-    perMeter.map((row) => row.consumptionRaw),
-  )
-    ? 0
-    : 2;
-  const kTotalDigits = allInteger(perMeterKTotalValues) ? 0 : 3;
-  const consumptionWeightedDigits = allInteger(
-    perMeter.map((row) => row.consumptionWeighted),
-  )
-    ? 0
-    : 2;
-  const aggregatedAllInteger = allInteger(
-    detail.perUnit.map((u) => u.consumptionKwh),
-  );
-  let aggregatedConsumptionDigits = 2;
-  if (useValuationPoints) {
-    aggregatedConsumptionDigits = 3;
-  } else if (aggregatedAllInteger) {
-    aggregatedConsumptionDigits = 0;
-  }
-
-  // Bewertungspunkte-Skalierung: bei HKVs (Anzeigewert x KGesamt) / 1.000,
-  // bei Wärmemengenzählern unverändert kWh. Reine Anzeige-Skalierung.
-  const formatAggregatedConsumption = (value: number): string => {
-    if (!isHkv) {
-      return formatNumber(value, aggregatedConsumptionDigits);
-    }
-    return useValuationPoints
-      ? formatNumber(value / 1000, 3)
-      : formatNumber(value, aggregatedConsumptionDigits);
-  };
+  const { consumptionRawDigits, kTotalDigits, consumptionWeightedDigits } =
+    perMeterDisplayDigits(perMeter);
 
   return (
     <Card>
@@ -270,7 +201,7 @@ export const HeatingCard = ({
                         {t("statements.pdf.heating.co2.tier")}
                       </th>
                       <td className="py-1.5 text-right tabular-nums">
-                        {co2TierLabel}
+                        {co2TierText}
                       </td>
                     </tr>
                     <tr className="border-b border-border">

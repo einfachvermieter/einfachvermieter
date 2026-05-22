@@ -1,7 +1,7 @@
 import {
   type CostLineResult,
+  formatBemessung,
   formatEur,
-  formatNumber,
 } from "@einfachvermieter/shared";
 import { Text, View } from "@react-pdf/renderer";
 import { t } from "../i18n.js";
@@ -80,32 +80,6 @@ const allocationLabelKey: Record<CostLineResult["allocationKey"], string> = {
   heating_ordinance: "costs.allocationsBy.heizkostenV",
   // biome-ignore-end lint/style/useNamingConvention: domain bedingte keys
   fixed: "costs.allocationsBy.fixed",
-};
-
-// Anzeigegenauigkeit pro Bemessungs-Einheit:
-// - m2 (Wohnfläche/Heizfläche), m3 (Wasser): 2 Nachkommastellen
-// - Personen, Wohnungen, Personentage: ganze Zahlen
-const digitsForUnit = (unit: string | null | undefined): number =>
-  unit === "m²" || unit === "m³" ? 2 : 0;
-
-const PLURAL_UNIT_KEYS = new Set(["person"]);
-
-// "Personentage" ist in der schmalen Spalte zu lang, "PT" plus Fußnote.
-const displayUnit = (unit: string): string =>
-  unit === "Personentage" ? "PT" : unit;
-
-const fmtBemessung = (
-  value: number,
-  unit: string | null | undefined,
-): string => {
-  const digits = digitsForUnit(unit);
-  if (!unit) {
-    return formatNumber(value, digits);
-  }
-  const unitText = PLURAL_UNIT_KEYS.has(unit)
-    ? t(`costs.units.${unit}`, { count: value })
-    : displayUnit(unit);
-  return `${formatNumber(value, digits)} ${unitText}`;
 };
 
 export const CostsTable = ({
@@ -222,9 +196,10 @@ export const CostsTable = ({
                     <Text style={styles.fractionTop}>
                       {hasBemessung
                         ? renderSuperscripts(
-                            fmtBemessung(
+                            formatBemessung(
                               line.bemessungTenant as number,
                               line.bemessungUnit,
+                              t,
                             ),
                           )
                         : ""}
@@ -232,9 +207,10 @@ export const CostsTable = ({
                     <Text style={styles.fractionBottom}>
                       {hasBemessung
                         ? renderSuperscripts(
-                            fmtBemessung(
+                            formatBemessung(
                               line.bemessungTotal as number,
                               line.bemessungUnit,
+                              t,
                             ),
                           )
                         : ""}
