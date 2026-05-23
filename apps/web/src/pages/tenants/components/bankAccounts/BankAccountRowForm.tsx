@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { bankDataByIBAN } from "bankdata-germany";
-import { useEffect, useMemo } from "react";
+import type { BankData } from "bankdata-germany";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { CheckboxInput } from "@/components/form/CheckboxInput";
 import { DateInput } from "@/components/form/DateInput";
@@ -49,12 +49,25 @@ export const BankAccountRowForm = ({
   // das Feld leer ist; der Banknamen wird als Hinweis unter dem IBAN-
   // Feld angezeigt. Funktioniert nur für deutsche IBANs.
   const ibanRaw = form.watch("iban");
-  const bankData = useMemo(() => {
+  const [bankData, setBankData] = useState<BankData | null>(null);
+  useEffect(() => {
     const cleaned = normalizeIban(ibanRaw ?? "");
     if (cleaned.length === 0) {
-      return null;
+      setBankData(null);
+      return;
     }
-    return bankDataByIBAN(cleaned);
+    let cancelled = false;
+    // BLZ-Verzeichnis erst beim Tippen laden (Chunk)
+    import("bankdata-germany")
+      .then(({ bankDataByIBAN }) => {
+        if (!cancelled) {
+          setBankData(bankDataByIBAN(cleaned));
+        }
+      })
+      .catch(() => setBankData(null));
+    return () => {
+      cancelled = true;
+    };
   }, [ibanRaw]);
   useEffect(() => {
     if (bankData?.bic && !form.getValues("bic")) {

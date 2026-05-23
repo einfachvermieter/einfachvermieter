@@ -3,8 +3,8 @@ import {
   senderSettingsUpdateSchema,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { bankDataByIBAN } from "bankdata-germany";
-import { useEffect, useMemo } from "react";
+import type { BankData } from "bankdata-germany";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { CheckboxInput } from "@/components/form/CheckboxInput";
@@ -55,14 +55,25 @@ export const SenderSettingsForm = ({
   // befüllt, solange das jeweilige Feld leer ist. Funktioniert nur für
   // deutsche IBANs.
   const ibanRaw = form.watch("senderBankIban");
-  const bankData = useMemo(() => {
+  const [bankData, setBankData] = useState<BankData | null>(null);
+  useEffect(() => {
     const cleaned = normalizeIban(ibanRaw ?? "");
-
     if (cleaned.length === 0) {
-      return null;
+      setBankData(null);
+      return;
     }
-
-    return bankDataByIBAN(cleaned);
+    let cancelled = false;
+    // BLZ-Verzeichnis erst beim Tippen laden (Chunk)
+    import("bankdata-germany")
+      .then(({ bankDataByIBAN }) => {
+        if (!cancelled) {
+          setBankData(bankDataByIBAN(cleaned));
+        }
+      })
+      .catch(() => setBankData(null));
+    return () => {
+      cancelled = true;
+    };
   }, [ibanRaw]);
   useEffect(() => {
     if (bankData?.bic && !form.getValues("senderBankBic")) {
