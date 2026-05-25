@@ -1,5 +1,5 @@
 import {
-  centsToEurosForForm,
+  centsToEurInput,
   emptyPaymentFormValues,
   paymentFormToDto,
   todayIso,
@@ -65,11 +65,11 @@ export const PaymentCreatePage = () => {
     });
 
     if (searchBaseRentCents !== undefined) {
-      values.baseRentInput = centsToEurosForForm(searchBaseRentCents);
+      values.baseRentInput = centsToEurInput(searchBaseRentCents);
     }
 
     if (searchAdvanceCents !== undefined) {
-      values.advanceInput = centsToEurosForForm(searchAdvanceCents);
+      values.advanceInput = centsToEurInput(searchAdvanceCents);
     }
 
     if (searchPurposeKind === "fee" && searchForFeeId) {

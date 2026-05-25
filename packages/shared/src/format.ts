@@ -137,6 +137,15 @@ export const centsToEurInput = (cents: number): string =>
   (cents / 100).toFixed(2).replace(".", ",");
 
 /**
+ * Wie `centsToEurInput`, aber `null`/`undefined` ergeben einen leeren String
+ * (für Formularfelder mit optionalem Betrag).
+ */
+export const centsToEurInputOrEmpty = (
+  cents: number | null | undefined,
+): string =>
+  cents === null || cents === undefined ? "" : centsToEurInput(cents);
+
+/**
  * Externe Abrechnungs-ID im Format `NK-{year}-{seq4}-{rev2}`, z. B.
  * `NK-2025-0001-01`. Im Draft-Status (noch keine vergebenen Nummern) werden
  * die ungesetzten Stellen mit `X` aufgefüllt, z. B. `NK-2025-XXXX-XX`,

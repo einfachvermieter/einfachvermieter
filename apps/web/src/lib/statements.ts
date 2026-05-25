@@ -1,3 +1,4 @@
+import type { StatementResult } from "@einfachvermieter/shared";
 import { queryOptions } from "@tanstack/react-query";
 import { api } from "./api";
 import { t } from "./i18n";
@@ -15,6 +16,19 @@ export type Statement = {
   totalCostsCents: number | null;
   balanceCents: number | null;
   finalizedAt: string | null;
+};
+
+export type StatementDetail = Statement & {
+  totalAdvancesCents: number | null;
+  adjustedMonthlyAdvanceCents: number | null;
+  adjustedAdvanceValidFrom: string | null;
+  tariffAdjustmentBps: Record<string, number> | null;
+  sequenceNumber: number | null;
+  revisionNumber: number | null;
+  supersedesStatementId: string | null;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
+  snapshotData: StatementResult | null;
 };
 
 export type StatementStatus = Statement["status"];

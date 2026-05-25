@@ -1,5 +1,6 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import { z } from "zod";
+import { centsToEurInputOrEmpty } from "../format.js";
 import { isoDate } from "./common.js";
 
 export const heatingModes = ["internal", "external"] as const;
@@ -580,21 +581,14 @@ export const externalHeatingEntryFormToDto = (
   notes: values.notes.trim().length === 0 ? null : values.notes.trim(),
 });
 
-const formatCents = (cents: number | null | undefined): string => {
-  if (cents === null || cents === undefined) {
-    return "";
-  }
-  return (cents / 100).toFixed(2).replace(".", ",");
-};
-
 export const externalHeatingEntryToFormValues = (
   entry: ExternalHeatingEntry,
 ): ExternalHeatingEntryFormValues => ({
   unitId: entry.unitId,
   periodStart: entry.periodStart,
   periodEnd: entry.periodEnd,
-  totalCents: formatCents(entry.totalCents),
-  baseCostCents: formatCents(entry.baseCostCents),
-  consumptionCostCents: formatCents(entry.consumptionCostCents),
+  totalCents: centsToEurInputOrEmpty(entry.totalCents),
+  baseCostCents: centsToEurInputOrEmpty(entry.baseCostCents),
+  consumptionCostCents: centsToEurInputOrEmpty(entry.consumptionCostCents),
   notes: entry.notes ?? "",
 });

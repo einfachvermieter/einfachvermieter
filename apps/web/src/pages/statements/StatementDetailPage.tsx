@@ -38,7 +38,10 @@ import {
 import { Textarea } from "../../components/ui/Textarea";
 import { api } from "../../lib/api";
 import { t } from "../../lib/i18n";
-import { statementIdentityLabel } from "../../lib/statements";
+import {
+  type StatementDetail,
+  statementIdentityLabel,
+} from "../../lib/statements";
 import { tenantQueryOptions } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
 import { AdvanceAdjustmentCard } from "./components/AdvanceAdjustmentCard";
@@ -49,28 +52,6 @@ import { OverviewCard } from "./components/detail/OverviewCard";
 import { PaymentsCard } from "./components/detail/PaymentsCard";
 import { TaxableLaborCard } from "./components/detail/TaxableLaborCard";
 
-type Statement = {
-  id: string;
-  buildingId: string;
-  tenantId: string;
-  periodStart: string;
-  periodEnd: string;
-  status: "draft" | "finalized" | "cancelled" | "superseded";
-  totalCostsCents: number | null;
-  totalAdvancesCents: number | null;
-  balanceCents: number | null;
-  adjustedMonthlyAdvanceCents: number | null;
-  adjustedAdvanceValidFrom: string | null;
-  tariffAdjustmentBps: Record<string, number> | null;
-  sequenceNumber: number | null;
-  revisionNumber: number | null;
-  finalizedAt: string | null;
-  supersedesStatementId: string | null;
-  cancelledAt: string | null;
-  cancellationReason: string | null;
-  snapshotData: StatementResult | null;
-};
-
 /**
  * Anzuzeigendes Ergebnis: bei finalisiert/storniert der Snapshot, bei Draft der
  * Live-Preview, mit den am Draft gespeicherten Anpassungs-Werten gemerged, damit
@@ -78,7 +59,7 @@ type Statement = {
  * ohne Preview.
  */
 const resolveDisplayResult = (
-  statement: Statement,
+  statement: StatementDetail,
   preview: StatementResult | undefined,
 ): StatementResult | undefined => {
   if (statement.status !== "draft" && statement.snapshotData) {
@@ -315,7 +296,7 @@ export const StatementDetailPage = () => {
 
   const statementQuery = useQuery({
     queryKey: ["statement", statementId],
-    queryFn: () => api.get<Statement>(`/statements/${statementId}`),
+    queryFn: () => api.get<StatementDetail>(`/statements/${statementId}`),
     enabled: Boolean(statementId),
   });
   const statement = statementQuery.data;
@@ -353,14 +334,16 @@ export const StatementDetailPage = () => {
 
   const finalize = useMutation({
     mutationFn: () =>
-      api.post<Statement>(`/statements/${statementId}/finalize`),
+      api.post<StatementDetail>(`/statements/${statementId}/finalize`),
     onSuccess: invalidateStatementQueries,
   });
   const [confirmFinalizeOpen, setConfirmFinalizeOpen] = useState(false);
 
   const cancel = useMutation({
     mutationFn: (reason: string) =>
-      api.post<Statement>(`/statements/${statementId}/cancel`, { reason }),
+      api.post<StatementDetail>(`/statements/${statementId}/cancel`, {
+        reason,
+      }),
     onSuccess: async () => {
       setCancelOpen(false);
       setCancelReason("");
@@ -371,7 +354,8 @@ export const StatementDetailPage = () => {
   const [cancelReason, setCancelReason] = useState("");
 
   const correct = useMutation({
-    mutationFn: () => api.post<Statement>(`/statements/${statementId}/correct`),
+    mutationFn: () =>
+      api.post<StatementDetail>(`/statements/${statementId}/correct`),
     onSuccess: async (created) => {
       await invalidateStatementQueries();
       await navigate({

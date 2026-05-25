@@ -1,5 +1,9 @@
 // biome-ignore-all lint/style/useNamingConvention: Mistral REST API
-import { Injectable, ServiceUnavailableException } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from "@nestjs/common";
 import { getI18n } from "../i18n/i18n.registry.js";
 
 // ENV `MISTRAL_API_BASE` überschreibt den Endpoint (z. B. Proxy/Azure-Mistral).
@@ -8,7 +12,6 @@ const MISTRAL_API_BASE =
 const DEFAULT_MODEL = "mistral-medium-latest";
 const DEFAULT_OCR_MODEL = "mistral-ocr-latest";
 
-// ponytail: festes Timeout reicht; nur ENV, wenn OCR-Calls real länger brauchen.
 const MISTRAL_TIMEOUT_MS = 60_000;
 
 export type MistralChatRequest = {
@@ -239,8 +242,12 @@ export class MistralClient {
   }
 }
 
+const mistralLogger = new Logger("MistralClient");
+
 /**
- * Bei Mistral Fehler ServiceUnavailableException werfen
+ * Bei Mistral Fehler ServiceUnavailableException werfen. Der rohe
+ * Upstream-Body bleibt im Server-Log; die Client-Meldung nennt nur
+ * Schritt und Status, um interne Details nicht preiszugeben.
  */
 const mistralError = async (
   step: string,
@@ -254,11 +261,14 @@ const mistralError = async (
     body = "";
   }
 
+  mistralLogger.warn(
+    `Mistral ${step} failed (${response.status}): ${body.slice(0, 500)}`,
+  );
+
   return new ServiceUnavailableException(
     getI18n().t("errors.ai.upstreamError", {
       step,
       status: response.status,
-      detail: body.slice(0, 200),
     }),
   );
 };

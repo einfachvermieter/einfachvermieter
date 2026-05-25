@@ -174,7 +174,7 @@
       "invalidJson": "Die KI lieferte keine valide JSON-Antwort.",
       "schemaMismatch": "Die KI-Antwort entspricht nicht dem erwarteten Schema.",
       "itemMissingAmount": "Für die Position „{description}“ fehlt ein Betrag – die KI-Extraktion ist unvollständig.",
-      "upstreamError": "Der KI-Dienst hat einen Fehler gemeldet ({step}, Status {status}): {detail}"
+      "upstreamError": "Der KI-Dienst hat einen Fehler gemeldet ({step}, Status {status})."
     },
     "calc": {
       "allocationKwhNotImplemented": "Der Verteilerschlüssel „nach Verbrauch (kWh)“ für die Kostenart „{costTypeName}“ wird noch nicht unterstützt. Bitte wählen Sie einen anderen Schlüssel.",

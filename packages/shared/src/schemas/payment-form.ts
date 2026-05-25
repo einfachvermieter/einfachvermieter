@@ -1,6 +1,6 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import { z } from "zod";
-import { centsToEurInput, parseEurToCents } from "../format.js";
+import { parseEurToCents } from "../format.js";
 import { ISO_DATE_REGEX } from "./common.js";
 import {
   type PaymentCreateDto,
@@ -208,8 +208,6 @@ export const emptyPaymentFormValues = (overrides: {
   advanceInput: "",
   amountInput: "",
 });
-
-export const centsToEurosForForm = centsToEurInput;
 
 /**
  * Helper: für eine Form-Eingabe im Modus "Summe" liefert er die

@@ -3,7 +3,7 @@ import type {
   PaymentUpdateDto,
 } from "@einfachvermieter/shared";
 import {
-  centsToEurosForForm,
+  centsToEurInput,
   emptyPaymentFormValues,
   paymentFormToDto,
 } from "@einfachvermieter/shared";
@@ -99,10 +99,10 @@ export const PaymentEditPage = () => {
   defaults.forStatementId = payment.forStatementId ?? "";
   defaults.forFeeId = payment.forFeeId ?? "";
   if (purposeKind === "month") {
-    defaults.baseRentInput = centsToEurosForForm(payment.baseRentCents ?? 0);
-    defaults.advanceInput = centsToEurosForForm(payment.advanceCents ?? 0);
+    defaults.baseRentInput = centsToEurInput(payment.baseRentCents ?? 0);
+    defaults.advanceInput = centsToEurInput(payment.advanceCents ?? 0);
   } else {
-    defaults.amountInput = centsToEurosForForm(payment.amountCents ?? 0);
+    defaults.amountInput = centsToEurInput(payment.amountCents ?? 0);
   }
 
   return (

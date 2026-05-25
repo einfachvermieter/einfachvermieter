@@ -1,6 +1,7 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import { isValidIBAN } from "ibantools-germany";
 import { z } from "zod";
+import { addDaysIso } from "../calculations/period.js";
 import { isoDate } from "./common.js";
 import { residentCreateSchema } from "./residents.js";
 
@@ -66,23 +67,6 @@ const tenantAddressInputSchema = z.object({
     .max(200),
 });
 export type TenantAddressInput = z.infer<typeof tenantAddressInputSchema>;
-
-/**
- * Fügt einen Tag zu einem ISO-Datum hinzu (lokal, ohne Timezone-Tücken).
- * In den Shared Schemas nur hier verwendet.
- */
-const addDaysIso = (date: string, days: number): string => {
-  const parts = date.split("-");
-  const dt = new Date(
-    Date.UTC(
-      Number.parseInt(parts[0] ?? "0", 10),
-      Number.parseInt(parts[1] ?? "1", 10) - 1,
-      Number.parseInt(parts[2] ?? "1", 10),
-    ),
-  );
-  dt.setUTCDate(dt.getUTCDate() + days);
-  return dt.toISOString().slice(0, 10);
-};
 
 /**
  * Vollständiger Speichervorgang eines Mietvertrags (Tenant) inklusive
