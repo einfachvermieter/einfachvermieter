@@ -340,6 +340,23 @@ export type TenantLink = {
   residentIds: string[];
 };
 
+type BuildingOccupancyRows = {
+  residentRows: Array<{
+    unitId: string;
+    residentId: string;
+    tenantId: string;
+    tenantStart: string;
+    tenantEnd: string | null;
+    moveIn: string | null;
+    moveOut: string | null;
+  }>;
+  tenantRows: Array<{
+    unitId: string;
+    tenantStart: string;
+    tenantEnd: string | null;
+  }>;
+};
+
 @Injectable()
 export class TenantsService {
   constructor(private readonly em: EntityManager) {}
@@ -943,11 +960,11 @@ export class TenantsService {
    * Bewohneranzahl je Wohnung im Abrechnungszeitraum (Überlappung der
    * moveIn/moveOut-Fenster, Fallback auf den Vertragszeitraum).
    */
-  async getOccupantCountPerUnit(
-    buildingId: string,
+  getOccupantCountPerUnit(
+    rows: BuildingOccupancyRows,
     period: { start: string; end: string },
-  ): Promise<Map<string, number>> {
-    const { residentRows } = await this.loadBuildingOccupancyRows(buildingId);
+  ): Map<string, number> {
+    const { residentRows } = rows;
 
     const byUnit = new Map<string, Set<string>>();
     for (const row of residentRows) {
@@ -976,28 +993,25 @@ export class TenantsService {
    * Zeitanteilige Belegungs-Kennzahlen pro Wohnung in der Periode
    * (personDays, occupiedDays, Gradtag-Promille, residentSpans)
    */
-  async getOccupancyDaysPerUnit(
-    buildingId: string,
+  getOccupancyDaysPerUnit(
+    rows: BuildingOccupancyRows,
     period: { start: string; end: string },
-  ): Promise<
-    Map<
-      string,
-      {
-        personDays: number;
-        occupiedDays: number;
-        occupiedDegreeDayPromille: number;
-        occupantCount: number;
-        residentSpans: Array<{
-          residentId: string;
-          from: string;
-          to: string;
-          days: number;
-        }>;
-      }
-    >
+  ): Map<
+    string,
+    {
+      personDays: number;
+      occupiedDays: number;
+      occupiedDegreeDayPromille: number;
+      occupantCount: number;
+      residentSpans: Array<{
+        residentId: string;
+        from: string;
+        to: string;
+        days: number;
+      }>;
+    }
   > {
-    const { residentRows, tenantRows } =
-      await this.loadBuildingOccupancyRows(buildingId);
+    const { residentRows, tenantRows } = rows;
 
     type Acc = {
       personDays: number;
@@ -1086,7 +1100,9 @@ export class TenantsService {
   /**
    * Lädt die Belegungs-Rohdaten eines Gebäudes (Residents-Spans + Tenant-Intervalle).
    */
-  private async loadBuildingOccupancyRows(buildingId: string) {
+  async loadBuildingOccupancyRows(
+    buildingId: string,
+  ): Promise<BuildingOccupancyRows> {
     const units = await this.em.find(
       UnitSchema,
       { buildingId },

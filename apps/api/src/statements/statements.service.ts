@@ -598,7 +598,7 @@ export class StatementsService {
       waterMeters,
       heatMeters,
       heatCostAllocators,
-    } = await this.loadMeterBundles(buildingId);
+    } = await this.loadMeterBundles(buildingId, statementPeriod);
 
     const { operatingCostTypes, heatingCostEntries, laborItems } =
       await this.loadCostEntries(buildingId, statementPeriod);
@@ -720,27 +720,27 @@ export class StatementsService {
   }> {
     const unitsRaw = await this.em.find(UnitSchema, { buildingId });
 
-    const occupantsByUnitFull =
-      await this.tenantsService.getOccupantCountPerUnit(
-        buildingId,
-        statementPeriod,
-      );
+    const occupancyRows =
+      await this.tenantsService.loadBuildingOccupancyRows(buildingId);
 
-    const occupancyDaysByUnitFull =
-      await this.tenantsService.getOccupancyDaysPerUnit(
-        buildingId,
-        statementPeriod,
-      );
+    const occupantsByUnitFull = this.tenantsService.getOccupantCountPerUnit(
+      occupancyRows,
+      statementPeriod,
+    );
 
-    const occupantsByUnitTenant =
-      await this.tenantsService.getOccupantCountPerUnit(
-        buildingId,
-        effectivePeriod,
-      );
+    const occupancyDaysByUnitFull = this.tenantsService.getOccupancyDaysPerUnit(
+      occupancyRows,
+      statementPeriod,
+    );
+
+    const occupantsByUnitTenant = this.tenantsService.getOccupantCountPerUnit(
+      occupancyRows,
+      effectivePeriod,
+    );
 
     const occupancyDaysByUnitTenant =
-      await this.tenantsService.getOccupancyDaysPerUnit(
-        buildingId,
+      this.tenantsService.getOccupancyDaysPerUnit(
+        occupancyRows,
         effectivePeriod,
       );
 
@@ -785,7 +785,10 @@ export class StatementsService {
    * bündelt sie nach Wasser-, Wärme- und Heizkostenverteiler-Zählern
    * (jeweils role=unit für die Verbrauchsverteilung).
    */
-  private async loadMeterBundles(buildingId: string): Promise<{
+  private async loadMeterBundles(
+    buildingId: string,
+    statementPeriod: { start: string; end: string },
+  ): Promise<{
     metersRaw: Meter[];
     readingsByMeter: Map<string, ReadingPoint[]>;
     waterMeters: MeterBundle[];
@@ -801,9 +804,17 @@ export class StatementsService {
     const readingsByMeter = new Map<string, ReadingPoint[]>();
 
     if (meterIds.length > 0) {
+      // Verbrauch wird nur innerhalb der Abrechnungsperiode interpoliert; ein
+      // Jahr Puffer je Seite deckt die umschliessenden Ablesungen bei jaehrlicher
+      // (gesetzlich vorgeschriebener) Ablesung ab.
+      const windowStart = addDaysIso(statementPeriod.start, -366);
+      const windowEnd = addDaysIso(statementPeriod.end, 366);
       const readingsRaw = await this.em.find(
         MeterReadingSchema,
-        { meterId: { $in: meterIds } },
+        {
+          meterId: { $in: meterIds },
+          readingDate: { $gte: windowStart, $lte: windowEnd },
+        },
         { orderBy: { readingDate: "asc" } },
       );
 
