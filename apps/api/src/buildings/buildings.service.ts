@@ -11,7 +11,6 @@ import {
   EntityManager,
   type FilterQuery,
   type QueryOrderMap,
-  raw,
 } from "@mikro-orm/core";
 import {
   BadRequestException,
@@ -19,6 +18,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { FieldValidationException } from "../common/field-validation.exception.js";
+import { likeContains } from "../common/like-search.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
 
@@ -56,11 +56,7 @@ export class BuildingsService {
             "address_street",
             "address_postal_code",
             "address_city",
-          ].map((column) => ({
-            [raw((alias) => `lower(${alias}.${column})`)]: {
-              $like: `%${q.toLowerCase()}%`,
-            },
-          })),
+          ].map((column) => likeContains(column, q)),
         } as FilterQuery<Building>)
       : {};
 

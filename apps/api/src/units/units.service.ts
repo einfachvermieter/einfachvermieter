@@ -9,7 +9,6 @@ import {
   EntityManager,
   type FilterQuery,
   type QueryOrderMap,
-  raw,
 } from "@mikro-orm/core";
 import {
   BadRequestException,
@@ -17,6 +16,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { FieldValidationException } from "../common/field-validation.exception.js";
+import { likeContains } from "../common/like-search.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
 
@@ -57,11 +57,7 @@ export class UnitsService {
     }
 
     if (q) {
-      filters.push({
-        [raw((alias) => `lower(${alias}.name)`)]: {
-          $like: `%${q.toLowerCase()}%`,
-        },
-      } as FilterQuery<Unit>);
+      filters.push(likeContains("name", q) as FilterQuery<Unit>);
     }
 
     const where: FilterQuery<Unit> =

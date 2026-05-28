@@ -23,6 +23,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { assertDateRangeNotFinalized } from "../common/finalized-period-lock.js";
+import { likeContains } from "../common/like-search.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
 
@@ -94,11 +95,7 @@ export class PaymentsService {
     }
 
     if (q) {
-      filters.push({
-        [raw((alias) => `lower(${alias}.reference)`)]: {
-          $like: `%${q.toLowerCase()}%`,
-        },
-      } as FilterQuery<Payment>);
+      filters.push(likeContains("reference", q) as FilterQuery<Payment>);
     }
 
     const where: FilterQuery<Payment> =

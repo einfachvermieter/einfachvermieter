@@ -20,10 +20,10 @@ import {
   EntityManager,
   type FilterQuery,
   type QueryOrderMap,
-  raw,
 } from "@mikro-orm/core";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { FieldValidationException } from "../common/field-validation.exception.js";
+import { likeContains } from "../common/like-search.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
 import { StorageService } from "../storage/storage.service.js";
@@ -120,11 +120,7 @@ export class CostsService {
     }
 
     if (q) {
-      filters.push({
-        [raw((alias) => `lower(${alias}.name)`)]: {
-          $like: `%${q.toLowerCase()}%`,
-        },
-      } as FilterQuery<CostType>);
+      filters.push(likeContains("name", q) as FilterQuery<CostType>);
     }
 
     const where: FilterQuery<CostType> =
