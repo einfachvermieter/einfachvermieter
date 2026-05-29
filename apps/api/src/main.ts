@@ -38,8 +38,12 @@ const bootstrap = async (): Promise<void> => {
   app.use(cookieParser());
   app.setGlobalPrefix("api");
 
+  const webOrigin = process.env.WEB_ORIGIN;
+  if (process.env.NODE_ENV === "production" && !webOrigin) {
+    throw new Error("WEB_ORIGIN muss in Produktion gesetzt sein.");
+  }
   app.enableCors({
-    origin: process.env.WEB_ORIGIN ?? "http://localhost:5173",
+    origin: webOrigin ?? "http://localhost:5173",
     credentials: true,
   });
 
