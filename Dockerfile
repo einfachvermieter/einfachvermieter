@@ -83,9 +83,9 @@ ENV NODE_ENV=production
 # Abrechnungen. Als Volume mounten. Fuer Postgres/MariaDB stattdessen DB_DRIVER
 # + DATABASE_URL setzen (DATA_DIR wird dann nur noch fuer Uploads/PDFs genutzt).
 ENV DATA_DIR=/data
-ENV PORT=3000
+ENV PORT=7273
 
-EXPOSE 3000
+EXPOSE 7273
 
 # Einziges Daten-Volume (DB falls sqlite, uploads/, statements/)
 VOLUME ["/data"]

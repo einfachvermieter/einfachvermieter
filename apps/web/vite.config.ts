@@ -35,8 +35,8 @@ const i18nHotReload = (): Plugin => {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, resolve(import.meta.dirname, "../.."), "");
-  const webPort = Number(env.WEB_PORT ?? 5173);
-  const apiPort = Number(env.PORT ?? 3000);
+  const webPort = Number(env.WEB_PORT ?? 7272);
+  const apiPort = Number(env.PORT ?? 7273);
 
   return {
     plugins: [react(), i18nHotReload()],

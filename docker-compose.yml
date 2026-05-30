@@ -5,9 +5,9 @@ services:
       dockerfile: Dockerfile
     container_name: einfachvermieter
     restart: unless-stopped
-    # Nur im Compose-Netz sichtbar; Caddy proxy auf app:3000.
+    # Nur im Compose-Netz sichtbar; Caddy proxy auf app:7273.
     expose:
-      - "3000"
+      - "7273"
     environment:
       - NODE_ENV=production
       # Für serverseitige „heute"-Berechnung (todayIso, PDF-Ausstellungsdatum)
@@ -18,7 +18,7 @@ services:
       # Fuer Postgres/MariaDB die naechsten zwei Zeilen einkommentieren:
       # - DB_DRIVER=postgres
       # - DATABASE_URL=postgres://user:pass@db:5432/einfachvermieter
-      - WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:3000}
+      - WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:7273}
       # Passwort-Richtlinie. Per Host-ENV/.env ueberschreibbar; Defaults bewusst
       # lasch (lokal gehostet). Fuer exponierte Deployments verschaerfen.
       - PASSWORD_MIN_LENGTH=${PASSWORD_MIN_LENGTH:-8}
@@ -28,12 +28,12 @@ services:
       - PASSWORD_REQUIRE_SPECIAL=${PASSWORD_REQUIRE_SPECIAL:-false}
       # Optional: internen Port aendern (dann in expose oben und im Caddyfile
       # nachziehen).
-      # - PORT=3000
+      # - PORT=7273
     volumes:
       # Bind-Mount auf ZFS-Dataset. Pfad auf Host-System anpassen.
       - /tank/docker/einfachvermieter/data:/data
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://localhost:7273/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3

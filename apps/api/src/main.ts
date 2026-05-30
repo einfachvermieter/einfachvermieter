@@ -43,11 +43,11 @@ const bootstrap = async (): Promise<void> => {
     throw new Error("WEB_ORIGIN muss in Produktion gesetzt sein.");
   }
   app.enableCors({
-    origin: webOrigin ?? "http://localhost:5173",
+    origin: webOrigin ?? "http://localhost:7272",
     credentials: true,
   });
 
-  const port = Number(process.env.PORT ?? 3000);
+  const port = Number(process.env.PORT ?? 7273);
   await app.listen(port);
 };
 
