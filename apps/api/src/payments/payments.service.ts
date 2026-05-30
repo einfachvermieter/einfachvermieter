@@ -63,7 +63,7 @@ export class PaymentsService {
    * @param params.q Freitextsuche in der Referenz (Verwendungszweck)
    * @param params.buildingId Wird über unit -> tenant in Tenant-Ids aufgelöst
    */
-  async listPaginated(params: PaymentListParams): Promise<PaymentListResult> {
+  async list(params: PaymentListParams): Promise<PaymentListResult> {
     const {
       tenantId,
       buildingId,
@@ -128,7 +128,7 @@ export class PaymentsService {
   /**
    * Lädt eine Zahlung
    */
-  async getById(id: string) {
+  async get(id: string) {
     const payment = await this.em.findOne(PaymentSchema, { id });
     if (!payment) {
       throw new NotFoundException(notFoundMessage("payment", id));
@@ -159,7 +159,7 @@ export class PaymentsService {
    * für Monatszahlungen vor und nach dem Patch.
    */
   async update(id: string, dto: PaymentUpdateDto) {
-    const existing = await this.getById(id);
+    const existing = await this.get(id);
     if (existing.forMonth) {
       await this.assertMonthMutable(existing.tenantId, existing.forMonth);
     }
@@ -205,7 +205,7 @@ export class PaymentsService {
    * gesperrt.
    */
   async delete(id: string) {
-    const existing = await this.getById(id);
+    const existing = await this.get(id);
     if (existing.forMonth) {
       await this.assertMonthMutable(existing.tenantId, existing.forMonth);
     }

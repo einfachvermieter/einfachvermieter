@@ -38,7 +38,7 @@ export class PaymentsController {
   ) {
     const allowedSort = new Set(["date", "amount", "reference"] as const);
 
-    return this.paymentsService.listPaginated({
+    return this.paymentsService.list({
       tenantId,
       buildingId,
       ...parsePaginationQuery(
@@ -51,7 +51,7 @@ export class PaymentsController {
 
   @Get(":id")
   get(@Param("id") id: string) {
-    return this.paymentsService.getById(id);
+    return this.paymentsService.get(id);
   }
 
   @Post()
