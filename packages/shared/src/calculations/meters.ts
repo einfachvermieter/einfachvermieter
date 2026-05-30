@@ -157,7 +157,11 @@ export const interpolateReading = (
 };
 
 /**
- * Verbrauch zwischen zwei Stichtagen für einen kumulativen Zähler
+ * Verbrauch zwischen zwei Stichtagen für einen kumulativen Zähler.
+ *
+ * Wichtig: Angrenzende Mietperioden nutzen die tatsächlichen
+ * Übergabestände (Auszug A = Einzug B, meist derselbe Stand am selben
+ * Tag). Ein Zwischenraum ist Leerstandsverbrauch zulasten des Vermieters.
  */
 export const consumptionBetween = (
   readings: ReadingPoint[],
