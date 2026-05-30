@@ -1,12 +1,14 @@
 import { createHash, randomBytes } from "node:crypto";
 import { SessionSchema, UserSchema } from "@einfachvermieter/db";
 import { EntityManager } from "@mikro-orm/core";
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import type { AuthUser } from "./auth.service.js";
 import { SESSION_TTL_MS } from "./const.js";
 
 @Injectable()
 export class SessionService {
+  private readonly logger = new Logger(SessionService.name);
+
   constructor(private readonly em: EntityManager) {}
 
   private hashToken(token: string): string {
@@ -21,6 +23,12 @@ export class SessionService {
     const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
 
     const em = this.em.fork();
+
+    // Abgelaufenen Sessions aufräumen
+    await em.nativeDelete(SessionSchema, {
+      expiresAt: { $lte: new Date().toISOString() },
+    });
+
     const session = em.create(SessionSchema, {
       id: this.hashToken(token),
       userId,
@@ -74,8 +82,16 @@ export class SessionService {
    * Session löschen (logout)
    */
   async destroy(token: string): Promise<void> {
-    await this.em.fork().nativeDelete(SessionSchema, {
-      id: this.hashToken(token),
-    });
+    // Fehler nicht durchreichen, nur loggen: Der Client verliert das Cookie ohnehin
+    try {
+      await this.em.fork().nativeDelete(SessionSchema, {
+        id: this.hashToken(token),
+      });
+    } catch (error) {
+      this.logger.error(
+        "Session konnte beim Logout nicht gelöscht werden",
+        error,
+      );
+    }
   }
 }
