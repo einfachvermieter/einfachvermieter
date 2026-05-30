@@ -16,7 +16,11 @@ export const distributeCents = (
   }
 
   const raw = weights.map((w) => (totalCents * w) / weightSum);
-  const rounded = raw.map(Math.round);
+  // Kaufmaennisch symmetrisch runden: -0,5 -> -1 (Math.round rundet zu 0),
+  // sonst Halbcent-Bias sobald negative Betraege (Gutschriften) auftreten.
+  const rounded = raw.map(
+    (value) => Math.sign(value) * Math.round(Math.abs(value)),
+  );
   const diff = totalCents - rounded.reduce((acc, v) => acc + v, 0);
 
   if (diff === 0) {

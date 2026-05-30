@@ -66,7 +66,7 @@ const buildHeatingTypeLine = (args: {
   consumptionShareBps: number;
   hasSplit: boolean;
 }): CostLineResult | null => {
-  if (args.potCents <= 0) {
+  if (args.potCents === 0) {
     return null;
   }
 

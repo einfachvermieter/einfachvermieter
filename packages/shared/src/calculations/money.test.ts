@@ -37,6 +37,13 @@ describe("distributeCents", () => {
     const result = distributeCents(123_456, [33, 33, 34]);
     expect(result.reduce((a, b) => a + b, 0)).toBe(123_456);
   });
+
+  it("negative Betraege (Gutschriften) runden symmetrisch, Summe stimmt", () => {
+    // -3 Cent auf gleiche Gewichte: -1 pro Teil, kein Halbcent-Bias
+    const result = distributeCents(-3, [1, 1, 1]);
+    expect(result.reduce((a, b) => a + b, 0)).toBe(-3);
+    expect(result).toEqual([-1, -1, -1]);
+  });
 });
 
 describe("bps-Konvertierung", () => {
