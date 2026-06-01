@@ -68,7 +68,7 @@ export const PaymentForm = ({
     defaultValues,
   });
   // Bei jedem Mount neu berechnen, damit längere Sessions nicht auf
-  // einem veralteten „heute" hängen.
+  // einem veralteten "heute" hängen.
   const { calendarStart, calendarEnd, monthRangeEndIso } = useMemo(() => {
     const now = new Date();
     // Letzter Tag des übernächsten Monats: erlaubt Eingabe von Zahlungen für

@@ -30,7 +30,9 @@ const fileIcon = (file: File) => {
   if (file.type.startsWith("image/")) {
     return <RiImageLine className="size-5 text-teal-700" aria-hidden={true} />;
   }
-  return <RiFileLine className="size-5 text-stone-500" aria-hidden={true} />;
+  return (
+    <RiFileLine className="size-5 text-muted-foreground" aria-hidden={true} />
+  );
 };
 
 const isAllowed = (file: File): boolean =>
@@ -259,7 +261,7 @@ export const PendingAttachments = ({
 const PendingPreview = ({ file, url }: { file: File; url: string }) => {
   if (file.type === "application/pdf") {
     return (
-      <div className="border-t border-foreground/10 bg-stone-50 p-3">
+      <div className="border-t border-foreground/10 bg-slate-50 p-3">
         <iframe
           src={url}
           title={file.name}
@@ -271,7 +273,7 @@ const PendingPreview = ({ file, url }: { file: File; url: string }) => {
 
   if (file.type.startsWith("image/")) {
     return (
-      <div className="flex justify-center border-t border-foreground/10 bg-stone-50 p-3">
+      <div className="flex justify-center border-t border-foreground/10 bg-slate-50 p-3">
         <img
           src={url}
           alt={file.name}

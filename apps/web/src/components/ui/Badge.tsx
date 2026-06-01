@@ -32,6 +32,16 @@ const badgeVariants = cva(
         lightRed:
           "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
         darkRed: "bg-rose-700 text-rose-50 dark:bg-rose-800 dark:text-rose-100",
+        ok: "bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400",
+        warn: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+        blue: "bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400",
+        slate:
+          "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+        indigo:
+          "bg-indigo-50 text-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-400",
+        rose: "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400",
+        morechip:
+          "bg-slate-100 font-bold text-[11px] text-slate-400 dark:bg-slate-800 dark:text-slate-400",
       },
     },
     defaultVariants: {
@@ -44,9 +54,14 @@ const Badge = ({
   className,
   variant = "default",
   asChild = false,
+  dot = false,
+  children,
   ...props
 }: ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) => {
+  VariantProps<typeof badgeVariants> & {
+    asChild?: boolean;
+    dot?: boolean;
+  }) => {
   const Comp = asChild ? Slot.Root : "span";
 
   return (
@@ -55,7 +70,12 @@ const Badge = ({
       data-variant={variant}
       className={cn(badgeVariants({ variant }), className)}
       {...props}
-    />
+    >
+      {dot && (
+        <span aria-hidden={true} className="size-1.5 rounded-full bg-current" />
+      )}
+      {children}
+    </Comp>
   );
 };
 

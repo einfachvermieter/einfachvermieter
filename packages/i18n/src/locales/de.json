@@ -329,6 +329,9 @@
         "backToOverview": "Zur Übersicht",
         "backToHome": "Zur Startseite"
       },
+      "savebar": {
+        "lastSaved": "Zuletzt gespeichert: {date}"
+      },
       "a11y": {
         "more": "Mehr",
         "sidebar": "Seitenleiste",

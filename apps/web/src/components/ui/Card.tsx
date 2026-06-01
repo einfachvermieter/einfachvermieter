@@ -32,7 +32,7 @@ const CardTitle = ({ className, ...props }: ComponentProps<"div">) => (
   <div
     data-slot="card-title"
     className={cn(
-      "font-heading text-lg leading-normal font-semibold group-data-[size=sm]/card:text-sm text-sky-900",
+      "font-heading text-lg leading-normal font-semibold group-data-[size=sm]/card:text-sm",
       className,
     )}
     {...props}

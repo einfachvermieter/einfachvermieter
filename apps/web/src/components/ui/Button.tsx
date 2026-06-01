@@ -8,11 +8,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        default:
+          "bg-primary text-primary-foreground shadow-[0_10px_22px_-10px_rgba(3,105,161,0.6)] hover:bg-sky-800 dark:hover:bg-sky-700",
         outline:
           "border-border bg-card shadow-xs hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+        // Gefüllter Sekundär-Button
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-slate-200 text-slate-900 hover:bg-slate-300 aria-expanded:bg-slate-300 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-700 dark:aria-expanded:bg-slate-700",
+        addLink:
+          "text-sky-700 hover:text-sky-900 dark:text-sky-400 dark:hover:text-sky-300",
         ghost:
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         ghostMuted:
@@ -44,6 +48,8 @@ const buttonVariants = cva(
         "icon-sm":
           "size-8 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-md",
         "icon-lg": "size-10",
+        // Für addLink: Textlink ohne Fläche
+        text: "h-auto gap-1.5 p-0 text-[13px] [&_svg:not([class*='size-'])]:size-[17px]",
       },
     },
     defaultVariants: {

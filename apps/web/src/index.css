@@ -39,82 +39,92 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+    --radius-sm: 0.5rem;
+    --radius-md: 0.7rem;
+    --radius-lg: 0.85rem;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.375rem;
+    --radius-3xl: 1.625rem;
+    --radius-4xl: 2rem;
 }
 
 :root {
-    --background: var(--color-stone-50);
-    --foreground: var(--color-stone-950);
+    --background: var(--color-slate-50);
+    --foreground: var(--color-slate-900);
     --card: var(--color-white);
-    --card-foreground: var(--color-stone-950);
+    --card-foreground: var(--color-slate-900);
     --popover: var(--color-white);
-    --popover-foreground: var(--color-stone-950);
+    --popover-foreground: var(--color-slate-900);
     --primary: var(--color-sky-700);
     --primary-foreground: var(--color-sky-50);
     --secondary: var(--color-teal-600);
     --secondary-foreground: var(--color-teal-100);
-    --muted: var(--color-stone-100);
-    --muted-foreground: var(--color-stone-500);
-    --accent: var(--color-stone-100);
-    --accent-foreground: var(--color-stone-900);
-    --destructive: var(--color-rose-700);
-    --border: var(--color-stone-200);
-    --input: var(--color-stone-200);
+    --muted: var(--color-slate-100);
+    --muted-foreground: var(--color-slate-600);
+    --accent: var(--color-slate-100);
+    --accent-foreground: var(--color-slate-900);
+    --destructive: var(--color-rose-600);
+    --border: var(--color-slate-200);
+    --input: var(--color-slate-300);
     --ring: var(--color-sky-600);
     --chart-1: var(--color-teal-300);
     --chart-2: var(--color-teal-500);
     --chart-3: var(--color-teal-600);
     --chart-4: var(--color-teal-700);
     --chart-5: var(--color-teal-800);
-    --radius: 0.45rem;
+    --radius: 0.7rem;
     --sidebar: var(--color-white);
-    --sidebar-foreground: var(--color-stone-600);
+    --sidebar-foreground: var(--color-slate-600);
     --sidebar-primary: var(--color-sky-600);
     --sidebar-primary-foreground: var(--color-sky-50);
-    --sidebar-accent: var(--color-stone-100);
+    --sidebar-accent: var(--color-slate-100);
     --sidebar-accent-foreground: var(--color-sky-900);
-    --sidebar-border: var(--color-stone-200);
-    --sidebar-ring: var(--color-stone-400);
+    --sidebar-border: var(--color-slate-200);
+    --sidebar-ring: var(--color-slate-400);
+    /* Dekorative Icon-Akzente der Domänen (nur Icon-Kacheln) */
+    --i-blue: var(--color-blue-500);
+    --i-slate: var(--color-slate-500);
+    --i-green: var(--color-green-500);
+    --i-cyan: var(--color-cyan-500);
+    --i-amber: var(--color-amber-500);
+    --i-indigo: var(--color-indigo-500);
+    --i-pink: var(--color-pink-500);
+    --i-orange: var(--color-orange-500);
+    --i-violet: var(--color-violet-500);
 }
 
 .dark {
-    --background: var(--color-stone-950);
-    --foreground: var(--color-stone-50);
-    --card: var(--color-stone-900);
-    --card-foreground: var(--color-stone-50);
-    --popover: var(--color-stone-900);
-    --popover-foreground: var(--color-stone-50);
+    --background: var(--color-slate-950);
+    --foreground: var(--color-slate-50);
+    --card: var(--color-slate-900);
+    --card-foreground: var(--color-slate-50);
+    --popover: var(--color-slate-900);
+    --popover-foreground: var(--color-slate-50);
     --primary: var(--color-sky-800);
     --primary-foreground: var(--color-sky-50);
-    --secondary: var(--color-stone-800);
-    --secondary-foreground: var(--color-stone-50);
-    --muted: var(--color-stone-800);
-    --muted-foreground: var(--color-stone-400);
-    --accent: var(--color-stone-800);
-    --accent-foreground: var(--color-stone-50);
+    --secondary: var(--color-slate-800);
+    --secondary-foreground: var(--color-slate-50);
+    --muted: var(--color-slate-800);
+    --muted-foreground: var(--color-slate-400);
+    --accent: var(--color-slate-800);
+    --accent-foreground: var(--color-slate-50);
     --destructive: var(--color-rose-400);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
-    --ring: var(--color-stone-500);
+    --ring: var(--color-slate-500);
     --chart-1: var(--color-teal-300);
     --chart-2: var(--color-teal-500);
     --chart-3: var(--color-teal-600);
     --chart-4: var(--color-teal-700);
     --chart-5: var(--color-teal-800);
-    --sidebar: var(--color-stone-900);
-    --sidebar-foreground: var(--color-stone-50);
+    --sidebar: var(--color-slate-900);
+    --sidebar-foreground: var(--color-slate-50);
     --sidebar-primary: var(--color-sky-500);
     --sidebar-primary-foreground: var(--color-sky-950);
-    --sidebar-accent: var(--color-stone-800);
-    --sidebar-accent-foreground: var(--color-stone-50);
+    --sidebar-accent: var(--color-slate-800);
+    --sidebar-accent-foreground: var(--color-slate-50);
     --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: var(--color-stone-500);
+    --sidebar-ring: var(--color-slate-500);
 }
 
 @layer base {
@@ -123,6 +133,10 @@
     }
   body {
     @apply bg-background text-foreground;
+    letter-spacing: -0.011em;
+    }
+  h1, h2, h3 {
+    letter-spacing: -0.03em;
     }
   html {
     @apply font-sans;

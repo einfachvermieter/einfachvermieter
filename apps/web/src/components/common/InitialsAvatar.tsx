@@ -1,0 +1,47 @@
+import { gradients } from "@/lib/domainVisuals";
+import { cn } from "@/lib/utils";
+
+const SIZE_CLASSES = {
+  29: "size-[29px] rounded-[9px] text-xs",
+  34: "size-[34px] rounded-[10px] text-[13px]",
+  36: "size-9 rounded-[10px] text-[13px]",
+  64: "size-16 rounded-[18px] text-[22px]",
+} as const;
+
+/** Initialen aus den ersten beiden Wörtern des Namens */
+const initialsOf = (name: string): string =>
+  name
+    .split(/\s+/u)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => (word[0] ?? "").toUpperCase())
+    .join("");
+
+/**
+ * Initialen-Avatar für Personen und Gebäude (Tabellenzeilen, Hero,
+ * Gebäude-Switcher). Hintergrund ist ein Verlauf aus lib/domainVisuals.ts,
+ * Standard ist der Marken-Verlauf.
+ */
+export const InitialsAvatar = ({
+  name,
+  size = 36,
+  background = gradients.brand,
+  className,
+}: {
+  name: string;
+  size?: keyof typeof SIZE_CLASSES;
+  background?: string;
+  className?: string;
+}) => (
+  <div
+    aria-hidden={true}
+    className={cn(
+      "grid shrink-0 place-items-center font-bold text-white",
+      SIZE_CLASSES[size],
+      className,
+    )}
+    style={{ background }}
+  >
+    {initialsOf(name)}
+  </div>
+);

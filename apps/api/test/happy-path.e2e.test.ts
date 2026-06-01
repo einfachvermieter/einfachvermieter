@@ -581,7 +581,7 @@ describe("Passwortwechsel invalidiert bestehende Sessions", () => {
 
   it("macht die alte Session ungültig und stellt eine neue aus", async () => {
     // Zwei separate Sessions öffnen: die eine ändert das Passwort, die
-    // andere ist die „gestohlene" und muss danach tot sein.
+    // andere ist die "gestohlene" und muss danach tot sein.
     const changerLogin = await login(ADMIN_PASSWORD);
     const changerCookie = cookieOf(changerLogin);
     const stolenLogin = await login(ADMIN_PASSWORD);

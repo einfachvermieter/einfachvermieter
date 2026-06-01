@@ -40,7 +40,9 @@ const attachmentIcon = (att: CostEntryAttachment) => {
   if (isImageAttachment(att)) {
     return <RiImageLine className="size-5 text-teal-700" aria-hidden={true} />;
   }
-  return <RiFileLine className="size-5 text-stone-500" aria-hidden={true} />;
+  return (
+    <RiFileLine className="size-5 text-muted-foreground" aria-hidden={true} />
+  );
 };
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: Länge liegt am Markup
@@ -290,7 +292,7 @@ const AttachmentPreview = ({
 
   if (isPdfAttachment(attachment)) {
     return (
-      <div className="border-t border-foreground/10 bg-stone-50 p-3">
+      <div className="border-t border-foreground/10 bg-slate-50 p-3">
         <iframe
           src={url}
           title={attachment.originalFilename}
@@ -302,7 +304,7 @@ const AttachmentPreview = ({
 
   if (isImageAttachment(attachment)) {
     return (
-      <div className="flex justify-center border-t border-foreground/10 bg-stone-50 p-3">
+      <div className="flex justify-center border-t border-foreground/10 bg-slate-50 p-3">
         <img
           src={url}
           alt={attachment.originalFilename}
