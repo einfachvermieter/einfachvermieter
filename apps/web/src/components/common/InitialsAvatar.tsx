@@ -8,19 +8,26 @@ const SIZE_CLASSES = {
   64: "size-16 rounded-[18px] text-[22px]",
 } as const;
 
-/** Initialen aus den ersten beiden Wörtern des Namens */
-const initialsOf = (name: string): string =>
-  name
-    .split(/\s+/u)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => (word[0] ?? "").toUpperCase())
-    .join("");
+/**
+ * Initialen aus den ersten beiden Buchstaben-Wörtern des Namens; bei nur
+ * einem Wort dessen erste zwei Zeichen ("Gartenstadt 12" -> "GA").
+ */
+const initialsOf = (name: string): string => {
+  const words = name.split(/\s+/u).filter((word) => /^\p{L}/u.test(word));
+  if (words.length >= 2) {
+    return words
+      .slice(0, 2)
+      .map((word) => (word[0] ?? "").toUpperCase())
+      .join("");
+  }
+  const single = words[0] ?? name.trim();
+
+  return single.slice(0, 2).toUpperCase();
+};
 
 /**
  * Initialen-Avatar für Personen und Gebäude (Tabellenzeilen, Hero,
- * Gebäude-Switcher). Hintergrund ist ein Verlauf aus lib/domainVisuals.ts,
- * Standard ist der Marken-Verlauf.
+ * Gebäude-Switcher). Hintergrund ist ein Verlauf
  */
 export const InitialsAvatar = ({
   name,

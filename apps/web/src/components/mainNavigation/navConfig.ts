@@ -1,30 +1,10 @@
-import {
-  RiBillFill,
-  RiBillLine,
-  RiDashboard3Fill,
-  RiDashboard3Line,
-  RiDashboardFill,
-  RiDashboardLine,
-  RiFileList3Fill,
-  RiFileList3Line,
-  RiFireFill,
-  RiFireLine,
-  RiHome6Fill,
-  RiHome6Line,
-  RiPriceTag3Fill,
-  RiPriceTag3Line,
-  RiSettings3Fill,
-  RiSettings3Line,
-  RiTeamFill,
-  RiTeamLine,
-} from "@remixicon/react";
-import type { ElementType } from "react";
+import type { DomainKey } from "@/lib/domainVisuals";
 
 export type NavItem = {
   to: string;
   labelKey: string;
-  icon: ElementType;
-  iconActive: ElementType;
+  /** Icon + Kachel-Farbe kommen aus lib/domainVisuals.ts */
+  domain: DomainKey;
   exact?: boolean;
 };
 
@@ -32,15 +12,13 @@ export const dashboardNav: NavItem[] = [
   {
     to: "/",
     labelKey: "ui.navigation.dashboard",
-    icon: RiDashboardLine,
-    iconActive: RiDashboardFill,
+    domain: "dashboard",
     exact: true,
   },
   {
     to: "/einstellungen/absender",
     labelKey: "ui.navigation.configuration",
-    icon: RiSettings3Line,
-    iconActive: RiSettings3Fill,
+    domain: "configuration",
   },
 ];
 
@@ -49,20 +27,17 @@ export const stammdatenNav: NavItem[] = [
   {
     to: "/wohnungen",
     labelKey: "ui.navigation.units",
-    icon: RiHome6Line,
-    iconActive: RiHome6Fill,
+    domain: "units",
   },
   {
     to: "/zaehler",
     labelKey: "ui.navigation.meters",
-    icon: RiDashboard3Line,
-    iconActive: RiDashboard3Fill,
+    domain: "meters",
   },
   {
     to: "/mieter",
     labelKey: "ui.navigation.tenants",
-    icon: RiTeamLine,
-    iconActive: RiTeamFill,
+    domain: "tenants",
   },
 ];
 
@@ -70,26 +45,22 @@ export const kostenAbrechnungNav: NavItem[] = [
   {
     to: "/kostenarten",
     labelKey: "ui.navigation.costTypes",
-    icon: RiPriceTag3Line,
-    iconActive: RiPriceTag3Fill,
+    domain: "costTypes",
   },
   {
     to: "/rechnungen",
     labelKey: "ui.navigation.invoices",
-    icon: RiBillLine,
-    iconActive: RiBillFill,
+    domain: "invoices",
   },
   {
     to: "/heizkosten",
     labelKey: "ui.navigation.heating",
-    icon: RiFireLine,
-    iconActive: RiFireFill,
+    domain: "heating",
   },
   {
     to: "/abrechnungen",
     labelKey: "ui.navigation.statements",
-    icon: RiFileList3Line,
-    iconActive: RiFileList3Fill,
+    domain: "statements",
   },
 ];
 

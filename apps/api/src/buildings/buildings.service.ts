@@ -1,11 +1,13 @@
 import {
   type Building,
   BuildingSchema,
+  TenantSchema,
   UnitSchema,
 } from "@einfachvermieter/db";
-import type {
-  BuildingCreateDto,
-  BuildingUpdateDto,
+import {
+  type BuildingCreateDto,
+  type BuildingUpdateDto,
+  todayIso,
 } from "@einfachvermieter/shared";
 import {
   EntityManager,
@@ -46,7 +48,10 @@ export class BuildingsService {
     sort?: BuildingSort;
     order?: "asc" | "desc";
     q?: string;
-  }) {
+  }): Promise<{
+    items: (Building & { unitsCount: number; activeTenantsCount: number })[];
+    total: number;
+  }> {
     const { page, pageSize, sort = "name", order = "asc", q } = params;
 
     const where: FilterQuery<Building> = q
@@ -69,7 +74,70 @@ export class BuildingsService {
       this.em.count(BuildingSchema, where),
     ]);
 
-    return { items, total };
+    const counts = await this.countPerBuilding(items.map((item) => item.id));
+
+    return {
+      items: items.map((item) => ({
+        ...item,
+        unitsCount: counts.get(item.id)?.units ?? 0,
+        activeTenantsCount: counts.get(item.id)?.activeTenants ?? 0,
+      })),
+      total,
+    };
+  }
+
+  /**
+   * Wohnungen und aktive Mietverhältnisse (Stichtag heute) je Gebäude für Übersichts-Karte und Gebäude-Switcher.
+   */
+  private async countPerBuilding(buildingIds: string[]) {
+    const counts = new Map<string, { units: number; activeTenants: number }>();
+    if (buildingIds.length === 0) {
+      return counts;
+    }
+
+    const units = await this.em.find(
+      UnitSchema,
+      { buildingId: { $in: buildingIds } },
+      { fields: ["id", "buildingId"] },
+    );
+    const buildingIdByUnit = new Map(
+      units.map((unit) => [unit.id, unit.buildingId]),
+    );
+
+    const today = todayIso();
+    const activeTenants =
+      units.length > 0
+        ? await this.em.find(
+            TenantSchema,
+            {
+              unitId: { $in: units.map((unit) => unit.id) },
+              startDate: { $lte: today },
+              $or: [{ endDate: null }, { endDate: { $gte: today } }],
+            },
+            { fields: ["id", "unitId"] },
+          )
+        : [];
+
+    for (const id of buildingIds) {
+      counts.set(id, { units: 0, activeTenants: 0 });
+    }
+
+    for (const unit of units) {
+      const entry = counts.get(unit.buildingId);
+      if (entry) {
+        entry.units += 1;
+      }
+    }
+
+    for (const tenant of activeTenants) {
+      const buildingId = buildingIdByUnit.get(tenant.unitId);
+      const entry = buildingId ? counts.get(buildingId) : undefined;
+      if (entry) {
+        entry.activeTenants += 1;
+      }
+    }
+
+    return counts;
   }
 
   async get(id: string) {

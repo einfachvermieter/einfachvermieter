@@ -81,7 +81,7 @@ export const CostsOverview = () => {
     ...costTypesOverviewQueryOptions({ ...table.queryParams, buildingId }),
     enabled: buildingId !== undefined,
   });
-  const { data: stats } = useQuery(statsQueryOptions);
+  const { data: stats } = useQuery(statsQueryOptions());
 
   const items = data?.items ?? [];
 

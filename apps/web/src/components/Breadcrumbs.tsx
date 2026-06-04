@@ -36,8 +36,8 @@ const resolveCrumb = (crumb: Crumb, ctx: ResolveContext): CrumbEntry[] => {
   return result;
 };
 
-const renderEntry = (entry: CrumbEntry) => {
-  if (entry.to) {
+const renderEntry = (entry: CrumbEntry, isCurrent: boolean) => {
+  if (entry.to && !isCurrent) {
     return (
       <BreadcrumbLink asChild={true}>
         <Link to={entry.to}>{entry.label}</Link>
@@ -79,27 +79,26 @@ export const Breadcrumbs = () => {
 
   // Der Browser-Tab-Titel ist die komplette Breadcrumb-Kette in umgekehrter
   // Reihenfolge (spezifisch -> allgemein), abgeschlossen mit dem Markennamen.
-  // Die Breadcrumb-Darstellung selbst zeigt weiterhin nur den Eltern-Pfad
-  // (ohne die aktuelle Seite); die trägt ihre eigene H1.
+  // Die Breadcrumb zeigt die Kette inklusive aktueller Seite; das letzte
+  // Glied ist nicht verlinkt.
   const titleTrail = [...visible].reverse().map((entry) => entry.label);
   const documentTitle = [...titleTrail, "EinfachVermieter"].join(" – ");
-  const parentTrail = visible.slice(0, -1);
   useEffect(() => {
     document.title = documentTitle;
   }, [documentTitle]);
 
-  if (parentTrail.length === 0) {
+  if (visible.length === 0) {
     return null;
   }
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {parentTrail.map((entry, index, all) => {
+        {visible.map((entry, index, all) => {
           const isLast = index === all.length - 1;
           return (
             <Fragment key={entry.to ?? entry.label}>
-              <BreadcrumbItem>{renderEntry(entry)}</BreadcrumbItem>
+              <BreadcrumbItem>{renderEntry(entry, isLast)}</BreadcrumbItem>
               {isLast ? null : <BreadcrumbSeparator />}
             </Fragment>
           );

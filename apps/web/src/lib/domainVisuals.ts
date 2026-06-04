@@ -28,7 +28,7 @@ export type DomainVisual = {
 };
 
 /**
- * Feste Zuordnung Domäne → Icon + Akzentfarbe für Icon-Kacheln in Sidebar,
+ * Feste Zuordnung Domäne -> Icon + Akzentfarbe für Icon-Kacheln in Sidebar,
  * Tabellenzeilen und Sektionsköpfen.
  */
 export const domainVisuals: Record<DomainKey, DomainVisual> = {

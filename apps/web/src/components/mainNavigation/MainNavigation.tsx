@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
 import {
   Sidebar,
@@ -7,6 +8,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/Sidebar";
+import { statsQueryOptions } from "@/lib/stats";
 import logoUrl from "../../img/logo/logo.svg";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { useCurrentUser, useLogout } from "../../lib/auth";
@@ -22,6 +24,11 @@ export const MainNavigation = () => {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const { buildingId } = useActiveBuilding();
+  // Zähl-Badges der Stammdaten-Gruppe (Anzahl im aktiven Gebäude)
+  const { data: stats } = useQuery({
+    ...statsQueryOptions(buildingId),
+    enabled: buildingId !== undefined,
+  });
 
   return (
     <Sidebar collapsible="icon">
@@ -48,15 +55,22 @@ export const MainNavigation = () => {
           currentPath={currentPath}
         />
 
-        <div className="mx-2 mt-1 rounded-lg border border-sidebar-border bg-sidebar-accent/40 pb-1 group-data-[collapsible=icon]:mx-1 group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:pb-0">
-          <SidebarGroup>
-            <BuildingSwitcher />
-          </SidebarGroup>
+        <div className="mx-2 mt-1 rounded-[14px] border border-sidebar-border bg-card pb-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)] group-data-[collapsible=icon]:mx-1 group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:pb-0 group-data-[collapsible=icon]:shadow-none">
+          <div className="border-b border-sidebar-border group-data-[collapsible=icon]:border-transparent">
+            <SidebarGroup>
+              <BuildingSwitcher />
+            </SidebarGroup>
+          </div>
           <NavGroup
             label={t("ui.navigation.groups.masterData")}
             items={stammdatenNav}
             currentPath={currentPath}
             buildingId={buildingId}
+            counts={{
+              units: stats?.units,
+              meters: stats?.meters,
+              tenants: stats?.tenants,
+            }}
           />
           <NavGroup
             label={t("ui.navigation.groups.costsBilling")}

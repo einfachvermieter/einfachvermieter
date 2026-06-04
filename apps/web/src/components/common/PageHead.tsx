@@ -22,9 +22,7 @@ export const PageHead = ({
       </div>
       <h1 className="mt-1.5 text-[30px] font-semibold">{title}</h1>
       {sub ? (
-        <div className="mt-1.75 text-[14.5px] text-muted-foreground">
-          {sub}
-        </div>
+        <div className="mt-1.75 text-[14.5px] text-muted-foreground">{sub}</div>
       ) : null}
     </div>
     {action ? <div className="shrink-0">{action}</div> : null}

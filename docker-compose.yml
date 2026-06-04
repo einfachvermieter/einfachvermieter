@@ -10,7 +10,7 @@ services:
       - "7273"
     environment:
       - NODE_ENV=production
-      # Für serverseitige „heute"-Berechnung (todayIso, PDF-Ausstellungsdatum)
+      # Für serverseitige "heute"-Berechnung (todayIso, PDF-Ausstellungsdatum)
       - TZ=${TZ:-Europe/Berlin}
       # Einzige Daten-Wurzel (SQLite-DB, Uploads, Abrechnungs-PDFs).
       - DATA_DIR=/data
@@ -33,7 +33,13 @@ services:
       # Bind-Mount auf ZFS-Dataset. Pfad auf Host-System anpassen.
       - /tank/docker/einfachvermieter/data:/data
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:7273/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:7273/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3

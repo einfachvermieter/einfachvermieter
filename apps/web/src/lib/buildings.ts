@@ -7,6 +7,11 @@ export type Building = {
   addressStreet: string;
   addressPostalCode: string;
   addressCity: string;
+  unitsCount: number;
+  /**
+   * Mietverhältnisse mit laufendem Vertrag (Stichtag heute)
+   */
+  activeTenantsCount: number;
 };
 
 export type BuildingSortColumn =

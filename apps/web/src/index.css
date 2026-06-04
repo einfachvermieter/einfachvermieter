@@ -78,7 +78,7 @@
     --sidebar-primary: var(--color-sky-600);
     --sidebar-primary-foreground: var(--color-sky-50);
     --sidebar-accent: var(--color-slate-100);
-    --sidebar-accent-foreground: var(--color-sky-900);
+    --sidebar-accent-foreground: var(--color-slate-900);
     --sidebar-border: var(--color-slate-200);
     --sidebar-ring: var(--color-slate-400);
     /* Dekorative Icon-Akzente der Domänen (nur Icon-Kacheln) */

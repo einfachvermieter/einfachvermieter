@@ -242,8 +242,9 @@
       "buildingSwitcher": {
         "label": "Aktives Gebäude",
         "empty": "Kein Gebäude",
-        "manage": "Gebäude verwalten",
-        "add": "Neues Gebäude"
+        "all": "Alle Gebäude",
+        "add": "Neues Gebäude",
+        "unitsCount": "{count, plural, one {# Wohnung} other {# Wohnungen}}"
       }
     },
     "common": {

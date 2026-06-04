@@ -3,9 +3,9 @@ import {
   RiCheckLine,
   RiCommunityLine,
   RiExpandUpDownLine,
-  RiListSettingsLine,
 } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
+import { InitialsAvatar } from "@/components/common/InitialsAvatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,16 +41,16 @@ export const BuildingSwitcher = () => {
             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
             <DropdownMenuTrigger>
-              <RiCommunityLine />
+              <InitialsAvatar name={building?.name ?? "?"} size={34} />
               <div className="flex flex-1 flex-col gap-0.5 overflow-hidden text-left leading-none">
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                   {t("ui.navigation.buildingSwitcher.label")}
                 </span>
-                <span className="truncate font-semibold">
+                <span className="truncate text-[13.5px] font-semibold">
                   {building?.name ?? t("ui.navigation.buildingSwitcher.empty")}
                 </span>
               </div>
-              <RiExpandUpDownLine className="ml-auto size-4" />
+              <RiExpandUpDownLine className="ml-auto size-4 shrink-0 text-muted-foreground" />
             </DropdownMenuTrigger>
           </SidebarMenuButton>
           <DropdownMenuContent
@@ -67,16 +67,27 @@ export const BuildingSwitcher = () => {
                 key={item.id}
                 onSelect={() => setBuildingId(item.id)}
               >
-                <RiCommunityLine />
-                <span className="flex-1 truncate">{item.name}</span>
-                {item.id === buildingId ? <RiCheckLine /> : null}
+                <InitialsAvatar name={item.name} size={29} />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-[13px] font-semibold">
+                    {item.name}
+                  </span>
+                  <span className="text-[11.5px] text-muted-foreground">
+                    {t("ui.navigation.buildingSwitcher.unitsCount", {
+                      count: item.unitsCount,
+                    })}
+                  </span>
+                </span>
+                {item.id === buildingId ? (
+                  <RiCheckLine className="text-sky-700 dark:text-sky-400" />
+                ) : null}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild={true}>
               <Link to="/gebaeude">
-                <RiListSettingsLine />
-                {t("ui.navigation.buildingSwitcher.manage")}
+                <RiCommunityLine />
+                {t("ui.navigation.buildingSwitcher.all")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild={true}>

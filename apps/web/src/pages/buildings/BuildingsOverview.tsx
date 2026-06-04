@@ -34,7 +34,7 @@ export const BuildingsOverview = () => {
   const { data, isFetching } = useQuery(
     buildingsOverviewQueryOptions(table.queryParams),
   );
-  const { data: stats } = useQuery(statsQueryOptions);
+  const { data: stats } = useQuery(statsQueryOptions());
 
   const items = data?.items ?? [];
 

@@ -4,7 +4,11 @@ import { api } from "./api";
 
 export type { StatsResult };
 
-export const statsQueryOptions = queryOptions({
-  queryKey: ["stats"],
-  queryFn: () => api.get<StatsResult>("/stats"),
-});
+export const statsQueryOptions = (buildingId?: string) =>
+  queryOptions({
+    queryKey: ["stats", buildingId ?? "global"],
+    queryFn: () =>
+      api.get<StatsResult>(
+        buildingId ? `/stats?buildingId=${buildingId}` : "/stats",
+      ),
+  });

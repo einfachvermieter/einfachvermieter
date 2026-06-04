@@ -13,7 +13,7 @@ export const AppShell = ({ children }: { children?: ReactNode }) => (
       <MainNavigation />
 
       <SidebarInset>
-        <header className="flex h-[calc(3rem+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-border px-4 pt-[env(safe-area-inset-top)]">
+        <header className="sticky top-0 z-10 flex h-[calc(3rem+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-border bg-background/80 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-lg">
           <SidebarTrigger className="-mx-2" />
 
           <Separator
@@ -39,7 +39,9 @@ export const AppShell = ({ children }: { children?: ReactNode }) => (
         </header>
 
         <main className="flex-1 py-8 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] sm:pl-[max(2rem,env(safe-area-inset-left))] sm:pr-[max(2rem,env(safe-area-inset-right))]">
-          <div className="w-full max-w-6xl">{children ?? <Outlet />}</div>
+          <div className="mx-auto w-full max-w-310">
+            {children ?? <Outlet />}
+          </div>
         </main>
       </SidebarInset>
     </ActiveBuildingProvider>

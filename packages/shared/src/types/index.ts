@@ -487,7 +487,7 @@ export type HeatingDetail = {
   /**
    * CO2KostAufG-Aufteilung (nur Wohngebäude). Gesetzt bei aktivierter Aufteilung
    * mit erfassten CO2-Kosten und -Menge; `landlordDeductionCents` ist bereits aus
-   * `totalHeatingCostsCents` herausgerechnet. Fehlt die Menge → `undefined` + Warnung.
+   * `totalHeatingCostsCents` herausgerechnet. Fehlt die Menge -> `undefined` + Warnung.
    */
   co2Detail?: {
     /**
@@ -513,7 +513,7 @@ export type HeatingDetail = {
   };
   /**
    * Warmwasser-Abspaltung nach § 9 Abs. 2 HeizkostenV. Gesetzt bei zentraler
-   * WW-Bereitung mit erfolgreicher Abspaltung. Fehlt Q_WW/Q_gesamt → `undefined`
+   * WW-Bereitung mit erfolgreicher Abspaltung. Fehlt Q_WW/Q_gesamt -> `undefined`
    * + Warnung (alles zählt als Heizung).
    */
   hotWaterDetail?: {
