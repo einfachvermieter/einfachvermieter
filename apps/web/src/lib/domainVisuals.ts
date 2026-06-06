@@ -1,9 +1,12 @@
+import type { MeterType } from "@einfachvermieter/shared";
 import {
   type RemixiconComponentType,
   RiBillLine,
   RiDashboard3Line,
+  RiDropLine,
   RiFileList3Line,
   RiFireLine,
+  RiFlashlightLine,
   RiGroupLine,
   RiHome4Line,
   RiPriceTag3Line,
@@ -59,8 +62,53 @@ export const gradients = {
   money:
     "linear-gradient(135deg, var(--color-green-500), var(--color-green-600))",
   bank: "linear-gradient(135deg, var(--color-sky-600), var(--color-sky-700))",
+  commercial:
+    "linear-gradient(135deg, var(--color-slate-400), var(--color-slate-600))",
   address:
     "linear-gradient(135deg, var(--color-violet-500), var(--color-violet-700))",
   notes:
     "linear-gradient(135deg, var(--color-indigo-400), var(--color-indigo-600))",
 } as const;
+
+/**
+ * Icon-Kachel nach Kostenart-Charakter: Heizung orange, Wasser (m3) cyan,
+ * Strom (kWh) amber, sonst indigo
+ */
+export const costTypeVisual = (costType: {
+  category: string;
+  defaultAllocationKey: string | null;
+}): { icon: RemixiconComponentType; gradient: string } => {
+  if (costType.category === "heating") {
+    return { icon: RiFireLine, gradient: gradients.heating };
+  }
+
+  if (costType.defaultAllocationKey === "per_consumption_m3") {
+    return { icon: RiDropLine, gradient: gradients.water };
+  }
+
+  if (costType.defaultAllocationKey === "per_consumption_kwh") {
+    return { icon: RiFlashlightLine, gradient: gradients.tenants };
+  }
+
+  return { icon: RiPriceTag3Line, gradient: gradients.notes };
+};
+
+/**
+ * Zählertyp -> Icon-Kachel (Wasser cyan/Tropfen, Wärme/Gas orange/Feuer,
+ * Strom amber/Blitz)
+ */
+export const meterTypeVisual = (
+  type: MeterType,
+): { icon: RemixiconComponentType; gradient: string } => {
+  switch (type) {
+    case "water_cold":
+    case "water_hot":
+      return { icon: RiDropLine, gradient: gradients.water };
+
+    case "electricity":
+      return { icon: RiFlashlightLine, gradient: gradients.tenants };
+
+    default:
+      return { icon: RiFireLine, gradient: gradients.heating };
+  }
+};

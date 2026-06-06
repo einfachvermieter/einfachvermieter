@@ -39,6 +39,7 @@ import {
 } from "@nestjs/common";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
+import { isPresent, referenceDateFor } from "./occupancy.js";
 
 /**
  * ISO-Datum (YYYY-MM-DD) um einen Tag erhoehen, UTC-basiert ohne
@@ -103,45 +104,6 @@ const mergeOccupiedSpans = (
   return { occupiedDays, occupiedDegreeDayPromille };
 };
 
-/**
- * Stichtag für die "Snapshot"-Anzeige eines Mietvertrags: heute, wenn aktiv;
- * bei noch nicht begonnenen Verträgen Vertragsbeginn; bei abgelaufenen
- * Vertragsende
- */
-const referenceDateFor = (
-  tenantStart: string,
-  tenantEnd: string | null,
-  today: string,
-): string => {
-  if (tenantStart > today) {
-    return tenantStart;
-  }
-
-  if (tenantEnd !== null && tenantEnd < today) {
-    return tenantEnd;
-  }
-
-  return today;
-};
-
-/**
- * Prueft, ob ein Bewohner zum Stichtag praesent ist. Fehlende
- * moveIn/moveOut-Daten fallen auf den Vertragszeitraum zurueck (offenes
- * Ende = ferne Zukunft).
- */
-const isPresent = (
-  refDate: string,
-  moveIn: string | null,
-  moveOut: string | null,
-  tenantStart: string,
-  tenantEnd: string | null,
-): boolean => {
-  const effIn = moveIn ?? tenantStart;
-  const effOut = moveOut ?? tenantEnd ?? "9999-12-31";
-
-  return effIn <= refDate && effOut >= refDate;
-};
-
 export type TenantAggregate = {
   tenant: Tenant;
   residents: {
@@ -197,6 +159,7 @@ export type TenantOverviewRow = {
 export type TenantListResult = {
   items: TenantOverviewRow[];
   total: number;
+  activeCount: number;
 };
 
 type ComputedTenantRow = {
@@ -481,11 +444,12 @@ export class TenantsService {
     });
 
     const total = computed.length;
+    const activeCount = computed.filter((entry) => entry.row.active).length;
     const items = computed
       .slice(page * pageSize, page * pageSize + pageSize)
       .map((entry) => entry.row);
 
-    return { items, total };
+    return { items, total, activeCount };
   }
 
   /**

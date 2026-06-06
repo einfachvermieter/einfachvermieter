@@ -10,7 +10,17 @@ export type Unit = {
   heatingAreaSqm: number | null;
 };
 
-export type UnitSortColumn = "name" | "areaSqm";
+export type UnitOccupancy = {
+  status: "rented" | "vacant" | "vacant_from" | "owner";
+  vacantFrom: string | null;
+  tenantId: string | null;
+  tenantNames: string[];
+  commercial: boolean;
+};
+
+export type UnitOverviewRow = Unit & { occupancy: UnitOccupancy };
+
+export type UnitSortColumn = "name" | "areaSqm" | "status" | "tenant";
 
 export type UnitsOverviewParams = {
   page: number;
@@ -22,8 +32,9 @@ export type UnitsOverviewParams = {
 };
 
 export type UnitsOverviewResult = {
-  items: Unit[];
+  items: UnitOverviewRow[];
   total: number;
+  rentedCount: number;
 };
 
 export const unitsQueryOptions = queryOptions({

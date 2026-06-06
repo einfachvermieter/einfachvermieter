@@ -1,25 +1,25 @@
 import { formatDate, formatEur } from "@einfachvermieter/shared";
-import {
-  RiAddLine,
-  RiBillLine,
-  RiInformationLine,
-  RiPencilLine,
-} from "@remixicon/react";
+import { RiAddLine, RiInformationLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
-import { PageHeader } from "../../components/PageHeader";
+import { EntityCell } from "../../components/common/EntityCell";
+import { IconTile } from "../../components/common/IconTile";
+import { PageHead } from "../../components/common/PageHead";
 import { TextWithLink } from "../../components/TextWithLink";
+import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import {
   type CostEntryOverviewRow,
   type CostEntrySortColumn,
+  type CostType,
   costEntriesOverviewQueryOptions,
   costTypesQueryOptions,
 } from "../../lib/costs";
+import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { rowActionsColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
@@ -37,29 +37,37 @@ const SORTABLE_COLUMNS: ReadonlySet<CostEntrySortColumn> = new Set([
 
 const invoiceColumns = (
   deletion: DeleteResource<CostEntryOverviewRow>,
+  costTypeByName: Map<string, CostType>,
 ): ColumnDef<CostEntryOverviewRow>[] => [
-  rowActionsColumn<CostEntryOverviewRow>({
-    deletion,
-    editLink: (entry) => (
-      <Link to="/rechnungen/$costEntryId" params={{ costEntryId: entry.id }}>
-        <RiPencilLine />
-      </Link>
-    ),
-  }),
   {
     id: "costType",
     accessorKey: "costTypeNames",
     enableSorting: false,
     header: t("ui.costs.columns.costType"),
-    cell: ({ row }) => (
-      <ul className="flex flex-col">
-        {row.original.costTypeNames.map((name) => (
-          <li key={name} className="font-semibold">
-            {name}
-          </li>
-        ))}
-      </ul>
-    ),
+    cell: ({ row }) => {
+      const [firstName, ...moreNames] = row.original.costTypeNames;
+      const firstCostType = firstName
+        ? costTypeByName.get(firstName)
+        : undefined;
+      const visual = costTypeVisual(
+        firstCostType ?? { category: "operating", defaultAllocationKey: null },
+      );
+      return (
+        <EntityCell
+          tile={<IconTile icon={visual.icon} background={visual.gradient} />}
+          name={
+            <span className="flex items-center gap-1.5">
+              {firstName ?? t("common.unknown")}
+              {moreNames.length > 0 ? (
+                <Badge variant="morechip">
+                  {t("ui.common.moreChip", { count: moreNames.length })}
+                </Badge>
+              ) : null}
+            </span>
+          }
+        />
+      );
+    },
   },
   {
     id: "invoiceDate",
@@ -95,8 +103,14 @@ const invoiceColumns = (
     accessorKey: "invoiceNumber",
     header: t("ui.costs.columns.invoiceNumber"),
     cell: ({ row }) =>
-      row.original.invoiceNumber ?? (
-        <span className="text-muted-foreground">{t("common.none")}</span>
+      row.original.invoiceNumber ? (
+        <span className="text-[13px] text-muted-foreground tabular-nums">
+          {row.original.invoiceNumber}
+        </span>
+      ) : (
+        <span className="text-muted-foreground">
+          {t("ui.common.emptyValue")}
+        </span>
       ),
   },
   {
@@ -105,9 +119,13 @@ const invoiceColumns = (
     header: t("ui.costs.columns.vendor"),
     cell: ({ row }) =>
       row.original.vendor ?? (
-        <span className="text-muted-foreground">{t("common.none")}</span>
+        <span className="text-muted-foreground">
+          {t("ui.common.emptyValue")}
+        </span>
       ),
   },
+  // Löschen bleibt bis Phase 4 (Aktionen-Karte der Detailseite)
+  rowActionsColumn<CostEntryOverviewRow>({ deletion }),
 ];
 
 export const InvoicesPage = () => {
@@ -117,6 +135,7 @@ export const InvoicesPage = () => {
     defaultOrder: "desc",
     storageKey: "invoices",
   });
+  const navigate = useNavigate();
   const {
     buildingId,
     building,
@@ -145,7 +164,15 @@ export const InvoicesPage = () => {
       }),
   });
 
-  const columns = useMemo(() => invoiceColumns(deletion), [deletion]);
+  const costTypeByName = useMemo(
+    () =>
+      new Map((costTypes ?? []).map((costType) => [costType.name, costType])),
+    [costTypes],
+  );
+  const columns = useMemo(
+    () => invoiceColumns(deletion, costTypeByName),
+    [deletion, costTypeByName],
+  );
 
   const hasCostTypes = (costTypes ?? []).some(
     (costType) => costType.buildingId === buildingId,
@@ -162,11 +189,24 @@ export const InvoicesPage = () => {
     emptyMessage = t("ui.invoices.empty");
   }
 
+  const sub = data
+    ? [
+        t("ui.invoices.sub.count", { count: data.total }),
+        building?.name,
+        t("ui.invoices.sub.totalAmount", {
+          amount: formatEur(data.totalAmountCents),
+        }),
+      ]
+        .filter(Boolean)
+        .join(t("ui.common.separators.bullet"))
+    : undefined;
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        icon={<RiBillLine />}
+      <PageHead
+        eyebrow={t("ui.navigation.groups.costsBilling")}
         title={t("ui.invoices.title")}
+        sub={sub}
         action={
           <Button
             asChild={true}
@@ -210,6 +250,12 @@ export const InvoicesPage = () => {
         totalRows={total}
         emptyMessage={emptyMessage}
         rowClassName={deletion.rowClassName}
+        onRowClick={(entry) =>
+          navigate({
+            to: "/rechnungen/$costEntryId",
+            params: { costEntryId: entry.id },
+          })
+        }
         server={{
           ...table.serverProps,
           pageCount: table.pageCount(total),

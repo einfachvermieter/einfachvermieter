@@ -82,6 +82,7 @@ type CostEntryOverviewRow = {
 export type CostEntryListResult = {
   items: CostEntryOverviewRow[];
   total: number;
+  totalAmountCents: number;
 };
 
 @Injectable()
@@ -328,8 +329,14 @@ export class CostsService {
     });
 
     const total = rows.length;
+    // Jahressumme über alle Treffer der Filterung, nicht nur der Seite
+    const totalAmountCents = rows.reduce(
+      (sum, row) => sum + row.amountCents,
+      0,
+    );
     const pageItems = rows.slice(page * pageSize, page * pageSize + pageSize);
-    return { items: pageItems, total };
+
+    return { items: pageItems, total, totalAmountCents };
   }
 
   /**

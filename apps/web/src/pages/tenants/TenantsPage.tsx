@@ -1,17 +1,13 @@
 import { formatDate, formatEur, formatName } from "@einfachvermieter/shared";
-import {
-  RiAddLine,
-  RiInformationLine,
-  RiPencilLine,
-  RiTeamLine,
-  RiWallet3Line,
-} from "@remixicon/react";
+import { RiAddLine, RiInformationLine, RiWallet3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
-import { PageHeader } from "../../components/PageHeader";
+import { EntityCell } from "../../components/common/EntityCell";
+import { InitialsAvatar } from "../../components/common/InitialsAvatar";
+import { PageHead } from "../../components/common/PageHead";
 import { RowActionButton } from "../../components/RowActions";
 import { TextWithLink } from "../../components/TextWithLink";
 import { Badge } from "../../components/ui/Badge";
@@ -46,49 +42,35 @@ const SORTABLE_COLUMNS: ReadonlySet<TenantSortColumn> = new Set([
   "occupants",
 ]);
 
+const contractPartyNames = (row: TenantOverviewRow): string =>
+  row.contractResidents
+    .map((resident) => formatName(resident.firstName, resident.lastName))
+    .join(t("ui.common.separators.comma"));
+
 const tenantColumns = (
   deletion: DeleteResource<TenantOverviewRow>,
   summaryById: Map<string, TenantBalanceSummary>,
 ): ColumnDef<TenantOverviewRow>[] => [
-  rowActionsColumn<TenantOverviewRow>({
-    deletion,
-    editLink: (row) => (
-      <Link to="/mieter/$tenantId" params={{ tenantId: row.id }}>
-        <RiPencilLine />
-      </Link>
-    ),
-    extraActions: (row) => (
-      <RowActionButton label={t("ui.tenants.openAccount")}>
-        <Link to="/mieter/$tenantId/konto" params={{ tenantId: row.id }}>
-          <RiWallet3Line />
-        </Link>
-      </RowActionButton>
-    ),
-  }),
   {
-    id: "unit",
-    accessorKey: "unitName",
-    header: t("ui.common.columns.unit"),
-    cell: ({ row }) => (
-      <span className="font-semibold">{row.original.unitName}</span>
-    ),
+    id: "resident",
+    enableSorting: true,
+    header: t("ui.common.columns.contractParty"),
+    cell: ({ row }) => {
+      const names = contractPartyNames(row.original);
+      return (
+        <EntityCell
+          tile={<InitialsAvatar name={names || row.original.unitName} />}
+          name={names || t("common.none")}
+          subline={row.original.unitName}
+        />
+      );
+    },
   },
   {
     id: "kind",
     accessorKey: "kind",
     header: t("ui.tenants.columns.kind"),
     cell: ({ row }) => tenantKindLabel(row.original.kind),
-  },
-  {
-    id: "resident",
-    enableSorting: true,
-    header: t("ui.common.columns.contractParty"),
-    cell: ({ row }) =>
-      row.original.contractResidents.length === 0
-        ? t("common.none")
-        : row.original.contractResidents
-            .map((r) => formatName(r.firstName, r.lastName))
-            .join(t("ui.common.separators.comma")),
   },
   {
     id: "occupants",
@@ -105,12 +87,14 @@ const tenantColumns = (
     accessorKey: "startDate",
     header: t("ui.tenants.columns.term"),
     cell: ({ row }) =>
-      t("ui.common.periodLabel", {
-        start: formatDate(row.original.startDate),
-        end: row.original.endDate
-          ? formatDate(row.original.endDate)
-          : t("errors.tenantOpenEnd"),
-      }),
+      row.original.endDate
+        ? t("ui.common.periodLabel", {
+            start: formatDate(row.original.startDate),
+            end: formatDate(row.original.endDate),
+          })
+        : t("ui.tenants.termSince", {
+            date: formatDate(row.original.startDate),
+          }),
     meta: { cellClassName: "tabular-nums" },
   },
   {
@@ -129,9 +113,13 @@ const tenantColumns = (
     header: t("ui.common.columns.status"),
     cell: ({ row }) =>
       row.original.active ? (
-        <Badge variant="lightGreen">{t("ui.tenants.active")}</Badge>
+        <Badge variant="ok" dot={true}>
+          {t("ui.tenants.active")}
+        </Badge>
       ) : (
-        <Badge variant="lightYellow">{t("ui.tenants.inactive")}</Badge>
+        <Badge variant="slate" dot={true}>
+          {t("ui.tenants.inactive")}
+        </Badge>
       ),
   },
   {
@@ -148,7 +136,11 @@ const tenantColumns = (
         <Link
           to="/mieter/$tenantId/konto"
           params={{ tenantId: row.original.id }}
-          className="underline-offset-4 hover:underline"
+          className={
+            summary.balanceCents < 0
+              ? "text-rose-600 underline-offset-4 hover:underline dark:text-rose-400"
+              : "underline-offset-4 hover:underline"
+          }
         >
           {formatEur(summary.balanceCents)}
         </Link>
@@ -159,25 +151,17 @@ const tenantColumns = (
       headerClassName: "text-right",
     },
   },
-  {
-    id: "deposit",
-    enableSorting: false,
-    header: t("ui.account.columns.deposit"),
-    cell: ({ row }) => {
-      const summary = summaryById.get(row.original.id);
-      if (summary === undefined) {
-        return t("common.loadingShort");
-      }
-
-      return summary.depositCents > 0
-        ? formatEur(summary.depositCents)
-        : t("common.none");
-    },
-    meta: {
-      cellClassName: "text-right tabular-nums",
-      headerClassName: "text-right",
-    },
-  },
+  // Konto-Schnellzugriff bleibt; Löschen bis Phase 4 (Aktionen-Karte)
+  rowActionsColumn<TenantOverviewRow>({
+    deletion,
+    extraActions: (row) => (
+      <RowActionButton label={t("ui.tenants.openAccount")}>
+        <Link to="/mieter/$tenantId/konto" params={{ tenantId: row.id }}>
+          <RiWallet3Line />
+        </Link>
+      </RowActionButton>
+    ),
+  }),
 ];
 
 export const TenantsPage = () => {
@@ -187,6 +171,7 @@ export const TenantsPage = () => {
     defaultOrder: "desc",
     storageKey: "tenants",
   });
+  const navigate = useNavigate();
   const {
     buildingId,
     building,
@@ -245,11 +230,29 @@ export const TenantsPage = () => {
     emptyMessage = t("ui.tenants.empty");
   }
 
+  let activePart: string | undefined;
+  if (data) {
+    activePart =
+      data.activeCount === data.total && data.total > 0
+        ? t("ui.tenants.sub.allActive")
+        : t("ui.tenants.sub.active", { count: data.activeCount });
+  }
+  const sub = data
+    ? [
+        t("ui.tenants.sub.count", { count: data.total }),
+        building?.name,
+        activePart,
+      ]
+        .filter(Boolean)
+        .join(t("ui.common.separators.bullet"))
+    : undefined;
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        icon={<RiTeamLine />}
+      <PageHead
+        eyebrow={t("ui.navigation.groups.masterData")}
         title={t("ui.tenants.title")}
+        sub={sub}
         action={
           <Button asChild={true} disabled={!hasUnits} aria-disabled={!hasUnits}>
             <Link to="/mieter/neu">
@@ -289,6 +292,9 @@ export const TenantsPage = () => {
         totalRows={total}
         emptyMessage={emptyMessage}
         rowClassName={deletion.rowClassName}
+        onRowClick={(row) =>
+          navigate({ to: "/mieter/$tenantId", params: { tenantId: row.id } })
+        }
         server={{
           ...table.serverProps,
           pageCount: table.pageCount(total),

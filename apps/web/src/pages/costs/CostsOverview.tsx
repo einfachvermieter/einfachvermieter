@@ -1,17 +1,12 @@
-import {
-  RiAddLine,
-  RiFireLine,
-  RiPencilLine,
-  RiPieChartLine,
-  RiPriceTag3Line,
-  RiSpeedUpLine,
-} from "@remixicon/react";
+import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
-import { PageHeader } from "../../components/PageHeader";
+import { EntityCell } from "../../components/common/EntityCell";
+import { IconTile } from "../../components/common/IconTile";
+import { PageHead } from "../../components/common/PageHead";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import {
@@ -22,13 +17,12 @@ import {
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import {
   allocationLabel,
-  type CostCategory,
   type CostType,
   type CostTypeSortColumn,
-  costCategoryFor,
   costTypeCategoryLabel,
   costTypesOverviewQueryOptions,
 } from "../../lib/costs";
+import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
 import { rowActionsColumn } from "../../lib/tableColumns";
@@ -40,37 +34,13 @@ const SORTABLE_COLUMNS: ReadonlySet<CostTypeSortColumn> = new Set([
   "category",
 ]);
 
-const categoryBadge = (category: CostCategory) => {
-  if (category === "byShare") {
-    return (
-      <Badge variant="lightBlue">
-        <RiPieChartLine />
-        {t("ui.invoices.categoryBadges.byShare")}
-      </Badge>
-    );
-  }
-  if (category === "byConsumption") {
-    return (
-      <Badge variant="lightGreen">
-        <RiSpeedUpLine />
-        {t("ui.invoices.categoryBadges.byConsumption")}
-      </Badge>
-    );
-  }
-  return (
-    <Badge variant="lightYellow">
-      <RiFireLine />
-      {t("ui.invoices.categoryBadges.heating")}
-    </Badge>
-  );
-};
-
 export const CostsOverview = () => {
   const table = useServerTableState<CostTypeSortColumn>({
     allowedSorts: SORTABLE_COLUMNS,
     defaultSort: "name",
     storageKey: "costTypes",
   });
+  const navigate = useNavigate();
   const {
     buildingId,
     building,
@@ -95,28 +65,31 @@ export const CostsOverview = () => {
 
   const columns = useMemo<ColumnDef<CostType>[]>(
     () => [
-      rowActionsColumn<CostType>({
-        deletion,
-        editLink: (costType) => (
-          <Link
-            to="/kostenarten/$costTypeId"
-            params={{ costTypeId: costType.id }}
-          >
-            <RiPencilLine />
-          </Link>
-        ),
-      }),
       {
         accessorKey: "name",
         header: t("ui.common.columns.name"),
-        cell: ({ row }) => (
-          <span className="font-semibold">{row.original.name}</span>
-        ),
+        cell: ({ row }) => {
+          const visual = costTypeVisual(row.original);
+          return (
+            <EntityCell
+              tile={
+                <IconTile icon={visual.icon} background={visual.gradient} />
+              }
+              name={row.original.name}
+            />
+          );
+        },
       },
       {
         accessorKey: "category",
         header: t("ui.costs.columns.category"),
-        cell: ({ row }) => costTypeCategoryLabel(row.original.category),
+        cell: ({ row }) => (
+          <Badge
+            variant={row.original.category === "heating" ? "warn" : "blue"}
+          >
+            {costTypeCategoryLabel(row.original.category)}
+          </Badge>
+        ),
       },
       {
         id: "allocation",
@@ -147,18 +120,8 @@ export const CostsOverview = () => {
           return t("ui.costs.allocationKeyNotApplicable");
         },
       },
-      {
-        id: "kind",
-        enableSorting: false,
-        header: () => null,
-        cell: ({ row }) =>
-          categoryBadge(
-            costCategoryFor(
-              row.original.category,
-              row.original.defaultAllocationKey,
-            ),
-          ),
-      },
+      // Löschen bleibt bis Phase 4 (Aktionen-Karte der Detailseite)
+      rowActionsColumn<CostType>({ deletion }),
     ],
     [deletion, buildingId],
   );
@@ -173,11 +136,18 @@ export const CostsOverview = () => {
     emptyMessage = t("ui.costs.empty");
   }
 
+  const sub = data
+    ? [t("ui.costs.sub.count", { count: data.total }), building?.name]
+        .filter(Boolean)
+        .join(t("ui.common.separators.bullet"))
+    : undefined;
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        icon={<RiPriceTag3Line />}
+      <PageHead
+        eyebrow={t("ui.navigation.groups.costsBilling")}
         title={t("ui.costs.title")}
+        sub={sub}
         action={
           <Button asChild={true}>
             <Link to="/kostenarten/neu" search={{ buildingId }}>
@@ -195,6 +165,12 @@ export const CostsOverview = () => {
         totalRows={stats?.costTypes}
         emptyMessage={emptyMessage}
         rowClassName={deletion.rowClassName}
+        onRowClick={(costType) =>
+          navigate({
+            to: "/kostenarten/$costTypeId",
+            params: { costTypeId: costType.id },
+          })
+        }
         server={{
           ...table.serverProps,
           pageCount: table.pageCount(data?.total ?? 0),

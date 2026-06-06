@@ -174,6 +174,7 @@ export type TenantsOverviewParams = {
 export type TenantsOverviewResult = {
   items: TenantOverviewRow[];
   total: number;
+  activeCount: number;
 };
 
 export const tenantLinksQueryOptions = queryOptions({

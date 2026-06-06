@@ -253,6 +253,7 @@
         "dash": " – ",
         "comma": ", "
       },
+      "moreChip": "+{count}",
       "emptyValue": "—",
       "periodLabel": "{start} – {end}",
       "deductionAmount": "− {amount}",
@@ -406,6 +407,9 @@
         "serialNumber": "Seriennummer"
       },
       "serialNumberShort": "SN: {value}",
+      "sub": {
+        "count": "{count, plural, one {# Zähler} other {# Zähler}}"
+      },
       "fields": {
         "type": "Art",
         "role": "Rolle",
@@ -550,9 +554,21 @@
       "confirmDelete": "Wohnung löschen?",
       "confirmDeleteMessage": "Soll „{name}“ wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
       "allBuildings": "Alle Gebäude",
+      "sub": {
+        "count": "{count, plural, one {# Wohnung} other {# Wohnungen}}",
+        "rented": "{count} vermietet"
+      },
+      "status": {
+        "label": "Status",
+        "rented": "vermietet",
+        "vacant": "frei",
+        "vacantFrom": "frei ab {month}",
+        "owner": "Selbstnutzung"
+      },
       "fields": {
         "name": "Bezeichnung",
         "namePlaceholder": "z. B. EG oder OG/DG",
+        "tenant": "Mieter",
         "unitNumber": "Mieteinheit",
         "unitNumberDescription": "Bezeichnung der Mieteinheit in der Wohnanlage. Wird in der Nebenkostenabrechnung mit ausgewiesen.",
         "unitNumberPlaceholder": "z. B. 3.07",
@@ -599,6 +615,12 @@
       "allBuildings": "Alle Gebäude",
       "active": "Aktiv",
       "inactive": "Inaktiv",
+      "sub": {
+        "count": "{count, plural, one {# Mietverhältnis} other {# Mietverhältnisse}}",
+        "active": "{count} aktiv",
+        "allActive": "alle aktiv"
+      },
+      "termSince": "seit {date}",
       "columns": {
         "kind": "Art",
         "term": "Laufzeit",
@@ -766,6 +788,9 @@
       "add": "Kostenart hinzufügen",
       "addType": "Kostenart hinzufügen",
       "allBuildings": "Alle Gebäude",
+      "sub": {
+        "count": "{count, plural, one {# Kostenart} other {# Kostenarten}}"
+      },
       "typeCreateTitle": "Neue Kostenart",
       "typeCreateDescription": "Kategorie und Umlageschlüssel für eine neue Kostenart anlegen.",
       "typeEditTitle": "Kostenart bearbeiten",
@@ -866,6 +891,10 @@
       "title": "Rechnungen",
       "addEntry": "Rechnung erfassen",
       "allBuildings": "Alle Gebäude",
+      "sub": {
+        "count": "{count, plural, one {# Rechnung} other {# Rechnungen}}",
+        "totalAmount": "{amount} gesamt"
+      },
       "createTitle": "Neue Rechnung",
       "editTitle": "Rechnung bearbeiten",
       "identityTitle": "{vendor} ({date})",
@@ -930,6 +959,7 @@
     },
     "heating": {
       "title": "Heizkosten",
+      "sub": "Heizkosten-Konfigurationen für {building}",
       "description": "Pro Gebäude eine Konfiguration, wie Heizkosten abgerechnet werden.",
       "editTitle": "Heizkosten bearbeiten",
       "identityTitle": "Gültig ab {validFrom}",
@@ -1098,6 +1128,9 @@
     },
     "statements": {
       "pageTitle": "Abrechnungen",
+      "sub": {
+        "count": "{count, plural, one {# Abrechnung} other {# Abrechnungen}}"
+      },
       "notFound": {
         "title": "Abrechnung nicht gefunden",
         "description": "Diese Abrechnung existiert nicht oder wurde gelöscht."

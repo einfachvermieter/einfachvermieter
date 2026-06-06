@@ -176,6 +176,11 @@ type DataTableProps<TData> = {
   loading?: boolean;
   rowClassName?: (row: TData) => string | undefined;
   totalRows?: number;
+
+  /**
+   * Macht die ganze Zeile klickbar (Chevron-Spalte rechts, Hover-Cursor)
+   */
+  onRowClick?: (row: TData) => void;
 };
 
 /**
@@ -189,6 +194,7 @@ const DataTableBody = <TData,>({
   emptyMessage,
   rowClassName,
   totalRows,
+  onRowClick,
 }: {
   table: TableInstance<TData>;
   columns: ColumnDef<TData, unknown>[];
@@ -196,6 +202,7 @@ const DataTableBody = <TData,>({
   emptyMessage: ReactNode;
   rowClassName?: (row: TData) => string | undefined;
   totalRows?: number;
+  onRowClick?: (row: TData) => void;
 }) => {
   const currentPageSize = table.getState().pagination.pageSize;
 
@@ -230,7 +237,23 @@ const DataTableBody = <TData,>({
       <TableRow
         key={row.id}
         data-state={row.getIsSelected() ? "selected" : undefined}
-        className={rowClassName?.(row.original)}
+        className={cn(
+          onRowClick && "cursor-pointer",
+          rowClassName?.(row.original),
+        )}
+        onClick={
+          onRowClick
+            ? (event) => {
+                // Klicks auf Buttons/Links in der Zeile nicht abfangen
+                const interactive = (event.target as HTMLElement).closest(
+                  "a, button, input, select, label, [role=menuitem], [role=dialog]",
+                );
+                if (!interactive) {
+                  onRowClick(row.original);
+                }
+              }
+            : undefined
+        }
       >
         {row.getVisibleCells().map((cell) => (
           <TableCell
@@ -360,6 +383,7 @@ export const DataTable = <TData,>({
   loading = false,
   rowClassName,
   totalRows,
+  onRowClick,
 }: DataTableProps<TData>) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -368,9 +392,35 @@ export const DataTable = <TData,>({
     pageSize,
   });
 
+  // Chevron-Spalte signalisiert die klickbare Zeile (fable .chevcell)
+  const effectiveColumns = useMemo<ColumnDef<TData, unknown>[]>(
+    () =>
+      onRowClick
+        ? [
+            ...columns,
+            {
+              id: "chevron",
+              enableSorting: false,
+              header: () => null,
+              cell: () => (
+                <RiArrowRightSLine
+                  aria-hidden={true}
+                  className="size-4.5 text-slate-400"
+                />
+              ),
+              meta: {
+                cellClassName: "w-10 text-right",
+                headerClassName: "w-10",
+              },
+            },
+          ]
+        : columns,
+    [columns, onRowClick],
+  );
+
   const table = useReactTable({
     data,
-    columns,
+    columns: effectiveColumns,
     state: server
       ? { sorting: server.sorting, pagination: server.pagination }
       : { sorting, columnFilters, pagination: clientPagination },
@@ -430,7 +480,7 @@ export const DataTable = <TData,>({
       ) : null}
       <Card className="py-0">
         <Table className="[&_td:first-child]:pl-3 [&_td:last-child]:pr-6 [&_th:first-child]:pl-3 [&_th:last-child]:pr-6">
-          <TableHeader className="bg-muted">
+          <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -448,11 +498,12 @@ export const DataTable = <TData,>({
           <TableBody>
             <DataTableBody
               table={table}
-              columns={columns}
+              columns={effectiveColumns}
               loading={loading}
               emptyMessage={emptyMessage}
               rowClassName={rowClassName}
               totalRows={totalRows}
+              onRowClick={onRowClick}
             />
           </TableBody>
         </Table>

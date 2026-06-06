@@ -1,18 +1,17 @@
-import {
-  RiAddLine,
-  RiDashboard3Line,
-  RiListOrdered2,
-  RiPencilLine,
-} from "@remixicon/react";
+import { RiAddLine, RiListOrdered2 } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
-import { PageHeader } from "../../components/PageHeader";
+import { EntityCell } from "../../components/common/EntityCell";
+import { IconTile } from "../../components/common/IconTile";
+import { PageHead } from "../../components/common/PageHead";
 import { RowActionButton } from "../../components/RowActions";
+import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
+import { meterTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   type Meter,
@@ -33,12 +32,20 @@ const SORTABLE_COLUMNS: ReadonlySet<MeterSortColumn> = new Set([
   "role",
 ]);
 
+/** Wohnungszähler blau, Haupt-/Allgemeinzähler u. ä. slate */
+const roleBadge = (role: Meter["role"]) => (
+  <Badge variant={role === "unit" || role === "sub" ? "blue" : "slate"}>
+    {meterRoleLabel(role)}
+  </Badge>
+);
+
 export const MetersOverview = () => {
   const table = useServerTableState<MeterSortColumn>({
     allowedSorts: SORTABLE_COLUMNS,
     defaultSort: "label",
     storageKey: "meters",
   });
+  const navigate = useNavigate();
   const {
     buildingId,
     building,
@@ -69,18 +76,62 @@ export const MetersOverview = () => {
       map.set(unit.id, unit.name);
     }
     return (unitId: string | null) =>
-      unitId ? (map.get(unitId) ?? t("common.unknown")) : t("common.none");
+      unitId ? (map.get(unitId) ?? t("common.unknown")) : null;
   }, [units]);
 
   const columns = useMemo<ColumnDef<Meter>[]>(
     () => [
+      {
+        accessorKey: "label",
+        header: t("ui.meters.columns.label"),
+        cell: ({ row }) => {
+          const visual = meterTypeVisual(row.original.type);
+          return (
+            <EntityCell
+              tile={
+                <IconTile icon={visual.icon} background={visual.gradient} />
+              }
+              name={row.original.label}
+              subline={
+                row.original.serialNumber
+                  ? t("ui.meters.serialNumberShort", {
+                      value: row.original.serialNumber,
+                    })
+                  : undefined
+              }
+              mono={true}
+            />
+          );
+        },
+      },
+      {
+        accessorKey: "type",
+        header: t("ui.common.columns.type"),
+        cell: ({ row }) => meterTypeLabel(row.original.type),
+      },
+      {
+        accessorKey: "role",
+        header: t("ui.common.columns.role"),
+        cell: ({ row }) => roleBadge(row.original.role),
+      },
+      {
+        id: "unit",
+        enableSorting: false,
+        header: t("ui.common.columns.unit"),
+        cell: ({ row }) => {
+          const name = unitName(row.original.unitId);
+          return (
+            name ?? (
+              <span className="text-muted-foreground">
+                {t("ui.common.emptyValue")}
+              </span>
+            )
+          );
+        },
+      },
+
       rowActionsColumn<Meter>({
         deletion,
-        editLink: (meter) => (
-          <Link to="/zaehler/$meterId" params={{ meterId: meter.id }}>
-            <RiPencilLine />
-          </Link>
-        ),
         extraActions: (meter) => (
           <RowActionButton label={t("ui.reading.tabs.readings")}>
             <Link
@@ -92,38 +143,6 @@ export const MetersOverview = () => {
           </RowActionButton>
         ),
       }),
-      {
-        accessorKey: "label",
-        header: t("ui.meters.columns.label"),
-        cell: ({ row }) => (
-          <div>
-            <span className="font-semibold">{row.original.label}</span>
-            {row.original.serialNumber ? (
-              <span className="block text-xs font-normal text-muted-foreground">
-                {t("ui.meters.serialNumberShort", {
-                  value: row.original.serialNumber,
-                })}
-              </span>
-            ) : null}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "type",
-        header: t("ui.common.columns.type"),
-        cell: ({ row }) => meterTypeLabel(row.original.type),
-      },
-      {
-        accessorKey: "role",
-        header: t("ui.common.columns.role"),
-        cell: ({ row }) => meterRoleLabel(row.original.role),
-      },
-      {
-        id: "unit",
-        enableSorting: false,
-        header: t("ui.common.columns.unit"),
-        cell: ({ row }) => unitName(row.original.unitId),
-      },
     ],
     [unitName, deletion],
   );
@@ -138,11 +157,18 @@ export const MetersOverview = () => {
     emptyMessage = t("ui.meters.empty");
   }
 
+  const sub = data
+    ? [t("ui.meters.sub.count", { count: data.total }), building?.name]
+        .filter(Boolean)
+        .join(t("ui.common.separators.bullet"))
+    : undefined;
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        icon={<RiDashboard3Line />}
+      <PageHead
+        eyebrow={t("ui.navigation.groups.masterData")}
         title={t("ui.meters.title")}
+        sub={sub}
         action={
           <Button asChild={true}>
             <Link to="/zaehler/neu" search={{ buildingId, type: undefined }}>
@@ -160,6 +186,9 @@ export const MetersOverview = () => {
         totalRows={stats?.meters}
         emptyMessage={emptyMessage}
         rowClassName={deletion.rowClassName}
+        onRowClick={(meter) =>
+          navigate({ to: "/zaehler/$meterId", params: { meterId: meter.id } })
+        }
         server={{
           ...table.serverProps,
           pageCount: table.pageCount(data?.total ?? 0),

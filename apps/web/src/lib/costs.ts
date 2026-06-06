@@ -229,6 +229,7 @@ export type CostEntriesOverviewParams = {
 export type CostEntriesOverviewResult = {
   items: CostEntryOverviewRow[];
   total: number;
+  totalAmountCents: number;
 };
 
 export const costEntriesOverviewQueryOptions = (

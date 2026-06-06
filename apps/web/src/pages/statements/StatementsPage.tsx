@@ -1,17 +1,13 @@
 import { formatDate, formatEur, formatName } from "@einfachvermieter/shared";
-import {
-  RiAddLine,
-  RiEyeLine,
-  RiFileList3Line,
-  RiPencilLine,
-} from "@remixicon/react";
+import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
-import { PageHeader } from "../../components/PageHeader";
-import { RowActions } from "../../components/RowActions";
+import { EntityCell } from "../../components/common/EntityCell";
+import { InitialsAvatar } from "../../components/common/InitialsAvatar";
+import { PageHead } from "../../components/common/PageHead";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
@@ -32,36 +28,39 @@ const SORTABLE_COLUMNS: ReadonlySet<StatementSortColumn> = new Set([
   "balance",
 ]);
 
-const tenantLabel = (row: StatementOverviewRow): string =>
-  row.contractResidents.length > 0
-    ? t("ui.tenants.summary", {
-        unit: row.unitName,
-        residents: row.contractResidents
-          .map((resident) => formatName(resident.firstName, resident.lastName))
-          .join(t("ui.common.separators.comma")),
-      })
-    : row.unitName;
+const residentNames = (row: StatementOverviewRow): string =>
+  row.contractResidents
+    .map((resident) => formatName(resident.firstName, resident.lastName))
+    .join(t("ui.common.separators.comma"));
 
 const statusBadge = (status: StatementStatus) => {
   switch (status) {
     case "finalized":
       return (
-        <Badge variant="lightGreen">{t("ui.statements.statusFinalized")}</Badge>
+        <Badge variant="ok" dot={true}>
+          {t("ui.statements.statusFinalized")}
+        </Badge>
       );
 
     case "draft":
       return (
-        <Badge variant="lightYellow">{t("ui.statements.statusDraft")}</Badge>
+        <Badge variant="slate" dot={true}>
+          {t("ui.statements.statusDraft")}
+        </Badge>
       );
 
     case "cancelled":
       return (
-        <Badge variant="lightRed">{t("ui.statements.statusCancelled")}</Badge>
+        <Badge variant="rose" dot={true}>
+          {t("ui.statements.statusCancelled")}
+        </Badge>
       );
 
     case "superseded":
       return (
-        <Badge variant="secondary">{t("ui.statements.statusSuperseded")}</Badge>
+        <Badge variant="slate" dot={true}>
+          {t("ui.statements.statusSuperseded")}
+        </Badge>
       );
 
     default:
@@ -76,6 +75,7 @@ export const StatementsPage = () => {
     defaultOrder: "desc",
     storageKey: "statements",
   });
+  const navigate = useNavigate();
   const {
     buildingId,
     building,
@@ -99,38 +99,19 @@ export const StatementsPage = () => {
   const columns = useMemo<ColumnDef<StatementOverviewRow>[]>(
     () => [
       {
-        id: "actions",
-        enableSorting: false,
-        header: () => null,
-        cell: ({ row }) => {
-          const statement = row.original;
-          const isDraft = statement.status === "draft";
-          return (
-            <RowActions
-              editLabel={
-                isDraft
-                  ? t("ui.common.action.edit")
-                  : t("ui.common.action.viewDetails")
-              }
-              editLink={
-                <Link
-                  to="/abrechnungen/$statementId"
-                  params={{ statementId: statement.id }}
-                >
-                  {isDraft ? <RiPencilLine /> : <RiEyeLine />}
-                </Link>
-              }
-            />
-          );
-        },
-      },
-      {
         id: "tenant",
         accessorKey: "unitName",
         header: t("ui.common.columns.tenant"),
-        cell: ({ row }) => (
-          <span className="font-semibold">{tenantLabel(row.original)}</span>
-        ),
+        cell: ({ row }) => {
+          const names = residentNames(row.original);
+          return (
+            <EntityCell
+              tile={<InitialsAvatar name={names || row.original.unitName} />}
+              name={names || row.original.unitName}
+              subline={names ? row.original.unitName : undefined}
+            />
+          );
+        },
       },
       {
         id: "period",
@@ -156,7 +137,11 @@ export const StatementsPage = () => {
         cell: ({ row }) => {
           const { balanceCents } = row.original;
           if (balanceCents === null) {
-            return t("common.none");
+            return (
+              <span className="text-muted-foreground">
+                {t("ui.common.emptyValue")}
+              </span>
+            );
           }
           return (
             <span
@@ -192,11 +177,18 @@ export const StatementsPage = () => {
     emptyMessage = t("ui.statements.empty");
   }
 
+  const sub = data
+    ? [t("ui.statements.sub.count", { count: data.total }), building?.name]
+        .filter(Boolean)
+        .join(t("ui.common.separators.bullet"))
+    : undefined;
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        icon={<RiFileList3Line />}
+      <PageHead
+        eyebrow={t("ui.navigation.groups.costsBilling")}
         title={t("ui.statements.pageTitle")}
+        sub={sub}
         action={
           <Button
             asChild={true}
@@ -219,6 +211,12 @@ export const StatementsPage = () => {
         loading={isFetching || buildingsPending}
         totalRows={total}
         emptyMessage={emptyMessage}
+        onRowClick={(statement) =>
+          navigate({
+            to: "/abrechnungen/$statementId",
+            params: { statementId: statement.id },
+          })
+        }
         server={{
           ...table.serverProps,
           pageCount: table.pageCount(total),

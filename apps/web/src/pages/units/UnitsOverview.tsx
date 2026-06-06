@@ -1,19 +1,23 @@
-import { formatNumber } from "@einfachvermieter/shared";
-import { RiAddLine, RiHome6Line, RiPencilLine } from "@remixicon/react";
+import { formatNumber, pad2 } from "@einfachvermieter/shared";
+import { RiAddLine, RiHome4Line, RiStore2Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
-import { PageHeader } from "../../components/PageHeader";
+import { EntityCell } from "../../components/common/EntityCell";
+import { IconTile } from "../../components/common/IconTile";
+import { PageHead } from "../../components/common/PageHead";
+import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
+import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
 import { rowActionsColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 import {
-  type Unit,
+  type UnitOverviewRow,
   type UnitSortColumn,
   unitsOverviewQueryOptions,
 } from "../../lib/units";
@@ -22,7 +26,49 @@ import { useDeleteResource } from "../../lib/useDeleteResource";
 const SORTABLE_COLUMNS: ReadonlySet<UnitSortColumn> = new Set([
   "name",
   "areaSqm",
+  "status",
+  "tenant",
 ]);
+
+/** "frei ab MM/JJJJ" bezieht sich auf den Monat nach Vertragsende */
+const vacantFromMonth = (vacantFrom: string): string => {
+  const dayAfterEnd = new Date(`${vacantFrom}T00:00:00Z`);
+  dayAfterEnd.setUTCDate(dayAfterEnd.getUTCDate() + 1);
+  return `${pad2(dayAfterEnd.getUTCMonth() + 1)}/${dayAfterEnd.getUTCFullYear()}`;
+};
+
+const occupancyBadge = (occupancy: UnitOverviewRow["occupancy"]) => {
+  switch (occupancy.status) {
+    case "rented":
+      return (
+        <Badge variant="ok" dot={true}>
+          {t("ui.units.status.rented")}
+        </Badge>
+      );
+    case "vacant_from":
+      return (
+        <Badge variant="warn" dot={true}>
+          {t("ui.units.status.vacantFrom", {
+            month: occupancy.vacantFrom
+              ? vacantFromMonth(occupancy.vacantFrom)
+              : "",
+          })}
+        </Badge>
+      );
+    case "owner":
+      return (
+        <Badge variant="slate" dot={true}>
+          {t("ui.units.status.owner")}
+        </Badge>
+      );
+    default:
+      return (
+        <Badge variant="warn" dot={true}>
+          {t("ui.units.status.vacant")}
+        </Badge>
+      );
+  }
+};
 
 export const UnitsOverview = () => {
   const table = useServerTableState<UnitSortColumn>({
@@ -30,6 +76,7 @@ export const UnitsOverview = () => {
     defaultSort: "name",
     storageKey: "units",
   });
+  const navigate = useNavigate();
   const {
     buildingId,
     building,
@@ -44,29 +91,41 @@ export const UnitsOverview = () => {
 
   const items = data?.items ?? [];
 
-  const deletion = useDeleteResource<Unit>({
+  const deletion = useDeleteResource<UnitOverviewRow>({
     endpoint: (unit) => `/units/${unit.id}`,
     invalidateKey: ["units"],
     title: t("ui.units.confirmDelete"),
     describe: (unit) => t("ui.units.confirmDeleteMessage", { name: unit.name }),
   });
 
-  const columns = useMemo<ColumnDef<Unit>[]>(
+  const columns = useMemo<ColumnDef<UnitOverviewRow>[]>(
     () => [
-      rowActionsColumn<Unit>({
-        deletion,
-        editLink: (unit) => (
-          <Link to="/wohnungen/$unitId" params={{ unitId: unit.id }}>
-            <RiPencilLine />
-          </Link>
-        ),
-      }),
       {
         accessorKey: "name",
         header: t("ui.units.fields.name"),
         cell: ({ row }) => (
-          <span className="font-semibold">{row.original.name}</span>
+          <EntityCell
+            tile={
+              <IconTile
+                icon={
+                  row.original.occupancy.commercial ? RiStore2Line : RiHome4Line
+                }
+                background={
+                  row.original.occupancy.commercial
+                    ? gradients.commercial
+                    : gradients.units
+                }
+              />
+            }
+            name={row.original.name}
+          />
         ),
+      },
+      {
+        accessorKey: "unitNumber",
+        enableSorting: false,
+        header: t("ui.units.fields.unitNumber"),
+        cell: ({ row }) => row.original.unitNumber ?? t("ui.common.emptyValue"),
       },
       {
         accessorKey: "areaSqm",
@@ -77,6 +136,21 @@ export const UnitsOverview = () => {
           headerClassName: "text-right",
         },
       },
+      {
+        id: "status",
+        header: t("ui.units.status.label"),
+        cell: ({ row }) => occupancyBadge(row.original.occupancy),
+      },
+      {
+        id: "tenant",
+        header: t("ui.units.fields.tenant"),
+        cell: ({ row }) =>
+          row.original.occupancy.tenantNames.join(
+            t("ui.common.separators.comma"),
+          ) || t("ui.common.emptyValue"),
+      },
+
+      rowActionsColumn<UnitOverviewRow>({ deletion }),
     ],
     [deletion],
   );
@@ -91,11 +165,22 @@ export const UnitsOverview = () => {
     emptyMessage = t("ui.units.empty");
   }
 
+  const sub = data
+    ? [
+        t("ui.units.sub.count", { count: data.total }),
+        building?.name,
+        t("ui.units.sub.rented", { count: data.rentedCount }),
+      ]
+        .filter(Boolean)
+        .join(t("ui.common.separators.bullet"))
+    : undefined;
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        icon={<RiHome6Line />}
+      <PageHead
+        eyebrow={t("ui.navigation.groups.masterData")}
         title={t("ui.units.title")}
+        sub={sub}
         action={
           <Button asChild={true}>
             <Link to="/wohnungen/neu" search={{ buildingId }}>
@@ -113,6 +198,12 @@ export const UnitsOverview = () => {
         totalRows={stats?.units}
         emptyMessage={emptyMessage}
         rowClassName={deletion.rowClassName}
+        onRowClick={(unit) =>
+          navigate({
+            to: "/wohnungen/$unitId",
+            params: { unitId: unit.id },
+          })
+        }
         server={{
           ...table.serverProps,
           pageCount: table.pageCount(data?.total ?? 0),

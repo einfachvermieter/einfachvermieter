@@ -3,16 +3,19 @@ import {
   type HeatingSettings,
   todayIso,
 } from "@einfachvermieter/shared";
-import { RiAddLine, RiFireLine, RiPencilLine } from "@remixicon/react";
+import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
-import { PageHeader } from "../../components/PageHeader";
+import { EntityCell } from "../../components/common/EntityCell";
+import { IconTile } from "../../components/common/IconTile";
+import { PageHead } from "../../components/common/PageHead";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import {
   type HeatingOverviewRow,
   type HeatingSortColumn,
@@ -41,19 +44,21 @@ const heatingColumns = (
   deletion: DeleteResource<Row>,
   today: string,
 ): ColumnDef<Row>[] => [
-  rowActionsColumn<Row>({
-    deletion,
-    editLink: (row) => (
-      <Link to="/heizkosten/$id" params={{ id: row.id }}>
-        <RiPencilLine />
-      </Link>
-    ),
-  }),
   {
     accessorKey: "validFrom",
     accessorFn: (row) => row.settings.validFrom,
     header: t("ui.heating.versions.columns.validFrom"),
-    cell: ({ row }) => formatDate(row.original.settings.validFrom),
+    cell: ({ row }) => (
+      <EntityCell
+        tile={
+          <IconTile
+            icon={domainVisuals.heating.icon}
+            background={gradients.heating}
+          />
+        }
+        name={formatDate(row.original.settings.validFrom)}
+      />
+    ),
     meta: { cellClassName: "tabular-nums" },
   },
   {
@@ -120,16 +125,18 @@ const heatingColumns = (
     cell: ({ row }) => {
       const active = isVersionActive(row.original.settings, today);
       return active ? (
-        <Badge variant="lightGreen">
+        <Badge variant="ok" dot={true}>
           {t("ui.heating.versions.statusActive")}
         </Badge>
       ) : (
-        <Badge variant="lightYellow">
+        <Badge variant="slate" dot={true}>
           {t("ui.heating.versions.statusArchived")}
         </Badge>
       );
     },
   },
+  // Löschen bleibt bis Phase 4 (Aktionen-Karte der Detailseite)
+  rowActionsColumn<Row>({ deletion }),
 ];
 
 export const HeatingOverviewPage = () => {
@@ -139,6 +146,7 @@ export const HeatingOverviewPage = () => {
     defaultOrder: "desc",
     storageKey: "heating",
   });
+  const navigate = useNavigate();
   const {
     buildingId,
     building,
@@ -202,9 +210,14 @@ export const HeatingOverviewPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        icon={<RiFireLine />}
+      <PageHead
+        eyebrow={t("ui.navigation.groups.costsBilling")}
         title={t("ui.heating.title")}
+        sub={
+          building
+            ? t("ui.heating.sub", { building: building.name })
+            : undefined
+        }
         action={
           <Button asChild={true}>
             <Link to="/heizkosten/neu" search={{ buildingId }}>
@@ -224,6 +237,9 @@ export const HeatingOverviewPage = () => {
         totalRows={total}
         emptyMessage={emptyMessage}
         rowClassName={deletion.rowClassName}
+        onRowClick={(row) =>
+          navigate({ to: "/heizkosten/$id", params: { id: row.id } })
+        }
         server={{
           pagination: table.pagination,
           onPaginationChange: table.setPagination,

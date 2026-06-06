@@ -35,7 +35,12 @@ export class UnitsController {
     @Query("order") order?: string,
     @Query("q") q?: string,
   ) {
-    const allowedSort = new Set(["name", "areaSqm"] as const);
+    const allowedSort = new Set([
+      "name",
+      "areaSqm",
+      "status",
+      "tenant",
+    ] as const);
     return this.unitsService.list({
       buildingId,
       ...parsePaginationQuery({ page, pageSize, sort, order, q }, allowedSort),
