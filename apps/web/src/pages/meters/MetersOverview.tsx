@@ -1,6 +1,6 @@
 import { RiAddLine, RiListOrdered2 } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
@@ -32,6 +32,8 @@ const SORTABLE_COLUMNS: ReadonlySet<MeterSortColumn> = new Set([
   "role",
 ]);
 
+const routeApi = getRouteApi("/zaehler");
+
 /** Wohnungszähler blau, Haupt-/Allgemeinzähler u. ä. slate */
 const roleBadge = (role: Meter["role"]) => (
   <Badge variant={role === "unit" || role === "sub" ? "blue" : "slate"}>
@@ -53,9 +55,14 @@ export const MetersOverview = () => {
   } = useActiveBuilding();
 
   const { data: units } = useQuery(unitsQueryOptions);
+  const { unitId: unitIdFilter } = routeApi.useSearch();
 
   const { data, isFetching } = useQuery({
-    ...metersOverviewQueryOptions({ ...table.queryParams, buildingId }),
+    ...metersOverviewQueryOptions({
+      ...table.queryParams,
+      buildingId,
+      unitId: unitIdFilter,
+    }),
     enabled: buildingId !== undefined,
   });
   const { data: stats } = useQuery(statsQueryOptions());
@@ -171,7 +178,10 @@ export const MetersOverview = () => {
         sub={sub}
         action={
           <Button asChild={true}>
-            <Link to="/zaehler/neu" search={{ buildingId, type: undefined }}>
+            <Link
+              to="/zaehler/neu"
+              search={{ buildingId, type: undefined, unitId: undefined }}
+            >
               <RiAddLine />
               <span className="hidden sm:inline">{t("ui.meters.add")}</span>
             </Link>

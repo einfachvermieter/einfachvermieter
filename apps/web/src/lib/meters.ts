@@ -79,6 +79,7 @@ export type MetersOverviewParams = {
   order?: "asc" | "desc";
   q?: string;
   buildingId?: string;
+  unitId?: string;
 };
 
 export type MetersOverviewResult = {
@@ -124,6 +125,10 @@ export const metersOverviewQueryOptions = (params: MetersOverviewParams) =>
 
       if (params.buildingId) {
         search.set("buildingId", params.buildingId);
+      }
+
+      if (params.unitId) {
+        search.set("unitId", params.unitId);
       }
 
       return api.get<MetersOverviewResult>(`/meters?${search.toString()}`);

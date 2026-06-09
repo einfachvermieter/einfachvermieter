@@ -4,13 +4,16 @@ import {
   type TenantFormValues,
   todayIso,
 } from "@einfachvermieter/shared";
+import { RiGroupLine } from "@remixicon/react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
+import { InitialsAvatar } from "@/components/common/InitialsAvatar";
 import {
   EditableListSection,
   type EditableListSectionRowFormProps,
 } from "@/components/form/EditableListSection";
 import { HelpHint } from "@/components/help/HelpHint";
 import { Badge } from "@/components/ui/Badge";
+import { gradients } from "../../../../lib/domainVisuals";
 import {
   getPeriodStatusToday,
   isPeriodActiveToday,
@@ -161,6 +164,18 @@ export const Residents = ({
       titleHelp={<HelpHint>{t("ui.tenant.residentsHelp")}</HelpHint>}
       emptyHint={t("ui.tenant.residentsEmptyHint")}
       addLabel={t("ui.tenant.addResident")}
+      icon={RiGroupLine}
+      iconBackground={gradients.tenants}
+      rowLeading={(row, index) => (
+        <InitialsAvatar
+          name={
+            row.firstName || row.lastName
+              ? formatName(row.firstName, row.lastName)
+              : t("ui.tenant.residentIndex", { index: index + 1 })
+          }
+          background={gradients.tenants}
+        />
+      )}
       fieldKeys={residentsArray.fields}
       rows={watchedResidents}
       renderRow={(row, index) => {

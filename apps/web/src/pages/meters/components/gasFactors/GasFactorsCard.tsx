@@ -1,10 +1,12 @@
 import type { MeterFormValues } from "@einfachvermieter/shared";
 import { formatDate, formatNumber } from "@einfachvermieter/shared";
+import { RiFireLine } from "@remixicon/react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
 import {
   EditableListSection,
   type EditableListSectionRowFormProps,
 } from "@/components/form/EditableListSection";
+import { gradients } from "../../../../lib/domainVisuals";
 import { t, translateKey } from "../../../../lib/i18n";
 import { GasFactorRowForm } from "./GasFactorRowForm";
 import { emptyGasFactorRow, type GasFactorRowValues } from "./gasFactorRow";
@@ -58,6 +60,8 @@ export const GasFactorsCard = ({
       title={t("ui.meters.gasFactors.title")}
       emptyHint={t("ui.meters.gasFactors.emptyHint")}
       addLabel={t("ui.meters.gasFactors.addPeriod")}
+      icon={RiFireLine}
+      iconBackground={gradients.heating}
       fieldKeys={gasFactorsArray.fields}
       rows={watchedGasFactors}
       renderRow={(row) => {

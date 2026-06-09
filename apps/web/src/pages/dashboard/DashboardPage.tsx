@@ -68,7 +68,11 @@ export const DashboardPage = () => {
           </Link>
           <Link
             to="/zaehler"
-            search={{ buildingId: undefined, type: undefined }}
+            search={{
+              buildingId: undefined,
+              type: undefined,
+              unitId: undefined,
+            }}
             className="block rounded-md border border-border bg-card px-3 py-2 text-foreground hover:bg-muted"
           >
             {t("ui.dashboard.quickstart.recordReading")}

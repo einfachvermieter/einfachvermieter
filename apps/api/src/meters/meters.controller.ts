@@ -33,6 +33,7 @@ export class MetersController {
   @Get()
   list(
     @Query("buildingId") buildingId?: string,
+    @Query("unitId") unitId?: string,
     @Query("page") page?: string,
     @Query("pageSize") pageSize?: string,
     @Query("sort") sort?: string,
@@ -43,6 +44,7 @@ export class MetersController {
 
     return this.metersService.list({
       buildingId,
+      unitId,
       ...parsePaginationQuery({ page, pageSize, sort, order, q }, allowedSort),
     });
   }

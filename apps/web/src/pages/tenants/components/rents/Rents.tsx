@@ -1,5 +1,6 @@
 import type { TenantFormValues } from "@einfachvermieter/shared";
 import { formatDate } from "@einfachvermieter/shared";
+import { RiMoneyEuroCircleLine } from "@remixicon/react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
 import {
   EditableListSection,
@@ -7,6 +8,7 @@ import {
 } from "@/components/form/EditableListSection";
 import { HelpHint } from "@/components/help/HelpHint";
 import { Badge } from "@/components/ui/Badge";
+import { gradients } from "../../../../lib/domainVisuals";
 import { getPeriodStatusToday } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { RentRowForm } from "./RentRowForm";
@@ -57,6 +59,8 @@ export const Rents = ({
       titleHelp={<HelpHint>{t("ui.tenant.rentsHelp")}</HelpHint>}
       emptyHint={t("ui.tenant.rentsEmptyHint")}
       addLabel={t("ui.tenant.addRent")}
+      icon={RiMoneyEuroCircleLine}
+      iconBackground={gradients.money}
       fieldKeys={rentsArray.fields}
       rows={watchedRents}
       renderRow={(row, index) => {

@@ -14,14 +14,12 @@ import { useActiveBuilding } from "../../lib/activeBuilding";
 import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
-import { rowActionsColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 import {
   type UnitOverviewRow,
   type UnitSortColumn,
   unitsOverviewQueryOptions,
 } from "../../lib/units";
-import { useDeleteResource } from "../../lib/useDeleteResource";
 
 const SORTABLE_COLUMNS: ReadonlySet<UnitSortColumn> = new Set([
   "name",
@@ -91,13 +89,6 @@ export const UnitsOverview = () => {
 
   const items = data?.items ?? [];
 
-  const deletion = useDeleteResource<UnitOverviewRow>({
-    endpoint: (unit) => `/units/${unit.id}`,
-    invalidateKey: ["units"],
-    title: t("ui.units.confirmDelete"),
-    describe: (unit) => t("ui.units.confirmDeleteMessage", { name: unit.name }),
-  });
-
   const columns = useMemo<ColumnDef<UnitOverviewRow>[]>(
     () => [
       {
@@ -149,10 +140,8 @@ export const UnitsOverview = () => {
             t("ui.common.separators.comma"),
           ) || t("ui.common.emptyValue"),
       },
-
-      rowActionsColumn<UnitOverviewRow>({ deletion }),
     ],
-    [deletion],
+    [],
   );
 
   const trimmedSearch = table.search.trim();
@@ -197,7 +186,6 @@ export const UnitsOverview = () => {
         loading={isFetching || buildingsPending}
         totalRows={stats?.units}
         emptyMessage={emptyMessage}
-        rowClassName={deletion.rowClassName}
         onRowClick={(unit) =>
           navigate({
             to: "/wohnungen/$unitId",
@@ -209,8 +197,6 @@ export const UnitsOverview = () => {
           pageCount: table.pageCount(data?.total ?? 0),
         }}
       />
-
-      {deletion.dialog}
     </div>
   );
 };

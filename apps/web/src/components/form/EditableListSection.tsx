@@ -1,23 +1,16 @@
-import { RiAddLine, RiDeleteBin5Line, RiPencilLine } from "@remixicon/react";
-import { type ReactNode, useState } from "react";
 import {
-  ResponsiveDialog,
-  ResponsiveDialogBody,
-  ResponsiveDialogDescription,
-  ResponsiveDialogHeader,
-  ResponsiveDialogTitle,
-} from "@/components/common/ResponsiveDialog";
+  type RemixiconComponentType,
+  RiAddLine,
+  RiDeleteBin5Line,
+  RiPencilLine,
+} from "@remixicon/react";
+import { Fragment, type ReactNode, useState } from "react";
+import { EmptyNote } from "@/components/common/EmptyNote";
+import { IconTile } from "@/components/common/IconTile";
+import { SectionCard } from "@/components/common/SectionCard";
 import { DestructiveConfirmDialog } from "@/components/DestructiveConfirmDialog";
-import { Alert, AlertDescription } from "@/components/ui/Alert";
+import { InlineSubform } from "@/components/form/InlineSubform";
 import { Button } from "@/components/ui/Button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
 import {
   Tooltip,
   TooltipContent,
@@ -38,6 +31,18 @@ export type EditableListSectionProps<T> = {
   description?: string;
   emptyHint?: string;
   addLabel: string;
+  icon: RemixiconComponentType;
+
+  /**
+   * Farbe oder Verlauf
+   */
+  iconBackground: string;
+
+  /**
+   * Avatar/Icon-Kachel einer Zeile. Ohne Angabe
+   * in Zeilengröße (36px).
+   */
+  rowLeading?: (row: T, index: number) => ReactNode;
 
   /**
    * Stabile Schlüssel für jede Zeile. Kommt typischerweise aus
@@ -61,13 +66,14 @@ export type EditableListSectionProps<T> = {
   onRemove: (index: number) => void;
 
   /**
-   * Berechnet die Default-Values für den Dialog. Bei `editIndex !== null`
-   * wird der aktuelle Wert übergeben, bei Add ist `current === undefined`.
+   * Berechnet die Default-Values fürs Aufklapp-Formular. Bei
+   * `editIndex !== null` wird der aktuelle Wert übergeben, bei Add ist
+   * `current === undefined`.
    */
   resolveDefaultValues: (editIndex: number | null, current: T | undefined) => T;
 
   /**
-   * Rendert das Zeilen-Formular im Dialog.
+   * Rendert das Zeilen-Formular im sky-getönten Aufklapp-Bereich.
    */
   renderRowForm: (props: EditableListSectionRowFormProps<T>) => ReactNode;
 
@@ -98,6 +104,9 @@ export const EditableListSection = <T,>({
   description,
   emptyHint,
   addLabel,
+  icon,
+  iconBackground,
+  rowLeading,
   fieldKeys,
   rows,
   renderRow,
@@ -116,138 +125,124 @@ export const EditableListSection = <T,>({
   const [editTarget, setEditTarget] = useState<number | "new" | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 
-  const dialogOpen = editTarget !== null;
+  const formOpen = editTarget !== null;
   const editIndex = typeof editTarget === "number" ? editTarget : null;
   const currentRow = editIndex !== null ? rows[editIndex] : undefined;
   const defaultValues = resolveDefaultValues(editIndex, currentRow);
 
-  const closeDialog = () => setEditTarget(null);
+  const closeForm = () => setEditTarget(null);
+
+  const subform = formOpen ? (
+    <InlineSubform>
+      <p className="mb-3 text-[13px] font-semibold">
+        {editIndex !== null ? editDialogTitle : addDialogTitle}
+      </p>
+      {renderRowForm({
+        defaultValues,
+        editIndex,
+        onSubmit: (values) => {
+          if (editIndex !== null) {
+            onUpdate(editIndex, values);
+          } else {
+            onAppend(values);
+          }
+          closeForm();
+        },
+        onCancel: closeForm,
+      })}
+    </InlineSubform>
+  ) : null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-1">
-          {title}
-          {titleHelp}
-        </CardTitle>
-        {description ? <CardDescription>{description}</CardDescription> : null}
-        <CardAction>
-          <Button
-            type="button"
-            variant="ghostGreen"
-            size="sm"
-            onClick={() => setEditTarget("new")}
-          >
-            <RiAddLine />
-            {addLabel}
-          </Button>
-        </CardAction>
-      </CardHeader>
+    <SectionCard
+      icon={icon}
+      iconBackground={iconBackground}
+      title={title}
+      titleExtra={titleHelp}
+      description={description}
+      action={
+        <Button
+          type="button"
+          variant="addLink"
+          size="text"
+          onClick={() => setEditTarget("new")}
+        >
+          <RiAddLine />
+          {addLabel}
+        </Button>
+      }
+    >
+      {editTarget === "new" ? subform : null}
 
-      <CardContent className="space-y-2">
-        {fieldKeys.length === 0 && emptyHint ? (
-          <Alert variant="info">
-            <AlertDescription>{emptyHint}</AlertDescription>
-          </Alert>
-        ) : null}
-        {(sortIndex
-          ? sortIndex(rows).filter((i) => i >= 0 && i < fieldKeys.length)
-          : fieldKeys.map((_, i) => i)
-        ).map((index) => {
-          const key = fieldKeys[index];
-          const row = rows[index];
-          if (!key || row === undefined) {
-            return null;
-          }
-          const rowErrorMessage = rowError?.(index);
-          return (
+      {fieldKeys.length === 0 && emptyHint && editTarget !== "new" ? (
+        <EmptyNote>{emptyHint}</EmptyNote>
+      ) : null}
+
+      {(sortIndex
+        ? sortIndex(rows).filter((i) => i >= 0 && i < fieldKeys.length)
+        : fieldKeys.map((_, i) => i)
+      ).map((index) => {
+        const key = fieldKeys[index];
+        const row = rows[index];
+        if (!key || row === undefined) {
+          return null;
+        }
+        const rowErrorMessage = rowError?.(index);
+        return (
+          <Fragment key={key.id}>
             <div
-              key={key.id}
               data-invalid={rowErrorMessage ? true : undefined}
-              className="rounded-md border border-border p-3 data-invalid:border-destructive data-invalid:bg-destructive/5"
+              className="flex items-center gap-3.25 border-t border-border px-0.5 py-3.25 first:border-t-0 data-invalid:rounded-[12px] data-invalid:border data-invalid:border-destructive data-invalid:bg-destructive/5 data-invalid:px-3"
             >
-              <div className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">{renderRow(row, index)}</div>
-                <div className="flex shrink-0 gap-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild={true}>
-                      <Button
-                        type="button"
-                        variant="ghostBlue"
-                        size="icon-sm"
-                        onClick={() => setEditTarget(index)}
-                        aria-label={t("ui.common.action.edit")}
-                      >
-                        <RiPencilLine />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {t("ui.common.action.edit")}
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild={true}>
-                      <Button
-                        type="button"
-                        variant="ghostRed"
-                        size="icon-sm"
-                        onClick={() => setDeleteIndex(index)}
-                        aria-label={t("ui.common.action.delete")}
-                      >
-                        <RiDeleteBin5Line />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {t("ui.common.action.delete")}
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+              {rowLeading?.(row, index) ?? (
+                <IconTile icon={icon} size={36} background={iconBackground} />
+              )}
+              <div className="min-w-0 flex-1">
+                {renderRow(row, index)}
+                {rowErrorMessage ? (
+                  <p className="mt-1 text-sm text-destructive">
+                    {rowErrorMessage}
+                  </p>
+                ) : null}
               </div>
-              {rowErrorMessage ? (
-                <p className="mt-2 text-sm text-destructive">
-                  {rowErrorMessage}
-                </p>
-              ) : null}
+              <div className="flex shrink-0 gap-0.5">
+                <Tooltip>
+                  <TooltipTrigger asChild={true}>
+                    <Button
+                      type="button"
+                      variant="ghostMuted"
+                      size="icon-sm"
+                      onClick={() => setEditTarget(index)}
+                      aria-label={t("ui.common.action.edit")}
+                    >
+                      <RiPencilLine />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("ui.common.action.edit")}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild={true}>
+                    <Button
+                      type="button"
+                      variant="ghostRed"
+                      size="icon-sm"
+                      onClick={() => setDeleteIndex(index)}
+                      aria-label={t("ui.common.action.delete")}
+                    >
+                      <RiDeleteBin5Line />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("ui.common.action.delete")}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </div>
-          );
-        })}
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      </CardContent>
-
-      <ResponsiveDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            closeDialog();
-          }
-        }}
-      >
-        <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>
-            {editIndex !== null ? editDialogTitle : addDialogTitle}
-          </ResponsiveDialogTitle>
-          <ResponsiveDialogDescription className="sr-only">
-            {editIndex !== null ? editDialogTitle : addDialogTitle}
-          </ResponsiveDialogDescription>
-        </ResponsiveDialogHeader>
-        <ResponsiveDialogBody>
-          {dialogOpen
-            ? renderRowForm({
-                defaultValues,
-                editIndex,
-                onSubmit: (values) => {
-                  if (editIndex !== null) {
-                    onUpdate(editIndex, values);
-                  } else {
-                    onAppend(values);
-                  }
-                  closeDialog();
-                },
-                onCancel: closeDialog,
-              })
-            : null}
-        </ResponsiveDialogBody>
-      </ResponsiveDialog>
+            {editIndex === index ? subform : null}
+          </Fragment>
+        );
+      })}
+      {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
 
       <DestructiveConfirmDialog
         open={deleteIndex !== null}
@@ -265,6 +260,6 @@ export const EditableListSection = <T,>({
           }
         }}
       />
-    </Card>
+    </SectionCard>
   );
 };

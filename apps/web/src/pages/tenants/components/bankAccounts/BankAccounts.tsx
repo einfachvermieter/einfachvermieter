@@ -1,5 +1,6 @@
 import type { TenantFormValues } from "@einfachvermieter/shared";
 import { formatDate, formatIban } from "@einfachvermieter/shared";
+import { RiBankCardLine } from "@remixicon/react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
 import {
   EditableListSection,
@@ -7,6 +8,7 @@ import {
 } from "@/components/form/EditableListSection";
 import { HelpHint } from "@/components/help/HelpHint";
 import { Badge } from "@/components/ui/Badge";
+import { gradients } from "../../../../lib/domainVisuals";
 import { getPeriodStatusToday } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { BankAccountRowForm } from "./BankAccountRowForm";
@@ -51,6 +53,8 @@ export const BankAccounts = ({
       titleHelp={<HelpHint>{t("ui.tenant.bankAccountsHelp")}</HelpHint>}
       emptyHint={t("ui.tenant.bankAccountsEmptyHint")}
       addLabel={t("ui.tenant.addBankAccount")}
+      icon={RiBankCardLine}
+      iconBackground={gradients.bank}
       fieldKeys={bankAccountsArray.fields}
       rows={watchedBankAccounts}
       renderRow={(row, index) => {

@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { MonthInput } from "@/components/form/MonthInput";
+import { SubformShell } from "@/components/form/SubformShell";
 import { TextInput } from "@/components/form/TextInput";
-import { Button } from "@/components/ui/Button";
 import { FieldGroup } from "@/components/ui/Field";
 import { t } from "../../../../lib/i18n";
 import { type RentRowValues, rentRowSchema } from "./rentRow";
@@ -22,14 +22,7 @@ export const RentRowForm = ({
   });
 
   return (
-    <form
-      onSubmit={async (event) => {
-        event.stopPropagation();
-        await form.handleSubmit(onSubmit)(event);
-      }}
-      noValidate={true}
-      className="space-y-6"
-    >
+    <SubformShell onSubmit={form.handleSubmit(onSubmit)} onCancel={onCancel}>
       <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <MonthInput
           control={form.control}
@@ -67,19 +60,6 @@ export const RentRowForm = ({
           inputClassName="sm:col-span-2"
         />
       </FieldGroup>
-      <div className="flex gap-2 sm:justify-end">
-        <Button
-          variant="outline"
-          type="button"
-          onClick={onCancel}
-          className="flex-1 sm:flex-initial"
-        >
-          {t("ui.common.action.cancel")}
-        </Button>
-        <Button type="submit" className="flex-1 sm:flex-initial">
-          {t("ui.common.action.confirm")}
-        </Button>
-      </div>
-    </form>
+    </SubformShell>
   );
 };

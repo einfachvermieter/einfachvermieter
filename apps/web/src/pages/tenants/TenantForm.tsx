@@ -6,15 +6,19 @@ import {
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { Spinner } from "@/components/common/Spinner";
 import { Form } from "@/components/form/Form";
 import { FormActions } from "@/components/form/FormActions";
 import { FormSyncPrompt } from "@/components/form/FormSyncPrompt";
+import { Savebar } from "@/components/form/Savebar";
 import { useFormSync } from "@/components/form/useFormSync";
+import { Button } from "@/components/ui/Button";
 import { t } from "../../lib/i18n";
 import type { Unit } from "../../lib/units";
 import { Addresses } from "./components/addresses/Addresses";
 import { BankAccounts } from "./components/bankAccounts/BankAccounts";
 import { BaseDataFields } from "./components/baseData/BaseDataFields";
+import { NotesSection } from "./components/baseData/NotesSection";
 import { Rents } from "./components/rents/Rents";
 import { Residents } from "./components/residents/Residents";
 
@@ -25,6 +29,7 @@ export const TenantForm = ({
   serverVersion,
   onSubmit,
   onCancel,
+  savedAt,
 }: {
   mode: "create" | "edit";
   units: Unit[];
@@ -32,6 +37,9 @@ export const TenantForm = ({
   serverVersion?: string;
   onSubmit: (values: TenantSaveDto) => Promise<void>;
   onCancel: () => void;
+
+  /** Formatierter Speicherzeitpunkt für die Savebar (nur mode="edit") */
+  savedAt?: string;
 }) => {
   const form = useForm<TenantFormValues>({
     resolver: zodResolver(tenantFormSchemaRefined),
@@ -61,11 +69,6 @@ export const TenantForm = ({
           tenantStartDate={tenantStartDate}
           tenantEndDate={tenantEndDate}
         />
-        <Addresses
-          form={form}
-          tenantStartDate={tenantStartDate}
-          tenantEndDate={tenantEndDate}
-        />
         {showRentsAndBankAccounts ? (
           <>
             <Rents
@@ -80,16 +83,35 @@ export const TenantForm = ({
             />
           </>
         ) : null}
+        <Addresses
+          form={form}
+          tenantStartDate={tenantStartDate}
+          tenantEndDate={tenantEndDate}
+        />
+        <NotesSection form={form} />
       </fieldset>
-      <FormActions
-        submitting={submitting}
-        onCancel={onCancel}
-        submitLabel={
-          mode === "create"
-            ? t("ui.common.action.create")
-            : t("ui.common.action.save")
-        }
-      />
+      {mode === "create" ? (
+        <FormActions
+          submitting={submitting}
+          onCancel={onCancel}
+          submitLabel={t("ui.common.action.create")}
+        />
+      ) : (
+        <Savebar savedAt={savedAt}>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={onCancel}
+            disabled={submitting}
+          >
+            {t("ui.common.action.cancel")}
+          </Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? <Spinner data-icon="inline-start" /> : null}
+            {t("ui.common.action.save")}
+          </Button>
+        </Savebar>
+      )}
     </Form>
   );
 };

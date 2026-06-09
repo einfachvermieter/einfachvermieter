@@ -27,10 +27,6 @@ import {
   tenantsOverviewQueryOptions,
 } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
-import {
-  type DeleteResource,
-  useDeleteResource,
-} from "../../lib/useDeleteResource";
 
 const SORTABLE_COLUMNS: ReadonlySet<TenantSortColumn> = new Set([
   "unit",
@@ -48,7 +44,6 @@ const contractPartyNames = (row: TenantOverviewRow): string =>
     .join(t("ui.common.separators.comma"));
 
 const tenantColumns = (
-  deletion: DeleteResource<TenantOverviewRow>,
   summaryById: Map<string, TenantBalanceSummary>,
 ): ColumnDef<TenantOverviewRow>[] => [
   {
@@ -151,9 +146,8 @@ const tenantColumns = (
       headerClassName: "text-right",
     },
   },
-  // Konto-Schnellzugriff bleibt; Löschen bis Phase 4 (Aktionen-Karte)
+  // Konto-Schnellzugriff bleibt als Icon-Button vor dem Chevron
   rowActionsColumn<TenantOverviewRow>({
-    deletion,
     extraActions: (row) => (
       <RowActionButton label={t("ui.tenants.openAccount")}>
         <Link to="/mieter/$tenantId/konto" params={{ tenantId: row.id }}>
@@ -200,22 +194,7 @@ export const TenantsPage = () => {
     return map;
   }, [balances]);
 
-  const deletion = useDeleteResource<TenantOverviewRow>({
-    endpoint: (row) => `/tenants/${row.id}`,
-    invalidateKey: ["tenants"],
-    title: t("ui.tenants.confirmDeleteTenant"),
-    describe: (row) =>
-      t("ui.tenants.confirmDeleteTenantMessage", {
-        unit: row.unitName,
-        start: formatDate(row.startDate),
-        end: row.endDate ? formatDate(row.endDate) : t("errors.tenantOpenEnd"),
-      }),
-  });
-
-  const columns = useMemo(
-    () => tenantColumns(deletion, summaryById),
-    [deletion, summaryById],
-  );
+  const columns = useMemo(() => tenantColumns(summaryById), [summaryById]);
 
   const hasUnits = (units ?? []).some((unit) => unit.buildingId === buildingId);
   const trimmedSearch = table.search.trim();
@@ -291,7 +270,6 @@ export const TenantsPage = () => {
         loading={isFetching || buildingsPending}
         totalRows={total}
         emptyMessage={emptyMessage}
-        rowClassName={deletion.rowClassName}
         onRowClick={(row) =>
           navigate({ to: "/mieter/$tenantId", params: { tenantId: row.id } })
         }
@@ -300,8 +278,6 @@ export const TenantsPage = () => {
           pageCount: table.pageCount(total),
         }}
       />
-
-      {deletion.dialog}
     </div>
   );
 };

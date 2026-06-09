@@ -8,6 +8,7 @@ export type Unit = {
   unitNumber: string | null;
   areaSqm: number;
   heatingAreaSqm: number | null;
+  updatedAt?: string;
 };
 
 export type UnitOccupancy = {

@@ -9,6 +9,7 @@ export const SectionCard = ({
   icon,
   iconBackground,
   title,
+  titleExtra,
   description,
   action,
   children,
@@ -17,6 +18,8 @@ export const SectionCard = ({
   /** Farbe oder Verlauf aus lib/domainVisuals.ts */
   iconBackground: string;
   title: string;
+  /** Zusatz neben dem Titel, z. B. ein HelpHint */
+  titleExtra?: ReactNode;
   description?: string;
   action?: ReactNode;
   children: ReactNode;
@@ -25,7 +28,10 @@ export const SectionCard = ({
     <div className="mb-5 flex items-center gap-3.25">
       <IconTile icon={icon} size={40} background={iconBackground} />
       <div className="min-w-0 flex-1">
-        <h2 className="text-lg font-semibold">{title}</h2>
+        <h2 className="flex items-center gap-1 text-lg font-semibold">
+          {title}
+          {titleExtra}
+        </h2>
         {description ? (
           <p className="mt-0.5 text-[12.5px] text-slate-400">{description}</p>
         ) : null}

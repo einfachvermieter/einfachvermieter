@@ -300,7 +300,11 @@ export const HeatingSettingsFields = ({
                         {t("ui.heating.fields.hotWaterMeterMissing")}{" "}
                         <Link
                           to="/zaehler/neu"
-                          search={{ buildingId, type: "water_hot" }}
+                          search={{
+                            buildingId,
+                            type: "water_hot",
+                            unitId: undefined,
+                          }}
                           className="font-medium underline underline-offset-2"
                         >
                           {t("ui.heating.fields.hotWaterMeterMissingLink")}

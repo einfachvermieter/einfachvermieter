@@ -12,6 +12,7 @@ type UseDeleteResourceOptions<T extends { id: string }> = {
   describe: (resource: T) => ReactNode;
   confirmLabel?: string;
   defaultErrorMessage?: string;
+  onDeleted?: () => void;
 };
 
 export type DeleteResource<T extends { id: string }> = {
@@ -28,6 +29,7 @@ export const useDeleteResource = <T extends { id: string }>({
   describe,
   confirmLabel = t("ui.common.action.delete"),
   defaultErrorMessage = t("common.deleteFailed"),
+  onDeleted,
 }: UseDeleteResourceOptions<T>): DeleteResource<T> => {
   const queryClient = useQueryClient();
   const [target, setTarget] = useState<T | null>(null);
@@ -42,6 +44,7 @@ export const useDeleteResource = <T extends { id: string }>({
       ]);
       setTarget(null);
       toast.success(t("common.deleted"));
+      onDeleted?.();
     },
     onError: (err: unknown) => {
       setError(err instanceof ApiError ? err.message : defaultErrorMessage);

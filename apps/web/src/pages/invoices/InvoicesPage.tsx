@@ -124,7 +124,6 @@ const invoiceColumns = (
         </span>
       ),
   },
-  // Löschen bleibt bis Phase 4 (Aktionen-Karte der Detailseite)
   rowActionsColumn<CostEntryOverviewRow>({ deletion }),
 ];
 

@@ -1,33 +1,75 @@
-import type { UnitCreateDto } from "@einfachvermieter/shared";
-import { RiHome6Line } from "@remixicon/react";
+import {
+  formatDate,
+  formatName,
+  formatNumber,
+  type UnitCreateDto,
+} from "@einfachvermieter/shared";
+import { RiDeleteBinLine, RiStore2Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { FormPage } from "../../components/common/FormPage";
+import { HeroBand } from "../../components/common/HeroBand";
+import { IconTile } from "../../components/common/IconTile";
+import { InfoCard } from "../../components/common/InfoCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
+import { Badge } from "../../components/ui/Badge";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
+import {
+  type TenantOverviewRow,
+  tenantsOverviewQueryOptions,
+} from "../../lib/tenants";
 import type { Unit } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
+import { useDeleteResource } from "../../lib/useDeleteResource";
 import { useGoBack } from "../../lib/useGoBack";
 import { UnitForm } from "./UnitForm";
 
 const routeApi = getRouteApi("/wohnungen/$unitId");
+
+/** Aktueller Mietvertrag der Wohnung (aktiv zum Stichtag heute) */
+const currentTenantOf = (
+  rows: TenantOverviewRow[] | undefined,
+  unitId: string,
+): TenantOverviewRow | undefined =>
+  rows?.find((row) => row.unitId === unitId && row.active);
 
 export const UnitEditPage = () => {
   const { unitId } = routeApi.useParams();
 
   const unit = routeApi.useLoaderData();
   const { data: buildings } = useQuery(buildingsQueryOptions);
+  const navigate = useNavigate();
 
   const goBack = useGoBack("/wohnungen");
+
+  const { data: tenants } = useQuery({
+    ...tenantsOverviewQueryOptions({
+      page: 0,
+      pageSize: 1000,
+      buildingId: unit?.buildingId,
+    }),
+    enabled: unit !== undefined,
+  });
 
   const updateUnit = useCrudMutation({
     mutationFn: ({ buildingId: _ignored, ...dto }: UnitCreateDto) =>
       api.patch<Unit>(`/units/${unitId}`, dto),
     invalidateKeys: [["units"], ["unit", unitId]],
     onSuccess: goBack,
+  });
+
+  const deletion = useDeleteResource<Unit>({
+    endpoint: (target) => `/units/${target.id}`,
+    invalidateKey: ["units"],
+    title: t("ui.units.confirmDelete"),
+    describe: (target) =>
+      t("ui.units.confirmDeleteMessage", { name: target.name }),
+    onDeleted: () =>
+      navigate({ to: "/wohnungen", search: { buildingId: unit?.buildingId } }),
   });
 
   if (!unit) {
@@ -44,24 +86,154 @@ export const UnitEditPage = () => {
     return <FormSkeleton rows={3} />;
   }
 
+  const building = buildings.find((entry) => entry.id === unit.buildingId);
+  const current = currentTenantOf(tenants?.items, unit.id);
+
+  let statusLabel = t("ui.units.status.vacant");
+  if (current) {
+    statusLabel =
+      current.kind === "owner"
+        ? t("ui.units.status.owner")
+        : t("ui.units.status.rented");
+  }
+  const tenantNames = current
+    ? current.contractResidents
+        .map((resident) => formatName(resident.firstName, resident.lastName))
+        .join(t("ui.common.separators.comma"))
+    : undefined;
+
+  const isCommercial = current?.kind === "commercial";
+
   return (
-    <FormPage icon={<RiHome6Line />} title={unit.name}>
-      <UnitForm
-        mode="edit"
-        buildings={buildings}
-        defaultValues={{
-          buildingId: unit.buildingId,
-          name: unit.name,
-          unitNumber: unit.unitNumber ?? "",
-          areaSqm: String(unit.areaSqm),
-          heatingAreaSqm:
-            unit.heatingAreaSqm === null ? "" : String(unit.heatingAreaSqm),
-        }}
-        onSubmit={async (values) => {
-          await updateUnit.mutateAsync(values);
-        }}
-        onCancel={goBack}
+    <div className="pb-24">
+      <HeroBand
+        tile={
+          <IconTile
+            icon={isCommercial ? RiStore2Line : domainVisuals.units.icon}
+            size={64}
+            background={isCommercial ? gradients.commercial : gradients.units}
+          />
+        }
+        eyebrow={t("ui.units.editEyebrow")}
+        title={unit.name}
+        meta={[building?.name, unit.unitNumber]
+          .filter(Boolean)
+          .join(t("ui.common.separators.bullet"))}
+        stats={[
+          {
+            label: t("ui.units.fields.area"),
+            value: `${formatNumber(unit.areaSqm, 2)} m²`,
+          },
+          { label: t("ui.units.status.label"), value: statusLabel },
+          {
+            label: t("ui.units.fields.tenant"),
+            value: tenantNames ?? t("ui.common.emptyValue"),
+          },
+        ]}
       />
-    </FormPage>
+
+      <div className="grid items-start gap-5 lg:grid-cols-[1fr_320px]">
+        <UnitForm
+          mode="edit"
+          buildings={buildings}
+          savedAt={
+            unit.updatedAt ? formatDate(unit.updatedAt.slice(0, 10)) : undefined
+          }
+          defaultValues={{
+            buildingId: unit.buildingId,
+            name: unit.name,
+            unitNumber: unit.unitNumber ?? "",
+            areaSqm: String(unit.areaSqm),
+            heatingAreaSqm:
+              unit.heatingAreaSqm === null ? "" : String(unit.heatingAreaSqm),
+          }}
+          onSubmit={async (values) => {
+            await updateUnit.mutateAsync(values);
+          }}
+          onCancel={goBack}
+        />
+
+        <div className="flex flex-col gap-4 lg:sticky lg:top-24">
+          <InfoCard
+            title={t("ui.units.occupancy.title")}
+            rows={[
+              {
+                label: t("ui.units.status.label"),
+                value: current ? (
+                  <Badge variant={current.kind === "owner" ? "slate" : "ok"}>
+                    {statusLabel}
+                  </Badge>
+                ) : (
+                  <Badge variant="warn">{statusLabel}</Badge>
+                ),
+              },
+              {
+                label: t("ui.units.fields.tenant"),
+                value: current ? (
+                  <Link
+                    to="/mieter/$tenantId"
+                    params={{ tenantId: current.id }}
+                    className="font-semibold text-sky-700 dark:text-sky-400"
+                  >
+                    {tenantNames || t("ui.common.emptyValue")}
+                  </Link>
+                ) : (
+                  t("ui.common.emptyValue")
+                ),
+              },
+              {
+                label: t("ui.units.occupancy.since"),
+                value: current
+                  ? formatDate(current.startDate)
+                  : t("ui.common.emptyValue"),
+              },
+            ]}
+          />
+
+          <InfoCard title={t("ui.common.infoCards.actions")}>
+            {current ? (
+              <ActionLink
+                icon={domainVisuals.tenants.icon}
+                iconBackground={domainVisuals.tenants.accent}
+                onClick={() =>
+                  navigate({
+                    to: "/mieter/$tenantId",
+                    params: { tenantId: current.id },
+                  })
+                }
+              >
+                {t("ui.units.actions.openTenant")}
+              </ActionLink>
+            ) : null}
+            <ActionLink
+              icon={domainVisuals.meters.icon}
+              iconBackground={domainVisuals.meters.accent}
+              onClick={() =>
+                navigate({
+                  to: "/zaehler",
+                  search: {
+                    buildingId: unit.buildingId,
+                    unitId: unit.id,
+                    type: undefined,
+                  },
+                })
+              }
+            >
+              {t("ui.units.actions.unitMeters")}
+            </ActionLink>
+            <ActionLink
+              icon={RiDeleteBinLine}
+              iconBackground="var(--color-rose-400)"
+              danger={true}
+              onClick={() => deletion.request(unit)}
+            >
+              {t("ui.units.actions.delete")}
+            </ActionLink>
+          </InfoCard>
+        </div>
+      </div>
+
+      {deletion.dialog}
+    </div>
   );
 };

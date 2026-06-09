@@ -10,9 +10,13 @@ import { unitsQueryOptions } from "../../lib/units";
 export const TenantDetailHeader = ({
   tenantId,
   active,
+  hideTitle = false,
 }: {
   tenantId: string;
   active: "stammdaten" | "konto";
+
+  /** Titel unterdrücken, wenn die Seite bereits ein Hero-Band trägt */
+  hideTitle?: boolean;
 }) => {
   const navigate = useNavigate();
   const { data: aggregate } = useQuery(tenantQueryOptions(tenantId));
@@ -23,7 +27,7 @@ export const TenantDetailHeader = ({
 
   return (
     <div className="space-y-6">
-      <Heading1 icon={<RiTeamLine />}>{title}</Heading1>
+      {hideTitle ? null : <Heading1 icon={<RiTeamLine />}>{title}</Heading1>}
       <Tabs
         value={active}
         onValueChange={(value) => {

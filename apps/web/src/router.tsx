@@ -718,6 +718,7 @@ const meterTypeSet: ReadonlySet<MeterType> = new Set(meterTypes);
 const metersSearchSchema = (search: Record<string, unknown>) => ({
   buildingId:
     typeof search.buildingId === "string" ? search.buildingId : undefined,
+  unitId: typeof search.unitId === "string" ? search.unitId : undefined,
   type:
     typeof search.type === "string" &&
     meterTypeSet.has(search.type as MeterType)

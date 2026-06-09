@@ -1,5 +1,6 @@
 import type { TenantFormValues } from "@einfachvermieter/shared";
 import { formatDate } from "@einfachvermieter/shared";
+import { RiMapPinLine } from "@remixicon/react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
 import {
   EditableListSection,
@@ -7,6 +8,7 @@ import {
 } from "@/components/form/EditableListSection";
 import { HelpHint } from "@/components/help/HelpHint";
 import { Badge } from "@/components/ui/Badge";
+import { gradients } from "../../../../lib/domainVisuals";
 import { getPeriodStatusToday } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { AddressRowForm } from "./AddressRowForm";
@@ -48,6 +50,8 @@ export const Addresses = ({
       titleHelp={<HelpHint>{t("ui.tenant.addressesHelp")}</HelpHint>}
       emptyHint={t("ui.tenant.addressesEmptyHint")}
       addLabel={t("ui.tenant.addAddress")}
+      icon={RiMapPinLine}
+      iconBackground={gradients.address}
       fieldKeys={addressesArray.fields}
       rows={watchedAddresses}
       renderRow={(row, index) => {

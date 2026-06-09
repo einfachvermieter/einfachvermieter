@@ -254,6 +254,10 @@
         "comma": ", "
       },
       "moreChip": "+{count}",
+      "infoCards": {
+        "actions": "Aktionen",
+        "atAGlance": "Auf einen Blick"
+      },
       "emptyValue": "—",
       "periodLabel": "{start} – {end}",
       "deductionAmount": "− {amount}",
@@ -554,6 +558,22 @@
       "confirmDelete": "Wohnung löschen?",
       "confirmDeleteMessage": "Soll „{name}“ wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
       "allBuildings": "Alle Gebäude",
+      "editEyebrow": "Wohnung bearbeiten",
+      "sections": {
+        "baseData": {
+          "title": "Stammdaten",
+          "description": "Bezeichnung und Flächen der Wohnung"
+        }
+      },
+      "occupancy": {
+        "title": "Belegung",
+        "since": "seit"
+      },
+      "actions": {
+        "openTenant": "Mieter öffnen",
+        "unitMeters": "Zähler der Wohnung",
+        "delete": "Wohnung löschen"
+      },
       "sub": {
         "count": "{count, plural, one {# Wohnung} other {# Wohnungen}}",
         "rented": "{count} vermietet"
@@ -1374,6 +1394,28 @@
       "numberRequired": "Zahl erforderlich, z. B. 1234,5"
     },
     "tenant": {
+      "editEyebrow": "Mieter bearbeiten",
+      "sections": {
+        "contract": {
+          "title": "Vertrag",
+          "description": "Wohnung, Laufzeit und Kaution"
+        },
+        "notes": {
+          "title": "Interne Notizen",
+          "description": "Nur für Sie sichtbar"
+        }
+      },
+      "hero": {
+        "warmRent": "Warmmiete",
+        "livesSince": "Wohnt seit"
+      },
+      "atAGlance": {
+        "title": "Auf einen Blick",
+        "account": "Mietkonto"
+      },
+      "actions": {
+        "delete": "Mieter löschen"
+      },
       "validation": {
         "startDateRequired": "Vertragsbeginn erforderlich",
         "rentRequired": "Bitte legen Sie mindestens einen Mietsatz an.",

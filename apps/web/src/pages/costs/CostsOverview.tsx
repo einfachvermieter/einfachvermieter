@@ -120,7 +120,6 @@ export const CostsOverview = () => {
           return t("ui.costs.allocationKeyNotApplicable");
         },
       },
-      // Löschen bleibt bis Phase 4 (Aktionen-Karte der Detailseite)
       rowActionsColumn<CostType>({ deletion }),
     ],
     [deletion, buildingId],

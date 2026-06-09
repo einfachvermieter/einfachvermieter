@@ -135,7 +135,6 @@ const heatingColumns = (
       );
     },
   },
-  // Löschen bleibt bis Phase 4 (Aktionen-Karte der Detailseite)
   rowActionsColumn<Row>({ deletion }),
 ];
 

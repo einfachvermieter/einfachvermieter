@@ -74,6 +74,7 @@ export class MetersService {
    */
   async list(params: {
     buildingId?: string;
+    unitId?: string;
     page: number;
     pageSize: number;
     sort?: MeterSort;
@@ -82,6 +83,7 @@ export class MetersService {
   }) {
     const {
       buildingId,
+      unitId,
       page,
       pageSize,
       sort = "label",
@@ -92,6 +94,9 @@ export class MetersService {
     const filters: FilterQuery<Meter>[] = [];
     if (buildingId) {
       filters.push({ buildingId });
+    }
+    if (unitId) {
+      filters.push({ unitId });
     }
 
     if (q) {
