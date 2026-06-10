@@ -1395,6 +1395,11 @@
     },
     "tenant": {
       "editEyebrow": "Mieter bearbeiten",
+      "addRentChange": "Mietänderung",
+      "rentSimpleDescription": "Aktueller Mietsatz. Änderungen hier korrigieren den bestehenden Satz.",
+      "rentHistoryHint": "Frühere Sätze bleiben für die Abrechnung erhalten.",
+      "bankSimpleDescription": "Aktuelle Bankverbindung des Mieters",
+      "sepaDetailsHint": "Mandatsreferenz und Unterschriftsdatum pflegen Sie im Verlauf.",
       "sections": {
         "contract": {
           "title": "Vertrag",

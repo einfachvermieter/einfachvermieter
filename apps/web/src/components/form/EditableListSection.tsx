@@ -96,6 +96,13 @@ export type EditableListSectionProps<T> = {
    * Edit-/Delete-Aktionen referenzieren weiterhin den Original-Index.
    */
   sortIndex?: (rows: T[]) => number[];
+
+  /**
+   * Aufklapp-Formular für einen neuen Eintrag direkt geöffnet starten
+   */
+  defaultOpenAdd?: boolean;
+
+  footer?: ReactNode;
 };
 
 export const EditableListSection = <T,>({
@@ -121,8 +128,12 @@ export const EditableListSection = <T,>({
   error,
   rowError,
   sortIndex,
+  defaultOpenAdd = false,
+  footer,
 }: EditableListSectionProps<T>) => {
-  const [editTarget, setEditTarget] = useState<number | "new" | null>(null);
+  const [editTarget, setEditTarget] = useState<number | "new" | null>(
+    defaultOpenAdd ? "new" : null,
+  );
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 
   const formOpen = editTarget !== null;
@@ -243,6 +254,7 @@ export const EditableListSection = <T,>({
         );
       })}
       {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
+      {footer}
 
       <DestructiveConfirmDialog
         open={deleteIndex !== null}

@@ -1,18 +1,69 @@
 import type { TenantFormValues } from "@einfachvermieter/shared";
-import { formatDate } from "@einfachvermieter/shared";
-import { RiMoneyEuroCircleLine } from "@remixicon/react";
+import {
+  formatDate,
+  formatEur,
+  parseEurToCents,
+} from "@einfachvermieter/shared";
+import {
+  RiAddLine,
+  RiInformationLine,
+  RiMoneyEuroCircleLine,
+} from "@remixicon/react";
+import { useState } from "react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
+import { SectionCard } from "@/components/common/SectionCard";
+import { ComputedValueRow } from "@/components/form/ComputedValueRow";
+import { DateInput } from "@/components/form/DateInput";
 import {
   EditableListSection,
   type EditableListSectionRowFormProps,
 } from "@/components/form/EditableListSection";
+import { TextInput } from "@/components/form/TextInput";
 import { HelpHint } from "@/components/help/HelpHint";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { FieldGroup } from "@/components/ui/Field";
 import { gradients } from "../../../../lib/domainVisuals";
 import { getPeriodStatusToday } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { RentRowForm } from "./RentRowForm";
 import { emptyRentRow, type RentRowValues } from "./rentRow";
+
+/**
+ * Warmmiete live aus Kaltmiete + Nebenkosten-Vorauszahlung
+ */
+const warmRentLabel = (baseEuros: string, advanceEuros: string): string => {
+  const cents =
+    parseEurToCents(baseEuros || "0") + parseEurToCents(advanceEuros || "0");
+  return Number.isFinite(cents) ? formatEur(cents) : t("ui.common.emptyValue");
+};
+
+const collectRentRowErrors = (
+  rowErrors:
+    | {
+        message?: string;
+        startDate?: { message?: string };
+        endDate?: { message?: string };
+        monthlyBaseRentEuros?: { message?: string };
+        monthlyAdvanceEuros?: { message?: string };
+      }
+    | undefined,
+): string | undefined => {
+  if (!rowErrors) {
+    return;
+  }
+  const messages = [
+    rowErrors.message,
+    rowErrors.startDate?.message,
+    rowErrors.endDate?.message,
+    rowErrors.monthlyBaseRentEuros?.message,
+    rowErrors.monthlyAdvanceEuros?.message,
+  ]
+    .map((msg) => translateKey(msg))
+    .filter((msg): msg is string => Boolean(msg));
+
+  return messages.length > 0 ? messages.join(" · ") : undefined;
+};
 
 export const Rents = ({
   form,
@@ -26,6 +77,11 @@ export const Rents = ({
   const rentsArray = useFieldArray({ control: form.control, name: "rents" });
   const watchedRents = form.watch("rents");
   const error = translateKey(form.formState.errors.rents?.message);
+
+  // Wachsende Ansicht.
+  // Ein Datensatz einfach, mehrere als Verlauf
+  const [historyOpen, setHistoryOpen] = useState(watchedRents.length > 1);
+  const [openAdd, setOpenAdd] = useState(false);
 
   const resolveDefaultValues = (
     _editIndex: number | null,
@@ -53,6 +109,81 @@ export const Rents = ({
     />
   );
 
+  if (!historyOpen && watchedRents.length === 1) {
+    const [current] = watchedRents;
+    // Fehler versteckter Felder (z. B. Ende-Datum) hier sichtbar machen
+    const rowErrors = form.formState.errors.rents?.[0];
+    const hiddenError = [rowErrors?.message, rowErrors?.endDate?.message]
+      .map((message) => translateKey(message))
+      .filter(Boolean)
+      .join(t("ui.common.separators.bullet"));
+
+    return (
+      <SectionCard
+        icon={RiMoneyEuroCircleLine}
+        iconBackground={gradients.money}
+        title={t("ui.tenant.rentsTitle")}
+        titleExtra={<HelpHint>{t("ui.tenant.rentsHelp")}</HelpHint>}
+        description={t("ui.tenant.rentSimpleDescription")}
+        action={
+          <Button
+            type="button"
+            variant="addLink"
+            size="text"
+            onClick={() => {
+              setOpenAdd(true);
+              setHistoryOpen(true);
+            }}
+          >
+            <RiAddLine />
+            {t("ui.tenant.addRentChange")}
+          </Button>
+        }
+      >
+        <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <TextInput
+            control={form.control}
+            name="rents.0.monthlyBaseRentEuros"
+            label={t("ui.tenant.fields.coldRentEuros")}
+            inputMode="decimal"
+            suffix="€"
+          />
+          <TextInput
+            control={form.control}
+            name="rents.0.monthlyAdvanceEuros"
+            label={t("ui.tenant.fields.advanceEuros")}
+            inputMode="decimal"
+            suffix="€"
+          />
+          <DateInput
+            control={form.control}
+            name="rents.0.startDate"
+            label={t("ui.tenant.fields.validFrom")}
+          />
+        </FieldGroup>
+        <div className="mt-4">
+          <ComputedValueRow
+            icon={RiMoneyEuroCircleLine}
+            label={t("ui.tenant.hero.warmRent")}
+            value={
+              current
+                ? warmRentLabel(
+                    current.monthlyBaseRentEuros,
+                    current.monthlyAdvanceEuros,
+                  )
+                : t("ui.common.emptyValue")
+            }
+          />
+        </div>
+        {hiddenError || error ? (
+          <p className="mt-2 text-sm text-destructive">
+            {hiddenError || error}
+          </p>
+        ) : null}
+      </SectionCard>
+    );
+  }
+
   return (
     <EditableListSection<RentRowValues>
       title={t("ui.tenant.rentsTitle")}
@@ -61,6 +192,16 @@ export const Rents = ({
       addLabel={t("ui.tenant.addRent")}
       icon={RiMoneyEuroCircleLine}
       iconBackground={gradients.money}
+      defaultOpenAdd={openAdd}
+      footer={
+        <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
+          <RiInformationLine
+            aria-hidden={true}
+            className="size-3.75 shrink-0"
+          />
+          {t("ui.tenant.rentHistoryHint")}
+        </p>
+      }
       fieldKeys={rentsArray.fields}
       rows={watchedRents}
       renderRow={(row, index) => {
@@ -80,10 +221,10 @@ export const Rents = ({
                   : t("ui.tenant.rentIndex", { index: index + 1 })}
               </p>
               {periodStatus === "active" ? (
-                <Badge variant="lightGreen">{t("ui.tenant.rentCurrent")}</Badge>
+                <Badge variant="ok">{t("ui.tenant.rentCurrent")}</Badge>
               ) : null}
               {periodStatus === "last" ? (
-                <Badge variant="lightYellow">{t("ui.tenant.lastRent")}</Badge>
+                <Badge variant="warn">{t("ui.tenant.lastRent")}</Badge>
               ) : null}
             </div>
             <p className="text-sm text-muted-foreground tabular-nums">
@@ -106,22 +247,9 @@ export const Rents = ({
       editDialogTitle={t("ui.tenant.editRent")}
       confirmDeleteTitle={t("ui.tenant.confirmRemoveRent")}
       error={error}
-      rowError={(index) => {
-        const rowErrors = form.formState.errors.rents?.[index];
-        if (!rowErrors) {
-          return;
-        }
-        const messages = [
-          rowErrors.message,
-          rowErrors.startDate?.message,
-          rowErrors.endDate?.message,
-          rowErrors.monthlyBaseRentEuros?.message,
-          rowErrors.monthlyAdvanceEuros?.message,
-        ]
-          .map((msg) => translateKey(msg))
-          .filter((msg): msg is string => Boolean(msg));
-        return messages.length > 0 ? messages.join(" · ") : undefined;
-      }}
+      rowError={(index) =>
+        collectRentRowErrors(form.formState.errors.rents?.[index])
+      }
       sortIndex={(rows) => rows.map((_, i) => rows.length - 1 - i)}
     />
   );
