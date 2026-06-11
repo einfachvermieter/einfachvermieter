@@ -1567,6 +1567,16 @@
     },
     "dashboard": {
       "title": "Übersicht",
+      "eyebrow": "Portfolio",
+      "sub": {
+        "buildings": "{count, plural, one {# Gebäude} other {# Gebäude}}",
+        "tagline": "alles im Blick"
+      },
+      "buildingsCard": {
+        "title": "Ihre Gebäude",
+        "description": "Zum Verwalten ein Gebäude wählen.",
+        "tenantsCount": "{count, plural, one {# Mieter} other {# Mieter}}"
+      },
       "stats": {
         "buildings": "Gebäude",
         "units": "Wohnungen",

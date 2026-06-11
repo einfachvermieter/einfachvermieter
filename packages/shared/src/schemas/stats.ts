@@ -10,6 +10,7 @@ export const statsResultSchema = z.object({
   costs: z.number().int().nonnegative(),
   payments: z.number().int().nonnegative(),
   statements: z.number().int().nonnegative(),
+  openStatementsCount: z.number().int().nonnegative(),
 });
 
 export type StatsResult = z.infer<typeof statsResultSchema>;

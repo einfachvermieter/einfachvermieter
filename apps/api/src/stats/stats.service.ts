@@ -50,6 +50,7 @@ export class StatsService {
       costs,
       payments,
       statements,
+      openStatementsCount,
     ] = await Promise.all([
       this.em.count(BuildingSchema),
       this.em.count(UnitSchema),
@@ -60,6 +61,7 @@ export class StatsService {
       this.em.count(CostEntrySchema),
       this.em.count(PaymentSchema),
       this.em.count(OperatingCostStatementSchema),
+      this.em.count(OperatingCostStatementSchema, { status: "draft" }),
     ]);
 
     return {
@@ -72,6 +74,7 @@ export class StatsService {
       costs,
       payments,
       statements,
+      openStatementsCount,
     };
   }
 
@@ -81,15 +84,26 @@ export class StatsService {
     const tenantIds = scope.tenantIds.length > 0 ? scope.tenantIds : [""];
     const costTypeIds = scope.costTypeIds.length > 0 ? scope.costTypeIds : [""];
 
-    const [buildings, meters, statements, residents, payments, costs] =
-      await Promise.all([
-        this.em.count(BuildingSchema),
-        this.em.count(MeterSchema, { buildingId }),
-        this.em.count(OperatingCostStatementSchema, { buildingId }),
-        this.countResidents(tenantIds),
-        this.em.count(PaymentSchema, { tenantId: { $in: tenantIds } }),
-        this.countCostEntries(costTypeIds),
-      ]);
+    const [
+      buildings,
+      meters,
+      statements,
+      openStatementsCount,
+      residents,
+      payments,
+      costs,
+    ] = await Promise.all([
+      this.em.count(BuildingSchema),
+      this.em.count(MeterSchema, { buildingId }),
+      this.em.count(OperatingCostStatementSchema, { buildingId }),
+      this.em.count(OperatingCostStatementSchema, {
+        buildingId,
+        status: "draft",
+      }),
+      this.countResidents(tenantIds),
+      this.em.count(PaymentSchema, { tenantId: { $in: tenantIds } }),
+      this.countCostEntries(costTypeIds),
+    ]);
 
     return {
       buildings,
@@ -101,6 +115,7 @@ export class StatsService {
       costs,
       payments,
       statements,
+      openStatementsCount,
     };
   }
 

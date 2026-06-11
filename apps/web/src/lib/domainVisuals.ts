@@ -51,6 +51,12 @@ export const domainVisuals: Record<DomainKey, DomainVisual> = {
  */
 export const gradients = {
   brand: "linear-gradient(135deg, var(--color-sky-600), var(--color-teal-500))",
+  buildings:
+    "linear-gradient(135deg, var(--color-sky-400), var(--color-sky-600))",
+  statements:
+    "linear-gradient(135deg, var(--color-violet-400), var(--color-violet-700))",
+  invoices:
+    "linear-gradient(135deg, var(--color-pink-400), var(--color-pink-500))",
   units:
     "linear-gradient(135deg, var(--color-emerald-400), var(--color-green-600))",
   tenants:
