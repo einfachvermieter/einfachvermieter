@@ -141,10 +141,7 @@ export const PaymentCreatePage = () => {
   }
 
   return (
-    <FormPage
-      icon={<RiMoneyEuroCircleLine />}
-      title={t("ui.payments.createTitle")}
-    >
+    <FormPage title={t("ui.payments.createTitle")}>
       <PaymentForm
         key={initialTenantId}
         mode="create"

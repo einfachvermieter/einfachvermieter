@@ -1,12 +1,12 @@
 import type { StatementResult } from "@einfachvermieter/shared";
 import { formatDate } from "@einfachvermieter/shared";
-import { RiDownloadLine, RiFileList3Line } from "@remixicon/react";
+import { RiDownloadLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { Description } from "../../components/common/Description";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { Heading1 } from "../../components/common/Heading1";
+import { PageHead } from "../../components/common/PageHead";
 import { DestructiveConfirmDialog } from "../../components/DestructiveConfirmDialog";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
@@ -416,42 +416,43 @@ export const StatementDetailPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <Heading1 icon={<RiFileList3Line />}>
-            {tenantAggregate && units
-              ? statementIdentityLabel({
-                  statement,
-                  aggregate: tenantAggregate,
-                  units,
-                })
-              : t("ui.statements.detail.title", {
-                  start: formatDate(statement.periodStart),
-                  end: formatDate(statement.periodEnd),
-                })}
-          </Heading1>
-          <div className="mt-2 flex items-center gap-2">
+      <PageHead
+        eyebrow={t("ui.navigation.groups.costsBilling")}
+        title={
+          tenantAggregate && units
+            ? statementIdentityLabel({
+                statement,
+                aggregate: tenantAggregate,
+                units,
+              })
+            : t("ui.statements.detail.title", {
+                start: formatDate(statement.periodStart),
+                end: formatDate(statement.periodEnd),
+              })
+        }
+        sub={
+          <span className="flex items-center gap-2">
             {statement.status === "draft" ? (
-              <Badge variant="lightYellow">
+              <Badge variant="slate" dot={true}>
                 {statement.supersedesStatementId
                   ? t("ui.statements.detail.correctionDraft")
                   : t("ui.statements.detail.draftLive")}
               </Badge>
             ) : null}
             {statement.status === "finalized" ? (
-              <Badge variant="lightGreen">
+              <Badge variant="ok" dot={true}>
                 {t("ui.statements.detail.finalizedAt", {
                   date: formatDate(statement.finalizedAt?.slice(0, 10) ?? ""),
                 })}
               </Badge>
             ) : null}
             {statement.status === "cancelled" ? (
-              <Badge variant="lightRed">
+              <Badge variant="rose" dot={true}>
                 {t("ui.statements.detail.cancelledBadge")}
               </Badge>
             ) : null}
             {statement.status === "superseded" ? (
-              <Badge variant="secondary">
+              <Badge variant="slate" dot={true}>
                 {t("ui.statements.detail.supersededBadge")}
               </Badge>
             ) : null}
@@ -460,46 +461,48 @@ export const StatementDetailPage = () => {
                 {t("ui.statements.detail.calculating")}
               </span>
             ) : null}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {isDraft ? (
-            <Button
-              onClick={() => setConfirmFinalizeOpen(true)}
-              disabled={finalize.isPending}
-            >
-              {finalize.isPending
-                ? t("ui.statements.detail.finalizing")
-                : t("ui.statements.detail.finalizeStatement")}
-            </Button>
-          ) : null}
-          {statement.status === "finalized" ? (
-            <>
+          </span>
+        }
+        action={
+          <span className="flex items-center gap-2">
+            {isDraft ? (
               <Button
-                variant="outline"
-                onClick={() => setCancelOpen(true)}
-                disabled={cancel.isPending}
+                onClick={() => setConfirmFinalizeOpen(true)}
+                disabled={finalize.isPending}
               >
-                {t("ui.statements.detail.cancelStatement")}
+                {finalize.isPending
+                  ? t("ui.statements.detail.finalizing")
+                  : t("ui.statements.detail.finalizeStatement")}
               </Button>
+            ) : null}
+            {statement.status === "finalized" ? (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() => setCancelOpen(true)}
+                  disabled={cancel.isPending}
+                >
+                  {t("ui.statements.detail.cancelStatement")}
+                </Button>
+                <Button
+                  onClick={() => correct.mutate()}
+                  disabled={correct.isPending}
+                >
+                  {t("ui.statements.detail.createCorrection")}
+                </Button>
+              </>
+            ) : null}
+            {statement.status === "cancelled" ? (
               <Button
                 onClick={() => correct.mutate()}
                 disabled={correct.isPending}
               >
                 {t("ui.statements.detail.createCorrection")}
               </Button>
-            </>
-          ) : null}
-          {statement.status === "cancelled" ? (
-            <Button
-              onClick={() => correct.mutate()}
-              disabled={correct.isPending}
-            >
-              {t("ui.statements.detail.createCorrection")}
-            </Button>
-          ) : null}
-        </div>
-      </div>
+            ) : null}
+          </span>
+        }
+      />
 
       {statement.status === "cancelled" && statement.cancellationReason ? (
         <Alert variant="warning">
