@@ -1,4 +1,3 @@
-import { RiPriceTag3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
@@ -75,7 +74,7 @@ export const CostTypeEditPage = () => {
   const costType = costTypeQuery.data;
 
   return (
-    <FormPage icon={<RiPriceTag3Line />} title={costType.name}>
+    <FormPage title={costType.name}>
       <CostTypeForm
         mode="edit"
         buildings={buildings}

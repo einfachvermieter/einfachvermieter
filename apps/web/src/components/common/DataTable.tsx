@@ -392,7 +392,7 @@ export const DataTable = <TData,>({
     pageSize,
   });
 
-  // Chevron-Spalte signalisiert die klickbare Zeile (fable .chevcell)
+  // Chevron-Spalte signalisiert die klickbare Zeile
   const effectiveColumns = useMemo<ColumnDef<TData, unknown>[]>(
     () =>
       onRowClick

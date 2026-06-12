@@ -1,9 +1,8 @@
 import type { MeterCreateDto } from "@einfachvermieter/shared";
-import { RiDashboard3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams, useRouterState } from "@tanstack/react-router";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { Heading1 } from "../../components/common/Heading1";
+import { PageHead } from "../../components/common/PageHead";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import {
   Tabs,
@@ -67,7 +66,7 @@ export const MeterDetailPage = () => {
 
   return (
     <div className="space-y-6">
-      <Heading1 icon={<RiDashboard3Line />}>{meter.label}</Heading1>
+      <PageHead title={meter.label} />
       <Tabs
         value={activeTab}
         onValueChange={(value) => {

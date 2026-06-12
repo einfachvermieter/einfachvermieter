@@ -1,5 +1,4 @@
 import { type MeterCreateDto, todayIso } from "@einfachvermieter/shared";
-import { RiDashboard3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { FormPage } from "../../components/common/FormPage";
@@ -50,7 +49,7 @@ export const MeterCreatePage = () => {
   );
 
   return (
-    <FormPage icon={<RiDashboard3Line />} title={t("ui.meters.createTitle")}>
+    <FormPage title={t("ui.meters.createTitle")}>
       <MeterForm
         key={defaultValues.buildingId}
         mode="create"

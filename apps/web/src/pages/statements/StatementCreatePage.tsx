@@ -1,4 +1,3 @@
-import { RiFileList3Line } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormPage } from "../../components/common/FormPage";
 import { Card, CardContent } from "../../components/ui/Card";
@@ -48,7 +47,6 @@ export const StatementCreatePage = () => {
 
   return (
     <FormPage
-      icon={<RiFileList3Line />}
       title={t("ui.statements.createTitle")}
       description={t("ui.statements.createDescription")}
     >

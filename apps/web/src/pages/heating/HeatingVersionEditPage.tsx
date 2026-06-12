@@ -5,7 +5,6 @@ import {
   heatingSettingsToFormValues,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiFireLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
@@ -118,7 +117,7 @@ const HeatingVersionEditView = ({
   const isExternal = form.watch("mode") === "external";
 
   return (
-    <FormPage icon={<RiFireLine />} title={heatingIdentityLabel(version)}>
+    <FormPage title={heatingIdentityLabel(version)}>
       <HeatingForm
         form={form}
         buildings={buildings}

@@ -1,32 +1,21 @@
 import type { ReactNode } from "react";
-import { Description } from "./Description";
-import { Heading1 } from "./Heading1";
+import { PageHead } from "./PageHead";
 
 /**
- * Einheitlicher Rahmen für Create-/Edit-Formularseiten: vertikaler Abstand
- * plus `Heading1` mit Icon, optional gefolgt von einer `Description` direkt
- * unter dem Titel.
+ * Einheitlicher Rahmen für Create-/Edit-Formularseiten:
+ * `PageHead` plus optionale Beschreibung als Sub-Zeile.
  */
 export const FormPage = ({
-  icon,
   title,
   description,
   children,
 }: {
-  icon?: ReactNode;
-  title: ReactNode;
+  title: string;
   description?: ReactNode;
   children: ReactNode;
 }) => (
   <div className="space-y-6">
-    {description ? (
-      <div className="space-y-2">
-        <Heading1 icon={icon}>{title}</Heading1>
-        <Description>{description}</Description>
-      </div>
-    ) : (
-      <Heading1 icon={icon}>{title}</Heading1>
-    )}
+    <PageHead title={title} sub={description} />
     {children}
   </div>
 );

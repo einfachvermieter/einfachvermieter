@@ -1,9 +1,8 @@
 import type { SenderSettingsUpdateDto } from "@einfachvermieter/shared";
-import { RiMailSendLine } from "@remixicon/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Description } from "@/components/common/Description";
-import { Heading1 } from "@/components/common/Heading1";
+import { PageHead } from "@/components/common/PageHead";
 import { FormSkeleton } from "@/components/FormSkeleton";
 import { t } from "@/lib/i18n";
 import {
@@ -42,9 +41,7 @@ export const SenderSettingsPage = () => {
   if (settingsQuery.isPending) {
     return (
       <div className="space-y-6">
-        <Heading1 icon={<RiMailSendLine />}>
-          {t("ui.settings.sender.title")}
-        </Heading1>
+        <PageHead title={t("ui.settings.sender.title")} />
         <FormSkeleton rows={6} />
       </div>
     );
@@ -53,9 +50,7 @@ export const SenderSettingsPage = () => {
   if (settingsQuery.isError || !settingsQuery.data) {
     return (
       <div className="space-y-6">
-        <Heading1 icon={<RiMailSendLine />}>
-          {t("ui.settings.sender.title")}
-        </Heading1>
+        <PageHead title={t("ui.settings.sender.title")} />
         <p className="text-sm text-destructive">{t("common.saveFailed")}</p>
       </div>
     );
@@ -86,9 +81,7 @@ export const SenderSettingsPage = () => {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Heading1 icon={<RiMailSendLine />}>
-          {t("ui.settings.sender.title")}
-        </Heading1>
+        <PageHead title={t("ui.settings.sender.title")} />
         <Description>{t("ui.settings.sender.description")}</Description>
       </div>
       <SenderSettingsForm

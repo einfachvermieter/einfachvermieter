@@ -1,5 +1,4 @@
 import type { UnitCreateDto, UnitFormValues } from "@einfachvermieter/shared";
-import { RiHome6Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { FormPage } from "../../components/common/FormPage";
@@ -37,7 +36,7 @@ export const UnitCreatePage = () => {
   });
 
   return (
-    <FormPage icon={<RiHome6Line />} title={t("ui.units.createTitle")}>
+    <FormPage title={t("ui.units.createTitle")}>
       <UnitForm
         key={defaultValues.buildingId}
         mode="create"

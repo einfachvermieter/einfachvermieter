@@ -3,7 +3,7 @@ import {
   type TenantSaveDto,
   todayIso,
 } from "@einfachvermieter/shared";
-import { RiInformationLine, RiTeamLine } from "@remixicon/react";
+import { RiInformationLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { FormPage } from "../../components/common/FormPage";
@@ -32,7 +32,7 @@ export const TenantCreatePage = () => {
   const today = todayIso();
 
   return (
-    <FormPage icon={<RiTeamLine />} title={t("ui.tenants.createTitle")}>
+    <FormPage title={t("ui.tenants.createTitle")}>
       {hasUnits ? (
         <TenantForm
           mode="create"

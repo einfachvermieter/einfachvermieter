@@ -6,14 +6,13 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiMoneyEuroCircleLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { EntityNotFound } from "@/components/common/EntityNotFound";
-import { Heading1 } from "@/components/common/Heading1";
+import { PageHead } from "@/components/common/PageHead";
 import { FormSkeleton } from "@/components/FormSkeleton";
 import { DateInput } from "@/components/form/DateInput";
 import { Form } from "@/components/form/Form";
@@ -139,9 +138,11 @@ export const FeePage = () => {
 
   return (
     <div className="space-y-6">
-      <Heading1 icon={<RiMoneyEuroCircleLine />}>
-        {existing ? feeIdentityLabel(existing) : t("ui.account.fee.title")}
-      </Heading1>
+      <PageHead
+        title={
+          existing ? feeIdentityLabel(existing) : t("ui.account.fee.title")
+        }
+      />
       <Form form={form} onSubmit={onSubmit}>
         <Card>
           <CardContent>

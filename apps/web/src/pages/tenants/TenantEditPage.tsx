@@ -1,8 +1,6 @@
 import {
   formatDate,
   formatEur,
-  formatName,
-  pickRentForDate,
   type TenantSaveDto,
   tenantAggregateToFormValues,
   todayIso,
@@ -11,14 +9,11 @@ import { RiDeleteBinLine, RiWallet3Line } from "@remixicon/react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
-import { HeroBand } from "../../components/common/HeroBand";
 import { InfoCard } from "../../components/common/InfoCard";
-import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Badge } from "../../components/ui/Badge";
 import { tenantBalanceQueryOptions } from "../../lib/accounts";
 import { api } from "../../lib/api";
-import { buildingsQueryOptions } from "../../lib/buildings";
 import { t } from "../../lib/i18n";
 import { type TenantAggregate, tenantQueryOptions } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
@@ -27,6 +22,7 @@ import { useDeleteResource } from "../../lib/useDeleteResource";
 import { useGoBack } from "../../lib/useGoBack";
 import { TenantDetailHeader } from "./TenantDetailHeader";
 import { TenantForm } from "./TenantForm";
+import { TenantHero } from "./TenantHero";
 
 const routeApi = getRouteApi("/mieter/$tenantId");
 
@@ -35,7 +31,6 @@ export const TenantEditPage = () => {
 
   const { data: aggregate } = useSuspenseQuery(tenantQueryOptions(tenantId));
   const { data: units } = useQuery(unitsQueryOptions);
-  const { data: buildings } = useQuery(buildingsQueryOptions);
   const { data: balance } = useQuery(tenantBalanceQueryOptions(tenantId));
   const navigate = useNavigate();
 
@@ -67,29 +62,12 @@ export const TenantEditPage = () => {
 
   const { tenant } = aggregate;
   const unit = units?.find((entry) => entry.id === tenant.unitId);
-  const building = buildings?.find((entry) => entry.id === unit?.buildingId);
 
   if (!units) {
     return <FormSkeleton rows={6} />;
   }
 
   const today = todayIso();
-  const active =
-    tenant.startDate <= today &&
-    (tenant.endDate === null || tenant.endDate >= today);
-
-  const contractParties = aggregate.residents.filter(
-    (resident) => resident.isContractParty,
-  );
-  const names = contractParties
-    .map((resident) => formatName(resident.firstName, resident.lastName))
-    .join(t("ui.common.separators.comma"));
-  const heroName = names || (unit?.name ?? "");
-
-  const currentRent = pickRentForDate(aggregate.rents, today);
-  const warmRentCents = currentRent
-    ? currentRent.monthlyBaseRentCents + currentRent.monthlyAdvanceCents
-    : null;
 
   const currentOccupants = aggregate.residents.filter((resident) => {
     const moveIn = resident.moveInDate ?? tenant.startDate;
@@ -101,42 +79,7 @@ export const TenantEditPage = () => {
 
   return (
     <div className="pb-24">
-      <HeroBand
-        tile={<InitialsAvatar name={heroName} size={64} />}
-        eyebrow={t("ui.tenant.editEyebrow")}
-        title={heroName}
-        meta={[
-          building?.name,
-          unit?.name,
-          t("ui.tenants.termSince", { date: formatDate(tenant.startDate) }),
-        ]
-          .filter(Boolean)
-          .join(t("ui.common.separators.bullet"))}
-        stats={[
-          {
-            label: t("ui.tenant.hero.warmRent"),
-            value:
-              warmRentCents !== null
-                ? formatEur(warmRentCents)
-                : t("ui.common.emptyValue"),
-          },
-          {
-            label: t("ui.tenant.fields.deposit"),
-            value:
-              tenant.depositCents > 0
-                ? formatEur(tenant.depositCents)
-                : t("ui.common.emptyValue"),
-          },
-          {
-            label: t("ui.tenant.hero.livesSince"),
-            value: formatDate(tenant.startDate),
-          },
-          {
-            label: t("ui.common.columns.status"),
-            value: active ? t("ui.tenants.active") : t("ui.tenants.inactive"),
-          },
-        ]}
-      />
+      <TenantHero tenantId={tenantId} eyebrow={t("ui.tenant.editEyebrow")} />
 
       <TenantDetailHeader
         tenantId={tenantId}

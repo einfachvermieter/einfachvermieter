@@ -1,10 +1,12 @@
-import { RiAddLine, RiCommunityLine, RiPencilLine } from "@remixicon/react";
+import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
-import { PageHeader } from "../../components/PageHeader";
+import { EntityCell } from "../../components/common/EntityCell";
+import { InitialsAvatar } from "../../components/common/InitialsAvatar";
+import { PageHead } from "../../components/common/PageHead";
 import { Button } from "../../components/ui/Button";
 import {
   type Building,
@@ -30,6 +32,7 @@ export const BuildingsOverview = () => {
     defaultSort: "name",
     storageKey: "buildings",
   });
+  const navigate = useNavigate();
 
   const { data, isFetching } = useQuery(
     buildingsOverviewQueryOptions(table.queryParams),
@@ -48,19 +51,22 @@ export const BuildingsOverview = () => {
 
   const columns = useMemo<ColumnDef<Building>[]>(
     () => [
-      rowActionsColumn<Building>({
-        deletion,
-        editLink: (building) => (
-          <Link to="/gebaeude/$buildingId" params={{ buildingId: building.id }}>
-            <RiPencilLine />
-          </Link>
-        ),
-      }),
       {
         accessorKey: "name",
         header: t("ui.buildings.fields.name"),
         cell: ({ row }) => (
-          <span className="font-semibold">{row.original.name}</span>
+          <EntityCell
+            tile={<InitialsAvatar name={row.original.name} />}
+            name={row.original.name}
+            subline={[
+              t("ui.navigation.buildingSwitcher.unitsCount", {
+                count: row.original.unitsCount,
+              }),
+              t("ui.dashboard.buildingsCard.tenantsCount", {
+                count: row.original.activeTenantsCount,
+              }),
+            ].join(t("ui.common.separators.bullet"))}
+          />
         ),
       },
       {
@@ -73,15 +79,22 @@ export const BuildingsOverview = () => {
         meta: { cellClassName: "tabular-nums" },
       },
       { accessorKey: "addressCity", header: t("ui.buildings.fields.city") },
+      // @todo: Löschen bleibt hier, bis die Gebäude-Detailseite eine Aktionen-Karte hat
+      rowActionsColumn<Building>({ deletion }),
     ],
     [deletion],
   );
 
+  const sub = data
+    ? t("ui.dashboard.sub.buildings", { count: data.total })
+    : undefined;
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        icon={<RiCommunityLine />}
+      <PageHead
+        eyebrow={t("ui.dashboard.eyebrow")}
         title={t("ui.buildings.title")}
+        sub={sub}
         action={
           <Button asChild={true}>
             <Link to="/gebaeude/neu">
@@ -103,6 +116,12 @@ export const BuildingsOverview = () => {
             : t("ui.buildings.empty")
         }
         rowClassName={deletion.rowClassName}
+        onRowClick={(building) =>
+          navigate({
+            to: "/gebaeude/$buildingId",
+            params: { buildingId: building.id },
+          })
+        }
         server={{
           ...table.serverProps,
           pageCount: table.pageCount(data?.total ?? 0),

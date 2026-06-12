@@ -28,6 +28,7 @@ import {
 } from "../../lib/payments";
 import { useDeleteResource } from "../../lib/useDeleteResource";
 import { TenantDetailHeader } from "../tenants/TenantDetailHeader";
+import { TenantHero } from "../tenants/TenantHero";
 import { AccountPaymentsTable } from "./components/AccountPaymentsTable";
 import { DepositSummary } from "./components/DepositSummary";
 import { type FeeDeletionTarget, FeesTable } from "./components/FeesTable";
@@ -125,7 +126,8 @@ export const MieterkontoDetail = () => {
 
   return (
     <div className="space-y-6">
-      <TenantDetailHeader tenantId={tenantId} active="konto" />
+      <TenantHero tenantId={tenantId} eyebrow={t("ui.tenants.tabs.account")} />
+      <TenantDetailHeader tenantId={tenantId} active="konto" hideTitle={true} />
 
       <Card>
         <CardContent className="flex flex-wrap items-center gap-6 py-6">

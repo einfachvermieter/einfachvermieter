@@ -7,7 +7,6 @@ import {
   emptyPaymentFormValues,
   paymentFormToDto,
 } from "@einfachvermieter/shared";
-import { RiMoneyEuroCircleLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
@@ -106,10 +105,7 @@ export const PaymentEditPage = () => {
   }
 
   return (
-    <FormPage
-      icon={<RiMoneyEuroCircleLine />}
-      title={paymentIdentityLabel(payment)}
-    >
+    <FormPage title={paymentIdentityLabel(payment)}>
       <PaymentForm
         mode="edit"
         tenantOptions={tenantOptions}

@@ -6,7 +6,6 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiFireLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -131,10 +130,7 @@ const HeatingVersionCreateView = ({
   );
 
   return (
-    <FormPage
-      icon={<RiFireLine />}
-      title={t("ui.heating.versions.createTitle")}
-    >
+    <FormPage title={t("ui.heating.versions.createTitle")}>
       <HeatingForm
         form={form}
         buildings={buildings}

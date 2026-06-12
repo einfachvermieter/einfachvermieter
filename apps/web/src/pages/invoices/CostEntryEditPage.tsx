@@ -1,6 +1,5 @@
 import { todayIso } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiBillLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
@@ -123,7 +122,7 @@ export const CostEntryEditPage = () => {
   const entry = costEntryQuery.data;
 
   return (
-    <FormPage icon={<RiBillLine />} title={costEntryIdentityLabel(entry)}>
+    <FormPage title={costEntryIdentityLabel(entry)}>
       <CostEntryForm
         mode="edit"
         form={form}

@@ -1,5 +1,4 @@
 import type { BuildingCreateDto } from "@einfachvermieter/shared";
-import { RiCommunityLine } from "@remixicon/react";
 import { FormPage } from "../../components/common/FormPage";
 import { api } from "../../lib/api";
 import type { Building } from "../../lib/buildings";
@@ -26,7 +25,7 @@ export const BuildingCreatePage = () => {
   });
 
   return (
-    <FormPage icon={<RiCommunityLine />} title={t("ui.buildings.createTitle")}>
+    <FormPage title={t("ui.buildings.createTitle")}>
       <BuildingForm
         mode="create"
         defaultValues={defaultValues}

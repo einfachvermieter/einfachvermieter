@@ -1,5 +1,4 @@
 import type { BuildingCreateDto } from "@einfachvermieter/shared";
-import { RiCommunityLine } from "@remixicon/react";
 import { getRouteApi } from "@tanstack/react-router";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { FormPage } from "../../components/common/FormPage";
@@ -36,7 +35,7 @@ export const BuildingEditPage = () => {
   }
 
   return (
-    <FormPage icon={<RiCommunityLine />} title={building.name}>
+    <FormPage title={building.name}>
       <BuildingForm
         mode="edit"
         defaultValues={{

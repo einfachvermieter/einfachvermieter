@@ -1,4 +1,3 @@
-import { RiPriceTag3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { FormPage } from "../../components/common/FormPage";
@@ -44,7 +43,7 @@ export const CostTypeCreatePage = () => {
   });
 
   return (
-    <FormPage icon={<RiPriceTag3Line />} title={t("ui.costs.typeCreateTitle")}>
+    <FormPage title={t("ui.costs.typeCreateTitle")}>
       <CostTypeForm
         key={defaultValues.buildingId}
         mode="create"

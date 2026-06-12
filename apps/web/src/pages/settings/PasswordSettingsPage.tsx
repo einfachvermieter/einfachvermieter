@@ -1,9 +1,7 @@
 import type { PasswordChangeDto } from "@einfachvermieter/shared";
-import { RiLockPasswordLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Description } from "@/components/common/Description";
-import { Heading1 } from "@/components/common/Heading1";
+import { PageHead } from "@/components/common/PageHead";
 import { Spinner } from "@/components/common/Spinner";
 import { changePassword, passwordPolicyQueryOptions } from "@/lib/auth";
 import { t } from "@/lib/i18n";
@@ -25,12 +23,10 @@ export const PasswordSettingsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <Heading1 icon={<RiLockPasswordLine />}>
-          {t("ui.settings.password.title")}
-        </Heading1>
-        <Description>{t("ui.settings.password.description")}</Description>
-      </div>
+      <PageHead
+        title={t("ui.settings.password.title")}
+        sub={t("ui.settings.password.description")}
+      />
       {policy ? (
         <PasswordChangeForm
           policy={policy}
