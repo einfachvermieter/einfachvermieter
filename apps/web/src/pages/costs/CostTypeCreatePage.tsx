@@ -43,7 +43,10 @@ export const CostTypeCreatePage = () => {
   });
 
   return (
-    <FormPage title={t("ui.costs.typeCreateTitle")}>
+    <FormPage
+      eyebrow={t("ui.navigation.groups.costsBilling")}
+      title={t("ui.costs.typeCreateTitle")}
+    >
       <CostTypeForm
         key={defaultValues.buildingId}
         mode="create"

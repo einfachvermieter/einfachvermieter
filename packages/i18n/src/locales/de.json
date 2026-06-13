@@ -523,6 +523,7 @@
     "buildings": {
       "title": "Gebäude",
       "createTitle": "Neues Gebäude",
+      "editEyebrow": "Gebäude bearbeiten",
       "add": "Gebäude hinzufügen",
       "confirmDelete": "Gebäude löschen?",
       "confirmDeleteWithUnits": "Soll „{name}“ wirklich gelöscht werden? Ein Gebäude mit Wohnungen kann nicht gelöscht werden.",

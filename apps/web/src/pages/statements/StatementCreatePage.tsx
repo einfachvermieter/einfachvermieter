@@ -47,6 +47,7 @@ export const StatementCreatePage = () => {
 
   return (
     <FormPage
+      eyebrow={t("ui.navigation.groups.costsBilling")}
       title={t("ui.statements.createTitle")}
       description={t("ui.statements.createDescription")}
     >

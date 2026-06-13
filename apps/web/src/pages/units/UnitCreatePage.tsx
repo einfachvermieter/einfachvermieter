@@ -36,7 +36,10 @@ export const UnitCreatePage = () => {
   });
 
   return (
-    <FormPage title={t("ui.units.createTitle")}>
+    <FormPage
+      eyebrow={t("ui.navigation.groups.masterData")}
+      title={t("ui.units.createTitle")}
+    >
       <UnitForm
         key={defaultValues.buildingId}
         mode="create"

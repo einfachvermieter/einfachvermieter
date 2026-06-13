@@ -25,7 +25,10 @@ export const BuildingCreatePage = () => {
   });
 
   return (
-    <FormPage title={t("ui.buildings.createTitle")}>
+    <FormPage
+      eyebrow={t("ui.dashboard.eyebrow")}
+      title={t("ui.buildings.createTitle")}
+    >
       <BuildingForm
         mode="create"
         defaultValues={defaultValues}

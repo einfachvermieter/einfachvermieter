@@ -1,11 +1,14 @@
 import { todayIso } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RiBillLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { FormPage } from "../../components/common/FormPage";
+import { HeroBand } from "../../components/common/HeroBand";
+import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
 import {
@@ -19,6 +22,7 @@ import {
   costEntryQueryOptions,
   costTypesQueryOptions,
 } from "../../lib/costs";
+import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { unitsQueryOptions } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
@@ -122,7 +126,21 @@ export const CostEntryEditPage = () => {
   const entry = costEntryQuery.data;
 
   return (
-    <FormPage title={costEntryIdentityLabel(entry)}>
+    <FormPage
+      head={
+        <HeroBand
+          tile={
+            <IconTile
+              icon={RiBillLine}
+              size={64}
+              background={gradients.invoices}
+            />
+          }
+          eyebrow={t("ui.invoices.editTitle")}
+          title={costEntryIdentityLabel(entry)}
+        />
+      }
+    >
       <CostEntryForm
         mode="edit"
         form={form}

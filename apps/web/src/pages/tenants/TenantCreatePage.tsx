@@ -32,7 +32,10 @@ export const TenantCreatePage = () => {
   const today = todayIso();
 
   return (
-    <FormPage title={t("ui.tenants.createTitle")}>
+    <FormPage
+      eyebrow={t("ui.navigation.groups.masterData")}
+      title={t("ui.tenants.createTitle")}
+    >
       {hasUnits ? (
         <TenantForm
           mode="create"

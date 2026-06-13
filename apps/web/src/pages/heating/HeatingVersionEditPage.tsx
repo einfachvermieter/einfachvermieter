@@ -10,8 +10,11 @@ import { useParams } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { FormPage } from "../../components/common/FormPage";
+import { HeroBand } from "../../components/common/HeroBand";
+import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { type Building, buildingsQueryOptions } from "../../lib/buildings";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import {
   heatingIdentityLabel,
   heatingSettingsByIdQueryOptions,
@@ -117,7 +120,21 @@ const HeatingVersionEditView = ({
   const isExternal = form.watch("mode") === "external";
 
   return (
-    <FormPage title={heatingIdentityLabel(version)}>
+    <FormPage
+      head={
+        <HeroBand
+          tile={
+            <IconTile
+              icon={domainVisuals.heating.icon}
+              size={64}
+              background={gradients.heating}
+            />
+          }
+          eyebrow={t("ui.heating.editTitle")}
+          title={heatingIdentityLabel(version)}
+        />
+      }
+    >
       <HeatingForm
         form={form}
         buildings={buildings}

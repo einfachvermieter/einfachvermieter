@@ -49,7 +49,10 @@ export const MeterCreatePage = () => {
   );
 
   return (
-    <FormPage title={t("ui.meters.createTitle")}>
+    <FormPage
+      eyebrow={t("ui.navigation.groups.masterData")}
+      title={t("ui.meters.createTitle")}
+    >
       <MeterForm
         key={defaultValues.buildingId}
         mode="create"

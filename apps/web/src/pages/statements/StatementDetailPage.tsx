@@ -6,7 +6,8 @@ import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { Description } from "../../components/common/Description";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { PageHead } from "../../components/common/PageHead";
+import { HeroBand } from "../../components/common/HeroBand";
+import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { DestructiveConfirmDialog } from "../../components/DestructiveConfirmDialog";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
@@ -416,7 +417,21 @@ export const StatementDetailPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHead
+      <HeroBand
+        tile={
+          <InitialsAvatar
+            name={
+              tenantAggregate && units
+                ? statementIdentityLabel({
+                    statement,
+                    aggregate: tenantAggregate,
+                    units,
+                  })
+                : t("ui.statements.pageTitle")
+            }
+            size={64}
+          />
+        }
         eyebrow={t("ui.navigation.groups.costsBilling")}
         title={
           tenantAggregate && units
@@ -430,8 +445,8 @@ export const StatementDetailPage = () => {
                 end: formatDate(statement.periodEnd),
               })
         }
-        sub={
-          <span className="flex items-center gap-2">
+        meta={
+          <span className="flex items-center gap-2 pt-1">
             {statement.status === "draft" ? (
               <Badge variant="slate" dot={true}>
                 {statement.supersedesStatementId

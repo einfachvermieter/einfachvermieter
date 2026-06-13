@@ -10,6 +10,7 @@ export const HeroBand = ({
   title,
   meta,
   stats,
+  action,
 }: {
   /** IconTile oder InitialsAvatar in Größe 64 */
   tile: ReactNode;
@@ -17,6 +18,9 @@ export const HeroBand = ({
   title: string;
   meta?: ReactNode;
   stats?: { label: string; value: ReactNode }[];
+
+  /** Aktions-Buttons rechts außen (z. B. Finalisieren/Stornieren) */
+  action?: ReactNode;
 }) => (
   <div className="relative mb-5.5 flex items-center gap-5.5 overflow-hidden rounded-2xl border border-border bg-card px-6.5 py-5.5 max-md:flex-wrap">
     <div
@@ -50,6 +54,17 @@ export const HeroBand = ({
             </div>
           </div>
         ))}
+      </div>
+    ) : null}
+    {action ? (
+      <div
+        className={
+          stats && stats.length > 0
+            ? "relative flex shrink-0 items-center gap-2"
+            : "relative ml-auto flex shrink-0 items-center gap-2"
+        }
+      >
+        {action}
       </div>
     ) : null}
   </div>

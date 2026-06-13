@@ -141,7 +141,10 @@ export const PaymentCreatePage = () => {
   }
 
   return (
-    <FormPage title={t("ui.payments.createTitle")}>
+    <FormPage
+      eyebrow={t("ui.navigation.account")}
+      title={t("ui.payments.createTitle")}
+    >
       <PaymentForm
         key={initialTenantId}
         mode="create"

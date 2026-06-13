@@ -24,6 +24,7 @@ export const PasswordSettingsPage = () => {
   return (
     <div className="space-y-6">
       <PageHead
+        eyebrow={t("ui.navigation.configuration")}
         title={t("ui.settings.password.title")}
         sub={t("ui.settings.password.description")}
       />

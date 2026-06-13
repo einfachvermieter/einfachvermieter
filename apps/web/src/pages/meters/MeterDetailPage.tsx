@@ -2,7 +2,8 @@ import type { MeterCreateDto } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams, useRouterState } from "@tanstack/react-router";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { PageHead } from "../../components/common/PageHead";
+import { HeroBand } from "../../components/common/HeroBand";
+import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import {
   Tabs,
@@ -13,9 +14,14 @@ import {
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { costTypesQueryOptions } from "../../lib/costs";
+import { meterTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { Meter } from "../../lib/meters";
-import { meterQueryOptions } from "../../lib/meters";
+import {
+  meterQueryOptions,
+  meterRoleLabel,
+  meterTypeLabel,
+} from "../../lib/meters";
 import { unitsQueryOptions } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useGoBack } from "../../lib/useGoBack";
@@ -66,7 +72,20 @@ export const MeterDetailPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHead title={meter.label} />
+      <HeroBand
+        tile={
+          <IconTile
+            icon={meterTypeVisual(meter.type).icon}
+            size={64}
+            background={meterTypeVisual(meter.type).gradient}
+          />
+        }
+        eyebrow={t("ui.meters.editTitle")}
+        title={meter.label}
+        meta={[meterTypeLabel(meter.type), meterRoleLabel(meter.role)].join(
+          t("ui.common.separators.bullet"),
+        )}
+      />
       <Tabs
         value={activeTab}
         onValueChange={(value) => {

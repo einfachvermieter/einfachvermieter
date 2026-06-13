@@ -130,7 +130,10 @@ const HeatingVersionCreateView = ({
   );
 
   return (
-    <FormPage title={t("ui.heating.versions.createTitle")}>
+    <FormPage
+      eyebrow={t("ui.navigation.groups.costsBilling")}
+      title={t("ui.heating.versions.createTitle")}
+    >
       <HeatingForm
         form={form}
         buildings={buildings}

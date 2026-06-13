@@ -2,6 +2,8 @@ import type { BuildingCreateDto } from "@einfachvermieter/shared";
 import { getRouteApi } from "@tanstack/react-router";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { FormPage } from "../../components/common/FormPage";
+import { HeroBand } from "../../components/common/HeroBand";
+import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { api } from "../../lib/api";
 import type { Building } from "../../lib/buildings";
 import { t } from "../../lib/i18n";
@@ -35,7 +37,19 @@ export const BuildingEditPage = () => {
   }
 
   return (
-    <FormPage title={building.name}>
+    <FormPage
+      head={
+        <HeroBand
+          tile={<InitialsAvatar name={building.name} size={64} />}
+          eyebrow={t("ui.buildings.editEyebrow")}
+          title={building.name}
+          meta={[
+            building.addressStreet,
+            `${building.addressPostalCode} ${building.addressCity}`,
+          ].join(t("ui.common.separators.bullet"))}
+        />
+      }
+    >
       <BuildingForm
         mode="edit"
         defaultValues={{

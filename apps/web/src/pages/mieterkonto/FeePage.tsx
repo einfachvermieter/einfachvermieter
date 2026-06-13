@@ -6,12 +6,15 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RiMoneyEuroCircleLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { EntityNotFound } from "@/components/common/EntityNotFound";
+import { HeroBand } from "@/components/common/HeroBand";
+import { IconTile } from "@/components/common/IconTile";
 import { PageHead } from "@/components/common/PageHead";
 import { FormSkeleton } from "@/components/FormSkeleton";
 import { DateInput } from "@/components/form/DateInput";
@@ -24,6 +27,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { FieldGroup } from "@/components/ui/Field";
 import { feeIdentityLabel, tenantFeesQueryOptions } from "@/lib/accounts";
 import { api } from "@/lib/api";
+import { gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import { useCrudMutation } from "@/lib/useCrudMutation";
 import { useGoBack } from "@/lib/useGoBack";
@@ -138,11 +142,24 @@ export const FeePage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHead
-        title={
-          existing ? feeIdentityLabel(existing) : t("ui.account.fee.title")
-        }
-      />
+      {existing ? (
+        <HeroBand
+          tile={
+            <IconTile
+              icon={RiMoneyEuroCircleLine}
+              size={64}
+              background={gradients.money}
+            />
+          }
+          eyebrow={t("ui.account.fee.editTitle")}
+          title={feeIdentityLabel(existing)}
+        />
+      ) : (
+        <PageHead
+          eyebrow={t("ui.navigation.account")}
+          title={t("ui.account.fee.title")}
+        />
+      )}
       <Form form={form} onSubmit={onSubmit}>
         <Card>
           <CardContent>

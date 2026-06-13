@@ -7,12 +7,16 @@ import {
   emptyPaymentFormValues,
   paymentFormToDto,
 } from "@einfachvermieter/shared";
+import { RiMoneyEuroCircleLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { FormPage } from "../../components/common/FormPage";
+import { HeroBand } from "../../components/common/HeroBand";
+import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
+import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   type Payment,
@@ -105,7 +109,21 @@ export const PaymentEditPage = () => {
   }
 
   return (
-    <FormPage title={paymentIdentityLabel(payment)}>
+    <FormPage
+      head={
+        <HeroBand
+          tile={
+            <IconTile
+              icon={RiMoneyEuroCircleLine}
+              size={64}
+              background={gradients.money}
+            />
+          }
+          eyebrow={t("ui.payments.editTitle")}
+          title={paymentIdentityLabel(payment)}
+        />
+      }
+    >
       <PaymentForm
         mode="edit"
         tenantOptions={tenantOptions}

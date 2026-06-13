@@ -2,10 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { FormPage } from "../../components/common/FormPage";
+import { HeroBand } from "../../components/common/HeroBand";
+import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
-import { type CostType, costTypeQueryOptions } from "../../lib/costs";
+import {
+  type CostType,
+  costTypeCategoryLabel,
+  costTypeQueryOptions,
+} from "../../lib/costs";
+import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useGoBack } from "../../lib/useGoBack";
@@ -74,7 +81,22 @@ export const CostTypeEditPage = () => {
   const costType = costTypeQuery.data;
 
   return (
-    <FormPage title={costType.name}>
+    <FormPage
+      head={
+        <HeroBand
+          tile={
+            <IconTile
+              icon={costTypeVisual(costType).icon}
+              size={64}
+              background={costTypeVisual(costType).gradient}
+            />
+          }
+          eyebrow={t("ui.costs.typeEditTitle")}
+          title={costType.name}
+          meta={costTypeCategoryLabel(costType.category)}
+        />
+      }
+    >
       <CostTypeForm
         mode="edit"
         buildings={buildings}

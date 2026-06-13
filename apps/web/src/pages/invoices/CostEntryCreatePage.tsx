@@ -133,7 +133,10 @@ export const CostEntryCreatePage = () => {
   };
 
   return (
-    <FormPage title={t("ui.invoices.createTitle")}>
+    <FormPage
+      eyebrow={t("ui.navigation.groups.costsBilling")}
+      title={t("ui.invoices.createTitle")}
+    >
       <CostEntryForm
         mode="create"
         form={form}
