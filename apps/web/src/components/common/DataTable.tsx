@@ -146,7 +146,7 @@ const renderHeaderContent = <TData,>(header: Header<TData, unknown>) => {
     <button
       type="button"
       onClick={header.column.getToggleSortingHandler()}
-      className="-mx-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 transition-colors hover:bg-muted-foreground/10 hover:text-foreground"
+      className="-mx-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 uppercase transition-colors hover:bg-muted-foreground/10 hover:text-foreground"
     >
       {content}
       <SortIndicator sorted={header.column.getIsSorted()} />
@@ -224,7 +224,7 @@ const DataTableBody = <TData,>({
     return skeletonRowKeys.map((rowKey) => (
       <TableRow key={rowKey}>
         {columnKeys.map((colKey) => (
-          <TableCell key={colKey} className="h-12">
+          <TableCell key={colKey} className="h-15.5">
             <Skeleton className="h-4 w-[70%]" />
           </TableCell>
         ))}
@@ -258,7 +258,7 @@ const DataTableBody = <TData,>({
         {row.getVisibleCells().map((cell) => (
           <TableCell
             key={cell.id}
-            className={cn("h-12", cell.column.columnDef.meta?.cellClassName)}
+            className={cell.column.columnDef.meta?.cellClassName}
           >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
           </TableCell>
@@ -298,7 +298,7 @@ const DataTablePagination = <TData,>({
       <div className="flex items-center gap-2">
         <Label
           htmlFor={pageSizeId}
-          className="sr-only text-sm font-semibold lg:not-sr-only"
+          className="sr-only text-[13px] font-medium lg:not-sr-only"
         >
           {t("ui.common.pagination.entriesPerPage")}
         </Label>
@@ -318,7 +318,7 @@ const DataTablePagination = <TData,>({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex w-fit items-center justify-center text-sm font-semibold">
+      <div className="flex w-fit items-center justify-center text-[13px] font-medium text-muted-foreground">
         {t("ui.common.pagination.pageOf", {
           page: currentPageIndex + 1,
           total: totalPages,
@@ -478,8 +478,8 @@ export const DataTable = <TData,>({
           ) : null}
         </div>
       ) : null}
-      <Card className="py-0">
-        <Table className="[&_td:first-child]:pl-3 [&_td:last-child]:pr-6 [&_th:first-child]:pl-3 [&_th:last-child]:pr-6">
+      <Card className="gap-0 py-0">
+        <Table>
           <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -507,8 +507,10 @@ export const DataTable = <TData,>({
             />
           </TableBody>
         </Table>
+        <div className="border-t border-border px-5 py-3.5">
+          <DataTablePagination table={table} />
+        </div>
       </Card>
-      <DataTablePagination table={table} />
     </div>
   );
 };

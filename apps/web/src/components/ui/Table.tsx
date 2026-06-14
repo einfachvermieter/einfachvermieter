@@ -53,7 +53,7 @@ const TableHead = ({ className, ...props }: ComponentProps<"th">) => (
   <th
     data-slot="table-head"
     className={cn(
-      "h-10 px-2 text-left align-middle text-[11.5px] font-semibold tracking-wider whitespace-nowrap text-slate-400 uppercase has-[[role=checkbox]]:pr-0",
+      "px-4.5 py-3.75 text-left align-middle text-[11.5px] font-semibold tracking-wider whitespace-nowrap text-slate-400 uppercase has-[[role=checkbox]]:pr-0",
       className,
     )}
     {...props}
@@ -64,7 +64,7 @@ const TableCell = ({ className, ...props }: ComponentProps<"td">) => (
   <td
     data-slot="table-cell"
     className={cn(
-      "py-1 px-2 align-middle whitespace-nowrap has-[[role=checkbox]]:pr-0",
+      "px-4.5 py-3.25 align-middle whitespace-nowrap has-[[role=checkbox]]:pr-0",
       className,
     )}
     {...props}

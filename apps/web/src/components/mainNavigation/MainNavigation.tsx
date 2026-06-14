@@ -37,9 +37,9 @@ export const MainNavigation = () => {
           <img
             src={logoUrl}
             alt=""
-            className="size-8 shrink-0 transition-[width,height] duration-200 ease-linear group-data-[collapsible=icon]:size-5"
+            className="size-7 shrink-0 transition-[width,height] duration-200 ease-linear group-data-[collapsible=icon]:size-5"
           />
-          <span className="max-w-48 truncate text-xl font-heading font-bold transition-[max-width,opacity] duration-200 ease-linear group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0">
+          <span className="max-w-48 truncate text-base font-heading font-bold transition-[max-width,opacity] duration-200 ease-linear group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0">
             <span className="text-sky-700">{t("common.appName.Einfach")}</span>
             <span className="text-teal-600">
               {t("common.appName.Vermieter")}

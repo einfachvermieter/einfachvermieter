@@ -34,7 +34,9 @@ export const HeroBand = ({
           {eyebrow}
         </div>
       ) : null}
-      <h1 className="mt-0.75 text-[26px] font-semibold">{title}</h1>
+      <h1 className="mt-0.75 text-[26px] leading-tight font-semibold">
+        {title}
+      </h1>
       {meta ? (
         <div className="mt-1 text-[13px] text-muted-foreground">{meta}</div>
       ) : null}
