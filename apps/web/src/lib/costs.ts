@@ -32,7 +32,19 @@ export type CostType = {
    * Brennstoff-Kostenart mit CO2-Erfassung (nur bei category "heating").
    */
   co2Tracked: boolean;
+
+  updatedAt?: string;
 };
+
+export type CostTypeStats = {
+  year: number;
+  entryCount: number;
+  totalAmountCents: number;
+  assignedMetersCount: number;
+  lastEntry: { id: string; invoiceDate: string; amountCents: number } | null;
+};
+
+export type CostTypeDetail = CostType & { stats: CostTypeStats };
 
 export type CostEntry = {
   id: string;
@@ -167,14 +179,7 @@ export const costTypesQueryOptions = queryOptions({
 export const costTypeQueryOptions = (id: string) =>
   queryOptions({
     queryKey: ["costType", id],
-    queryFn: async () => {
-      const all = await api.get<CostType[]>("/costs/types");
-      const match = all.find((ct) => ct.id === id);
-      if (!match) {
-        throw new Error(`Kostenart ${id} nicht gefunden`);
-      }
-      return match;
-    },
+    queryFn: () => api.get<CostTypeDetail>(`/costs/types/${id}`),
   });
 
 export const costTypesOverviewQueryOptions = (

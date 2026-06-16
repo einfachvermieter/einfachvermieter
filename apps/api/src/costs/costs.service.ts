@@ -5,6 +5,7 @@ import {
   CostEntrySchema,
   type CostType,
   CostTypeSchema,
+  MeterCostTypeAssignmentSchema,
   UnitSchema,
 } from "@einfachvermieter/db";
 import type {
@@ -84,6 +85,35 @@ export type CostEntryListResult = {
   total: number;
   totalAmountCents: number;
 };
+
+/**
+ * Aggregierte Kennzahlen einer Kostenart für Hero und Infospalte der
+ * Bearbeiten-Seite.
+ */
+export type CostTypeStats = {
+  /**
+   * Bezugsjahr (Serverjahr)
+   */
+  year: number;
+  /**
+   * Rechnungen mit einer Position dieser Kostenart, Rechnungsdatum im Jahr
+   */
+  entryCount: number;
+  /**
+   * Summe der Positionsbeträge dieser Kostenart im Jahr
+   */
+  totalAmountCents: number;
+  /**
+   * Anzahl zugeordneter Zähler (Messquellen)
+   */
+  assignedMetersCount: number;
+  /**
+   * Jüngste Rechnung mit dieser Kostenart (über alle Jahre)
+   */
+  lastEntry: { id: string; invoiceDate: string; amountCents: number } | null;
+};
+
+export type CostTypeDetail = CostType & { stats: CostTypeStats };
 
 @Injectable()
 export class CostsService {
@@ -175,6 +205,67 @@ export class CostsService {
     await this.em.flush();
 
     return costType;
+  }
+
+  /**
+   * Einzelne Kostenart samt aggregierter Kennzahlen (Rechnungen/Summe im
+   * laufenden Jahr, zugeordnete Zähler, letzte Rechnung) laden.
+   */
+  async getCostType(id: string): Promise<CostTypeDetail> {
+    const costType = await this.em.findOne(CostTypeSchema, { id });
+    if (!costType) {
+      throw new NotFoundException(notFoundMessage("costType", id));
+    }
+
+    const items = await this.em.find(CostEntryItemSchema, { costTypeId: id });
+    const entryIds = [...new Set(items.map((item) => item.costEntryId))];
+    const entries =
+      entryIds.length > 0
+        ? await this.em.find(CostEntrySchema, { id: { $in: entryIds } })
+        : [];
+    const entryById = new Map(entries.map((entry) => [entry.id, entry]));
+
+    const year = new Date().getFullYear();
+    const isInYear = (item: CostEntryItem): boolean =>
+      entryById.get(item.costEntryId)?.invoiceDate.slice(0, 4) === String(year);
+
+    const entriesInYear = new Set(
+      items.filter(isInYear).map((item) => item.costEntryId),
+    );
+    const totalAmountCents = items
+      .filter(isInYear)
+      .reduce((sum, item) => sum + item.amountCents, 0);
+
+    const latest = entries.reduce<CostEntry | null>(
+      (max, entry) =>
+        !max || entry.invoiceDate > max.invoiceDate ? entry : max,
+      null,
+    );
+    const lastEntry = latest
+      ? {
+          id: latest.id,
+          invoiceDate: latest.invoiceDate,
+          amountCents: items
+            .filter((item) => item.costEntryId === latest.id)
+            .reduce((sum, item) => sum + item.amountCents, 0),
+        }
+      : null;
+
+    const assignedMetersCount = await this.em.count(
+      MeterCostTypeAssignmentSchema,
+      { costTypeId: id },
+    );
+
+    return {
+      ...costType,
+      stats: {
+        year,
+        entryCount: entriesInYear.size,
+        totalAmountCents,
+        assignedMetersCount,
+        lastEntry,
+      },
+    };
   }
 
   /**

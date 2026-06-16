@@ -68,6 +68,11 @@ export class CostsController {
     });
   }
 
+  @Get("types/:id")
+  getCostType(@Param("id") id: string) {
+    return this.costsService.getCostType(id);
+  }
+
   @Post("types")
   @Roles("admin")
   createCostType(

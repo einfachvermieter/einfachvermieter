@@ -5,16 +5,19 @@ import {
   heatingProrationMethods,
   heatingTypes,
 } from "@einfachvermieter/shared";
+import { RiCalendarLine, RiFireLine, RiPercentLine } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useId } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import { CheckboxInput } from "@/components/form/CheckboxInput";
+import { Disclose } from "@/components/common/Disclose";
+import { SectionCard } from "@/components/common/SectionCard";
+import { SplitBar } from "@/components/common/SplitBar";
 import { MonthInput } from "@/components/form/MonthInput";
 import { SelectInput } from "@/components/form/SelectInput";
+import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { HelpHint } from "@/components/help/HelpHint";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/Field";
 import {
   Select,
@@ -24,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/Select";
 import type { Building } from "../../../../lib/buildings";
+import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import type { Meter } from "../../../../lib/meters";
 
@@ -158,142 +162,159 @@ export const HeatingSettingsFields = ({
   ];
 
   const isCentralWithHotWater = heatingType === "central_with_hot_water";
+  const basePercent = Number.parseInt(form.watch("baseSharePercent"), 10);
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardContent>
+    <div className="space-y-5">
+      <SectionCard
+        icon={RiCalendarLine}
+        iconBackground={gradients.heating}
+        title={t("ui.heating.detail.validitySection")}
+        description={t("ui.heating.detail.validityDescription")}
+      >
+        <FieldGroup className="gap-4">
+          <SelectInput
+            control={form.control}
+            name="buildingId"
+            label={t("ui.buildings.title")}
+            disabled={buildingFieldDisabled}
+            options={buildings.map((building) => ({
+              value: building.id,
+              label: building.name,
+            }))}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <MonthInput
+              control={form.control}
+              name="validFrom"
+              label={t("ui.heating.fields.validFrom")}
+              description={t("ui.heating.fields.validFromDescription")}
+              boundary="start"
+            />
+            <MonthInput
+              control={form.control}
+              name="validTo"
+              label={t("ui.heating.fields.validTo")}
+              description={t("ui.heating.fields.validToDescription")}
+              boundary="end"
+              optional={true}
+            />
+          </div>
+        </FieldGroup>
+      </SectionCard>
+
+      <SectionCard
+        icon={RiPercentLine}
+        iconBackground={gradients.bank}
+        title={t("ui.heating.cards.billing")}
+        description={t("ui.heating.detail.billingDescription")}
+      >
+        <FieldGroup className="gap-4">
+          <Field>
+            <FieldLabel htmlFor={billingTypeFieldId}>
+              {t("ui.heating.fields.billingType")}
+              <HelpHint>
+                {t("ui.heating.fields.billingTypeDescription")}
+              </HelpHint>
+            </FieldLabel>
+            <Select
+              value={currentBillingType}
+              onValueChange={(value) =>
+                applyBillingType(form, value as BillingType)
+              }
+            >
+              <SelectTrigger id={billingTypeFieldId} className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                {billingTypes.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {t(`ui.heating.billingTypes.${value}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          {mode === "external" ? null : (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <TextInput
+                  control={form.control}
+                  name="baseSharePercent"
+                  label={t("ui.heating.fields.baseSharePercent")}
+                  labelHelp={t("ui.heating.fields.baseShareDescription")}
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  max="100"
+                  step="1"
+                  suffix="%"
+                />
+                <TextInput
+                  control={form.control}
+                  name="consumptionSharePercent"
+                  label={t("ui.heating.fields.consumptionSharePercent")}
+                  labelHelp={t("ui.heating.fields.splitDescription")}
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  max="100"
+                  step="1"
+                  suffix="%"
+                />
+              </div>
+              {Number.isFinite(basePercent) ? (
+                <SplitBar
+                  aPercent={basePercent}
+                  aLabel={t("ui.heating.detail.splitBaseLegend", {
+                    percent: basePercent,
+                  })}
+                  bLabel={t("ui.heating.detail.splitConsumptionLegend", {
+                    percent: 100 - basePercent,
+                  })}
+                />
+              ) : null}
+              <SelectInput
+                control={form.control}
+                name="prorationMethod"
+                label={t("ui.heating.fields.prorationMethod")}
+                labelHelp={t("ui.heating.fields.prorationMethodDescription")}
+                options={prorationMethodOptions}
+                triggerClassName="max-w-md"
+              />
+            </>
+          )}
+        </FieldGroup>
+      </SectionCard>
+
+      {mode === "external" ? null : (
+        <SectionCard
+          icon={RiFireLine}
+          iconBackground={gradients.heating}
+          title={t("ui.heating.detail.installationSection")}
+          description={t("ui.heating.detail.installationDescription")}
+        >
           <FieldGroup className="gap-4">
             <SelectInput
               control={form.control}
-              name="buildingId"
-              label={t("ui.buildings.title")}
-              disabled={buildingFieldDisabled}
-              options={buildings.map((building) => ({
-                value: building.id,
-                label: building.name,
-              }))}
+              name="heatingType"
+              label={t("ui.heating.fields.heatingType")}
+              labelHelp={t("ui.heating.fields.heatingTypeDescription")}
+              options={heatingTypeOptions}
+              triggerClassName="max-w-md"
             />
-            <div className="grid grid-cols-2 gap-4">
-              <MonthInput
-                control={form.control}
-                name="validFrom"
-                label={t("ui.heating.fields.validFrom")}
-                description={t("ui.heating.fields.validFromDescription")}
-                boundary="start"
-              />
-              <MonthInput
-                control={form.control}
-                name="validTo"
-                label={t("ui.heating.fields.validTo")}
-                description={t("ui.heating.fields.validToDescription")}
-                boundary="end"
-                optional={true}
-              />
-            </div>
-          </FieldGroup>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("ui.heating.cards.billing")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <FieldGroup className="gap-4">
-            <Field>
-              <FieldLabel htmlFor={billingTypeFieldId}>
-                {t("ui.heating.fields.billingType")}
-                <HelpHint>
-                  {t("ui.heating.fields.billingTypeDescription")}
-                </HelpHint>
-              </FieldLabel>
-              <Select
-                value={currentBillingType}
-                onValueChange={(value) =>
-                  applyBillingType(form, value as BillingType)
-                }
-              >
-                <SelectTrigger id={billingTypeFieldId} className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  {billingTypes.map((value) => (
-                    <SelectItem key={value} value={value}>
-                      {t(`ui.heating.billingTypes.${value}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            {mode === "external" ? null : (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <TextInput
-                    control={form.control}
-                    name="consumptionSharePercent"
-                    label={t("ui.heating.fields.consumptionSharePercent")}
-                    labelHelp={t("ui.heating.fields.splitDescription")}
-                    type="number"
-                    inputMode="numeric"
-                    min="0"
-                    max="100"
-                    step="1"
-                    suffix="%"
-                  />
-                  <TextInput
-                    control={form.control}
-                    name="baseSharePercent"
-                    label={t("ui.heating.fields.baseSharePercent")}
-                    labelHelp={t("ui.heating.fields.baseShareDescription")}
-                    type="number"
-                    inputMode="numeric"
-                    min="0"
-                    max="100"
-                    step="1"
-                    suffix="%"
-                  />
-                </div>
-                <SelectInput
-                  control={form.control}
-                  name="prorationMethod"
-                  label={t("ui.heating.fields.prorationMethod")}
-                  labelHelp={t("ui.heating.fields.prorationMethodDescription")}
-                  options={prorationMethodOptions}
-                  triggerClassName="max-w-md"
-                />
-              </>
-            )}
-          </FieldGroup>
-        </CardContent>
-      </Card>
-
-      {mode === "external" ? null : (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("ui.heating.installation.title")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup className="gap-4">
-              <SelectInput
-                control={form.control}
-                name="heatingType"
-                label={t("ui.heating.fields.heatingType")}
-                labelHelp={t("ui.heating.fields.heatingTypeDescription")}
-                options={heatingTypeOptions}
-                triggerClassName="max-w-md"
-              />
-              <SelectInput
-                control={form.control}
-                name="fuelType"
-                label={t("ui.heating.fields.fuelType")}
-                labelHelp={t("ui.heating.fields.fuelTypeDescription")}
-                options={fuelTypeOptions}
-                triggerClassName="max-w-md"
-              />
-              {isCentralWithHotWater ? (
-                <>
+            <SelectInput
+              control={form.control}
+              name="fuelType"
+              label={t("ui.heating.fields.fuelType")}
+              labelHelp={t("ui.heating.fields.fuelTypeDescription")}
+              options={fuelTypeOptions}
+              triggerClassName="max-w-md"
+            />
+            {isCentralWithHotWater ? (
+              <Disclose label={t("ui.heating.detail.hotWaterDisclose")}>
+                <FieldGroup className="gap-4">
                   {hotWaterMeterCandidates.length === 0 ? (
                     <Alert variant="info">
                       <AlertDescription>
@@ -352,16 +373,16 @@ export const HeatingSettingsFields = ({
                     suffix="kWh"
                     inputClassName="max-w-xs"
                   />
-                </>
-              ) : null}
-              <CheckboxInput
-                control={form.control}
-                name="co2CostShareEnabled"
-                label={t("ui.heating.fields.co2CostShareEnabled")}
-              />
-            </FieldGroup>
-          </CardContent>
-        </Card>
+                </FieldGroup>
+              </Disclose>
+            ) : null}
+            <SwitchInput
+              control={form.control}
+              name="co2CostShareEnabled"
+              label={t("ui.heating.fields.co2CostShareEnabled")}
+            />
+          </FieldGroup>
+        </SectionCard>
       )}
     </div>
   );
