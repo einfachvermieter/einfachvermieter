@@ -9,14 +9,17 @@ import {
   roleRequiresUnit,
   UNIT_NONE,
 } from "@einfachvermieter/shared";
+import { RiSpeedUpLine } from "@remixicon/react";
 import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
+import { Disclose } from "@/components/common/Disclose";
+import { SectionCard } from "@/components/common/SectionCard";
 import { DateInput } from "@/components/form/DateInput";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
-import { Card, CardContent } from "@/components/ui/Card";
 import { FieldGroup } from "@/components/ui/Field";
 import type { Building } from "../../../../lib/buildings";
+import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import { measurementUnitLabel } from "../../../../lib/meters";
 import type { Unit } from "../../../../lib/units";
@@ -77,9 +80,14 @@ export const MeterBaseFields = ({
   }, [selectedRole, isVirtual, form]);
 
   return (
-    <Card>
-      <CardContent>
-        <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <SectionCard
+      icon={RiSpeedUpLine}
+      iconBackground={gradients.water}
+      title={t("ui.meters.detail.baseSection")}
+      description={t("ui.meters.detail.baseDescription")}
+    >
+      <FieldGroup className="gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <SelectInput
             control={form.control}
             name="type"
@@ -126,7 +134,19 @@ export const MeterBaseFields = ({
               ]}
             />
           ) : null}
-          <div className="sm:col-start-1">
+          <TextInput
+            control={form.control}
+            name="serialNumber"
+            label={t("ui.meters.fields.serialNumber")}
+            optional={true}
+            disabled={isVirtual}
+            description={
+              isVirtual ? t("ui.meters.hints.virtualNoReadings") : undefined
+            }
+          />
+        </div>
+        <Disclose label={t("ui.meters.detail.moreFields")}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <TextInput
               control={form.control}
               name="room"
@@ -142,34 +162,24 @@ export const MeterBaseFields = ({
               }
               optional={true}
             />
+            <DateInput
+              control={form.control}
+              name="validFrom"
+              label={t("ui.meters.fields.validFrom")}
+              startMonth={calendarStart}
+              endMonth={calendarEnd}
+            />
+            <DateInput
+              control={form.control}
+              name="validUntil"
+              label={t("ui.meters.fields.validUntil")}
+              optional={true}
+              startMonth={calendarStart}
+              endMonth={calendarEnd}
+            />
           </div>
-          <TextInput
-            control={form.control}
-            name="serialNumber"
-            label={t("ui.meters.fields.serialNumber")}
-            optional={true}
-            disabled={isVirtual}
-            description={
-              isVirtual ? t("ui.meters.hints.virtualNoReadings") : undefined
-            }
-          />
-          <DateInput
-            control={form.control}
-            name="validFrom"
-            label={t("ui.meters.fields.validFrom")}
-            startMonth={calendarStart}
-            endMonth={calendarEnd}
-          />
-          <DateInput
-            control={form.control}
-            name="validUntil"
-            label={t("ui.meters.fields.validUntil")}
-            optional={true}
-            startMonth={calendarStart}
-            endMonth={calendarEnd}
-          />
-        </FieldGroup>
-      </CardContent>
-    </Card>
+        </Disclose>
+      </FieldGroup>
+    </SectionCard>
   );
 };

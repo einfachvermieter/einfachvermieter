@@ -1,14 +1,15 @@
-import { todayIso } from "@einfachvermieter/shared";
+import { formatEur, todayIso } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiBillLine } from "@remixicon/react";
+import { RiBillLine, RiDeleteBinLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { FormPage } from "../../components/common/FormPage";
 import { HeroBand } from "../../components/common/HeroBand";
 import { IconTile } from "../../components/common/IconTile";
+import { InfoCard } from "../../components/common/InfoCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
 import {
@@ -26,6 +27,7 @@ import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { unitsQueryOptions } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
+import { useDeleteResource } from "../../lib/useDeleteResource";
 import { useGoBack } from "../../lib/useGoBack";
 import { applyExtractionToForm } from "./components/aiExtract/applyExtractionToForm";
 import { CostEntryAttachments } from "./components/attachments/CostEntryAttachments";
@@ -84,6 +86,14 @@ export const CostEntryEditPage = () => {
     onSuccess: goBack,
   });
 
+  const deletion = useDeleteResource<CostEntryDetail>({
+    endpoint: (target) => `/costs/${target.id}`,
+    invalidateKey: ["costs"],
+    title: t("ui.invoices.detail.deleteTitle"),
+    describe: () => t("ui.invoices.detail.deleteMessage"),
+    onDeleted: goBack,
+  });
+
   const handleExtract = async (attachmentId: string) => {
     setExtractError(null);
     setExtractWarnings([]);
@@ -125,54 +135,119 @@ export const CostEntryEditPage = () => {
 
   const entry = costEntryQuery.data;
 
+  const totalCents = entry.items.reduce(
+    (sum, item) => sum + item.amountCents,
+    0,
+  );
+  const years = entry.items.flatMap((item) => [
+    item.periodStart.slice(0, 4),
+    item.periodEnd.slice(0, 4),
+  ]);
+
+  const hasYears = years.length > 0;
+  const minYear = hasYears ? years.reduce((a, b) => (a < b ? a : b)) : "";
+  const maxYear = hasYears ? years.reduce((a, b) => (a > b ? a : b)) : "";
+  const periodRange = minYear === maxYear ? minYear : `${minYear}–${maxYear}`;
+  const periodText = hasYears ? periodRange : t("ui.common.emptyValue");
+  const costTypeNames = [
+    ...new Set(entry.items.map((item) => item.costTypeName).filter(Boolean)),
+  ].join(t("ui.common.separators.comma"));
+
   return (
-    <FormPage
-      head={
-        <HeroBand
-          tile={
-            <IconTile
-              icon={RiBillLine}
-              size={64}
-              background={gradients.invoices}
-            />
-          }
-          eyebrow={t("ui.invoices.editTitle")}
-          title={costEntryIdentityLabel(entry)}
-        />
-      }
-    >
-      <CostEntryForm
-        mode="edit"
-        form={form}
-        costTypes={costTypes}
-        units={units ?? []}
-        onSubmit={async (values) => {
-          await updateCostEntry.mutateAsync(values);
-        }}
-        onCancel={goBack}
+    <div className="pb-24">
+      <HeroBand
+        tile={
+          <IconTile
+            icon={RiBillLine}
+            size={64}
+            background={gradients.invoices}
+          />
+        }
+        eyebrow={t("ui.invoices.editTitle")}
+        title={costEntryIdentityLabel(entry)}
+        meta={entry.vendor ?? t("ui.invoices.detail.vendorFallback")}
+        stats={[
+          {
+            label: t("ui.invoices.detail.statAmount"),
+            value: formatEur(totalCents),
+          },
+          {
+            label: t("ui.invoices.detail.statPositions"),
+            value: String(entry.items.length),
+          },
+          { label: t("ui.invoices.detail.statPeriod"), value: periodText },
+        ]}
       />
-      <CostEntryAttachments
-        costEntryId={entry.id}
-        onExtract={aiConfig?.mistralConfigured ? handleExtract : undefined}
-        extractingAttachmentId={extractingAttachmentId}
-      />
-      {extractError ? (
-        <Alert variant="error">
-          <AlertDescription>{extractError}</AlertDescription>
-        </Alert>
-      ) : null}
-      {extractWarnings.length > 0 ? (
-        <Alert variant="warning">
-          <AlertTitle>{t("ui.invoices.aiExtract.warnings.title")}</AlertTitle>
-          <AlertDescription>
-            <ul className="list-disc pl-5">
-              {extractWarnings.map((warning) => (
-                <li key={warning}>{warning}</li>
-              ))}
-            </ul>
-          </AlertDescription>
-        </Alert>
-      ) : null}
-    </FormPage>
+
+      <div className="grid items-start gap-5 lg:grid-cols-[1fr_320px]">
+        <div className="space-y-5">
+          <CostEntryForm
+            mode="edit"
+            form={form}
+            costTypes={costTypes}
+            units={units ?? []}
+            savedAt=""
+            onSubmit={async (values) => {
+              await updateCostEntry.mutateAsync(values);
+            }}
+            onCancel={goBack}
+          />
+          <CostEntryAttachments
+            costEntryId={entry.id}
+            onExtract={aiConfig?.mistralConfigured ? handleExtract : undefined}
+            extractingAttachmentId={extractingAttachmentId}
+          />
+          {extractError ? (
+            <Alert variant="error">
+              <AlertDescription>{extractError}</AlertDescription>
+            </Alert>
+          ) : null}
+          {extractWarnings.length > 0 ? (
+            <Alert variant="warning">
+              <AlertTitle>
+                {t("ui.invoices.aiExtract.warnings.title")}
+              </AlertTitle>
+              <AlertDescription>
+                <ul className="list-disc pl-5">
+                  {extractWarnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col gap-4 lg:sticky lg:top-24">
+          <InfoCard
+            title={t("ui.common.infoCards.atAGlance")}
+            rows={[
+              {
+                label: t("ui.invoices.detail.statAmount"),
+                value: formatEur(totalCents),
+              },
+              { label: t("ui.invoices.detail.statPeriod"), value: periodText },
+              {
+                label: t("ui.invoices.detail.costTypesLabel"),
+                value: costTypeNames || t("ui.common.emptyValue"),
+              },
+            ]}
+          />
+
+          <InfoCard title={t("ui.common.infoCards.actions")}>
+            <ActionLink
+              icon={RiDeleteBinLine}
+              iconBackground="var(--color-rose-400)"
+              danger={true}
+              onClick={() => deletion.request(entry)}
+            >
+              {t("ui.invoices.detail.deleteAction")}
+            </ActionLink>
+          </InfoCard>
+        </div>
+      </div>
+
+      {deletion.dialog}
+    </div>
   );
 };

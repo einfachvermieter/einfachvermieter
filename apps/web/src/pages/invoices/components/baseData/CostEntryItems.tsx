@@ -1,45 +1,33 @@
-import { RiAddLine, RiDeleteBin5Line } from "@remixicon/react";
-import { useEffect, useId } from "react";
 import {
-  Controller,
-  type UseFormReturn,
-  useFieldArray,
-  useWatch,
-} from "react-hook-form";
+  RiAddLine,
+  RiDeleteBin5Line,
+  RiFundsLine,
+  RiListCheck2,
+  RiPriceTag3Line,
+} from "@remixicon/react";
+import { useEffect } from "react";
+import { type UseFormReturn, useFieldArray, useWatch } from "react-hook-form";
+import { Disclose } from "@/components/common/Disclose";
+import { SectionCard } from "@/components/common/SectionCard";
+import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { DateInput } from "@/components/form/DateInput";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldTitle,
-} from "@/components/ui/Field";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import { FieldGroup } from "@/components/ui/Field";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/Tooltip";
 import type { CostType } from "../../../../lib/costs";
+import { gradients } from "../../../../lib/domainVisuals";
 import { t, translateKey } from "../../../../lib/i18n";
 import type { Unit } from "../../../../lib/units";
 import {
   type CostEntryFormValues,
   emptyItem,
-  type PriceMode,
   unitPriceDisplayConfig,
 } from "./costEntryForm.schema";
 
@@ -62,23 +50,24 @@ export const CostEntryItems = ({
   }));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("ui.invoices.items.title")}</CardTitle>
-        <CardDescription>{t("ui.invoices.items.description")}</CardDescription>
-        <CardAction>
-          <Button
-            type="button"
-            variant="ghostGreen"
-            size="sm"
-            onClick={() => itemsArray.append(emptyItem(defaultCostTypeId))}
-          >
-            <RiAddLine />
-            {t("ui.invoices.items.add")}
-          </Button>
-        </CardAction>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <SectionCard
+      icon={RiListCheck2}
+      iconBackground={gradients.notes}
+      title={t("ui.invoices.items.title")}
+      description={t("ui.invoices.items.description")}
+      action={
+        <Button
+          type="button"
+          variant="ghostGreen"
+          size="sm"
+          onClick={() => itemsArray.append(emptyItem(defaultCostTypeId))}
+        >
+          <RiAddLine />
+          {t("ui.invoices.items.add")}
+        </Button>
+      }
+    >
+      <div className="space-y-4">
         {itemsArray.fields.length === 0 ? (
           <Alert variant="info">
             <AlertDescription>{t("ui.invoices.items.empty")}</AlertDescription>
@@ -98,8 +87,8 @@ export const CostEntryItems = ({
         {rootError ? (
           <p className="text-sm text-destructive">{rootError}</p>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </SectionCard>
   );
 };
 
@@ -129,23 +118,14 @@ const CostEntryItemFields = ({
   });
   const selectedCostType = costTypes.find((c) => c.id === selectedCostTypeId);
   const allocationKey = selectedCostType?.defaultAllocationKey ?? null;
-  const isHeating = selectedCostType?.category === "heating";
   const displayConfig = unitPriceDisplayConfig(
     selectedCostType?.category ?? null,
     allocationKey,
   );
   const unitSuffix = displayConfig?.suffix ?? null;
-  // Bei Pauschal-Kostenarten (`fixed`) ohne sinnvolle Einheit wird der
-  // Radio ausgeblendet und der Modus auf "fixed" gepinnt. Verbrauchs-
-  // Kostenarten und Heizkostenarten starten in "Verbrauchspreis",
-  // andere Bezugs-Allocations in "Fixpreis".
+  // Bei Pauschal-Kostenarten (`fixed`) ohne sinnvolle Einheit wird die
+  // Preisart-Auswahl ausgeblendet und der Modus auf "fixed" gepinnt.
   const showPriceModeToggle = unitSuffix !== null;
-  const defaultPriceMode: PriceMode =
-    allocationKey === "per_consumption_m3" ||
-    allocationKey === "per_consumption_kwh" ||
-    isHeating
-      ? "per_unit"
-      : "fixed";
   useEffect(() => {
     if (!showPriceModeToggle && priceMode !== "fixed") {
       form.setValue(`items.${index}.priceMode`, "fixed", { shouldDirty: true });
@@ -190,8 +170,6 @@ const CostEntryItemFields = ({
       form.setValue(`items.${index}.co2CostInput`, "", { shouldDirty: true });
     }
   }, [showCo2Inputs, form, index]);
-  const fixedId = useId();
-  const perUnitId = useId();
 
   return (
     <div className="rounded-md border border-border p-3 sm:p-4">
@@ -260,60 +238,48 @@ const CostEntryItemFields = ({
           inputClassName="max-w-xs"
         />
         {showPriceModeToggle ? (
-          <div className="space-y-3 sm:col-span-2">
-            <Controller
-              control={form.control}
-              name={`items.${index}.priceMode`}
-              defaultValue={defaultPriceMode}
-              render={({ field }) => (
-                <RadioGroup
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  columns={2}
-                >
-                  <FieldLabel htmlFor={fixedId}>
-                    <Field orientation="horizontal">
-                      <FieldContent>
-                        <FieldTitle>
-                          {t("ui.costs.entryFields.priceModeFixed")}
-                        </FieldTitle>
-                        <FieldDescription>
-                          {t("ui.costs.entryFields.priceModeFixedDescription")}
-                        </FieldDescription>
-                      </FieldContent>
-                      <RadioGroupItem value="fixed" id={fixedId} />
-                    </Field>
-                  </FieldLabel>
-                  <FieldLabel htmlFor={perUnitId}>
-                    <Field orientation="horizontal">
-                      <FieldContent>
-                        <FieldTitle>
-                          {t("ui.costs.entryFields.priceModePerUnit")}
-                        </FieldTitle>
-                        <FieldDescription>
-                          {t(
-                            "ui.costs.entryFields.priceModePerUnitDescription",
-                          )}
-                        </FieldDescription>
-                      </FieldContent>
-                      <RadioGroupItem value="per_unit" id={perUnitId} />
-                    </Field>
-                  </FieldLabel>
-                </RadioGroup>
-              )}
-            />
-            {showUnitPriceInput && unitSuffix ? (
-              <TextInput
-                control={form.control}
-                name={`items.${index}.unitPriceInput`}
-                label={t("ui.costs.entryFields.unitPrice")}
-                description={t("ui.costs.entryFields.unitPriceDescription")}
-                inputMode="decimal"
-                placeholder="0,0000"
-                suffix={unitSuffix}
-                inputClassName="max-w-xs"
-              />
-            ) : null}
+          <div className="sm:col-span-2">
+            <Disclose
+              label={t("ui.invoices.detail.moreOptions")}
+              defaultOpen={priceMode === "per_unit"}
+            >
+              <div className="space-y-4">
+                <ChoiceTilesInput
+                  control={form.control}
+                  name={`items.${index}.priceMode`}
+                  options={[
+                    {
+                      value: "fixed",
+                      icon: RiPriceTag3Line,
+                      title: t("ui.costs.entryFields.priceModeFixed"),
+                      description: t(
+                        "ui.costs.entryFields.priceModeFixedDescription",
+                      ),
+                    },
+                    {
+                      value: "per_unit",
+                      icon: RiFundsLine,
+                      title: t("ui.costs.entryFields.priceModePerUnit"),
+                      description: t(
+                        "ui.costs.entryFields.priceModePerUnitDescription",
+                      ),
+                    },
+                  ]}
+                />
+                {showUnitPriceInput && unitSuffix ? (
+                  <TextInput
+                    control={form.control}
+                    name={`items.${index}.unitPriceInput`}
+                    label={t("ui.costs.entryFields.unitPrice")}
+                    description={t("ui.costs.entryFields.unitPriceDescription")}
+                    inputMode="decimal"
+                    placeholder="0,0000"
+                    suffix={unitSuffix}
+                    inputClassName="max-w-xs"
+                  />
+                ) : null}
+              </div>
+            </Disclose>
           </div>
         ) : null}
         {showLaborCostsInput ? (

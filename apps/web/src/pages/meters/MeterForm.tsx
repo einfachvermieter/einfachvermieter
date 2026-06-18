@@ -5,12 +5,17 @@ import {
   meterFormToDto,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RiPriceTag3Line } from "@remixicon/react";
 import { useForm } from "react-hook-form";
+import { SectionCard } from "@/components/common/SectionCard";
+import { Spinner } from "@/components/common/Spinner";
 import { Form } from "@/components/form/Form";
 import { FormActions } from "@/components/form/FormActions";
-import { Card, CardContent } from "@/components/ui/Card";
+import { Savebar } from "@/components/form/Savebar";
+import { Button } from "@/components/ui/Button";
 import type { Building } from "../../lib/buildings";
 import type { CostType } from "../../lib/costs";
+import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { Unit } from "../../lib/units";
 import { MeterBaseFields } from "./components/baseData/MeterBaseFields";
@@ -30,6 +35,7 @@ export const MeterForm = ({
   currentMeterId,
   onSubmit,
   onCancel,
+  savedAt,
 }: {
   mode: "create" | "edit";
   buildings: Building[];
@@ -40,6 +46,8 @@ export const MeterForm = ({
   currentMeterId?: string;
   onSubmit: (values: MeterCreateDto) => Promise<void>;
   onCancel: () => void;
+  /** Formatierter Speicherzeitpunkt; gesetzt = Savebar statt FormActions */
+  savedAt?: string;
 }) => {
   const form = useForm<MeterFormValues>({
     resolver: zodResolver(meterFormSchema),
@@ -77,41 +85,65 @@ export const MeterForm = ({
   return (
     <Form form={form} onSubmit={(values) => onSubmit(meterFormToDto(values))}>
       <fieldset disabled={submitting} className="contents">
-        <MeterBaseFields
-          form={form}
-          buildings={buildings}
-          units={units}
-          buildingFieldDisabled={mode === "edit"}
-          onTypeChange={onTypeChange}
-        />
-        {isGas ? <GasFactorsCard form={form} /> : null}
-        {isHkv ? <HkvFields form={form} /> : null}
-        {isVirtual ? (
-          <DifferenceConfigCard form={form} currentMeterId={currentMeterId} />
-        ) : null}
-        {isHkv ? null : (
-          <Card>
-            <CardContent className="flex flex-col gap-6">
-              <CostAllocationModeField
-                form={form}
-                locked={costAllocationModeLocked}
-              />
-              {costAllocationMode === "cost_types" ? (
-                <CostTypeAssignment form={form} costTypes={costTypes} />
-              ) : null}
-            </CardContent>
-          </Card>
-        )}
+        <div className="space-y-5">
+          <MeterBaseFields
+            form={form}
+            buildings={buildings}
+            units={units}
+            buildingFieldDisabled={mode === "edit"}
+            onTypeChange={onTypeChange}
+          />
+          {isGas ? <GasFactorsCard form={form} /> : null}
+          {isHkv ? <HkvFields form={form} /> : null}
+          {isVirtual ? (
+            <DifferenceConfigCard form={form} currentMeterId={currentMeterId} />
+          ) : null}
+          {isHkv ? null : (
+            <SectionCard
+              icon={RiPriceTag3Line}
+              iconBackground={gradients.notes}
+              title={t("ui.meters.detail.assignmentSection")}
+              description={t("ui.meters.detail.assignmentDescription")}
+            >
+              <div className="flex flex-col gap-6">
+                <CostAllocationModeField
+                  form={form}
+                  locked={costAllocationModeLocked}
+                />
+                {costAllocationMode === "cost_types" ? (
+                  <CostTypeAssignment form={form} costTypes={costTypes} />
+                ) : null}
+              </div>
+            </SectionCard>
+          )}
+        </div>
       </fieldset>
-      <FormActions
-        submitting={submitting}
-        onCancel={onCancel}
-        submitLabel={
-          mode === "create"
-            ? t("ui.common.action.add")
-            : t("ui.common.action.save")
-        }
-      />
+      {savedAt === undefined ? (
+        <FormActions
+          submitting={submitting}
+          onCancel={onCancel}
+          submitLabel={
+            mode === "create"
+              ? t("ui.common.action.add")
+              : t("ui.common.action.save")
+          }
+        />
+      ) : (
+        <Savebar savedAt={savedAt}>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={onCancel}
+            disabled={submitting}
+          >
+            {t("ui.common.action.cancel")}
+          </Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? <Spinner data-icon="inline-start" /> : null}
+            {t("ui.common.action.save")}
+          </Button>
+        </Savebar>
+      )}
     </Form>
   );
 };
