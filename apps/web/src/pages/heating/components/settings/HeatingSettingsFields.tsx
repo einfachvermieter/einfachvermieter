@@ -30,6 +30,7 @@ import type { Building } from "../../../../lib/buildings";
 import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import type { Meter } from "../../../../lib/meters";
+import { HeatingProrationChart } from "./HeatingProrationChart";
 
 /**
  * UI-Schlüssel für die kombinierte Auswahl Abrechnungsmodus + Verbrauchs-
@@ -109,6 +110,7 @@ export const HeatingSettingsFields = ({
   const mode = form.watch("mode");
   const consumptionMethod = form.watch("consumptionMethod");
   const heatingType = form.watch("heatingType");
+  const prorationMethod = form.watch("prorationMethod");
   const buildingId = form.watch("buildingId");
   const currentBillingType = toBillingType({ mode, consumptionMethod });
 
@@ -283,6 +285,7 @@ export const HeatingSettingsFields = ({
                 options={prorationMethodOptions}
                 triggerClassName="max-w-md"
               />
+              <HeatingProrationChart method={prorationMethod} />
             </>
           )}
         </FieldGroup>
