@@ -1,10 +1,12 @@
 import type { DepositRow } from "@einfachvermieter/shared";
 import { formatEur } from "@einfachvermieter/shared";
+import { MiniKpiRow } from "@/components/common/MiniKpiRow";
+import { Badge } from "@/components/ui/Badge";
 import { t } from "@/lib/i18n";
-import { AccountStatusBadge } from "./AccountStatusBadge";
 
 /**
- * Kautions-Übersicht: vereinbart (Soll) vs. hinterlegt (Ist) + Status
+ * Kautions-Übersicht als Kennzahl-Kacheln: vereinbart (Soll) vs.
+ * eingegangen (Ist) + Status-Pill.
  */
 export const DepositSummary = ({ row }: { row: DepositRow | null }) => {
   if (!row) {
@@ -19,27 +21,31 @@ export const DepositSummary = ({ row }: { row: DepositRow | null }) => {
     );
   }
 
+  const openCents = row.pot.sollCents - row.pot.istCents;
+  const status =
+    openCents <= 0 ? (
+      <Badge variant="ok" dot={true}>
+        {t("ui.account.depositComplete")}
+      </Badge>
+    ) : (
+      <Badge variant="warn" dot={true}>
+        {t("ui.account.depositOpen", { amount: formatEur(openCents) })}
+      </Badge>
+    );
+
   return (
-    <div className="flex flex-wrap items-center gap-8">
-      <div className="flex flex-col">
-        <span className="text-sm text-muted-foreground">
-          {t("ui.account.depositSoll")}
-        </span>
-        <span className="text-lg font-semibold tabular-nums">
-          {formatEur(row.pot.sollCents)}
-        </span>
-      </div>
-      <div className="flex flex-col">
-        <span className="text-sm text-muted-foreground">
-          {t("ui.account.depositIst")}
-        </span>
-        <span className="text-lg font-semibold tabular-nums">
-          {formatEur(row.pot.istCents)}
-        </span>
-      </div>
-      <div>
-        <AccountStatusBadge pot={row.pot} />
-      </div>
-    </div>
+    <MiniKpiRow
+      items={[
+        {
+          label: t("ui.account.depositSoll"),
+          value: formatEur(row.pot.sollCents),
+        },
+        {
+          label: t("ui.account.depositIst"),
+          value: formatEur(row.pot.istCents),
+        },
+        { label: t("ui.common.columns.status"), value: status },
+      ]}
+    />
   );
 };

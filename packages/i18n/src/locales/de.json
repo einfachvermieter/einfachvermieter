@@ -774,6 +774,8 @@
       "depositNone": "Für diesen Mietvertrag ist keine Kaution vereinbart.",
       "depositSoll": "Vereinbart",
       "depositIst": "Eingegangen",
+      "depositComplete": "vollständig",
+      "depositOpen": "{amount} offen",
       "deposit": {
         "record": "Kaution erfassen"
       },

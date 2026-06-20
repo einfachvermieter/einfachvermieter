@@ -15,15 +15,17 @@ import { unitsQueryOptions } from "../../lib/units";
 
 /**
  * Hero-Band eines Mieters (Stammdaten- und Konto-Tab): Initialen-Avatar,
- * Vertragspartner, Gebäude/Wohnung/seit, Kennzahlen Warmmiete · Kaution ·
- * Wohnt seit · Status. Lädt seine Daten selbst (Queries sind gecacht).
+ * Vertragspartner, Gebäude/Wohnung/seit. Lädt seine Daten selbst.
  */
 export const TenantHero = ({
   tenantId,
   eyebrow,
+  balance,
 }: {
   tenantId: string;
   eyebrow: string;
+  /** Gesetzt = Konto-Variante mit Saldo/Kaution/Status statt Warmmiete-Stats */
+  balance?: { balanceCents: number; depositBalanceCents: number };
 }) => {
   const { data: aggregate } = useQuery(tenantQueryOptions(tenantId));
   const { data: units } = useQuery(unitsQueryOptions);
@@ -53,19 +55,34 @@ export const TenantHero = ({
     ? currentRent.monthlyBaseRentCents + currentRent.monthlyAdvanceCents
     : null;
 
-  return (
-    <HeroBand
-      tile={<InitialsAvatar name={heroName} size={64} />}
-      eyebrow={eyebrow}
-      title={heroName}
-      meta={[
-        building?.name,
-        unit?.name,
-        t("ui.tenants.termSince", { date: formatDate(tenant.startDate) }),
+  const statusStat = {
+    label: t("ui.common.columns.status"),
+    value: active ? t("ui.tenants.active") : t("ui.tenants.inactive"),
+  };
+
+  const stats = balance
+    ? [
+        {
+          label: t("ui.account.balanceLabel"),
+          value: (
+            <span
+              className={
+                balance.balanceCents < 0
+                  ? "text-rose-600 dark:text-rose-400"
+                  : undefined
+              }
+            >
+              {formatEur(balance.balanceCents)}
+            </span>
+          ),
+        },
+        {
+          label: t("ui.account.depositLabel"),
+          value: formatEur(balance.depositBalanceCents),
+        },
+        statusStat,
       ]
-        .filter(Boolean)
-        .join(t("ui.common.separators.bullet"))}
-      stats={[
+    : [
         {
           label: t("ui.tenant.hero.warmRent"),
           value:
@@ -84,11 +101,22 @@ export const TenantHero = ({
           label: t("ui.tenant.hero.livesSince"),
           value: formatDate(tenant.startDate),
         },
-        {
-          label: t("ui.common.columns.status"),
-          value: active ? t("ui.tenants.active") : t("ui.tenants.inactive"),
-        },
-      ]}
+        statusStat,
+      ];
+
+  return (
+    <HeroBand
+      tile={<InitialsAvatar name={heroName} size={64} />}
+      eyebrow={eyebrow}
+      title={heroName}
+      meta={[
+        building?.name,
+        unit?.name,
+        t("ui.tenants.termSince", { date: formatDate(tenant.startDate) }),
+      ]
+        .filter(Boolean)
+        .join(t("ui.common.separators.bullet"))}
+      stats={stats}
     />
   );
 };

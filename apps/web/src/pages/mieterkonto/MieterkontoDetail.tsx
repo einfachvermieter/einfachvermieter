@@ -8,6 +8,7 @@ import { FormSkeleton } from "../../components/FormSkeleton";
 import { Button } from "../../components/ui/Button";
 import { Card, CardContent } from "../../components/ui/Card";
 import {
+  TabCount,
   Tabs,
   TabsContent,
   TabsList,
@@ -126,29 +127,19 @@ export const MieterkontoDetail = () => {
 
   return (
     <div className="space-y-6">
-      <TenantHero tenantId={tenantId} eyebrow={t("ui.tenants.tabs.account")} />
+      <TenantHero
+        tenantId={tenantId}
+        eyebrow={t("ui.tenants.tabs.account")}
+        balance={
+          balance
+            ? {
+                balanceCents: balance.balanceCents,
+                depositBalanceCents: balance.depositBalanceCents,
+              }
+            : undefined
+        }
+      />
       <TenantDetailHeader tenantId={tenantId} active="konto" hideTitle={true} />
-
-      <Card>
-        <CardContent className="flex flex-wrap items-center gap-6 py-6">
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">
-              {t("ui.account.balanceLabel")}
-            </span>
-            <span className="text-2xl font-semibold tabular-nums">
-              {formatEur(balance?.balanceCents ?? 0)}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">
-              {t("ui.account.depositLabel")}
-            </span>
-            <span className="text-lg font-semibold tabular-nums">
-              {formatEur(balance?.depositBalanceCents ?? 0)}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
 
       <Tabs
         value={tab ?? "miete"}
@@ -160,13 +151,19 @@ export const MieterkontoDetail = () => {
           }).catch(() => undefined);
         }}
       >
-        <TabsList variant="line">
+        <TabsList variant="pills">
           <TabsTrigger value="miete">{t("ui.account.tabs.rent")}</TabsTrigger>
           <TabsTrigger value="zahlungen">
             {t("ui.account.tabs.payments")}
+            {otherPayments.length > 0 ? (
+              <TabCount>{otherPayments.length}</TabCount>
+            ) : null}
           </TabsTrigger>
           <TabsTrigger value="abrechnungen">
             {t("ui.account.tabs.settlements")}
+            {settlementRows && settlementRows.length > 0 ? (
+              <TabCount>{settlementRows.length}</TabCount>
+            ) : null}
           </TabsTrigger>
           <TabsTrigger value="kaution">
             {t("ui.account.tabs.deposit")}
@@ -248,11 +245,7 @@ export const MieterkontoDetail = () => {
                 </Link>
               </Button>
             </div>
-            <Card>
-              <CardContent className="py-6">
-                <DepositSummary row={depositRow ?? null} />
-              </CardContent>
-            </Card>
+            <DepositSummary row={depositRow ?? null} />
           </section>
         </TabsContent>
 

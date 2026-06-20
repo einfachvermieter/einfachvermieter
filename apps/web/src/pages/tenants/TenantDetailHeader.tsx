@@ -1,4 +1,4 @@
-import { RiTeamLine } from "@remixicon/react";
+import { RiTeamLine, RiUser3Line, RiWallet3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Heading1 } from "../../components/common/Heading1";
@@ -40,11 +40,13 @@ export const TenantDetailHeader = ({
           }).catch(() => undefined);
         }}
       >
-        <TabsList variant="line">
+        <TabsList variant="default">
           <TabsTrigger value="stammdaten">
+            <RiUser3Line />
             {t("ui.tenants.tabs.master")}
           </TabsTrigger>
           <TabsTrigger value="konto">
+            <RiWallet3Line />
             {t("ui.tenants.tabs.account")}
           </TabsTrigger>
         </TabsList>
