@@ -1,13 +1,27 @@
 import type { StatementResult } from "@einfachvermieter/shared";
-import { formatDate } from "@einfachvermieter/shared";
-import { RiDownloadLine } from "@remixicon/react";
+import { formatDate, formatEur, formatName } from "@einfachvermieter/shared";
+import {
+  RiCloseCircleLine,
+  RiDeleteBinLine,
+  RiDownloadLine,
+  RiFileCopy2Line,
+  RiLockLine,
+} from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "@tanstack/react-router";
 import { useState } from "react";
+import { ActionLink } from "../../components/common/ActionLink";
 import { Description } from "../../components/common/Description";
+import { EmptyNote } from "../../components/common/EmptyNote";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { HeroBand } from "../../components/common/HeroBand";
-import { InitialsAvatar } from "../../components/common/InitialsAvatar";
+import { IconTile } from "../../components/common/IconTile";
+import { InfoCard } from "../../components/common/InfoCard";
 import { DestructiveConfirmDialog } from "../../components/DestructiveConfirmDialog";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
@@ -38,6 +52,7 @@ import {
 } from "../../components/ui/Tabs";
 import { Textarea } from "../../components/ui/Textarea";
 import { api } from "../../lib/api";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   type StatementDetail,
@@ -102,6 +117,43 @@ const tabFromPathname = (pathname: string): string => {
 };
 
 /**
+ * Status-Punkt-Pill der Abrechnung (Entwurf/finalisiert/storniert/ersetzt),
+ * für Hero-Meta und Infospalte.
+ */
+const renderStatusBadge = (statement: StatementDetail) => {
+  switch (statement.status) {
+    case "draft":
+      return (
+        <Badge variant="slate" dot={true}>
+          {statement.supersedesStatementId
+            ? t("ui.statements.detail.correctionDraft")
+            : t("ui.statements.detail.draftLive")}
+        </Badge>
+      );
+    case "finalized":
+      return (
+        <Badge variant="ok" dot={true}>
+          {t("ui.statements.detail.finalizedAt", {
+            date: formatDate(statement.finalizedAt?.slice(0, 10) ?? ""),
+          })}
+        </Badge>
+      );
+    case "cancelled":
+      return (
+        <Badge variant="rose" dot={true}>
+          {t("ui.statements.detail.cancelledBadge")}
+        </Badge>
+      );
+    default:
+      return (
+        <Badge variant="slate" dot={true}>
+          {t("ui.statements.detail.supersededBadge")}
+        </Badge>
+      );
+  }
+};
+
+/**
  * Tab-Leiste + Inhalte der Abrechnungs-Detailseite. Tabs ohne Datenlage
  * (Zahlungen, Belegung, § 35a, Heizung) werden ausgeblendet, damit der Nutzer
  * nicht in leeren Ansichten landet.
@@ -136,7 +188,7 @@ const StatementTabs = ({
   const hasPayments = payments.length > 0;
   return (
     <Tabs value={activeTab} onValueChange={onTabChange}>
-      <TabsList variant="line">
+      <TabsList variant="pills">
         <TabsTrigger value="overview">
           {t("ui.statements.detail.tabs.overview")}
         </TabsTrigger>
@@ -366,6 +418,15 @@ export const StatementDetailPage = () => {
     },
   });
 
+  const remove = useMutation({
+    mutationFn: () => api.delete(`/statements/${statementId}`),
+    onSuccess: async () => {
+      await invalidateStatementQueries();
+      await navigate({ to: "/abrechnungen" });
+    },
+  });
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   if (statementQuery.isError) {
     return (
       <EntityNotFound
@@ -415,62 +476,96 @@ export const StatementDetailPage = () => {
     end: statement.periodEnd,
   });
 
+  const identity =
+    tenantAggregate && units
+      ? statementIdentityLabel({ statement, aggregate: tenantAggregate, units })
+      : t("ui.statements.detail.title", {
+          start: formatDate(statement.periodStart),
+          end: formatDate(statement.periodEnd),
+        });
+
+  const downloadPdf = () => {
+    const anchor = document.createElement("a");
+    anchor.href = pdfSrc;
+    anchor.download = pdfFilename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  };
+
+  const tenantName = tenantAggregate
+    ? tenantAggregate.residents
+        .filter((resident) => resident.isContractParty)
+        .map((resident) => formatName(resident.firstName, resident.lastName))
+        .join(t("ui.common.separators.comma"))
+    : "";
+  const unit = units?.find(
+    (entry) => entry.id === tenantAggregate?.tenant.unitId,
+  );
+
+  const statusBadge = renderStatusBadge(statement);
+
+  const isRefund = result ? result.balanceCents <= 0 : false;
+  const balanceClass = isRefund
+    ? "text-teal-700 dark:text-teal-400"
+    : "text-rose-700 dark:text-rose-400";
+  const resultStats = result
+    ? [
+        {
+          label: t("ui.statements.detail.totalCosts"),
+          value: formatEur(result.totalCostsCents),
+        },
+        {
+          label: t("ui.statements.detail.advances"),
+          value: formatEur(result.totalAdvancesCents),
+        },
+        {
+          label: isRefund
+            ? t("ui.statements.detail.info.creditLabel")
+            : t("ui.statements.detail.additionalPayment"),
+          value: (
+            <span className={balanceClass}>
+              {formatEur(Math.abs(result.balanceCents))}
+            </span>
+          ),
+        },
+      ]
+    : undefined;
+
+  const resultText = result ? (
+    <span className={`font-semibold ${balanceClass}`}>
+      {isRefund
+        ? t("ui.statements.detail.info.resultCredit", {
+            amount: formatEur(Math.abs(result.balanceCents)),
+          })
+        : t("ui.statements.detail.info.resultAdditional", {
+            amount: formatEur(result.balanceCents),
+          })}
+    </span>
+  ) : (
+    t("ui.common.emptyValue")
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="pb-6">
       <HeroBand
         tile={
-          <InitialsAvatar
-            name={
-              tenantAggregate && units
-                ? statementIdentityLabel({
-                    statement,
-                    aggregate: tenantAggregate,
-                    units,
-                  })
-                : t("ui.statements.pageTitle")
-            }
+          <IconTile
+            icon={domainVisuals.statements.icon}
             size={64}
+            background={gradients.statements}
           />
         }
         eyebrow={t("ui.navigation.groups.costsBilling")}
-        title={
-          tenantAggregate && units
-            ? statementIdentityLabel({
-                statement,
-                aggregate: tenantAggregate,
-                units,
-              })
-            : t("ui.statements.detail.title", {
-                start: formatDate(statement.periodStart),
-                end: formatDate(statement.periodEnd),
-              })
-        }
+        title={identity}
         meta={
-          <span className="flex items-center gap-2 pt-1">
-            {statement.status === "draft" ? (
-              <Badge variant="slate" dot={true}>
-                {statement.supersedesStatementId
-                  ? t("ui.statements.detail.correctionDraft")
-                  : t("ui.statements.detail.draftLive")}
-              </Badge>
-            ) : null}
-            {statement.status === "finalized" ? (
-              <Badge variant="ok" dot={true}>
-                {t("ui.statements.detail.finalizedAt", {
-                  date: formatDate(statement.finalizedAt?.slice(0, 10) ?? ""),
-                })}
-              </Badge>
-            ) : null}
-            {statement.status === "cancelled" ? (
-              <Badge variant="rose" dot={true}>
-                {t("ui.statements.detail.cancelledBadge")}
-              </Badge>
-            ) : null}
-            {statement.status === "superseded" ? (
-              <Badge variant="slate" dot={true}>
-                {t("ui.statements.detail.supersededBadge")}
-              </Badge>
-            ) : null}
+          <span className="flex flex-wrap items-center gap-2">
+            <span>
+              {`${formatDate(statement.periodStart)} – ${formatDate(
+                statement.periodEnd,
+              )}`}
+            </span>
+            {statusBadge}
             {isCalculating ? (
               <span className="text-xs text-muted-foreground">
                 {t("ui.statements.detail.calculating")}
@@ -478,57 +573,162 @@ export const StatementDetailPage = () => {
             ) : null}
           </span>
         }
-        action={
-          <span className="flex items-center gap-2">
+        stats={resultStats}
+      />
+
+      <div className="grid items-start gap-5 lg:grid-cols-[1fr_320px]">
+        <div className="space-y-6">
+          {statement.status === "cancelled" && statement.cancellationReason ? (
+            <Alert variant="warning">
+              <AlertTitle>
+                {t("ui.statements.detail.cancelledTitle")}
+              </AlertTitle>
+              <AlertDescription>
+                {t("ui.statements.detail.cancelledReason", {
+                  reason: statement.cancellationReason,
+                })}
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
+          {result && (result.warnings ?? []).length > 0 ? (
+            <Alert variant="warning">
+              <AlertTitle>{t("ui.statements.detail.warningsTitle")}</AlertTitle>
+              <AlertDescription>
+                <p>{t("ui.statements.detail.warningsDescription")}</p>
+                <ul className="mt-2 list-disc pl-5">
+                  {result.warnings?.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
+          {result ? (
+            <StatementTabs
+              result={result}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              statementId={statement.id}
+              isDraft={isDraft}
+              periodEnd={statement.periodEnd}
+              pdfSrc={pdfSrc}
+              pdfFilename={pdfFilename}
+            />
+          ) : (
+            renderPreviewFallback()
+          )}
+        </div>
+
+        <div className="flex flex-col gap-4 lg:sticky lg:top-24">
+          <InfoCard
+            title={t("ui.common.infoCards.atAGlance")}
+            rows={[
+              { label: t("ui.common.columns.status"), value: statusBadge },
+              {
+                label: t("ui.statements.detail.info.period"),
+                value: statement.periodStart.slice(0, 4),
+              },
+              {
+                label: t("ui.statements.detail.info.tenant"),
+                value: tenantName ? (
+                  <Link
+                    to="/mieter/$tenantId/konto"
+                    params={{ tenantId: statement.tenantId }}
+                    search={{ tab: undefined }}
+                    className="font-semibold text-sky-700 dark:text-sky-400"
+                  >
+                    {tenantName}
+                  </Link>
+                ) : (
+                  t("ui.common.emptyValue")
+                ),
+              },
+              {
+                label: t("ui.statements.detail.info.unit"),
+                value: unit ? (
+                  <Link
+                    to="/wohnungen/$unitId"
+                    params={{ unitId: unit.id }}
+                    className="font-semibold text-sky-700 dark:text-sky-400"
+                  >
+                    {unit.name}
+                  </Link>
+                ) : (
+                  t("ui.common.emptyValue")
+                ),
+              },
+              {
+                label: t("ui.statements.detail.info.result"),
+                value: resultText,
+              },
+            ]}
+          />
+
+          <InfoCard title={t("ui.common.infoCards.actions")}>
             {isDraft ? (
-              <Button
+              <ActionLink
+                icon={RiLockLine}
+                iconBackground={domainVisuals.statements.accent}
                 onClick={() => setConfirmFinalizeOpen(true)}
-                disabled={finalize.isPending}
               >
-                {finalize.isPending
-                  ? t("ui.statements.detail.finalizing")
-                  : t("ui.statements.detail.finalizeStatement")}
-              </Button>
+                {t("ui.statements.detail.finalizeStatement")}
+              </ActionLink>
             ) : null}
             {statement.status === "finalized" ? (
               <>
-                <Button
-                  variant="secondary"
+                <ActionLink
+                  icon={RiCloseCircleLine}
+                  iconBackground="var(--color-amber-500)"
                   onClick={() => setCancelOpen(true)}
-                  disabled={cancel.isPending}
                 >
                   {t("ui.statements.detail.cancelStatement")}
-                </Button>
-                <Button
+                </ActionLink>
+                <ActionLink
+                  icon={RiFileCopy2Line}
+                  iconBackground={domainVisuals.statements.accent}
                   onClick={() => correct.mutate()}
-                  disabled={correct.isPending}
                 >
                   {t("ui.statements.detail.createCorrection")}
-                </Button>
+                </ActionLink>
               </>
             ) : null}
             {statement.status === "cancelled" ? (
-              <Button
+              <ActionLink
+                icon={RiFileCopy2Line}
+                iconBackground={domainVisuals.statements.accent}
                 onClick={() => correct.mutate()}
-                disabled={correct.isPending}
               >
                 {t("ui.statements.detail.createCorrection")}
-              </Button>
+              </ActionLink>
             ) : null}
-          </span>
-        }
-      />
+            <ActionLink
+              icon={RiDownloadLine}
+              iconBackground={domainVisuals.dashboard.accent}
+              onClick={downloadPdf}
+            >
+              {t("ui.statements.detail.downloadPdf")}
+            </ActionLink>
+            {isDraft ? (
+              <ActionLink
+                icon={RiDeleteBinLine}
+                iconBackground="var(--color-rose-400)"
+                danger={true}
+                onClick={() => setDeleteOpen(true)}
+              >
+                {t("ui.statements.detail.info.deleteDraft")}
+              </ActionLink>
+            ) : null}
+          </InfoCard>
 
-      {statement.status === "cancelled" && statement.cancellationReason ? (
-        <Alert variant="warning">
-          <AlertTitle>{t("ui.statements.detail.cancelledTitle")}</AlertTitle>
-          <AlertDescription>
-            {t("ui.statements.detail.cancelledReason", {
-              reason: statement.cancellationReason,
-            })}
-          </AlertDescription>
-        </Alert>
-      ) : null}
+          {isDraft ? (
+            <InfoCard title={t("ui.statements.detail.info.hintTitle")}>
+              <EmptyNote>{t("ui.statements.detail.info.hintText")}</EmptyNote>
+            </InfoCard>
+          ) : null}
+        </div>
+      </div>
 
       <DestructiveConfirmDialog
         open={confirmFinalizeOpen}
@@ -578,34 +778,17 @@ export const StatementDetailPage = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {result && (result.warnings ?? []).length > 0 ? (
-        <Alert variant="warning">
-          <AlertTitle>{t("ui.statements.detail.warningsTitle")}</AlertTitle>
-          <AlertDescription>
-            <p>{t("ui.statements.detail.warningsDescription")}</p>
-            <ul className="mt-2 list-disc pl-5">
-              {result.warnings?.map((warning) => (
-                <li key={warning}>{warning}</li>
-              ))}
-            </ul>
-          </AlertDescription>
-        </Alert>
-      ) : null}
-
-      {result ? (
-        <StatementTabs
-          result={result}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          statementId={statement.id}
-          isDraft={isDraft}
-          periodEnd={statement.periodEnd}
-          pdfSrc={pdfSrc}
-          pdfFilename={pdfFilename}
-        />
-      ) : (
-        renderPreviewFallback()
-      )}
+      <DestructiveConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={t("ui.statements.detail.info.confirmDeleteTitle")}
+        description={t("ui.statements.detail.info.confirmDeleteMessage")}
+        confirmLabel={t("ui.statements.detail.info.deleteDraft")}
+        onConfirm={() => {
+          setDeleteOpen(false);
+          remove.mutate();
+        }}
+      />
     </div>
   );
 };
