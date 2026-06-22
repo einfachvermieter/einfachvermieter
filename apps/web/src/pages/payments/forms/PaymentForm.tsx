@@ -13,25 +13,20 @@ import {
   splitSumByContract,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RiFlashlightLine, RiScissorsCutLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { DateInput } from "@/components/form/DateInput";
 import { Form } from "@/components/form/Form";
 import { FormActions } from "@/components/form/FormActions";
 import { SelectInput, type SelectOption } from "@/components/form/SelectInput";
+import { SubformShell } from "@/components/form/SubformShell";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 import { Card, CardContent } from "@/components/ui/Card";
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldTitle,
-} from "@/components/ui/Field";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import { FieldGroup } from "@/components/ui/Field";
 import {
   tenantMonthGridQueryOptions,
   tenantSettlementsQueryOptions,
@@ -49,6 +44,12 @@ type Props = {
   defaultValues: PaymentFormValues;
   onSubmit: (values: PaymentFormValues) => Promise<void>;
   onCancel: () => void;
+  /**
+   * "page" (Standard): eigenes Formular mit Karte und FormActions.
+   * "inline": getöntes Aufklapp-Subform (SubformShell) ohne eigene Karte,
+   * z. B. eingebettet im Mieterkonto.
+   */
+  variant?: "page" | "inline";
 };
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: Markup
@@ -61,6 +62,7 @@ export const PaymentForm = ({
   defaultValues,
   onSubmit,
   onCancel,
+  variant = "page",
 }: Props) => {
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
@@ -214,140 +216,150 @@ export const PaymentForm = ({
     await onSubmit(values);
   };
 
+  const fields = (
+    <FieldGroup className="gap-4">
+      <SelectInput
+        control={form.control}
+        name="tenantId"
+        label={t("ui.common.columns.tenant")}
+        disabled={tenantFieldDisabled}
+        options={tenantOptions}
+      />
+      <DateInput
+        control={form.control}
+        name="paymentDate"
+        label={t("ui.payments.columns.date")}
+        startMonth={calendarStart}
+        endMonth={calendarEnd}
+      />
+      <SelectInput
+        control={form.control}
+        name="purposeKind"
+        label={t("ui.payments.fields.purposeKind")}
+        disabled={mode === "edit" || lockedPurposeKind !== undefined}
+        options={allowedPurposeKinds.map((value) => ({
+          value,
+          label: t(`ui.payments.purposeKinds.${value}`),
+        }))}
+      />
+
+      {purposeKind === "month" ? (
+        <>
+          <SelectInput
+            control={form.control}
+            name="forMonth"
+            label={t("ui.payments.fields.forMonth")}
+            options={monthOptions}
+            placeholder={t("ui.payments.fields.forMonthPlaceholder")}
+          />
+          {monthRow ? <ContractInfo row={monthRow} mode={mode} /> : null}
+          <ChoiceTilesInput
+            control={form.control}
+            name="inputMode"
+            options={[
+              {
+                value: "sum",
+                icon: RiFlashlightLine,
+                title: t("ui.payments.fields.inputModeSum"),
+                description: t("ui.payments.fields.inputModeSumHint"),
+              },
+              {
+                value: "split",
+                icon: RiScissorsCutLine,
+                title: t("ui.payments.fields.inputModeSplit"),
+                description: t("ui.payments.fields.inputModeSplitHint"),
+              },
+            ]}
+          />
+          {inputMode === "sum" ? (
+            <TextInput
+              control={form.control}
+              name="sumInput"
+              inputMode="decimal"
+              placeholder="0,00"
+              label={t("ui.payments.fields.sumEur")}
+              description={t("ui.payments.fields.sumHint")}
+              suffix="€"
+              inputClassName="max-w-xs"
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              <TextInput
+                control={form.control}
+                name="baseRentInput"
+                inputMode="decimal"
+                placeholder="0,00"
+                label={t("ui.payments.fields.baseRentEur")}
+                suffix="€"
+              />
+              <TextInput
+                control={form.control}
+                name="advanceInput"
+                inputMode="decimal"
+                placeholder="0,00"
+                label={t("ui.payments.fields.advanceEur")}
+                suffix="€"
+              />
+            </div>
+          )}
+        </>
+      ) : null}
+
+      {purposeKind === "statement" ? (
+        <SelectInput
+          control={form.control}
+          name="forStatementId"
+          label={t("ui.payments.fields.forStatement")}
+          options={statementOptions}
+          disabled={lockedPurposeKind === "statement"}
+        />
+      ) : null}
+
+      {purposeKind !== "month" ? (
+        <TextInput
+          control={form.control}
+          name="amountInput"
+          inputMode="decimal"
+          placeholder="0,00"
+          label={t("ui.payments.fields.amountEur")}
+          description={t("ui.payments.fields.amountSignHint")}
+          suffix="€"
+        />
+      ) : null}
+
+      <TextInput
+        control={form.control}
+        name="reference"
+        optional={true}
+        label={t("ui.payments.fields.reference")}
+        placeholder={t("ui.payments.fields.referencePlaceholder")}
+      />
+    </FieldGroup>
+  );
+
+  if (variant === "inline") {
+    return (
+      <div className="rounded-[13px] border border-sky-100 bg-sky-50 p-4 dark:border-sky-900 dark:bg-sky-950/30">
+        <SubformShell
+          onSubmit={() => {
+            form
+              .handleSubmit(handleSubmit)()
+              .catch(() => undefined);
+          }}
+          onCancel={onCancel}
+          submitLabel={t("ui.payments.add")}
+        >
+          {fields}
+        </SubformShell>
+      </div>
+    );
+  }
+
   return (
     <Form form={form} onSubmit={handleSubmit}>
       <fieldset disabled={submitting} className="contents">
         <Card>
-          <CardContent>
-            <FieldGroup className="gap-4">
-              <SelectInput
-                control={form.control}
-                name="tenantId"
-                label={t("ui.common.columns.tenant")}
-                disabled={tenantFieldDisabled}
-                options={tenantOptions}
-              />
-              <DateInput
-                control={form.control}
-                name="paymentDate"
-                label={t("ui.payments.columns.date")}
-                startMonth={calendarStart}
-                endMonth={calendarEnd}
-              />
-              <SelectInput
-                control={form.control}
-                name="purposeKind"
-                label={t("ui.payments.fields.purposeKind")}
-                disabled={mode === "edit" || lockedPurposeKind !== undefined}
-                options={allowedPurposeKinds.map((value) => ({
-                  value,
-                  label: t(`ui.payments.purposeKinds.${value}`),
-                }))}
-              />
-
-              {purposeKind === "month" ? (
-                <>
-                  <SelectInput
-                    control={form.control}
-                    name="forMonth"
-                    label={t("ui.payments.fields.forMonth")}
-                    options={monthOptions}
-                    placeholder={t("ui.payments.fields.forMonthPlaceholder")}
-                  />
-                  {monthRow ? (
-                    <ContractInfo row={monthRow} mode={mode} />
-                  ) : null}
-                  <Controller
-                    control={form.control}
-                    name="inputMode"
-                    render={({ field }) => (
-                      <RadioGroup
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        columns={2}
-                      >
-                        <ModeOption
-                          value="sum"
-                          checked={field.value === "sum"}
-                          title={t("ui.payments.fields.inputModeSum")}
-                          description={t("ui.payments.fields.inputModeSumHint")}
-                        />
-                        <ModeOption
-                          value="split"
-                          checked={field.value === "split"}
-                          title={t("ui.payments.fields.inputModeSplit")}
-                          description={t(
-                            "ui.payments.fields.inputModeSplitHint",
-                          )}
-                        />
-                      </RadioGroup>
-                    )}
-                  />
-                  {inputMode === "sum" ? (
-                    <TextInput
-                      control={form.control}
-                      name="sumInput"
-                      inputMode="decimal"
-                      placeholder="0,00"
-                      label={t("ui.payments.fields.sumEur")}
-                      description={t("ui.payments.fields.sumHint")}
-                      suffix="€"
-                      inputClassName="max-w-xs"
-                    />
-                  ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                      <TextInput
-                        control={form.control}
-                        name="baseRentInput"
-                        inputMode="decimal"
-                        placeholder="0,00"
-                        label={t("ui.payments.fields.baseRentEur")}
-                        suffix="€"
-                      />
-                      <TextInput
-                        control={form.control}
-                        name="advanceInput"
-                        inputMode="decimal"
-                        placeholder="0,00"
-                        label={t("ui.payments.fields.advanceEur")}
-                        suffix="€"
-                      />
-                    </div>
-                  )}
-                </>
-              ) : null}
-
-              {purposeKind === "statement" ? (
-                <SelectInput
-                  control={form.control}
-                  name="forStatementId"
-                  label={t("ui.payments.fields.forStatement")}
-                  options={statementOptions}
-                  disabled={lockedPurposeKind === "statement"}
-                />
-              ) : null}
-
-              {purposeKind !== "month" ? (
-                <TextInput
-                  control={form.control}
-                  name="amountInput"
-                  inputMode="decimal"
-                  placeholder="0,00"
-                  label={t("ui.payments.fields.amountEur")}
-                  description={t("ui.payments.fields.amountSignHint")}
-                  suffix="€"
-                />
-              ) : null}
-
-              <TextInput
-                control={form.control}
-                name="reference"
-                optional={true}
-                label={t("ui.payments.fields.reference")}
-                placeholder={t("ui.payments.fields.referencePlaceholder")}
-              />
-            </FieldGroup>
-          </CardContent>
+          <CardContent>{fields}</CardContent>
         </Card>
       </fieldset>
       <FormActions
@@ -384,28 +396,6 @@ const monthOverallStatus = (row: MonthGridRow): PotState["status"] => {
 
   return "balanced";
 };
-
-const ModeOption = ({
-  value,
-  checked,
-  title,
-  description,
-}: {
-  value: string;
-  checked: boolean;
-  title: string;
-  description: string;
-}) => (
-  <FieldLabel htmlFor={value} data-checked={checked || undefined}>
-    <Field orientation="horizontal">
-      <FieldContent>
-        <FieldTitle>{title}</FieldTitle>
-        <FieldDescription>{description}</FieldDescription>
-      </FieldContent>
-      <RadioGroupItem value={value} id={value} />
-    </Field>
-  </FieldLabel>
-);
 
 const ContractInfo = ({
   row,

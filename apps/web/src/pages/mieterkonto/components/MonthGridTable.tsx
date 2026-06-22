@@ -40,11 +40,51 @@ const yearPot = (sollCents: number, istCents: number): PotState => ({
   status: computeStatus(sollCents, istCents),
 });
 
+/**
+ * Aktion für einen Monat ohne Zahlung: Inline-Erfassung öffnen
+ * (`onRecordPayment`) oder als Fallback `/zahlungen/neu`.
+ */
+const RecordPaymentCell = ({
+  row,
+  tenantId,
+  onRecordPayment,
+}: {
+  row: MonthGridRow;
+  tenantId: string;
+  onRecordPayment?: (row: MonthGridRow) => void;
+}) =>
+  onRecordPayment ? (
+    <RowActionButton
+      label={t("ui.account.recordPayment")}
+      icon={<RiAddLine />}
+      onSelect={() => onRecordPayment(row)}
+    />
+  ) : (
+    <RowActionButton label={t("ui.account.recordPayment")}>
+      <Link
+        to="/zahlungen/neu"
+        search={{
+          tenantId,
+          forMonth: row.forMonth,
+          baseRentCents: row.baseRent.sollCents,
+          advanceCents: row.advance.sollCents,
+        }}
+      >
+        <RiAddLine />
+      </Link>
+    </RowActionButton>
+  );
+
 type MonthGridTableProps = {
   monthRows: MonthGridRow[];
   payments: Payment[];
   tenantId: string;
   deletion: ReturnType<typeof useDeleteResource<Payment>>;
+  /**
+   * Monats-"+" öffnet die eingebettete Inline-Erfassung (vorbelegt)
+   * statt der Route `/zahlungen/neu`.
+   */
+  onRecordPayment?: (row: MonthGridRow) => void;
 };
 
 /**
@@ -57,6 +97,7 @@ export const MonthGridTable = ({
   payments,
   tenantId,
   deletion,
+  onRecordPayment,
 }: MonthGridTableProps) => {
   const monthsByYear = useMemo(() => {
     const sorted = [...monthRows].reverse();
@@ -190,21 +231,11 @@ export const MonthGridTable = ({
                       <TableRow key={row.forMonth}>
                         <TableCell className="px-4 py-3">
                           {row.paymentIds.length === 0 ? (
-                            <RowActionButton
-                              label={t("ui.account.recordPayment")}
-                            >
-                              <Link
-                                to="/zahlungen/neu"
-                                search={{
-                                  tenantId,
-                                  forMonth: row.forMonth,
-                                  baseRentCents: row.baseRent.sollCents,
-                                  advanceCents: row.advance.sollCents,
-                                }}
-                              >
-                                <RiAddLine />
-                              </Link>
-                            </RowActionButton>
+                            <RecordPaymentCell
+                              row={row}
+                              tenantId={tenantId}
+                              onRecordPayment={onRecordPayment}
+                            />
                           ) : (
                             <div className="flex flex-col items-start gap-1">
                               {row.paymentIds.map((paymentId) => {
