@@ -1,5 +1,6 @@
 import {
   computeStatus,
+  formatEur,
   type MonthGridRow,
   type PotState,
 } from "@einfachvermieter/shared";
@@ -12,6 +13,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { Fragment, useMemo, useState } from "react";
 import { RowActionButton, RowActions } from "@/components/RowActions";
+import { Badge } from "@/components/ui/Badge";
 import {
   Table,
   TableBody,
@@ -23,7 +25,6 @@ import {
 import { t } from "@/lib/i18n";
 import type { Payment } from "@/lib/payments";
 import type { useDeleteResource } from "@/lib/useDeleteResource";
-import { PotCells } from "./PotCells";
 
 const monthLabel = (forMonth: string): string => {
   const [year, month] = forMonth.split("-");
@@ -39,6 +40,59 @@ const yearPot = (sollCents: number, istCents: number): PotState => ({
   istCents,
   status: computeStatus(sollCents, istCents),
 });
+
+/**
+ * Eine Topf-Spalte als eine Zelle "ist / soll"
+ */
+const PotIstSollCell = ({ pot }: { pot: PotState }) => (
+  <TableCell className="px-4 py-3 text-right align-top tabular-nums">
+    <span className="font-semibold">{formatEur(pot.istCents)}</span>{" "}
+    <span className="text-muted-foreground">
+      {`/ ${formatEur(pot.sollCents)}`}
+    </span>
+  </TableCell>
+);
+
+type MonthStatus = "balanced" | "credit" | "partial" | "open";
+
+/**
+ * Kombinierter Monatsstatus aus beiden Töpfen (Kaltmiete + NK-Voraus):
+ * alle ausgeglichen -> ausgeglichen; ein offener Posten -> teilweise offen
+ */
+const monthStatus = (base: PotState, advance: PotState): MonthStatus => {
+  const pots = [base, advance];
+  if (pots.every((pot) => pot.status === "balanced")) {
+    return "balanced";
+  }
+  if (pots.some((pot) => pot.status === "open")) {
+    return base.istCents !== 0 || advance.istCents !== 0 ? "partial" : "open";
+  }
+  return "credit";
+};
+
+const MONTH_STATUS_VARIANT = {
+  balanced: "lightGreen",
+  credit: "lightBlue",
+  partial: "lightYellow",
+  open: "lightRed",
+} as const;
+
+const MonthStatusBadge = ({
+  base,
+  advance,
+}: {
+  base: PotState;
+  advance: PotState;
+}) => {
+  const status = monthStatus(base, advance);
+  return (
+    <TableCell className="px-4 py-3 align-top">
+      <Badge variant={MONTH_STATUS_VARIANT[status]}>
+        {t(`ui.account.status.${status}`)}
+      </Badge>
+    </TableCell>
+  );
+};
 
 /**
  * Aktion für einen Monat ohne Zahlung: Inline-Erfassung öffnen
@@ -155,32 +209,15 @@ export const MonthGridTable = ({
     <Table>
       <TableHeader>
         <TableRow className="text-muted-foreground">
-          <TableHead className="px-4" rowSpan={2} />
-          <TableHead className="px-4 align-bottom" rowSpan={2}>
+          <TableHead className="px-4" />
+          <TableHead className="px-4">
             {t("ui.account.columns.month")}
           </TableHead>
-          <TableHead className="px-4 text-center" colSpan={3}>
+          <TableHead className="px-4 text-right">
             {t("ui.account.columns.baseRent")}
           </TableHead>
-          <TableHead className="px-4 text-center" colSpan={3}>
+          <TableHead className="px-4 text-right">
             {t("ui.account.columns.advance")}
-          </TableHead>
-        </TableRow>
-        <TableRow className="text-muted-foreground">
-          <TableHead className="px-4 text-right">
-            {t("ui.account.columns.ist")}
-          </TableHead>
-          <TableHead className="px-4 text-right">
-            {t("ui.account.columns.soll")}
-          </TableHead>
-          <TableHead className="px-4">
-            {t("ui.common.columns.status")}
-          </TableHead>
-          <TableHead className="px-4 text-right">
-            {t("ui.account.columns.ist")}
-          </TableHead>
-          <TableHead className="px-4 text-right">
-            {t("ui.account.columns.soll")}
           </TableHead>
           <TableHead className="px-4">
             {t("ui.common.columns.status")}
@@ -192,7 +229,7 @@ export const MonthGridTable = ({
           <TableRow>
             <TableCell
               className="px-4 py-6 text-center text-muted-foreground"
-              colSpan={8}
+              colSpan={5}
             >
               {t("ui.account.monthsEmpty")}
             </TableCell>
@@ -219,11 +256,18 @@ export const MonthGridTable = ({
                       <span className="tabular-nums">{year}</span>
                     </button>
                   </TableCell>
-                  <PotCells
+                  <PotIstSollCell
                     pot={yearPot(group.baseSollCents, group.baseIstCents)}
                   />
-                  <PotCells
+                  <PotIstSollCell
                     pot={yearPot(group.advanceSollCents, group.advanceIstCents)}
+                  />
+                  <MonthStatusBadge
+                    base={yearPot(group.baseSollCents, group.baseIstCents)}
+                    advance={yearPot(
+                      group.advanceSollCents,
+                      group.advanceIstCents,
+                    )}
                   />
                 </TableRow>
                 {open
@@ -268,8 +312,12 @@ export const MonthGridTable = ({
                         <TableCell className="px-4 py-3 align-top font-medium tabular-nums">
                           {monthLabel(row.forMonth)}
                         </TableCell>
-                        <PotCells pot={row.baseRent} />
-                        <PotCells pot={row.advance} />
+                        <PotIstSollCell pot={row.baseRent} />
+                        <PotIstSollCell pot={row.advance} />
+                        <MonthStatusBadge
+                          base={row.baseRent}
+                          advance={row.advance}
+                        />
                       </TableRow>
                     ))
                   : null}

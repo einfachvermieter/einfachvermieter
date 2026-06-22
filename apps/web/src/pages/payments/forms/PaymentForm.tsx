@@ -216,6 +216,37 @@ export const PaymentForm = ({
     await onSubmit(values);
   };
 
+  const inputModeTiles = (
+    <ChoiceTilesInput
+      control={form.control}
+      name="inputMode"
+      options={[
+        {
+          value: "sum",
+          icon: RiFlashlightLine,
+          title: t("ui.payments.fields.inputModeSum"),
+          description: t("ui.payments.fields.inputModeSumHint"),
+        },
+        {
+          value: "split",
+          icon: RiScissorsCutLine,
+          title: t("ui.payments.fields.inputModeSplit"),
+          description: t("ui.payments.fields.inputModeSplitHint"),
+        },
+      ]}
+    />
+  );
+
+  const referenceField = (
+    <TextInput
+      control={form.control}
+      name="reference"
+      optional={true}
+      label={t("ui.payments.fields.reference")}
+      placeholder={t("ui.payments.fields.referencePlaceholder")}
+    />
+  );
+
   const fields = (
     <FieldGroup className="gap-4">
       <SelectInput
@@ -253,24 +284,7 @@ export const PaymentForm = ({
             placeholder={t("ui.payments.fields.forMonthPlaceholder")}
           />
           {monthRow ? <ContractInfo row={monthRow} mode={mode} /> : null}
-          <ChoiceTilesInput
-            control={form.control}
-            name="inputMode"
-            options={[
-              {
-                value: "sum",
-                icon: RiFlashlightLine,
-                title: t("ui.payments.fields.inputModeSum"),
-                description: t("ui.payments.fields.inputModeSumHint"),
-              },
-              {
-                value: "split",
-                icon: RiScissorsCutLine,
-                title: t("ui.payments.fields.inputModeSplit"),
-                description: t("ui.payments.fields.inputModeSplitHint"),
-              },
-            ]}
-          />
+          {inputModeTiles}
           {inputMode === "sum" ? (
             <TextInput
               control={form.control}
@@ -327,13 +341,67 @@ export const PaymentForm = ({
         />
       ) : null}
 
-      <TextInput
-        control={form.control}
-        name="reference"
-        optional={true}
-        label={t("ui.payments.fields.reference")}
-        placeholder={t("ui.payments.fields.referencePlaceholder")}
-      />
+      {referenceField}
+    </FieldGroup>
+  );
+
+  /**
+   * Inline-Variante (Mieterkonto): fester Mieter + Monatszweck
+   */
+  const inlineFields = (
+    <FieldGroup className="gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <DateInput
+          control={form.control}
+          name="paymentDate"
+          label={t("ui.payments.columns.date")}
+          startMonth={calendarStart}
+          endMonth={calendarEnd}
+        />
+        <SelectInput
+          control={form.control}
+          name="forMonth"
+          label={t("ui.payments.fields.forMonth")}
+          options={monthOptions}
+          placeholder={t("ui.payments.fields.forMonthPlaceholder")}
+        />
+      </div>
+      {monthRow ? <ContractInfo row={monthRow} mode={mode} /> : null}
+      {inputModeTiles}
+      {inputMode === "sum" ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <TextInput
+            control={form.control}
+            name="sumInput"
+            inputMode="decimal"
+            placeholder="0,00"
+            label={t("ui.payments.fields.sumEur")}
+            description={t("ui.payments.fields.sumHint")}
+            suffix="€"
+          />
+          {referenceField}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <TextInput
+            control={form.control}
+            name="baseRentInput"
+            inputMode="decimal"
+            placeholder="0,00"
+            label={t("ui.payments.fields.baseRentEur")}
+            suffix="€"
+          />
+          <TextInput
+            control={form.control}
+            name="advanceInput"
+            inputMode="decimal"
+            placeholder="0,00"
+            label={t("ui.payments.fields.advanceEur")}
+            suffix="€"
+          />
+          {referenceField}
+        </div>
+      )}
     </FieldGroup>
   );
 
@@ -349,7 +417,7 @@ export const PaymentForm = ({
           onCancel={onCancel}
           submitLabel={t("ui.payments.add")}
         >
-          {fields}
+          {inlineFields}
         </SubformShell>
       </div>
     );
