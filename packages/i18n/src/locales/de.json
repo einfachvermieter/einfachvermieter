@@ -1396,6 +1396,7 @@
         "paymentsDescription": "Erfasste Mietzahlungen mit Kalt- und NK-Voraus-Anteil im Abrechnungszeitraum.",
         "paymentsEmpty": "Keine Mieteingänge im Abrechnungszeitraum verbucht.",
         "showEntries": "Einzelbuchungen anzeigen",
+        "showMeters": "Alle Zähler anzeigen",
         "paymentsTotal": "Summe Mieteingänge: {total}",
         "paymentsColumnMonth": "Mietmonat",
         "paymentsColumnDate": "Buchungsdatum",

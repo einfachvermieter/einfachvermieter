@@ -11,6 +11,9 @@ import {
   type StatementResult,
 } from "@einfachvermieter/shared";
 import { Description } from "../../../../components/common/Description";
+import { Disclose } from "../../../../components/common/Disclose";
+import { ResultRows } from "../../../../components/common/ResultRows";
+import { SplitBar } from "../../../../components/common/SplitBar";
 import {
   Card,
   CardContent,
@@ -123,46 +126,29 @@ export const HeatingCard = ({
                   })}
                 </p>
               ) : null}
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs font-semibold text-muted-foreground">
-                    <th className="py-1.5">
-                      {t("statements.pdf.heating.breakdown.position")}
-                    </th>
-                    <th className="py-1.5 text-right">
-                      {t("statements.pdf.heating.breakdown.amount")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detail.costBreakdown.map((row) => (
-                    <tr key={row.label} className="border-b border-border">
-                      <td className="py-1.5">{row.label}</td>
-                      <td className="py-1.5 text-right tabular-nums">
-                        {formatEur(row.amountCents)}
-                      </td>
-                    </tr>
-                  ))}
-                  {co2 ? (
-                    <tr className="border-b border-border">
-                      <td className="py-1.5">
-                        {t("statements.pdf.heating.breakdown.co2LandlordShare")}
-                      </td>
-                      <td className="py-1.5 text-right tabular-nums">
-                        {formatEur(-co2.landlordDeductionCents)}
-                      </td>
-                    </tr>
-                  ) : null}
-                  <tr className="border-t-2 border-foreground">
-                    <td className="py-1.5 font-semibold">
-                      {t("statements.pdf.heating.breakdown.total")}
-                    </td>
-                    <td className="py-1.5 text-right font-semibold tabular-nums">
-                      {formatEur(detail.totalHeatingCostsCents)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <ResultRows
+                rows={[
+                  ...detail.costBreakdown.map((row) => ({
+                    label: row.label,
+                    value: formatEur(row.amountCents),
+                  })),
+                  ...(co2
+                    ? [
+                        {
+                          label: t(
+                            "statements.pdf.heating.breakdown.co2LandlordShare",
+                          ),
+                          value: formatEur(-co2.landlordDeductionCents),
+                        },
+                      ]
+                    : []),
+                  {
+                    label: t("statements.pdf.heating.breakdown.total"),
+                    value: formatEur(detail.totalHeatingCostsCents),
+                    kind: "sum" as const,
+                  },
+                ]}
+              />
             </section>
             {co2 ? (
               <section>
@@ -244,75 +230,77 @@ export const HeatingCard = ({
               {t("statements.pdf.heating.perMeterEmpty")}
             </p>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left text-xs font-semibold text-muted-foreground">
-                  <th className="py-1.5">
-                    {t("statements.pdf.heating.perMeterMeter")}
-                  </th>
-                  <th className="py-1.5">
-                    {t("ui.statements.detail.occupancyMeterUnitColumn")}
-                  </th>
-                  <th className="py-1.5">
-                    {t("statements.pdf.heating.perMeterSerial")}
-                  </th>
-                  <th className="py-1.5 text-right">
-                    {t("statements.pdf.heating.perMeterDelta")}
-                  </th>
-                  {isHkv ? (
-                    <th className="py-1.5 text-right">
-                      {t("statements.pdf.heating.perMeterKTotal")}
+            <Disclose label={t("ui.statements.detail.showMeters")}>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left text-xs font-semibold text-muted-foreground">
+                    <th className="py-1.5">
+                      {t("statements.pdf.heating.perMeterMeter")}
                     </th>
-                  ) : null}
-                  <th className="whitespace-pre-line py-1.5 text-right">
-                    {t("statements.pdf.heating.perMeterWeighted")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {perMeter.map((row) => (
-                  <tr key={row.meterId} className="border-b border-border">
-                    <td className="py-1.5">
-                      {isHkv
-                        ? row.meterLabel
-                            .replace(/^Heizkostenverteiler\s*/u, "")
-                            .trim() || row.meterLabel
-                        : row.meterLabel}
-                    </td>
-                    <td className="py-1.5 text-muted-foreground">
-                      {row.unitName ?? t("ui.common.emptyValue")}
-                    </td>
-                    <td className="py-1.5 text-muted-foreground">
-                      {row.serialNumber ?? t("ui.common.emptyValue")}
-                    </td>
-                    <td className="py-1.5 text-right tabular-nums">
-                      {formatNumber(row.consumptionRaw, consumptionRawDigits)}
-                      {isHkv ? (
-                        <span className="ml-1 text-muted-foreground">
-                          {t("statements.pdf.costTable.operatorMultiply")}
-                        </span>
-                      ) : null}
-                    </td>
+                    <th className="py-1.5">
+                      {t("ui.statements.detail.occupancyMeterUnitColumn")}
+                    </th>
+                    <th className="py-1.5">
+                      {t("statements.pdf.heating.perMeterSerial")}
+                    </th>
+                    <th className="py-1.5 text-right">
+                      {t("statements.pdf.heating.perMeterDelta")}
+                    </th>
                     {isHkv ? (
-                      <td className="py-1.5 text-right tabular-nums">
-                        {row.kTotal === null || row.kTotal === undefined
-                          ? t("ui.common.emptyValue")
-                          : formatNumber(row.kTotal, kTotalDigits)}
-                        <span className="ml-1 text-muted-foreground">
-                          {t("statements.pdf.costTable.operatorEquals")}
-                        </span>
-                      </td>
+                      <th className="py-1.5 text-right">
+                        {t("statements.pdf.heating.perMeterKTotal")}
+                      </th>
                     ) : null}
-                    <td className="py-1.5 text-right tabular-nums">
-                      {formatNumber(
-                        row.consumptionWeighted,
-                        consumptionWeightedDigits,
-                      )}
-                    </td>
+                    <th className="whitespace-pre-line py-1.5 text-right">
+                      {t("statements.pdf.heating.perMeterWeighted")}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {perMeter.map((row) => (
+                    <tr key={row.meterId} className="border-b border-border">
+                      <td className="py-1.5">
+                        {isHkv
+                          ? row.meterLabel
+                              .replace(/^Heizkostenverteiler\s*/u, "")
+                              .trim() || row.meterLabel
+                          : row.meterLabel}
+                      </td>
+                      <td className="py-1.5 text-muted-foreground">
+                        {row.unitName ?? t("ui.common.emptyValue")}
+                      </td>
+                      <td className="py-1.5 text-muted-foreground">
+                        {row.serialNumber ?? t("ui.common.emptyValue")}
+                      </td>
+                      <td className="py-1.5 text-right tabular-nums">
+                        {formatNumber(row.consumptionRaw, consumptionRawDigits)}
+                        {isHkv ? (
+                          <span className="ml-1 text-muted-foreground">
+                            {t("statements.pdf.costTable.operatorMultiply")}
+                          </span>
+                        ) : null}
+                      </td>
+                      {isHkv ? (
+                        <td className="py-1.5 text-right tabular-nums">
+                          {row.kTotal === null || row.kTotal === undefined
+                            ? t("ui.common.emptyValue")
+                            : formatNumber(row.kTotal, kTotalDigits)}
+                          <span className="ml-1 text-muted-foreground">
+                            {t("statements.pdf.costTable.operatorEquals")}
+                          </span>
+                        </td>
+                      ) : null}
+                      <td className="py-1.5 text-right tabular-nums">
+                        {formatNumber(
+                          row.consumptionWeighted,
+                          consumptionWeightedDigits,
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Disclose>
           )}
         </section>
 
@@ -320,6 +308,17 @@ export const HeatingCard = ({
           <h3 className="mb-2 text-sm font-semibold">
             {t("statements.pdf.heating.distributionPerUnit")}
           </h3>
+          <div className="mb-4">
+            <SplitBar
+              aPercent={basicPct}
+              aLabel={t("ui.heating.detail.splitBaseLegend", {
+                percent: formatNumber(basicPct, 0),
+              })}
+              bLabel={t("ui.heating.detail.splitConsumptionLegend", {
+                percent: formatNumber(consumptionPct, 0),
+              })}
+            />
+          </div>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs font-semibold text-muted-foreground">
