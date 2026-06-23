@@ -1,6 +1,7 @@
 import type { StatementResult } from "@einfachvermieter/shared";
 import { formatEur } from "@einfachvermieter/shared";
 import { Description } from "../../../../components/common/Description";
+import { ResultRows } from "../../../../components/common/ResultRows";
 import {
   Card,
   CardContent,
@@ -20,6 +21,7 @@ export const OverviewCard = ({ result }: { result: StatementResult }) => {
     .reduce((sum, l) => sum + l.tenantAmountCents, 0);
 
   const totalCents = operatingCents + heatingCents;
+  const isRefund = result.balanceCents <= 0;
 
   return (
     <Card>
@@ -30,60 +32,60 @@ export const OverviewCard = ({ result }: { result: StatementResult }) => {
         </Description>
       </CardHeader>
       <CardContent>
-        <table className="w-full text-sm">
-          <tbody>
-            <tr>
-              <td className="py-1">
-                {t("ui.statements.detail.summaryOperatingCosts")}
-              </td>
-              <td className="py-1 text-right tabular-nums">
-                {formatEur(operatingCents)}
-              </td>
-            </tr>
-            <tr>
-              <td className="py-1">
-                {t("ui.statements.detail.summaryHeatingCosts")}
-              </td>
-              <td className="py-1 text-right tabular-nums">
-                {formatEur(heatingCents)}
-              </td>
-            </tr>
-            <tr className="border-t border-border font-semibold">
-              <td className="py-1.5">{t("ui.statements.detail.totalCosts")}</td>
-              <td className="py-1.5 text-right tabular-nums">
-                {formatEur(totalCents)}
-              </td>
-            </tr>
-            <tr>
-              <td className="py-1">{t("ui.statements.detail.advances")}</td>
-              <td className="py-1 text-right tabular-nums">
-                {t("ui.common.deductionAmount", {
-                  amount: formatEur(result.totalAdvancesCents),
-                })}
-              </td>
-            </tr>
-            <tr className="border-t-2 border-foreground text-base font-semibold">
-              <td
-                className={cn(
-                  "py-2",
-                  result.balanceCents > 0 ? "text-rose-700" : "text-teal-700",
-                )}
-              >
-                {result.balanceCents > 0
-                  ? t("ui.statements.detail.additionalPayment")
-                  : t("ui.statements.detail.refund")}
-              </td>
-              <td
-                className={cn(
-                  "py-2 text-right tabular-nums",
-                  result.balanceCents > 0 ? "text-rose-700" : "text-teal-700",
-                )}
-              >
-                {formatEur(Math.abs(result.balanceCents))}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <ResultRows
+          rows={[
+            {
+              label: t("ui.statements.detail.summaryOperatingCosts"),
+              value: formatEur(operatingCents),
+            },
+            {
+              label: t("ui.statements.detail.summaryHeatingCosts"),
+              value: formatEur(heatingCents),
+            },
+            {
+              label: t("ui.statements.detail.totalCosts"),
+              value: formatEur(totalCents),
+              kind: "sum",
+            },
+            {
+              label: t("ui.statements.detail.advances"),
+              value: t("ui.common.deductionAmount", {
+                amount: formatEur(result.totalAdvancesCents),
+              }),
+            },
+          ]}
+        />
+        <div
+          className={cn(
+            "mt-3.5 flex items-center justify-between rounded-[13px] px-4.25 py-3.25",
+            isRefund
+              ? "bg-teal-50 dark:bg-teal-950/30"
+              : "bg-rose-50 dark:bg-rose-950/30",
+          )}
+        >
+          <span
+            className={cn(
+              "text-sm font-semibold",
+              isRefund
+                ? "text-teal-600 dark:text-teal-400"
+                : "text-rose-700 dark:text-rose-400",
+            )}
+          >
+            {isRefund
+              ? t("ui.statements.detail.refund")
+              : t("ui.statements.detail.additionalPayment")}
+          </span>
+          <span
+            className={cn(
+              "text-[19px] font-semibold tabular-nums",
+              isRefund
+                ? "text-teal-600 dark:text-teal-400"
+                : "text-rose-700 dark:text-rose-400",
+            )}
+          >
+            {formatEur(Math.abs(result.balanceCents))}
+          </span>
+        </div>
       </CardContent>
     </Card>
   );
