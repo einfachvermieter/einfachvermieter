@@ -1016,6 +1016,7 @@
         "hint": "PDF und Bilder, bis {limit} pro Datei.",
         "hintDeferred": "PDF und Bilder, bis {limit} pro Datei. Werden nach dem Speichern hochgeladen.",
         "empty": "Noch keine Belege hochgeladen.",
+        "fileMeta": "{size} · hochgeladen am {date}",
         "preview": "Vorschau",
         "delete": "Beleg entfernen",
         "download": "Datei herunterladen",

@@ -1,4 +1,4 @@
-import { formatBytes } from "@einfachvermieter/shared";
+import { formatBytes, formatDate } from "@einfachvermieter/shared";
 import {
   RiAiGenerate2Line,
   RiAttachment2,
@@ -31,17 +31,26 @@ import {
 } from "../../../../lib/attachments";
 import { t } from "../../../../lib/i18n";
 
-const attachmentIcon = (att: CostEntryAttachment) => {
+/** Getönte 36-px-Kachel nach Dateityp: PDF rose, Bild teal, sonst slate. */
+const AttachmentTile = ({ att }: { att: CostEntryAttachment }) => {
   if (isPdfAttachment(att)) {
     return (
-      <RiFilePdf2Line className="size-5 text-rose-700" aria-hidden={true} />
+      <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400">
+        <RiFilePdf2Line className="size-[18px]" aria-hidden={true} />
+      </div>
     );
   }
   if (isImageAttachment(att)) {
-    return <RiImageLine className="size-5 text-teal-700" aria-hidden={true} />;
+    return (
+      <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-400">
+        <RiImageLine className="size-[18px]" aria-hidden={true} />
+      </div>
+    );
   }
   return (
-    <RiFileLine className="size-5 text-muted-foreground" aria-hidden={true} />
+    <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+      <RiFileLine className="size-[18px]" aria-hidden={true} />
+    </div>
   );
 };
 
@@ -178,69 +187,81 @@ export const CostEntryAttachments = ({
             {t("ui.invoices.attachments.empty")}
           </p>
         ) : (
-          <ul className="divide-y divide-foreground/10 rounded-md border border-foreground/10">
+          <ul>
             {attachments.map((att) => {
               const isOpen = previewId === att.id;
               return (
-                <li key={att.id} className="flex flex-col">
-                  <div className="flex items-center gap-3 px-3 py-2">
-                    {attachmentIcon(att)}
-                    <button
-                      type="button"
-                      onClick={() => setPreviewId(isOpen ? null : att.id)}
-                      className="flex-1 truncate text-left text-sm font-medium hover:underline"
-                      title={att.originalFilename}
-                    >
-                      {att.originalFilename}
-                    </button>
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      {formatBytes(att.sizeBytes)}
-                    </span>
-                    {onExtract && isMistralSupported(att.mimeType) ? (
+                <li
+                  key={att.id}
+                  className="flex flex-col border-t border-border first:border-t-0"
+                >
+                  <div className="flex items-center gap-3 py-3">
+                    <AttachmentTile att={att} />
+                    <div className="min-w-0 flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewId(isOpen ? null : att.id)}
+                        className="block max-w-full truncate text-left text-sm font-semibold hover:underline"
+                        title={att.originalFilename}
+                      >
+                        {att.originalFilename}
+                      </button>
+                      <div className="mt-0.5 text-xs text-slate-400">
+                        {t("ui.invoices.attachments.fileMeta", {
+                          size: formatBytes(att.sizeBytes),
+                          date: formatDate(att.createdAt.slice(0, 10)),
+                        })}
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-0.5">
+                      {onExtract && isMistralSupported(att.mimeType) ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onExtract(att.id)}
+                          disabled={Boolean(extractingAttachmentId)}
+                          aria-label={t(
+                            "ui.invoices.aiExtract.buttonAriaLabel",
+                          )}
+                          title={t("ui.invoices.aiExtract.button")}
+                        >
+                          {extractingAttachmentId === att.id ? (
+                            <RiLoader4Line
+                              aria-hidden={true}
+                              className="animate-spin"
+                            />
+                          ) : (
+                            <RiAiGenerate2Line aria-hidden={true} />
+                          )}
+                        </Button>
+                      ) : null}
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => onExtract(att.id)}
-                        disabled={Boolean(extractingAttachmentId)}
-                        aria-label={t("ui.invoices.aiExtract.buttonAriaLabel")}
-                        title={t("ui.invoices.aiExtract.button")}
+                        onClick={() => setPreviewId(isOpen ? null : att.id)}
+                        aria-label={t("ui.invoices.attachments.preview")}
                       >
-                        {extractingAttachmentId === att.id ? (
-                          <RiLoader4Line
-                            aria-hidden={true}
-                            className="animate-spin"
-                          />
-                        ) : (
-                          <RiAiGenerate2Line aria-hidden={true} />
-                        )}
+                        <RiEyeLine aria-hidden={true} />
                       </Button>
-                    ) : null}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setPreviewId(isOpen ? null : att.id)}
-                      aria-label={t("ui.invoices.attachments.preview")}
-                    >
-                      <RiEyeLine aria-hidden={true} />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setPendingDelete(att)}
-                      disabled={
-                        deleteMutation.isPending &&
-                        deleteMutation.variables?.id === att.id
-                      }
-                      aria-label={t("ui.invoices.attachments.delete")}
-                    >
-                      <RiDeleteBinLine
-                        aria-hidden={true}
-                        className="text-destructive"
-                      />
-                    </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setPendingDelete(att)}
+                        disabled={
+                          deleteMutation.isPending &&
+                          deleteMutation.variables?.id === att.id
+                        }
+                        aria-label={t("ui.invoices.attachments.delete")}
+                      >
+                        <RiDeleteBinLine
+                          aria-hidden={true}
+                          className="text-destructive"
+                        />
+                      </Button>
+                    </div>
                   </div>
                   {isOpen ? (
                     <AttachmentPreview
