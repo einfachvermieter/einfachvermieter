@@ -240,7 +240,8 @@ export type StatementResult = {
   waterDetail?: WaterDetail;
   heatingDetail?: HeatingDetail;
   /**
-   * Belegungs-Anhang (Personen-/Wohnungs-/Flächentage). Nur bei Leerstand gesetzt.
+   * Belegungs-Anhang (Personen-/Wohnungs-/Flächentage). Gesetzt bei Leerstand
+   * oder wenn eine Personenumlage die Personentage-Gewichte erklären muss.
    */
   occupancyDetail?: OccupancyDetail;
   /**

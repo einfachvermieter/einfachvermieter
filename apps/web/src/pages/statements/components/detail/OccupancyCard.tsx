@@ -33,8 +33,10 @@ const groupResidentsBySpan = (
 
 export const OccupancyCard = ({
   detail,
+  targetUnitId,
 }: {
   detail: NonNullable<StatementResult["occupancyDetail"]>;
+  targetUnitId: string;
 }) => {
   const periodTotalDays = detail.perUnit.length * detail.periodDays;
 
@@ -68,12 +70,14 @@ export const OccupancyCard = ({
           </thead>
           <tbody>
             {detail.perUnit.flatMap((unit) => {
+              const unitCellClass =
+                unit.unitId === targetUnitId
+                  ? "py-2.5 font-semibold text-foreground"
+                  : "py-2.5 text-foreground";
               if (unit.residents.length === 0) {
                 return [
                   <tr key={unit.unitId} className="border-b border-border">
-                    <td className="py-2.5 font-semibold text-foreground">
-                      {unit.unitName}
-                    </td>
+                    <td className={unitCellClass}>{unit.unitName}</td>
                     <td className="py-2.5 text-muted-foreground">
                       {t("ui.common.emptyValue")}
                     </td>
@@ -86,14 +90,12 @@ export const OccupancyCard = ({
                 ];
               }
               const groups = groupResidentsBySpan(unit.residents);
-              return groups.map((g, idx) => (
+              return groups.map((g) => (
                 <tr
                   key={`${unit.unitId}-${g.from}-${g.to}-${g.days}`}
                   className="border-b border-border"
                 >
-                  <td className="py-2.5 font-semibold text-foreground">
-                    {idx === 0 ? unit.unitName : ""}
-                  </td>
+                  <td className={unitCellClass}>{unit.unitName}</td>
                   <td className="py-2.5">
                     {g.count === 1
                       ? t("ui.statements.detail.occupancyPersonSingular")
@@ -113,7 +115,7 @@ export const OccupancyCard = ({
                         })}
                   </td>
                   <td className="py-2.5 text-right tabular-nums">
-                    {idx === groups.length - 1 ? unit.personDays : ""}
+                    {g.count * g.days}
                   </td>
                 </tr>
               ));

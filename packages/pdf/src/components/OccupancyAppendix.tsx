@@ -58,6 +58,10 @@ type RowSpec = {
   personDays: string;
   footnoteMarker?: string;
   isTotal?: boolean;
+  /**
+   * Zeile der eigenen Wohnung: Wohnungsname und Personentage fett
+   */
+  emphasize?: boolean;
 };
 
 export const OccupancyAppendix = ({ detail, targetUnitId }: Props) => {
@@ -84,20 +88,19 @@ export const OccupancyAppendix = ({ detail, targetUnitId }: Props) => {
     } else {
       const groups = groupResidentsBySpan(targetUnit.residents);
 
-      groups.forEach((g, idx) => {
-        const isLast = idx === groups.length - 1;
-
+      for (const g of groups) {
         rows.push({
           key: `${targetUnit.unitId}-${g.from}-${g.to}-${g.days}`,
-          label: idx === 0 ? label : "",
+          label,
           resident:
             g.count === 1
               ? t("statements.pdf.occupancy.personSingular")
               : t("statements.pdf.occupancy.personPlural", { count: g.count }),
           span: `${formatDate(g.from)} – ${formatDate(g.to)}`,
-          personDays: isLast ? formatDays(targetUnit.personDays) : "",
+          personDays: formatDays(g.count * g.days),
+          emphasize: true,
         });
-      });
+      }
     }
   }
 
@@ -179,7 +182,13 @@ export const OccupancyAppendix = ({ detail, targetUnitId }: Props) => {
               ...(row.isTotal ? [styles.bold] : []),
             ]}
           >
-            <View style={[styles.cellLeft, COL_LABEL]}>
+            <View
+              style={[
+                styles.cellLeft,
+                COL_LABEL,
+                ...(row.emphasize ? [styles.bold] : []),
+              ]}
+            >
               <Text>
                 {row.label}
                 {row.footnoteMarker
@@ -209,6 +218,7 @@ export const OccupancyAppendix = ({ detail, targetUnitId }: Props) => {
               style={[
                 styles.cellRight,
                 ...(!row.isTotal ? [styles.cellDivider] : []),
+                ...(row.emphasize ? [styles.bold] : []),
                 COL_PERSON_DAYS,
               ]}
             >

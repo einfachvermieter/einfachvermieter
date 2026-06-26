@@ -239,7 +239,10 @@ const StatementTabs = ({
       ) : null}
       {occupancyDetail ? (
         <TabsContent value="occupancy">
-          <OccupancyCard detail={occupancyDetail} />
+          <OccupancyCard
+            detail={occupancyDetail}
+            targetUnitId={result.unitId}
+          />
         </TabsContent>
       ) : null}
       {hasTaxableLabor && taxableLabor ? (

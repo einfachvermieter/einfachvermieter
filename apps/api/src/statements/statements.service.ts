@@ -665,6 +665,7 @@ export class StatementsService {
       unitsRaw,
       occupancyDaysByUnitFull,
       periodDays,
+      result.lines.some((line) => line.allocationKey === "per_person"),
     );
 
     const advanceAdjustment = await this.buildAdvanceAdjustment({
@@ -949,6 +950,7 @@ export class StatementsService {
       ReturnType<TenantsService["getOccupancyDaysPerUnit"]>
     >,
     periodDays: number,
+    hasPersonAllocation: boolean,
   ) {
     const fullPersonDays = unitsRaw.map(
       (u) => occupancyDaysByUnitFull.get(u.id)?.personDays ?? 0,
@@ -958,8 +960,11 @@ export class StatementsService {
       (u) => occupancyDaysByUnitFull.get(u.id)?.occupiedDays ?? 0,
     );
 
+    // Der Belegungs-Anhang erklärt sowohl den Leerstand-Vermieteranteil als auch
+    // die Personentage-Gewichte einer Personenumlage. Fußnote und Tabelle müssen
+    // gemeinsam erscheinen, sonst verweist die Fußnote ins Leere.
     const hasGap = fullOccupiedDays.some((d) => d < periodDays);
-    if (!hasGap) {
+    if (!hasGap && !hasPersonAllocation) {
       return;
     }
 
