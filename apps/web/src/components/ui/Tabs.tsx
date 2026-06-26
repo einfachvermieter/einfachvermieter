@@ -22,13 +22,12 @@ function Tabs({
 }
 
 const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:h-9 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none data-[variant=pills]:rounded-none",
+  "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:h-9 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=pills]:rounded-none",
   {
     variants: {
       variant: {
         default:
           "gap-0.5 rounded-[13px] border border-border bg-muted p-1 group-data-horizontal/tabs:h-auto",
-        line: "gap-1 bg-transparent",
         pills:
           "w-full flex-wrap justify-start gap-2 bg-transparent p-0 group-data-horizontal/tabs:h-auto",
       },
@@ -63,12 +62,10 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "group/tabs-trigger relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-[0_1px_3px_rgba(15,23,42,0.12)] group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent",
+        "group/tabs-trigger relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-[0_1px_3px_rgba(15,23,42,0.12)] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         "group-data-[variant=default]/tabs-list:h-auto group-data-[variant=default]/tabs-list:flex-none group-data-[variant=default]/tabs-list:border-0 group-data-[variant=default]/tabs-list:gap-1.75 group-data-[variant=default]/tabs-list:rounded-[10px] group-data-[variant=default]/tabs-list:px-4.5 group-data-[variant=default]/tabs-list:py-2 group-data-[variant=default]/tabs-list:text-[13.5px] group-data-[variant=default]/tabs-list:leading-4.5 group-data-[variant=default]/tabs-list:font-semibold",
         "group-data-[variant=pills]/tabs-list:h-auto group-data-[variant=pills]/tabs-list:flex-none group-data-[variant=pills]/tabs-list:rounded-full group-data-[variant=pills]/tabs-list:border-border group-data-[variant=pills]/tabs-list:bg-card group-data-[variant=pills]/tabs-list:px-3.75 group-data-[variant=pills]/tabs-list:py-1.75 group-data-[variant=pills]/tabs-list:text-[13px] group-data-[variant=pills]/tabs-list:font-semibold group-data-[variant=pills]/tabs-list:text-slate-600 group-data-[variant=pills]/tabs-list:hover:border-slate-400 group-data-[variant=pills]/tabs-list:hover:text-foreground group-data-[variant=pills]/tabs-list:data-active:border-sky-100 group-data-[variant=pills]/tabs-list:data-active:bg-sky-50 group-data-[variant=pills]/tabs-list:data-active:text-sky-700 group-data-[variant=pills]/tabs-list:data-active:shadow-none dark:group-data-[variant=pills]/tabs-list:data-active:bg-sky-900/30 dark:group-data-[variant=pills]/tabs-list:data-active:text-sky-400",
         "data-active:bg-card data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground",
-        "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:-bottom-1.25 group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
         className,
       )}
       {...props}
