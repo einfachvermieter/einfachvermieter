@@ -1404,6 +1404,7 @@
         "paymentsColumnReference": "Referenz",
         "paymentsColumnBaseRent": "Kaltmiete",
         "paymentsColumnAdvance": "NK-Voraus",
+        "taxableLaborEmptyGroup": "Keine Positionen in dieser Kategorie im Abrechnungszeitraum.",
         "occupancyTitle": "Belegung im Abrechnungszeitraum",
         "occupancyDescription": "Aufschlüsselung der Personen-, Wohnungs- und Flächentage, anonym je Wohnung.",
         "occupancyColumnUnit": "Wohnung",

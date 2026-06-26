@@ -12,22 +12,19 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RiCalendarScheduleLine } from "@remixicon/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useId, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
-import { Description } from "../../../components/common/Description";
+import { SectionCard } from "../../../components/common/SectionCard";
+import { QUIET_TABLE_HEAD_ROW } from "../../../components/common/tableStyles";
 import { SelectInput } from "../../../components/form/SelectInput";
 import { TextInput } from "../../../components/form/TextInput";
 import { Alert, AlertDescription } from "../../../components/ui/Alert";
 import { Button } from "../../../components/ui/Button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../components/ui/Card";
 import { api } from "../../../lib/api";
+import { gradients } from "../../../lib/domainVisuals";
 import { t } from "../../../lib/i18n";
 
 type AdvanceAdjustmentCardProps = {
@@ -278,14 +275,13 @@ export const AdvanceAdjustmentCard = ({
       : entry.costTypeName;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("ui.statements.advanceAdjustment.title")}</CardTitle>
-        <Description>
-          {t("ui.statements.advanceAdjustment.description")}
-        </Description>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <SectionCard
+      icon={RiCalendarScheduleLine}
+      iconBackground={gradients.money}
+      title={t("ui.statements.advanceAdjustment.title")}
+      description={t("ui.statements.advanceAdjustment.description")}
+    >
+      <div className="space-y-4">
         <table className="w-full text-sm">
           <tbody>
             <tr>
@@ -442,7 +438,7 @@ export const AdvanceAdjustmentCard = ({
                 {hasAutoTariffs ? (
                   <table className="mt-3 w-full text-sm">
                     <thead>
-                      <tr className="text-left text-xs font-semibold text-muted-foreground">
+                      <tr className={QUIET_TABLE_HEAD_ROW}>
                         <th className="py-1.5">
                           {t(
                             "ui.statements.advanceAdjustment.tariffs.columnCostType",
@@ -517,7 +513,7 @@ export const AdvanceAdjustmentCard = ({
             </div>
           </form>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </SectionCard>
   );
 };

@@ -5,13 +5,10 @@ import {
   formatNumber,
   type StatementResult,
 } from "@einfachvermieter/shared";
-import { Description } from "../../../../components/common/Description";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../../components/ui/Card";
+import { RiHomeGearLine } from "@remixicon/react";
+import { SectionCard } from "../../../../components/common/SectionCard";
+import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
+import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 
 const ALLOCATION_BY_LABEL_KEY: Record<CostLineResult["allocationKey"], string> =
@@ -60,11 +57,14 @@ const numberFootnotes = (
 };
 
 // Bruch-Darstellung Mieter/Gesamt (Zähler über Nenner), Spiegel der
-// gestapelten Bruch-Zellen im PDF.
+// gestapelten Bruch-Zellen im PDF: fetter dunkler Zähler mit dezentem
+// Bruchstrich, gedämpfter Nenner darunter.
 const Fraction = ({ top, bottom }: { top: string; bottom: string }) => (
-  <span className="inline-flex flex-col items-stretch text-right leading-none">
-    <span>{top}</span>
-    <span className="border-t border-foreground">{bottom}</span>
+  <span className="inline-flex flex-col items-center text-[12.5px] leading-tight">
+    <span className="border-b border-muted-foreground/40 px-1.5 pb-px font-semibold text-foreground">
+      {top}
+    </span>
+    <span className="px-1.5 pt-px text-muted-foreground">{bottom}</span>
   </span>
 );
 
@@ -124,31 +124,30 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
   const footnotes = numberFootnotes(operatingLines, footnoteDefs);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("ui.statements.detail.operatingCostsTitle")}</CardTitle>
-        <Description>
-          {t("ui.statements.detail.operatingCostsDescription")}
-        </Description>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <table className="w-full text-xs">
+    <SectionCard
+      icon={RiHomeGearLine}
+      iconBackground={gradients.notes}
+      title={t("ui.statements.detail.operatingCostsTitle")}
+      description={t("ui.statements.detail.operatingCostsDescription")}
+    >
+      <div className="space-y-4">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left font-semibold text-muted-foreground">
-                <th className="py-1.5">
+              <tr className={QUIET_TABLE_HEAD_ROW}>
+                <th className="py-2.5">
                   {t("statements.pdf.costTable.costTypeAllocation")}
                 </th>
-                <th className="py-1.5 text-right">
+                <th className="py-2.5 text-right">
                   {t("statements.pdf.costTable.totalCosts")}
                 </th>
-                <th className="py-1.5 text-right">
+                <th className="py-2.5 text-center">
                   {t("statements.pdf.costTable.bemessung")}
                 </th>
-                <th className="py-1.5 text-right">
+                <th className="py-2.5 text-center">
                   {t("statements.pdf.costTable.tage")}
                 </th>
-                <th className="py-1.5 text-right">
+                <th className="py-2.5 text-right">
                   {t("statements.pdf.costTable.yourCosts")}
                 </th>
               </tr>
@@ -174,28 +173,28 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
                     key={line.costTypeName}
                     className="border-b border-border"
                   >
-                    <td className="py-1.5">
-                      <span>
+                    <td className="py-2.5">
+                      <span className="font-semibold text-foreground">
                         {line.costTypeName}
                         {markers.length > 0 ? (
                           <sup>{markers.join(",")}</sup>
                         ) : null}
                       </span>
-                      <span className="block text-muted-foreground">
+                      <span className="mt-0.5 block text-muted-foreground">
                         {t(ALLOCATION_BY_LABEL_KEY[line.allocationKey])}
                       </span>
                     </td>
-                    <td className="py-1.5 text-right tabular-nums">
+                    <td className="py-2.5 text-right tabular-nums">
                       {formatEur(line.totalAmountCents)}{" "}
-                      <span className="text-muted-foreground">
+                      <span className="font-semibold text-muted-foreground">
                         {isFixed
                           ? t("statements.pdf.costTable.operatorEquals")
                           : t("statements.pdf.costTable.operatorMultiply")}
                       </span>
                     </td>
-                    <td className="py-1.5 text-right tabular-nums">
+                    <td className="py-2.5 text-center tabular-nums">
                       {hasBemessung ? (
-                        <span className="inline-flex items-center justify-end gap-1">
+                        <span className="inline-flex items-center justify-center gap-1">
                           <Fraction
                             top={formatBemessung(
                               line.bemessungTenant as number,
@@ -209,7 +208,7 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
                             )}
                           />
                           {isFixed ? null : (
-                            <span className="text-muted-foreground">
+                            <span className="font-semibold text-muted-foreground">
                               {hasDays
                                 ? t("statements.pdf.costTable.operatorMultiply")
                                 : t("statements.pdf.costTable.operatorEquals")}
@@ -218,20 +217,20 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
                         </span>
                       ) : null}
                     </td>
-                    <td className="py-1.5 text-right tabular-nums">
+                    <td className="py-2.5 text-center tabular-nums">
                       {hasDays ? (
-                        <span className="inline-flex items-center justify-end gap-1">
+                        <span className="inline-flex items-center justify-center gap-1">
                           <Fraction
                             top={String(line.daysTenant)}
                             bottom={String(line.daysTotal)}
                           />
-                          <span className="text-muted-foreground">
+                          <span className="font-semibold text-muted-foreground">
                             {t("statements.pdf.costTable.operatorEquals")}
                           </span>
                         </span>
                       ) : null}
                     </td>
-                    <td className="py-1.5 text-right font-semibold tabular-nums">
+                    <td className="py-2.5 text-right font-semibold tabular-nums">
                       {formatEur(line.tenantAmountCents)}
                     </td>
                   </tr>
@@ -249,17 +248,17 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
               </tr>
             </tfoot>
           </table>
-          {footnotes.length > 0 ? (
-            <div className="space-y-0.5">
-              {footnotes.map((fn) => (
-                <p key={fn.marker} className="text-xs text-muted-foreground">
-                  <sup>{fn.marker}</sup> {fn.text}
-                </p>
-              ))}
-            </div>
-          ) : null}
         </div>
-      </CardContent>
-    </Card>
+        {footnotes.length > 0 ? (
+          <div className="space-y-0.5">
+            {footnotes.map((fn) => (
+              <p key={fn.marker} className="text-xs text-muted-foreground">
+                <sup>{fn.marker}</sup> {fn.text}
+              </p>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </SectionCard>
   );
 };

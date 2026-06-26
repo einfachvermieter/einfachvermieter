@@ -1,12 +1,9 @@
 import type { StatementResult } from "@einfachvermieter/shared";
 import { formatDate } from "@einfachvermieter/shared";
-import { Description } from "../../../../components/common/Description";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../../components/ui/Card";
+import { RiGroupLine } from "@remixicon/react";
+import { SectionCard } from "../../../../components/common/SectionCard";
+import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
+import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 
 type ResidentGroup = {
@@ -42,30 +39,29 @@ export const OccupancyCard = ({
   const periodTotalDays = detail.perUnit.length * detail.periodDays;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("ui.statements.detail.occupancyTitle")}</CardTitle>
-        <Description>
-          {t("ui.statements.detail.occupancyDescription")}
-        </Description>
-      </CardHeader>
-      <CardContent>
+    <SectionCard
+      icon={RiGroupLine}
+      iconBackground={gradients.tenants}
+      title={t("ui.statements.detail.occupancyTitle")}
+      description={t("ui.statements.detail.occupancyDescription")}
+    >
+      <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border text-left text-xs font-semibold text-muted-foreground">
-              <th className="py-1.5">
+            <tr className={QUIET_TABLE_HEAD_ROW}>
+              <th className="py-2.5">
                 {t("ui.statements.detail.occupancyColumnUnit")}
               </th>
-              <th className="py-1.5">
+              <th className="py-2.5">
                 {t("ui.statements.detail.occupancyColumnResident")}
               </th>
-              <th className="py-1.5">
+              <th className="py-2.5">
                 {t("ui.statements.detail.occupancyColumnSpan")}
               </th>
-              <th className="py-1.5 text-right">
+              <th className="py-2.5 text-right">
                 {t("ui.statements.detail.occupancyColumnDays")}
               </th>
-              <th className="py-1.5 text-right">
+              <th className="py-2.5 text-right">
                 {t("ui.statements.detail.occupancyColumnPersonDays")}
               </th>
             </tr>
@@ -75,15 +71,17 @@ export const OccupancyCard = ({
               if (unit.residents.length === 0) {
                 return [
                   <tr key={unit.unitId} className="border-b border-border">
-                    <td className="py-1.5">{unit.unitName}</td>
-                    <td className="py-1.5 text-muted-foreground">
+                    <td className="py-2.5 font-semibold text-foreground">
+                      {unit.unitName}
+                    </td>
+                    <td className="py-2.5 text-muted-foreground">
                       {t("ui.common.emptyValue")}
                     </td>
-                    <td className="py-1.5 text-muted-foreground">
+                    <td className="py-2.5 text-muted-foreground">
                       {t("ui.common.emptyValue")}
                     </td>
-                    <td className="py-1.5 text-right tabular-nums">{0}</td>
-                    <td className="py-1.5 text-right tabular-nums">{0}</td>
+                    <td className="py-2.5 text-right tabular-nums">{0}</td>
+                    <td className="py-2.5 text-right tabular-nums">{0}</td>
                   </tr>,
                 ];
               }
@@ -93,18 +91,20 @@ export const OccupancyCard = ({
                   key={`${unit.unitId}-${g.from}-${g.to}-${g.days}`}
                   className="border-b border-border"
                 >
-                  <td className="py-1.5">{idx === 0 ? unit.unitName : ""}</td>
-                  <td className="py-1.5">
+                  <td className="py-2.5 font-semibold text-foreground">
+                    {idx === 0 ? unit.unitName : ""}
+                  </td>
+                  <td className="py-2.5">
                     {g.count === 1
                       ? t("ui.statements.detail.occupancyPersonSingular")
                       : t("ui.statements.detail.occupancyPersonPlural", {
                           count: g.count,
                         })}
                   </td>
-                  <td className="py-1.5 tabular-nums">
+                  <td className="py-2.5 tabular-nums">
                     {`${formatDate(g.from)}${t("ui.common.separators.dash")}${formatDate(g.to)}`}
                   </td>
-                  <td className="py-1.5 text-right tabular-nums">
+                  <td className="py-2.5 text-right tabular-nums">
                     {g.count === 1
                       ? g.days
                       : t("ui.statements.detail.occupancyDaysGroup", {
@@ -112,7 +112,7 @@ export const OccupancyCard = ({
                           days: g.days,
                         })}
                   </td>
-                  <td className="py-1.5 text-right tabular-nums">
+                  <td className="py-2.5 text-right tabular-nums">
                     {idx === groups.length - 1 ? unit.personDays : ""}
                   </td>
                 </tr>
@@ -169,7 +169,7 @@ export const OccupancyCard = ({
             </tr>
           </tfoot>
         </table>
-      </CardContent>
-    </Card>
+      </div>
+    </SectionCard>
   );
 };
