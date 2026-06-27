@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
-import { type ComponentProps, useId } from "react";
+import { type ComponentProps, type FormEvent, useId } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "../../components/ui/Button";
@@ -34,10 +34,18 @@ export const LoginForm = ({
     defaultValues: { email: "", password: "" },
   });
 
-  const onSubmit = form.handleSubmit(async (values) => {
+  const submit = form.handleSubmit(async (values) => {
     await login.mutateAsync(values);
     await navigate({ to: "/" });
   });
+
+  /**
+   * Vorherigen API-Fehler vor jedem Versuch verwerfen
+   */
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    login.reset();
+    return submit(event);
+  };
 
   return (
     <form
@@ -91,7 +99,7 @@ export const LoginForm = ({
           )}
         />
         {login.isError ? (
-          <p className="text-sm text-destructive">{t("errors.loginFailed")}</p>
+          <FieldError>{t("errors.loginFailed")}</FieldError>
         ) : null}
         <Field>
           <Button type="submit" disabled={login.isPending}>
