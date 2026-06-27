@@ -72,7 +72,13 @@ createRoot(rootElement).render(
         </ErrorBoundary>
         <Sonner />
       </TooltipProvider>
-      <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
+      {/* biome-ignore lint/nursery/noUndeclaredEnvVars: Vite compile-time constant, keine runtime env var */}
+      {import.meta.env.DEV ? (
+        <ReactQueryDevtools
+          initialIsOpen={false}
+          buttonPosition="bottom-left"
+        />
+      ) : null}
     </QueryClientProvider>
   </StrictMode>,
 );
