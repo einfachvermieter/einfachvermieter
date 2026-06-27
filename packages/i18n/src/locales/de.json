@@ -1400,6 +1400,8 @@
         "paymentsTitle": "Mieteingänge",
         "paymentsDescription": "Erfasste Mietzahlungen mit Kalt- und NK-Voraus-Anteil im Abrechnungszeitraum.",
         "paymentsEmpty": "Keine Mieteingänge im Abrechnungszeitraum verbucht.",
+        "paymentsIntro": "Im Abrechnungszeitraum wurden folgende Vorauszahlungen für Betriebs- und Heizkosten geleistet:",
+        "paymentsTotalAdvance": "Summe Vorauszahlungen",
         "showEntries": "Einzelbuchungen anzeigen",
         "showMeters": "Alle Zähler anzeigen",
         "paymentsTotal": "Summe Mieteingänge: {total}",
