@@ -34,6 +34,7 @@ import {
   costEntryIdentityLabel,
   costEntryQueryOptions,
 } from "./lib/costs";
+import { useDocumentTitle } from "./lib/documentTitle";
 import {
   type HeatingSettings,
   heatingIdentityLabel,
@@ -1160,6 +1161,23 @@ const routeTree = rootRoute.addChildren([
   passwordSettingsRoute,
 ]);
 
+// Steht ausserhalb der Breadcrumb-Shell und erbt den Tab-Titel sonst vom
+// zuvor besuchten Screen -> Titel selbst setzen.
+const RouteNotFound = () => {
+  useDocumentTitle(t("ui.common.routeNotFound.title"));
+  return (
+    <NotFound
+      title={t("ui.common.routeNotFound.title")}
+      description={t("ui.common.routeNotFound.description")}
+      action={
+        <Button asChild={true} variant="outline">
+          <Link to="/">{t("ui.common.action.backToHome")}</Link>
+        </Button>
+      }
+    />
+  );
+};
+
 export const router = createRouter({
   routeTree,
   defaultPreload: "intent",
@@ -1173,17 +1191,7 @@ export const router = createRouter({
       }}
     />
   ),
-  defaultNotFoundComponent: () => (
-    <NotFound
-      title={t("ui.common.routeNotFound.title")}
-      description={t("ui.common.routeNotFound.description")}
-      action={
-        <Button asChild={true} variant="outline">
-          <Link to="/">{t("ui.common.action.backToHome")}</Link>
-        </Button>
-      }
-    />
-  ),
+  defaultNotFoundComponent: RouteNotFound,
 });
 
 export type CrumbEntry = {

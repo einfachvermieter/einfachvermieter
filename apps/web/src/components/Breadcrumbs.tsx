@@ -1,6 +1,7 @@
 import { Link, useMatches } from "@tanstack/react-router";
 import { Fragment, useEffect } from "react";
 import { useActiveBuilding } from "../lib/activeBuilding";
+import { composeDocumentTitle } from "../lib/documentTitle";
 import type { Crumb, CrumbEntry } from "../router";
 import {
   isNavActive,
@@ -82,7 +83,7 @@ export const Breadcrumbs = () => {
   // Die Breadcrumb zeigt die Kette inklusive aktueller Seite; das letzte
   // Glied ist nicht verlinkt.
   const titleTrail = [...visible].reverse().map((entry) => entry.label);
-  const documentTitle = [...titleTrail, "EinfachVermieter"].join(" – ");
+  const documentTitle = composeDocumentTitle(titleTrail);
   useEffect(() => {
     document.title = documentTitle;
   }, [documentTitle]);
