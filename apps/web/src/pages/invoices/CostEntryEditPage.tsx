@@ -19,6 +19,7 @@ import {
 import { ApiError, api } from "../../lib/api";
 import {
   type CostEntryDetail,
+  type CostType,
   costEntryIdentityLabel,
   costEntryQueryOptions,
   costTypesQueryOptions,
@@ -42,14 +43,33 @@ import {
 
 const routeApi = getRouteApi("/rechnungen/$costEntryId");
 
+/**
+ * Zeigt nur die des Gebäudes dieser Rechnung (abgeleitet über die Kostenart
+ * der ersten Position; das Formular erzwingt mindestens eine Position).
+ */
+const costTypesOfEntryBuilding = (
+  allCostTypes: CostType[] | undefined,
+  entry: CostEntryDetail | undefined,
+): CostType[] => {
+  const entryBuildingId = allCostTypes?.find(
+    (costType) => costType.id === entry?.items[0]?.costTypeId,
+  )?.buildingId;
+  return (allCostTypes ?? []).filter(
+    (costType) => costType.buildingId === entryBuildingId,
+  );
+};
+
+// biome-ignore lint/complexity/noExcessiveLinesPerFunction: Länge liegt am Markup
 export const CostEntryEditPage = () => {
   const { costEntryId } = routeApi.useParams();
   const goBack = useGoBack("/rechnungen");
 
-  const { data: costTypes } = useQuery(costTypesQueryOptions);
+  const { data: allCostTypes } = useQuery(costTypesQueryOptions);
   const { data: units } = useQuery(unitsQueryOptions);
   const costEntryQuery = useQuery(costEntryQueryOptions(costEntryId));
   const { data: aiConfig } = useQuery(aiConfigQueryOptions);
+
+  const costTypes = costTypesOfEntryBuilding(allCostTypes, costEntryQuery.data);
 
   const [extractError, setExtractError] = useState<string | null>(null);
   const [extractWarnings, setExtractWarnings] = useState<string[]>([]);
@@ -58,7 +78,7 @@ export const CostEntryEditPage = () => {
   >(null);
 
   const defaultValues: CostEntryFormValues = costEntryQuery.data
-    ? costEntryToFormValues(costEntryQuery.data, costTypes ?? [])
+    ? costEntryToFormValues(costEntryQuery.data, allCostTypes ?? [])
     : {
         invoiceDate: todayIso(),
         invoiceNumber: "",
@@ -103,7 +123,7 @@ export const CostEntryEditPage = () => {
         costEntryId,
         attachmentId,
       });
-      applyExtractionToForm(form, result, costTypes ?? []);
+      applyExtractionToForm(form, result, costTypes);
       setExtractWarnings(result.warnings);
     } catch (err) {
       setExtractError(
@@ -129,7 +149,7 @@ export const CostEntryEditPage = () => {
     );
   }
 
-  if (!costTypes || !costEntryQuery.data) {
+  if (!allCostTypes || !costEntryQuery.data) {
     return <FormSkeleton rows={4} />;
   }
 

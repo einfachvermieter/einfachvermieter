@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FormPage } from "../../components/common/FormPage";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
+import { useActiveBuilding } from "../../lib/activeBuilding";
 import {
   aiConfigQueryOptions,
   extractCostEntryFromFile,
@@ -29,9 +30,17 @@ export const CostEntryCreatePage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: costTypes } = useQuery(costTypesQueryOptions);
+  const { buildingId } = useActiveBuilding();
+  const { data: allCostTypes } = useQuery(costTypesQueryOptions);
   const { data: units } = useQuery(unitsQueryOptions);
   const { data: aiConfig } = useQuery(aiConfigQueryOptions);
+
+  /**
+   * Kostenarten sind gebäudegebunden
+   */
+  const costTypes = (allCostTypes ?? []).filter(
+    (costType) => costType.buildingId === buildingId,
+  );
 
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -111,7 +120,7 @@ export const CostEntryCreatePage = () => {
     try {
       const result = await extractCostEntryFromFile(file);
 
-      applyExtractionToForm(form, result, costTypes ?? []);
+      applyExtractionToForm(form, result, costTypes);
       setExtractWarnings(result.warnings);
 
       if (result.ocrText) {
@@ -140,7 +149,7 @@ export const CostEntryCreatePage = () => {
       <CostEntryForm
         mode="create"
         form={form}
-        costTypes={costTypes ?? []}
+        costTypes={costTypes}
         units={units ?? []}
         onSubmit={submit}
         onCancel={goBack}
