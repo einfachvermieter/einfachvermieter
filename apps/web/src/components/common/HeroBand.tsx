@@ -22,7 +22,7 @@ export const HeroBand = ({
   /** Aktions-Buttons rechts außen (z. B. Finalisieren/Stornieren) */
   action?: ReactNode;
 }) => (
-  <div className="relative mb-5.5 flex items-center gap-5.5 overflow-hidden rounded-2xl border border-border bg-card px-6.5 py-5.5 max-md:flex-wrap">
+  <div className="relative mb-5.5 flex items-center gap-5.5 overflow-hidden rounded-xl border border-border bg-card px-6.5 py-5.5 max-md:flex-wrap">
     <div
       aria-hidden={true}
       className="pointer-events-none absolute inset-0 bg-[radial-gradient(30rem_16rem_at_0%_0%,var(--color-sky-50),transparent_60%),radial-gradient(28rem_16rem_at_100%_130%,var(--color-teal-50),transparent_60%)] dark:bg-none"
