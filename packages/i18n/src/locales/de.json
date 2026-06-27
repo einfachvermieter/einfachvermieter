@@ -389,6 +389,10 @@
     },
     "meters": {
       "title": "Zähler",
+      "tabs": {
+        "master": "Stammdaten",
+        "readings": "Zählerstände"
+      },
       "createTitle": "Neuer Zähler",
       "createDescription": "Wasser, Strom, Gas oder Wärmemengenzähler anlegen.",
       "editTitle": "Zähler bearbeiten",

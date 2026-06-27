@@ -126,6 +126,10 @@ const MeterDetailPage = lazyRouteComponent(
   () => import("./pages/meters/MeterDetailPage"),
   "MeterDetailPage",
 );
+const MeterReadingsPage = lazyRouteComponent(
+  () => import("./pages/meters/MeterReadingsPage"),
+  "MeterReadingsPage",
+);
 const MetersOverview = lazyRouteComponent(
   () => import("./pages/meters/MetersOverview"),
   "MetersOverview",
@@ -780,6 +784,8 @@ const meterEditRoute = createRoute({
   },
 });
 
+// Zählerstände-Tab des Zählers. Gleiche Entität wie die Stammdaten, nur ein
+// anderer Reiter -> Crumb konstant zur Zähler-Crumb (keine eigene Ebene).
 const meterReadingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/zaehler/$meterId/zaehlerstaende",
@@ -796,12 +802,10 @@ const meterReadingsRoute = createRoute({
       throw error;
     }
   },
-  component: MeterDetailPage,
+  component: MeterReadingsPage,
   pendingComponent: () => <FormSkeleton rows={4} />,
   pendingMs: 0,
   staticData: {
-    // Konstant zur Zähler-Crumb: Zählerstände ist nur ein Reiter der
-    // Zähler-Entität, keine eigene Ebene.
     crumb: ({ loaderData }) => {
       const meter = loaderData as Meter | null;
       return [
