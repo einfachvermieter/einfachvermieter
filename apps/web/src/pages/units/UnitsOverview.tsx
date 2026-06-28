@@ -8,6 +8,7 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHead } from "../../components/common/PageHead";
+import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
@@ -85,7 +86,7 @@ export const UnitsOverview = () => {
     ...unitsOverviewQueryOptions({ ...table.queryParams, buildingId }),
     enabled: buildingId !== undefined,
   });
-  const { data: stats } = useQuery(statsQueryOptions());
+  const { data: stats } = useQuery(statsQueryOptions(buildingId));
 
   const items = data?.items ?? [];
 
@@ -108,7 +109,15 @@ export const UnitsOverview = () => {
                 }
               />
             }
-            name={row.original.name}
+            name={
+              <Link
+                to="/wohnungen/$unitId"
+                params={{ unitId: row.original.id }}
+                className={ROW_TITLE_LINK}
+              >
+                {row.original.name}
+              </Link>
+            }
           />
         ),
       },

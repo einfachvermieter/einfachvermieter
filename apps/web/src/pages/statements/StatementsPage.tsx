@@ -8,8 +8,14 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHead } from "../../components/common/PageHead";
+import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../../components/ui/Tooltip";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { t } from "../../lib/i18n";
 import {
@@ -107,7 +113,15 @@ export const StatementsPage = () => {
           return (
             <EntityCell
               tile={<InitialsAvatar name={names || row.original.unitName} />}
-              name={names || row.original.unitName}
+              name={
+                <Link
+                  to="/abrechnungen/$statementId"
+                  params={{ statementId: row.original.id }}
+                  className={ROW_TITLE_LINK}
+                >
+                  {names || row.original.unitName}
+                </Link>
+              }
               subline={names ? row.original.unitName : undefined}
             />
           );
@@ -135,8 +149,24 @@ export const StatementsPage = () => {
         accessorKey: "balanceCents",
         header: t("ui.statements.columns.balance"),
         cell: ({ row }) => {
-          const { balanceCents } = row.original;
+          const { balanceCents, status } = row.original;
           if (balanceCents === null) {
+            // Entwurfssaldo steht erst nach dem Finalisieren fest,
+            // deshalb besonders gekennzeichnet
+            if (status === "draft") {
+              return (
+                <Tooltip>
+                  <TooltipTrigger asChild={true}>
+                    <span className="text-muted-foreground italic">
+                      {t("ui.statements.balanceDraftPending")}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("ui.statements.balanceDraftHint")}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            }
             return (
               <span className="text-muted-foreground">
                 {t("ui.common.emptyValue")}

@@ -8,9 +8,15 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHead } from "../../components/common/PageHead";
+import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { TextWithLink } from "../../components/TextWithLink";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../../components/ui/Tooltip";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import {
   type CostEntryOverviewRow,
@@ -21,12 +27,7 @@ import {
 } from "../../lib/costs";
 import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
-import { rowActionsColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
-import {
-  type DeleteResource,
-  useDeleteResource,
-} from "../../lib/useDeleteResource";
 
 const SORTABLE_COLUMNS: ReadonlySet<CostEntrySortColumn> = new Set([
   "invoiceDate",
@@ -36,14 +37,13 @@ const SORTABLE_COLUMNS: ReadonlySet<CostEntrySortColumn> = new Set([
 ]);
 
 const invoiceColumns = (
-  deletion: DeleteResource<CostEntryOverviewRow>,
   costTypeByName: Map<string, CostType>,
 ): ColumnDef<CostEntryOverviewRow>[] => [
   {
     id: "costType",
     accessorKey: "costTypeNames",
     enableSorting: false,
-    header: t("ui.costs.columns.costType"),
+    header: t("ui.invoices.columns.invoice"),
     cell: ({ row }) => {
       const [firstName, ...moreNames] = row.original.costTypeNames;
       const firstCostType = firstName
@@ -57,11 +57,26 @@ const invoiceColumns = (
           tile={<IconTile icon={visual.icon} background={visual.gradient} />}
           name={
             <span className="flex items-center gap-1.5">
-              {firstName ?? t("common.unknown")}
+              <Link
+                to="/rechnungen/$costEntryId"
+                params={{ costEntryId: row.original.id }}
+                className={ROW_TITLE_LINK}
+              >
+                {firstName ?? t("common.unknown")}
+              </Link>
               {moreNames.length > 0 ? (
-                <Badge variant="morechip">
-                  {t("ui.common.moreChip", { count: moreNames.length })}
-                </Badge>
+                <Tooltip>
+                  <TooltipTrigger asChild={true}>
+                    <Badge variant="morechip">
+                      {t("ui.common.moreChip", { count: moreNames.length })}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t("ui.invoices.moreCostTypesTooltip", {
+                      names: moreNames.join(t("ui.common.separators.comma")),
+                    })}
+                  </TooltipContent>
+                </Tooltip>
               ) : null}
             </span>
           }
@@ -124,7 +139,6 @@ const invoiceColumns = (
         </span>
       ),
   },
-  rowActionsColumn<CostEntryOverviewRow>({ deletion }),
 ];
 
 export const InvoicesPage = () => {
@@ -151,26 +165,14 @@ export const InvoicesPage = () => {
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
 
-  const deletion = useDeleteResource<CostEntryOverviewRow>({
-    endpoint: (entry) => `/costs/${entry.id}`,
-    invalidateKey: ["costs"],
-    title: t("ui.invoices.confirmDelete"),
-    describe: (entry) =>
-      t("ui.invoices.confirmDeleteMessage", {
-        costType: entry.costTypeNames.join(", ") || t("common.unknown"),
-        amount: formatEur(entry.amountCents),
-        invoiceDate: formatDate(entry.invoiceDate),
-      }),
-  });
-
   const costTypeByName = useMemo(
     () =>
       new Map((costTypes ?? []).map((costType) => [costType.name, costType])),
     [costTypes],
   );
   const columns = useMemo(
-    () => invoiceColumns(deletion, costTypeByName),
-    [deletion, costTypeByName],
+    () => invoiceColumns(costTypeByName),
+    [costTypeByName],
   );
 
   const hasCostTypes = (costTypes ?? []).some(
@@ -248,7 +250,6 @@ export const InvoicesPage = () => {
         loading={isFetching || buildingsPending}
         totalRows={total}
         emptyMessage={emptyMessage}
-        rowClassName={deletion.rowClassName}
         onRowClick={(entry) =>
           navigate({
             to: "/rechnungen/$costEntryId",
@@ -260,8 +261,6 @@ export const InvoicesPage = () => {
           pageCount: table.pageCount(total),
         }}
       />
-
-      {deletion.dialog}
     </div>
   );
 };

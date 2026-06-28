@@ -967,6 +967,10 @@
       "title": "Rechnungen",
       "addEntry": "Rechnung erfassen",
       "allBuildings": "Alle Gebäude",
+      "columns": {
+        "invoice": "Rechnung"
+      },
+      "moreCostTypesTooltip": "Weitere Kostenarten: {names}",
       "sub": {
         "count": "{count, plural, one {# Rechnung} other {# Rechnungen}}",
         "totalAmount": "{amount} gesamt"
@@ -993,8 +997,6 @@
       "emptySearch": "Keine Rechnungen gefunden für „{query}“",
       "emptySearchForBuilding": "Keine Rechnungen gefunden für „{query}“ in Gebäude „{building}“",
       "noCostTypes": "Bitte zuerst eine {link} anlegen.",
-      "confirmDelete": "Rechnung löschen?",
-      "confirmDeleteMessage": "Soll die Rechnung „{costType}“ über {amount} ({invoiceDate}) wirklich gelöscht werden?",
       "itemCount": "{count, plural, one {1 Position} other {# Positionen}}",
       "items": {
         "title": "Positionen",
@@ -1269,6 +1271,8 @@
       "columns": {
         "balance": "Saldo"
       },
+      "balanceDraftPending": "wird berechnet",
+      "balanceDraftHint": "Der Saldo wird beim Öffnen der Abrechnung live berechnet.",
       "fields": {
         "documentDate": "Ausstellungsdatum",
         "documentDateHint": "Datum, das auf der Abrechnung erscheint. Standard ist heute – für vor- oder nachdatierte Dokumente anpassbar."

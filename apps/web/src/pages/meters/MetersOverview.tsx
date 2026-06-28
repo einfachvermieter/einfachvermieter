@@ -7,6 +7,7 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHead } from "../../components/common/PageHead";
+import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { RowActionButton } from "../../components/RowActions";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -24,7 +25,6 @@ import { statsQueryOptions } from "../../lib/stats";
 import { rowActionsColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 import { unitsQueryOptions } from "../../lib/units";
-import { useDeleteResource } from "../../lib/useDeleteResource";
 
 const SORTABLE_COLUMNS: ReadonlySet<MeterSortColumn> = new Set([
   "label",
@@ -34,11 +34,22 @@ const SORTABLE_COLUMNS: ReadonlySet<MeterSortColumn> = new Set([
 
 const routeApi = getRouteApi("/zaehler");
 
-/** Wohnungszähler blau, Haupt-/Allgemeinzähler u. ä. slate */
+/**
+ * Wohnungs-/Unterzähler sky, Allgemeinzähler indigo,
+ * Hauptzähler und Differenzzähler slate
+ */
+const roleBadgeVariant = (role: Meter["role"]) => {
+  if (role === "unit" || role === "sub") {
+    return "blue";
+  }
+  if (role === "common") {
+    return "indigo";
+  }
+  return "slate";
+};
+
 const roleBadge = (role: Meter["role"]) => (
-  <Badge variant={role === "unit" || role === "sub" ? "blue" : "slate"}>
-    {meterRoleLabel(role)}
-  </Badge>
+  <Badge variant={roleBadgeVariant(role)}>{meterRoleLabel(role)}</Badge>
 );
 
 export const MetersOverview = () => {
@@ -65,17 +76,9 @@ export const MetersOverview = () => {
     }),
     enabled: buildingId !== undefined,
   });
-  const { data: stats } = useQuery(statsQueryOptions());
+  const { data: stats } = useQuery(statsQueryOptions(buildingId));
 
   const items = data?.items ?? [];
-
-  const deletion = useDeleteResource<Meter>({
-    endpoint: (meter) => `/meters/${meter.id}`,
-    invalidateKey: ["meters"],
-    title: t("ui.meters.confirmDelete"),
-    describe: (meter) =>
-      t("ui.meters.confirmDeleteMessage", { label: meter.label }),
-  });
 
   const unitName = useMemo(() => {
     const map = new Map<string, string>();
@@ -98,7 +101,15 @@ export const MetersOverview = () => {
               tile={
                 <IconTile icon={visual.icon} background={visual.gradient} />
               }
-              name={row.original.label}
+              name={
+                <Link
+                  to="/zaehler/$meterId"
+                  params={{ meterId: row.original.id }}
+                  className={ROW_TITLE_LINK}
+                >
+                  {row.original.label}
+                </Link>
+              }
               subline={
                 row.original.serialNumber
                   ? t("ui.meters.serialNumberShort", {
@@ -138,7 +149,6 @@ export const MetersOverview = () => {
       },
 
       rowActionsColumn<Meter>({
-        deletion,
         extraActions: (meter) => (
           <RowActionButton label={t("ui.reading.tabs.readings")}>
             <Link
@@ -151,7 +161,7 @@ export const MetersOverview = () => {
         ),
       }),
     ],
-    [unitName, deletion],
+    [unitName],
   );
 
   const trimmedSearch = table.search.trim();
@@ -195,7 +205,6 @@ export const MetersOverview = () => {
         loading={isFetching || buildingsPending}
         totalRows={stats?.meters}
         emptyMessage={emptyMessage}
-        rowClassName={deletion.rowClassName}
         onRowClick={(meter) =>
           navigate({ to: "/zaehler/$meterId", params: { meterId: meter.id } })
         }
@@ -204,8 +213,6 @@ export const MetersOverview = () => {
           pageCount: table.pageCount(data?.total ?? 0),
         }}
       />
-
-      {deletion.dialog}
     </div>
   );
 };

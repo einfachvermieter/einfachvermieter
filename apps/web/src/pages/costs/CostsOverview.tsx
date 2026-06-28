@@ -1,4 +1,4 @@
-import { RiAddLine } from "@remixicon/react";
+import { RiAddLine, RiArrowRightUpLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -7,6 +7,7 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHead } from "../../components/common/PageHead";
+import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import {
@@ -25,9 +26,7 @@ import {
 import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
-import { rowActionsColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
-import { useDeleteResource } from "../../lib/useDeleteResource";
 
 const SORTABLE_COLUMNS: ReadonlySet<CostTypeSortColumn> = new Set([
   "name",
@@ -51,17 +50,9 @@ export const CostsOverview = () => {
     ...costTypesOverviewQueryOptions({ ...table.queryParams, buildingId }),
     enabled: buildingId !== undefined,
   });
-  const { data: stats } = useQuery(statsQueryOptions());
+  const { data: stats } = useQuery(statsQueryOptions(buildingId));
 
   const items = data?.items ?? [];
-
-  const deletion = useDeleteResource<CostType>({
-    endpoint: (costType) => `/costs/types/${costType.id}`,
-    invalidateKey: ["costTypes"],
-    title: t("ui.costs.confirmDeleteType"),
-    describe: (costType) =>
-      t("ui.costs.confirmDeleteTypeMessage", { name: costType.name }),
-  });
 
   const columns = useMemo<ColumnDef<CostType>[]>(
     () => [
@@ -75,7 +66,15 @@ export const CostsOverview = () => {
               tile={
                 <IconTile icon={visual.icon} background={visual.gradient} />
               }
-              name={row.original.name}
+              name={
+                <Link
+                  to="/kostenarten/$costTypeId"
+                  params={{ costTypeId: row.original.id }}
+                  className={ROW_TITLE_LINK}
+                >
+                  {row.original.name}
+                </Link>
+              }
             />
           );
         },
@@ -106,9 +105,13 @@ export const CostsOverview = () => {
                   <Link
                     to="/heizkosten"
                     search={{ buildingId }}
-                    className="text-sky-700 underline"
+                    className="inline-flex items-center gap-0.5 text-sky-700 underline-offset-4 hover:underline dark:text-sky-400"
                   >
                     {t("ui.costs.allocationHeatingSettlement")}
+                    <RiArrowRightUpLine
+                      className="size-3.5"
+                      aria-hidden={true}
+                    />
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -120,9 +123,8 @@ export const CostsOverview = () => {
           return t("ui.costs.allocationKeyNotApplicable");
         },
       },
-      rowActionsColumn<CostType>({ deletion }),
     ],
-    [deletion, buildingId],
+    [buildingId],
   );
 
   const trimmedSearch = table.search.trim();
@@ -163,7 +165,6 @@ export const CostsOverview = () => {
         loading={isFetching || buildingsPending}
         totalRows={stats?.costTypes}
         emptyMessage={emptyMessage}
-        rowClassName={deletion.rowClassName}
         onRowClick={(costType) =>
           navigate({
             to: "/kostenarten/$costTypeId",
@@ -175,8 +176,6 @@ export const CostsOverview = () => {
           pageCount: table.pageCount(data?.total ?? 0),
         }}
       />
-
-      {deletion.dialog}
     </div>
   );
 };

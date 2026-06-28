@@ -66,6 +66,9 @@ declare module "@tanstack/react-table" {
 const PAGE_SIZES = [25, 50, 100] as const;
 const SEARCH_DEBOUNCE_MS = 300;
 
+// Suchfeld erst ab dieser Zeilenzahl zeigen (progressive disclosure)
+const SEARCH_MIN_ROWS = 10;
+
 const ServerSearchInput = ({
   value,
   onChange,
@@ -444,7 +447,9 @@ export const DataTable = <TData,>({
 
   let searchInput: ReactNode = null;
   if (server) {
-    searchInput = (
+    const showSearch =
+      (totalRows ?? 0) >= SEARCH_MIN_ROWS || server.search.trim().length > 0;
+    searchInput = showSearch ? (
       <ServerSearchInput
         value={server.search}
         onChange={server.onSearchChange}
@@ -452,7 +457,7 @@ export const DataTable = <TData,>({
           server.searchPlaceholder ?? t("ui.common.table.searchPlaceholder")
         }
       />
-    );
+    ) : null;
   } else if (clientFilterColumn) {
     searchInput = (
       <Input
@@ -507,9 +512,11 @@ export const DataTable = <TData,>({
             />
           </TableBody>
         </Table>
-        <div className="border-t border-border px-5 py-3.5">
-          <DataTablePagination table={table} />
-        </div>
+        {table.getPageCount() > 1 ? (
+          <div className="border-t border-border px-5 py-3.5">
+            <DataTablePagination table={table} />
+          </div>
+        ) : null}
       </Card>
     </div>
   );

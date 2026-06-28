@@ -8,6 +8,7 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHead } from "../../components/common/PageHead";
+import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { RowActionButton } from "../../components/RowActions";
 import { TextWithLink } from "../../components/TextWithLink";
 import { Badge } from "../../components/ui/Badge";
@@ -55,7 +56,15 @@ const tenantColumns = (
       return (
         <EntityCell
           tile={<InitialsAvatar name={names || row.original.unitName} />}
-          name={names || t("common.none")}
+          name={
+            <Link
+              to="/mieter/$tenantId"
+              params={{ tenantId: row.original.id }}
+              className={ROW_TITLE_LINK}
+            >
+              {names || t("common.none")}
+            </Link>
+          }
           subline={row.original.unitName}
         />
       );
