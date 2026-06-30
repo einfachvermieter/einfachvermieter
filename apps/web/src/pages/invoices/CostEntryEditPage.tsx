@@ -1,8 +1,13 @@
-import { formatEur, todayIso } from "@einfachvermieter/shared";
+import {
+  formatDate,
+  formatEur,
+  formatName,
+  todayIso,
+} from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiBillLine, RiDeleteBinLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ActionLink } from "../../components/common/ActionLink";
@@ -24,8 +29,9 @@ import {
   costEntryQueryOptions,
   costTypesQueryOptions,
 } from "../../lib/costs";
-import { gradients } from "../../lib/domainVisuals";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
+import { statementsQueryOptions } from "../../lib/statements";
 import { unitsQueryOptions } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useDeleteResource } from "../../lib/useDeleteResource";
@@ -63,11 +69,13 @@ const costTypesOfEntryBuilding = (
 export const CostEntryEditPage = () => {
   const { costEntryId } = routeApi.useParams();
   const goBack = useGoBack("/rechnungen");
+  const navigate = useNavigate();
 
   const { data: allCostTypes } = useQuery(costTypesQueryOptions);
   const { data: units } = useQuery(unitsQueryOptions);
   const costEntryQuery = useQuery(costEntryQueryOptions(costEntryId));
   const { data: aiConfig } = useQuery(aiConfigQueryOptions);
+  const { data: allStatements } = useQuery(statementsQueryOptions);
 
   const costTypes = costTypesOfEntryBuilding(allCostTypes, costEntryQuery.data);
 
@@ -169,9 +177,39 @@ export const CostEntryEditPage = () => {
   const maxYear = hasYears ? years.reduce((a, b) => (a > b ? a : b)) : "";
   const periodRange = minYear === maxYear ? minYear : `${minYear}–${maxYear}`;
   const periodText = hasYears ? periodRange : t("ui.common.emptyValue");
-  const costTypeNames = [
-    ...new Set(entry.items.map((item) => item.costTypeName).filter(Boolean)),
-  ].join(t("ui.common.separators.comma"));
+  // Kostenarten der Rechnung als Verknüpfungen (je Kostenart einmal)
+  const linkedCostTypes = [
+    ...new Map(
+      entry.items
+        .filter((item) => item.costTypeId)
+        .map((item) => [
+          item.costTypeId,
+          { id: item.costTypeId, name: item.costTypeName },
+        ]),
+    ).values(),
+  ];
+
+  // Abrechnungen, deren Zeitraum sich mit dieser Rechnung überschneidet
+  // (gleiches Gebäude, aktive Abrechnungen).
+  const entryBuildingId = allCostTypes.find(
+    (costType) => costType.id === entry.items[0]?.costTypeId,
+  )?.buildingId;
+  const itemDates = entry.items.flatMap((item) => [
+    item.periodStart,
+    item.periodEnd,
+  ]);
+  const invoicePeriodStart = itemDates.reduce(
+    (a, b) => (a < b ? a : b),
+    "9999",
+  );
+  const invoicePeriodEnd = itemDates.reduce((a, b) => (a > b ? a : b), "0000");
+  const periodStatements = (allStatements ?? []).filter(
+    (statement) =>
+      statement.buildingId === entryBuildingId &&
+      (statement.status === "draft" || statement.status === "finalized") &&
+      statement.periodStart <= invoicePeriodEnd &&
+      statement.periodEnd >= invoicePeriodStart,
+  );
 
   return (
     <div className="pb-24">
@@ -239,20 +277,46 @@ export const CostEntryEditPage = () => {
         </div>
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-24">
-          <InfoCard
-            title={t("ui.common.infoCards.atAGlance")}
-            rows={[
-              {
-                label: t("ui.invoices.detail.statAmount"),
-                value: formatEur(totalCents),
-              },
-              { label: t("ui.invoices.detail.statPeriod"), value: periodText },
-              {
-                label: t("ui.invoices.detail.costTypesLabel"),
-                value: costTypeNames || t("ui.common.emptyValue"),
-              },
-            ]}
-          />
+          <InfoCard title={t("ui.common.infoCards.links")}>
+            {linkedCostTypes.map((costType) => (
+              <ActionLink
+                key={costType.id}
+                icon={domainVisuals.costTypes.icon}
+                iconBackground={domainVisuals.costTypes.accent}
+                onClick={() =>
+                  navigate({
+                    to: "/kostenarten/$costTypeId",
+                    params: { costTypeId: costType.id },
+                  })
+                }
+              >
+                {costType.name}
+              </ActionLink>
+            ))}
+            {periodStatements.map((statement) => (
+              <ActionLink
+                key={statement.id}
+                icon={domainVisuals.statements.icon}
+                iconBackground={domainVisuals.statements.accent}
+                subtitle={t("ui.common.periodLabel", {
+                  start: formatDate(statement.periodStart),
+                  end: formatDate(statement.periodEnd),
+                })}
+                onClick={() =>
+                  navigate({
+                    to: "/abrechnungen/$statementId",
+                    params: { statementId: statement.id },
+                  })
+                }
+              >
+                {statement.contractResidents
+                  .map((resident) =>
+                    formatName(resident.firstName, resident.lastName),
+                  )
+                  .join(t("ui.common.separators.comma"))}
+              </ActionLink>
+            ))}
+          </InfoCard>
 
           <InfoCard title={t("ui.common.infoCards.actions")}>
             <ActionLink

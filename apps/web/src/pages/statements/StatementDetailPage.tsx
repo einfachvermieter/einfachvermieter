@@ -1,6 +1,7 @@
 import type { StatementResult } from "@einfachvermieter/shared";
 import { formatDate, formatEur, formatName } from "@einfachvermieter/shared";
 import {
+  RiBuildingLine,
   RiCloseCircleLine,
   RiDeleteBinLine,
   RiDownloadLine,
@@ -8,12 +9,7 @@ import {
   RiLockLine,
 } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Link,
-  useLocation,
-  useNavigate,
-  useParams,
-} from "@tanstack/react-router";
+import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { ActionLink } from "../../components/common/ActionLink";
 import { Description } from "../../components/common/Description";
@@ -52,7 +48,12 @@ import {
 } from "../../components/ui/Tabs";
 import { Textarea } from "../../components/ui/Textarea";
 import { api } from "../../lib/api";
+import { buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import {
+  heatingIdentityLabel,
+  heatingSettingsListQueryOptions,
+} from "../../lib/heating";
 import { t } from "../../lib/i18n";
 import {
   type StatementDetail,
@@ -364,6 +365,11 @@ export const StatementDetailPage = () => {
     enabled: Boolean(statement?.tenantId),
   });
   const { data: units } = useQuery(unitsQueryOptions);
+  const { data: buildings } = useQuery(buildingsQueryOptions);
+  const { data: heatingVersions } = useQuery({
+    ...heatingSettingsListQueryOptions(statement?.buildingId ?? ""),
+    enabled: Boolean(statement?.buildingId),
+  });
 
   const {
     data: preview,
@@ -505,6 +511,10 @@ export const StatementDetailPage = () => {
   const unit = units?.find(
     (entry) => entry.id === tenantAggregate?.tenant.unitId,
   );
+  const building = buildings?.find(
+    (entry) => entry.id === statement.buildingId,
+  );
+  const [heatingVersion] = heatingVersions ?? [];
 
   const statusBadge = renderStatusBadge(statement);
 
@@ -534,20 +544,6 @@ export const StatementDetailPage = () => {
         },
       ]
     : undefined;
-
-  const resultText = result ? (
-    <span className={`font-semibold ${balanceClass}`}>
-      {isRefund
-        ? t("ui.statements.detail.info.resultCredit", {
-            amount: formatEur(Math.abs(result.balanceCents)),
-          })
-        : t("ui.statements.detail.info.resultAdditional", {
-            amount: formatEur(result.balanceCents),
-          })}
-    </span>
-  ) : (
-    t("ui.common.emptyValue")
-  );
 
   return (
     <div className="pb-6">
@@ -625,49 +621,66 @@ export const StatementDetailPage = () => {
         </div>
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-24">
-          <InfoCard
-            title={t("ui.common.infoCards.atAGlance")}
-            rows={[
-              { label: t("ui.common.columns.status"), value: statusBadge },
-              {
-                label: t("ui.statements.detail.info.period"),
-                value: statement.periodStart.slice(0, 4),
-              },
-              {
-                label: t("ui.statements.detail.info.tenant"),
-                value: tenantName ? (
-                  <Link
-                    to="/mieter/$tenantId/konto"
-                    params={{ tenantId: statement.tenantId }}
-                    search={{ tab: undefined }}
-                    className="font-semibold text-sky-700 dark:text-sky-400"
-                  >
-                    {tenantName}
-                  </Link>
-                ) : (
-                  t("ui.common.emptyValue")
-                ),
-              },
-              {
-                label: t("ui.statements.detail.info.unit"),
-                value: unit ? (
-                  <Link
-                    to="/wohnungen/$unitId"
-                    params={{ unitId: unit.id }}
-                    className="font-semibold text-sky-700 dark:text-sky-400"
-                  >
-                    {unit.name}
-                  </Link>
-                ) : (
-                  t("ui.common.emptyValue")
-                ),
-              },
-              {
-                label: t("ui.statements.detail.info.result"),
-                value: resultText,
-              },
-            ]}
-          />
+          <InfoCard title={t("ui.common.infoCards.links")}>
+            {tenantName ? (
+              <ActionLink
+                icon={domainVisuals.tenants.icon}
+                iconBackground={domainVisuals.tenants.accent}
+                onClick={() =>
+                  navigate({
+                    to: "/mieter/$tenantId/konto",
+                    params: { tenantId: statement.tenantId },
+                    search: { tab: undefined },
+                  })
+                }
+              >
+                {tenantName}
+              </ActionLink>
+            ) : null}
+            {unit ? (
+              <ActionLink
+                icon={domainVisuals.units.icon}
+                iconBackground={domainVisuals.units.accent}
+                onClick={() =>
+                  navigate({
+                    to: "/wohnungen/$unitId",
+                    params: { unitId: unit.id },
+                  })
+                }
+              >
+                {unit.name}
+              </ActionLink>
+            ) : null}
+            {building ? (
+              <ActionLink
+                icon={RiBuildingLine}
+                iconBackground="var(--i-blue)"
+                onClick={() =>
+                  navigate({
+                    to: "/gebaeude/$buildingId",
+                    params: { buildingId: building.id },
+                  })
+                }
+              >
+                {building.name}
+              </ActionLink>
+            ) : null}
+            {heatingVersion ? (
+              <ActionLink
+                icon={domainVisuals.heating.icon}
+                iconBackground={domainVisuals.heating.accent}
+                subtitle={heatingIdentityLabel(heatingVersion)}
+                onClick={() =>
+                  navigate({
+                    to: "/heizkosten/$id",
+                    params: { id: heatingVersion.id },
+                  })
+                }
+              >
+                {t("ui.meters.detail.heatingConfig")}
+              </ActionLink>
+            ) : null}
+          </InfoCard>
 
           <InfoCard title={t("ui.common.infoCards.actions")}>
             {isDraft ? (

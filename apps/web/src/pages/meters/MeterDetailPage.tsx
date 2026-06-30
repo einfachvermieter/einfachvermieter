@@ -1,24 +1,22 @@
 import { formatDate, type MeterCreateDto } from "@einfachvermieter/shared";
 import { RiDeleteBinLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { InfoCard } from "../../components/common/InfoCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
-import { Badge } from "../../components/ui/Badge";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { costTypesQueryOptions } from "../../lib/costs";
 import { domainVisuals } from "../../lib/domainVisuals";
+import {
+  heatingIdentityLabel,
+  heatingSettingsListQueryOptions,
+} from "../../lib/heating";
 import { t } from "../../lib/i18n";
 import type { Meter } from "../../lib/meters";
-import {
-  meterQueryOptions,
-  meterRoleLabel,
-  meterTypeLabel,
-  readingsQueryOptions,
-} from "../../lib/meters";
+import { meterQueryOptions, readingsQueryOptions } from "../../lib/meters";
 import { unitsQueryOptions } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useDeleteResource } from "../../lib/useDeleteResource";
@@ -38,6 +36,10 @@ export const MeterDetailPage = () => {
   const { data: units } = useQuery(unitsQueryOptions);
   const { data: costTypes } = useQuery(costTypesQueryOptions);
   const { data: readings } = useQuery(readingsQueryOptions(meterId));
+  const { data: heatingVersions } = useQuery({
+    ...heatingSettingsListQueryOptions(meter?.buildingId ?? ""),
+    enabled: meter?.costAllocationMode === "heating_cost_bill",
+  });
 
   const goBack = useGoBack("/zaehler", {
     search: { buildingId: undefined, type: undefined },
@@ -80,6 +82,10 @@ export const MeterDetailPage = () => {
   const unit = meter.unitId
     ? units.find((entry) => entry.id === meter.unitId)
     : undefined;
+  const assignedCostTypes = costTypes.filter((costType) =>
+    meter.costTypeIds.includes(costType.id),
+  );
+  const [heatingVersion] = heatingVersions ?? [];
 
   return (
     <div className="pb-24">
@@ -104,41 +110,7 @@ export const MeterDetailPage = () => {
         />
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-24">
-          <InfoCard
-            title={t("ui.common.infoCards.atAGlance")}
-            rows={[
-              {
-                label: t("ui.meters.fields.type"),
-                value: meterTypeLabel(meter.type),
-              },
-              {
-                label: t("ui.meters.detail.usageLabel"),
-                value: (
-                  <Badge variant="blue">{meterRoleLabel(meter.role)}</Badge>
-                ),
-              },
-              {
-                label: t("ui.meters.fields.unit"),
-                value: unit ? (
-                  <Link
-                    to="/wohnungen/$unitId"
-                    params={{ unitId: unit.id }}
-                    className="font-semibold text-sky-700 dark:text-sky-400"
-                  >
-                    {unit.name}
-                  </Link>
-                ) : (
-                  dash
-                ),
-              },
-              {
-                label: t("ui.meters.detail.lastReadingLabel"),
-                value: latest ? formatDate(latest.readingDate) : dash,
-              },
-            ]}
-          />
-
-          <InfoCard title={t("ui.common.infoCards.actions")}>
+          <InfoCard title={t("ui.common.infoCards.links")}>
             {unit ? (
               <ActionLink
                 icon={domainVisuals.units.icon}
@@ -150,9 +122,53 @@ export const MeterDetailPage = () => {
                   })
                 }
               >
-                {t("ui.meters.detail.openUnit")}
+                {unit.name}
               </ActionLink>
             ) : null}
+            {meter.costAllocationMode === "heating_cost_bill"
+              ? heatingVersion && (
+                  <ActionLink
+                    icon={domainVisuals.heating.icon}
+                    iconBackground={domainVisuals.heating.accent}
+                    subtitle={heatingIdentityLabel(heatingVersion)}
+                    onClick={() =>
+                      navigate({
+                        to: "/heizkosten/$id",
+                        params: { id: heatingVersion.id },
+                      })
+                    }
+                  >
+                    {t("ui.meters.detail.heatingConfig")}
+                  </ActionLink>
+                )
+              : assignedCostTypes.map((costType) => (
+                  <ActionLink
+                    key={costType.id}
+                    icon={domainVisuals.costTypes.icon}
+                    iconBackground={domainVisuals.costTypes.accent}
+                    onClick={() =>
+                      navigate({
+                        to: "/kostenarten/$costTypeId",
+                        params: { costTypeId: costType.id },
+                      })
+                    }
+                  >
+                    {costType.name}
+                  </ActionLink>
+                ))}
+          </InfoCard>
+
+          <InfoCard
+            title={t("ui.common.infoCards.details")}
+            rows={[
+              {
+                label: t("ui.meters.detail.lastReadingLabel"),
+                value: latest ? formatDate(latest.readingDate) : dash,
+              },
+            ]}
+          />
+
+          <InfoCard title={t("ui.common.infoCards.actions")}>
             <ActionLink
               icon={RiDeleteBinLine}
               iconBackground="var(--color-rose-400)"

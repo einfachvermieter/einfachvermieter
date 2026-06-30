@@ -1,19 +1,19 @@
 import {
   formatDate,
-  formatEur,
   type TenantSaveDto,
   tenantAggregateToFormValues,
   todayIso,
 } from "@einfachvermieter/shared";
 import { RiDeleteBinLine, RiWallet3Line } from "@remixicon/react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
 import { InfoCard } from "../../components/common/InfoCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Badge } from "../../components/ui/Badge";
 import { tenantBalanceQueryOptions } from "../../lib/accounts";
 import { api } from "../../lib/api";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { type TenantAggregate, tenantQueryOptions } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
@@ -105,43 +105,21 @@ export const TenantEditPage = () => {
         />
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-24">
-          <InfoCard
-            title={t("ui.tenant.atAGlance.title")}
-            rows={[
-              {
-                label: t("ui.tenant.hero.livesSince"),
-                value: formatDate(tenant.startDate),
-              },
-              {
-                label: t("ui.tenant.fields.residents"),
-                value: currentOccupants,
-              },
-              {
-                label: t("ui.tenant.fields.deposit"),
-                value:
-                  tenant.depositCents > 0
-                    ? formatEur(tenant.depositCents)
-                    : t("ui.common.emptyValue"),
-              },
-              {
-                label: t("ui.tenant.atAGlance.account"),
-                value:
-                  balanced === undefined ? (
-                    t("ui.common.emptyValue")
-                  ) : (
-                    <Link to="/mieter/$tenantId/konto" params={{ tenantId }}>
-                      <Badge variant={balanced ? "ok" : "warn"} dot={true}>
-                        {balanced
-                          ? t("ui.account.status.balanced")
-                          : t("ui.account.status.open")}
-                      </Badge>
-                    </Link>
-                  ),
-              },
-            ]}
-          />
-
-          <InfoCard title={t("ui.common.infoCards.actions")}>
+          <InfoCard title={t("ui.common.infoCards.links")}>
+            {unit ? (
+              <ActionLink
+                icon={domainVisuals.units.icon}
+                iconBackground={domainVisuals.units.accent}
+                onClick={() =>
+                  navigate({
+                    to: "/wohnungen/$unitId",
+                    params: { unitId: unit.id },
+                  })
+                }
+              >
+                {unit.name}
+              </ActionLink>
+            ) : null}
             <ActionLink
               icon={RiWallet3Line}
               iconBackground="var(--i-cyan)"
@@ -152,8 +130,34 @@ export const TenantEditPage = () => {
                 })
               }
             >
-              {t("ui.tenants.openAccount")}
+              {t("ui.tenants.tabs.account")}
             </ActionLink>
+          </InfoCard>
+
+          <InfoCard
+            title={t("ui.common.infoCards.details")}
+            rows={[
+              {
+                label: t("ui.tenant.fields.residents"),
+                value: currentOccupants,
+              },
+              {
+                label: t("ui.tenant.atAGlance.account"),
+                value:
+                  balanced === undefined ? (
+                    t("ui.common.emptyValue")
+                  ) : (
+                    <Badge variant={balanced ? "ok" : "warn"} dot={true}>
+                      {balanced
+                        ? t("ui.account.status.balanced")
+                        : t("ui.account.status.open")}
+                    </Badge>
+                  ),
+              },
+            ]}
+          />
+
+          <InfoCard title={t("ui.common.infoCards.actions")}>
             <ActionLink
               icon={RiDeleteBinLine}
               iconBackground="var(--color-rose-400)"

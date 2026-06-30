@@ -8,17 +8,19 @@ import { HeroBand } from "../../components/common/HeroBand";
 import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
-import { Badge } from "../../components/ui/Badge";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import {
-  allocationLabel,
   type CostType,
   type CostTypeDetail,
   costTypeCategoryLabel,
   costTypeQueryOptions,
 } from "../../lib/costs";
 import { costTypeVisual, domainVisuals } from "../../lib/domainVisuals";
+import {
+  heatingIdentityLabel,
+  heatingSettingsListQueryOptions,
+} from "../../lib/heating";
 import { t } from "../../lib/i18n";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useDeleteResource } from "../../lib/useDeleteResource";
@@ -58,6 +60,10 @@ export const CostTypeEditPage = () => {
 
   const { data: buildings } = useQuery(buildingsQueryOptions);
   const costTypeQuery = useQuery(costTypeQueryOptions(costTypeId));
+  const { data: heatingVersions } = useQuery({
+    ...heatingSettingsListQueryOptions(costTypeQuery.data?.buildingId ?? ""),
+    enabled: costTypeQuery.data?.category === "heating",
+  });
 
   const goBack = useGoBack("/kostenarten");
   const navigate = useNavigate();
@@ -98,6 +104,8 @@ export const CostTypeEditPage = () => {
   const costType = costTypeQuery.data;
   const { stats } = costType;
   const visual = costTypeVisual(costType);
+  const isHeating = costType.category === "heating";
+  const [heatingVersion] = heatingVersions ?? [];
 
   return (
     <div className="pb-24">
@@ -141,31 +149,61 @@ export const CostTypeEditPage = () => {
         />
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-24">
-          <InfoCard
-            title={t("ui.common.infoCards.atAGlance")}
-            rows={[
-              {
-                label: t("ui.costs.columns.category"),
-                value: (
-                  <Badge
-                    variant={costType.category === "heating" ? "warn" : "blue"}
-                  >
-                    {costTypeCategoryLabel(costType.category)}
-                  </Badge>
-                ),
-              },
-              {
-                label: t("ui.costs.columns.allocation"),
-                value: costType.defaultAllocationKey
-                  ? allocationLabel(costType.defaultAllocationKey)
-                  : t("ui.common.emptyValue"),
-              },
-              {
-                label: t("ui.costs.detail.metersLabel"),
-                value: t("ui.costs.detail.metersAssigned", {
+          <InfoCard title={t("ui.common.infoCards.links")}>
+            <ActionLink
+              icon={RiBillLine}
+              iconBackground={domainVisuals.invoices.accent}
+              onClick={() =>
+                navigate({
+                  to: "/rechnungen/neu",
+                  search: { buildingId: costType.buildingId },
+                })
+              }
+            >
+              {t("ui.costs.addEntry")}
+            </ActionLink>
+            {isHeating ? (
+              heatingVersion && (
+                <ActionLink
+                  icon={domainVisuals.heating.icon}
+                  iconBackground={domainVisuals.heating.accent}
+                  subtitle={heatingIdentityLabel(heatingVersion)}
+                  onClick={() =>
+                    navigate({
+                      to: "/heizkosten/$id",
+                      params: { id: heatingVersion.id },
+                    })
+                  }
+                >
+                  {t("ui.costs.detail.openHeating")}
+                </ActionLink>
+              )
+            ) : (
+              <ActionLink
+                icon={domainVisuals.meters.icon}
+                iconBackground={domainVisuals.meters.accent}
+                subtitle={t("ui.meters.sub.count", {
                   count: stats.assignedMetersCount,
-                }),
-              },
+                })}
+                onClick={() =>
+                  navigate({
+                    to: "/zaehler",
+                    search: {
+                      buildingId: costType.buildingId,
+                      unitId: undefined,
+                      type: undefined,
+                    },
+                  })
+                }
+              >
+                {t("ui.costs.detail.openMeters")}
+              </ActionLink>
+            )}
+          </InfoCard>
+
+          <InfoCard
+            title={t("ui.common.infoCards.details")}
+            rows={[
               {
                 label: t("ui.costs.detail.lastEntryLabel"),
                 value: stats.lastEntry ? (
@@ -184,34 +222,6 @@ export const CostTypeEditPage = () => {
           />
 
           <InfoCard title={t("ui.common.infoCards.actions")}>
-            <ActionLink
-              icon={RiBillLine}
-              iconBackground={domainVisuals.invoices.accent}
-              onClick={() =>
-                navigate({
-                  to: "/rechnungen/neu",
-                  search: { buildingId: costType.buildingId },
-                })
-              }
-            >
-              {t("ui.costs.addEntry")}
-            </ActionLink>
-            <ActionLink
-              icon={domainVisuals.meters.icon}
-              iconBackground={domainVisuals.meters.accent}
-              onClick={() =>
-                navigate({
-                  to: "/zaehler",
-                  search: {
-                    buildingId: costType.buildingId,
-                    unitId: undefined,
-                    type: undefined,
-                  },
-                })
-              }
-            >
-              {t("ui.costs.detail.openMeters")}
-            </ActionLink>
             <ActionLink
               icon={RiDeleteBinLine}
               iconBackground="var(--color-rose-400)"

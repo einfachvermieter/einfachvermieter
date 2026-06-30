@@ -38,15 +38,6 @@ const isVersionActive = (version: HeatingSettings, today: string): boolean =>
   version.validFrom <= today &&
   (version.validTo === null || version.validTo >= today);
 
-const modeLabel = (version: HeatingSettings): string => {
-  if (version.mode === "external") {
-    return t("ui.heating.detail.modeExternal");
-  }
-  return version.consumptionMethod === "heat_cost_allocator"
-    ? t("ui.heating.detail.modeInternalAllocator")
-    : t("ui.heating.detail.modeInternalHeatMeter");
-};
-
 export const HeatingVersionEditPage = () => {
   const { id } = useParams({ strict: false }) as { id: string };
 
@@ -207,34 +198,7 @@ const HeatingVersionEditView = ({
         </div>
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-24">
-          <InfoCard
-            title={t("ui.common.infoCards.atAGlance")}
-            rows={[
-              {
-                label: t("ui.heating.detail.modeLabel"),
-                value: modeLabel(version),
-              },
-              {
-                label: t("ui.heating.versions.columns.split"),
-                value: sharesText,
-              },
-              { label: t("ui.heating.fields.fuelType"), value: fuelText },
-              {
-                label: t("ui.heating.detail.co2Pill"),
-                value: isInternal ? (
-                  <Badge variant={version.co2CostShareEnabled ? "ok" : "slate"}>
-                    {version.co2CostShareEnabled
-                      ? t("ui.heating.detail.co2Active")
-                      : t("ui.heating.detail.co2Off")}
-                  </Badge>
-                ) : (
-                  dash
-                ),
-              },
-            ]}
-          />
-
-          <InfoCard title={t("ui.common.infoCards.actions")}>
+          <InfoCard title={t("ui.common.infoCards.links")}>
             <ActionLink
               icon={domainVisuals.meters.icon}
               iconBackground={domainVisuals.meters.accent}
@@ -258,6 +222,27 @@ const HeatingVersionEditView = ({
             >
               {t("ui.heating.detail.openStatements")}
             </ActionLink>
+          </InfoCard>
+
+          <InfoCard
+            title={t("ui.common.infoCards.details")}
+            rows={[
+              {
+                label: t("ui.heating.detail.co2Pill"),
+                value: isInternal ? (
+                  <Badge variant={version.co2CostShareEnabled ? "ok" : "slate"}>
+                    {version.co2CostShareEnabled
+                      ? t("ui.heating.detail.co2Active")
+                      : t("ui.heating.detail.co2Off")}
+                  </Badge>
+                ) : (
+                  dash
+                ),
+              },
+            ]}
+          />
+
+          <InfoCard title={t("ui.common.infoCards.actions")}>
             <ActionLink
               icon={RiDeleteBinLine}
               iconBackground="var(--color-rose-400)"

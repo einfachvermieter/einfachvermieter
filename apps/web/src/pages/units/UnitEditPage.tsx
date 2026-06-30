@@ -6,14 +6,13 @@ import {
 } from "@einfachvermieter/shared";
 import { RiDeleteBinLine, RiStore2Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { HeroBand } from "../../components/common/HeroBand";
 import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
-import { Badge } from "../../components/ui/Badge";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
@@ -154,47 +153,14 @@ export const UnitEditPage = () => {
         />
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-24">
-          <InfoCard
-            title={t("ui.units.occupancy.title")}
-            rows={[
-              {
-                label: t("ui.units.status.label"),
-                value: current ? (
-                  <Badge variant={current.kind === "owner" ? "slate" : "ok"}>
-                    {statusLabel}
-                  </Badge>
-                ) : (
-                  <Badge variant="warn">{statusLabel}</Badge>
-                ),
-              },
-              {
-                label: t("ui.units.fields.tenant"),
-                value: current ? (
-                  <Link
-                    to="/mieter/$tenantId"
-                    params={{ tenantId: current.id }}
-                    className="font-semibold text-sky-700 dark:text-sky-400"
-                  >
-                    {tenantNames || t("ui.common.emptyValue")}
-                  </Link>
-                ) : (
-                  t("ui.common.emptyValue")
-                ),
-              },
-              {
-                label: t("ui.units.occupancy.since"),
-                value: current
-                  ? formatDate(current.startDate)
-                  : t("ui.common.emptyValue"),
-              },
-            ]}
-          />
-
-          <InfoCard title={t("ui.common.infoCards.actions")}>
+          <InfoCard title={t("ui.common.infoCards.links")}>
             {current ? (
               <ActionLink
                 icon={domainVisuals.tenants.icon}
                 iconBackground={domainVisuals.tenants.accent}
+                subtitle={t("ui.units.links.tenantSince", {
+                  date: formatDate(current.startDate),
+                })}
                 onClick={() =>
                   navigate({
                     to: "/mieter/$tenantId",
@@ -202,7 +168,7 @@ export const UnitEditPage = () => {
                   })
                 }
               >
-                {t("ui.units.actions.openTenant")}
+                {tenantNames}
               </ActionLink>
             ) : null}
             <ActionLink
@@ -221,6 +187,9 @@ export const UnitEditPage = () => {
             >
               {t("ui.units.actions.unitMeters")}
             </ActionLink>
+          </InfoCard>
+
+          <InfoCard title={t("ui.common.infoCards.actions")}>
             <ActionLink
               icon={RiDeleteBinLine}
               iconBackground="var(--color-rose-400)"

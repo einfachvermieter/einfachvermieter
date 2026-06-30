@@ -18,7 +18,7 @@ import {
   RiSafe2Line,
 } from "@remixicon/react";
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EmptyNote } from "../../components/common/EmptyNote";
@@ -430,35 +430,38 @@ export const MieterkontoDetail = () => {
         </Tabs>
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-24">
+          <InfoCard title={t("ui.common.infoCards.links")}>
+            <ActionLink
+              icon={domainVisuals.tenants.icon}
+              iconBackground={domainVisuals.tenants.accent}
+              onClick={() =>
+                navigate({
+                  to: "/mieter/$tenantId",
+                  params: { tenantId },
+                }).catch(() => undefined)
+              }
+            >
+              {t("ui.tenants.tabs.master")}
+            </ActionLink>
+            {unit ? (
+              <ActionLink
+                icon={domainVisuals.units.icon}
+                iconBackground={domainVisuals.units.accent}
+                onClick={() =>
+                  navigate({
+                    to: "/wohnungen/$unitId",
+                    params: { unitId: unit.id },
+                  }).catch(() => undefined)
+                }
+              >
+                {unit.name}
+              </ActionLink>
+            ) : null}
+          </InfoCard>
+
           <InfoCard
-            title={t("ui.common.infoCards.atAGlance")}
+            title={t("ui.common.infoCards.details")}
             rows={[
-              {
-                label: t("ui.account.detail.unitLabel"),
-                value: unit ? (
-                  <Link
-                    to="/wohnungen/$unitId"
-                    params={{ unitId: unit.id }}
-                    className="font-semibold text-sky-700 dark:text-sky-400"
-                  >
-                    {unit.name}
-                  </Link>
-                ) : (
-                  t("ui.common.emptyValue")
-                ),
-              },
-              {
-                label: t("ui.account.detail.baseRentLabel"),
-                value: currentRent
-                  ? formatEur(currentRent.monthlyBaseRentCents)
-                  : t("ui.common.emptyValue"),
-              },
-              {
-                label: t("ui.account.detail.advanceLabel"),
-                value: currentRent
-                  ? formatEur(currentRent.monthlyAdvanceCents)
-                  : t("ui.common.emptyValue"),
-              },
               {
                 label: t("ui.account.detail.sepaLabel"),
                 value: (

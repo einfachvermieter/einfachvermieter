@@ -2,7 +2,7 @@ import {
   type RemixiconComponentType,
   RiArrowRightSLine,
 } from "@remixicon/react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { IconTile } from "@/components/common/IconTile";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +15,7 @@ export const ActionLink = ({
   icon,
   iconBackground,
   danger = false,
+  subtitle,
   className,
   children,
   ...props
@@ -23,6 +24,7 @@ export const ActionLink = ({
   /** Farbe oder Verlauf aus lib/domainVisuals.ts */
   iconBackground: string;
   danger?: boolean;
+  subtitle?: ReactNode;
 }) => (
   <button
     type="button"
@@ -36,7 +38,14 @@ export const ActionLink = ({
     {...props}
   >
     <IconTile icon={icon} size={30} background={iconBackground} />
-    <span className="min-w-0 flex-1">{children}</span>
+    <span className="min-w-0 flex-1">
+      {children}
+      {subtitle ? (
+        <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+          {subtitle}
+        </span>
+      ) : null}
+    </span>
     <RiArrowRightSLine
       aria-hidden={true}
       className="size-4.5 shrink-0 text-slate-400"

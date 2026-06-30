@@ -256,7 +256,9 @@
       "moreChip": "+{count}",
       "infoCards": {
         "actions": "Aktionen",
-        "atAGlance": "Auf einen Blick"
+        "atAGlance": "Auf einen Blick",
+        "links": "Verknüpfungen",
+        "details": "Details"
       },
       "emptyValue": "—",
       "periodLabel": "{start} – {end}",
@@ -409,7 +411,7 @@
         "statusInactive": "Beendet",
         "usageLabel": "Verwendung",
         "lastReadingLabel": "Letzte Ablesung",
-        "openUnit": "Wohnung öffnen",
+        "heatingConfig": "Heizkosten-Konfiguration",
         "deleteAction": "Zähler löschen"
       },
       "listTitle": "Zählerliste",
@@ -586,12 +588,10 @@
           "description": "Bezeichnung und Flächen der Wohnung"
         }
       },
-      "occupancy": {
-        "title": "Belegung",
-        "since": "seit"
+      "links": {
+        "tenantSince": "Mieter seit {date}"
       },
       "actions": {
-        "openTenant": "Mieter öffnen",
         "unitMeters": "Zähler der Wohnung",
         "delete": "Wohnung löschen"
       },
@@ -868,6 +868,7 @@
         "metersAssigned": "{count} zugeordnet",
         "lastEntryLabel": "Letzte Rechnung",
         "openMeters": "Zugeordnete Zähler",
+        "openHeating": "Heizkosten-Konfiguration öffnen",
         "deleteAction": "Kostenart löschen"
       },
       "entryCreateTitle": "Kostenrechnung",
