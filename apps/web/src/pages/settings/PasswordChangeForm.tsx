@@ -4,15 +4,19 @@ import {
   passwordSchema,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RiLockPasswordLine } from "@remixicon/react";
 import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { SectionCard } from "@/components/common/SectionCard";
+import { Spinner } from "@/components/common/Spinner";
 import { Form } from "@/components/form/Form";
-import { FormActions } from "@/components/form/FormActions";
 import { PasswordPolicyHint } from "@/components/form/PasswordPolicyHint";
+import { Savebar } from "@/components/form/Savebar";
 import { TextInput } from "@/components/form/TextInput";
-import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { FieldGroup } from "@/components/ui/Field";
+import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 
 // Lokales Form-Schema: wie das geteilte `makePasswordChangeSchema`, plus
@@ -73,40 +77,51 @@ export const PasswordChangeForm = ({
   return (
     <Form form={form} onSubmit={handleSubmit} guardUnsavedChanges={false}>
       <fieldset disabled={submitting} className="contents">
-        <Card>
-          <CardContent>
-            <FieldGroup className="gap-4">
-              <TextInput
-                control={form.control}
-                name="currentPassword"
-                label={t("ui.settings.password.fields.current")}
-                type="password"
-                autoComplete="current-password"
-              />
-              <TextInput
-                control={form.control}
-                name="newPassword"
-                label={t("ui.settings.password.fields.new")}
-                description={<PasswordPolicyHint policy={policy} />}
-                type="password"
-                autoComplete="new-password"
-              />
-              <TextInput
-                control={form.control}
-                name="newPasswordConfirm"
-                label={t("ui.settings.password.fields.confirm")}
-                type="password"
-                autoComplete="new-password"
-              />
-            </FieldGroup>
-          </CardContent>
-        </Card>
+        <SectionCard
+          icon={RiLockPasswordLine}
+          iconBackground={domainVisuals.configuration.accent}
+          title={t("ui.settings.password.credentialsTitle")}
+        >
+          <FieldGroup className="gap-4">
+            <TextInput
+              control={form.control}
+              name="currentPassword"
+              label={t("ui.settings.password.fields.current")}
+              type="password"
+              autoComplete="current-password"
+            />
+            <TextInput
+              control={form.control}
+              name="newPassword"
+              label={t("ui.settings.password.fields.new")}
+              description={<PasswordPolicyHint policy={policy} />}
+              type="password"
+              autoComplete="new-password"
+            />
+            <TextInput
+              control={form.control}
+              name="newPasswordConfirm"
+              label={t("ui.settings.password.fields.confirm")}
+              type="password"
+              autoComplete="new-password"
+            />
+          </FieldGroup>
+        </SectionCard>
       </fieldset>
-      <FormActions
-        submitting={submitting}
-        onCancel={onCancel}
-        submitLabel={t("ui.common.action.save")}
-      />
+      <Savebar>
+        <Button
+          variant="secondary"
+          type="button"
+          onClick={onCancel}
+          disabled={submitting}
+        >
+          {t("ui.common.action.cancel")}
+        </Button>
+        <Button type="submit" disabled={submitting}>
+          {submitting ? <Spinner data-icon="inline-start" /> : null}
+          {t("ui.common.action.save")}
+        </Button>
+      </Savebar>
     </Form>
   );
 };

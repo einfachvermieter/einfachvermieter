@@ -60,7 +60,7 @@ export const BuildingSwitcher = () => {
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-              {t("ui.navigation.buildingSwitcher.label")}
+              {t("ui.navigation.buildingSwitcher.switchLabel")}
             </DropdownMenuLabel>
             {buildings.map((item) => (
               <DropdownMenuItem
@@ -73,9 +73,14 @@ export const BuildingSwitcher = () => {
                     {item.name}
                   </span>
                   <span className="text-[11.5px] text-muted-foreground">
-                    {t("ui.navigation.buildingSwitcher.unitsCount", {
-                      count: item.unitsCount,
-                    })}
+                    {[
+                      t("ui.navigation.buildingSwitcher.unitsCount", {
+                        count: item.unitsCount,
+                      }),
+                      t("ui.dashboard.buildingsCard.tenantsCount", {
+                        count: item.activeTenantsCount,
+                      }),
+                    ].join(t("ui.common.separators.bullet"))}
                   </span>
                 </span>
                 {item.id === buildingId ? (

@@ -13,6 +13,7 @@ import { Disclose } from "@/components/common/Disclose";
 import { SectionCard } from "@/components/common/SectionCard";
 import { SplitBar } from "@/components/common/SplitBar";
 import { MonthInput } from "@/components/form/MonthInput";
+import { ReadonlyField } from "@/components/form/ReadonlyField";
 import { SelectInput } from "@/components/form/SelectInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -175,16 +176,26 @@ export const HeatingSettingsFields = ({
         description={t("ui.heating.detail.validityDescription")}
       >
         <FieldGroup className="gap-4">
-          <SelectInput
-            control={form.control}
-            name="buildingId"
-            label={t("ui.buildings.title")}
-            disabled={buildingFieldDisabled}
-            options={buildings.map((building) => ({
-              value: building.id,
-              label: building.name,
-            }))}
-          />
+          {buildingFieldDisabled ? (
+            <ReadonlyField
+              label={t("ui.buildings.title")}
+              value={
+                buildings.find(
+                  (building) => building.id === form.getValues("buildingId"),
+                )?.name
+              }
+            />
+          ) : (
+            <SelectInput
+              control={form.control}
+              name="buildingId"
+              label={t("ui.buildings.title")}
+              options={buildings.map((building) => ({
+                value: building.id,
+                label: building.name,
+              }))}
+            />
+          )}
           <div className="grid grid-cols-2 gap-4">
             <MonthInput
               control={form.control}

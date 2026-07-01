@@ -98,7 +98,7 @@ export const TenantHero = ({
               : t("ui.common.emptyValue"),
         },
         {
-          label: t("ui.tenant.hero.livesSince"),
+          label: t("ui.tenant.hero.contractStart"),
           value: formatDate(tenant.startDate),
         },
         statusStat,

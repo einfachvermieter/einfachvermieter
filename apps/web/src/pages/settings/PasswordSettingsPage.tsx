@@ -1,12 +1,12 @@
 import type { PasswordChangeDto } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { PageHead } from "@/components/common/PageHead";
 import { Spinner } from "@/components/common/Spinner";
 import { changePassword, passwordPolicyQueryOptions } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { useGoBack } from "@/lib/useGoBack";
 import { PasswordChangeForm } from "./PasswordChangeForm";
+import { SettingsLayout } from "./SettingsLayout";
 
 export const PasswordSettingsPage = () => {
   const { data: policy } = useQuery(passwordPolicyQueryOptions);
@@ -22,12 +22,11 @@ export const PasswordSettingsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHead
-        eyebrow={t("ui.navigation.configuration")}
-        title={t("ui.settings.password.title")}
-        sub={t("ui.settings.password.description")}
-      />
+    <SettingsLayout
+      active="password"
+      title={t("ui.settings.password.title")}
+      description={t("ui.settings.password.description")}
+    >
       {policy ? (
         <PasswordChangeForm
           policy={policy}
@@ -39,6 +38,6 @@ export const PasswordSettingsPage = () => {
           <Spinner className="size-6 text-muted-foreground" />
         </div>
       )}
-    </div>
+    </SettingsLayout>
   );
 };

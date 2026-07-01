@@ -244,6 +244,7 @@
         "empty": "Kein Gebäude",
         "all": "Alle Gebäude",
         "add": "Neues Gebäude",
+        "switchLabel": "Gebäude wechseln",
         "unitsCount": "{count, plural, one {# Wohnung} other {# Wohnungen}}"
       }
     },
@@ -353,6 +354,7 @@
         "unsavedDiscard": "Änderungen verwerfen",
         "optionalSuffix": " (optional)",
         "requiredMarker": " *",
+        "readonlyAssignment": "Zuordnung kann nicht geändert werden",
         "datePlaceholder": "TT.MM.JJJJ",
         "monthPlaceholder": "MM.JJJJ",
         "dateOpenPicker": "Datum wählen",
@@ -553,6 +555,15 @@
       "emptySearch": "Keine Gebäude gefunden für „{query}“",
       "columns": {
         "street": "Straße"
+      },
+      "sections": {
+        "baseData": {
+          "title": "Stammdaten",
+          "description": "Bezeichnung und Adresse des Gebäudes"
+        }
+      },
+      "actions": {
+        "delete": "Gebäude löschen"
       },
       "fields": {
         "name": "Bezeichnung",
@@ -1533,7 +1544,7 @@
       },
       "hero": {
         "warmRent": "Warmmiete",
-        "livesSince": "Wohnt seit"
+        "contractStart": "Vertragsbeginn"
       },
       "atAGlance": {
         "title": "Auf einen Blick",
@@ -1714,9 +1725,15 @@
       }
     },
     "settings": {
+      "eyebrow": "Einstellungen",
+      "nav": {
+        "sender": "Absenderdaten",
+        "password": "Passwort"
+      },
       "password": {
         "title": "Passwort ändern",
         "description": "Ändern Sie das Passwort Ihres Anmelde-Kontos. Nach dem Speichern bleibt die aktuelle Sitzung angemeldet.",
+        "credentialsTitle": "Anmeldedaten",
         "fields": {
           "current": "Aktuelles Passwort",
           "new": "Neues Passwort",
@@ -1735,9 +1752,21 @@
         "title": "Absenderdaten",
         "description": "Diese Angaben erscheinen im Briefkopf und im Footer Ihrer Nebenkostenabrechnungen.",
         "saveSuccess": "Absenderdaten gespeichert.",
+        "moreFields": "Weitere Angaben",
         "sections": {
           "contact": "Kontaktdaten",
-          "bank": "Bankdaten"
+          "contactDescription": "Absender auf Abrechnungen und Anschreiben",
+          "bank": "Bankdaten",
+          "bankDescription": "Für den Zahlungshinweis auf der Abrechnung"
+        },
+        "sidebar": {
+          "appearance": "Wo erscheint das?",
+          "letterhead": "Briefkopf",
+          "letterheadValue": "Abrechnungs-PDF",
+          "footer": "Footer",
+          "footerValue": "Jede PDF-Seite",
+          "paymentHint": "Zahlungshinweis",
+          "paymentHintValue": "IBAN/BIC"
         },
         "fields": {
           "name": "Name",

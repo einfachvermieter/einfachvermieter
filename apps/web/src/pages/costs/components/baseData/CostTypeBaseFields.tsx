@@ -4,6 +4,7 @@ import type { UseFormReturn } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
 import { CheckboxInput } from "@/components/form/CheckboxInput";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
+import { ReadonlyField } from "@/components/form/ReadonlyField";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
@@ -62,16 +63,26 @@ export const CostTypeBaseFields = ({
   return (
     <FieldGroup className="gap-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <SelectInput
-          control={form.control}
-          name="buildingId"
-          label={t("ui.buildings.title")}
-          disabled={buildingFieldDisabled}
-          options={buildings.map((building) => ({
-            value: building.id,
-            label: building.name,
-          }))}
-        />
+        {buildingFieldDisabled ? (
+          <ReadonlyField
+            label={t("ui.buildings.title")}
+            value={
+              buildings.find(
+                (building) => building.id === form.getValues("buildingId"),
+              )?.name
+            }
+          />
+        ) : (
+          <SelectInput
+            control={form.control}
+            name="buildingId"
+            label={t("ui.buildings.title")}
+            options={buildings.map((building) => ({
+              value: building.id,
+              label: building.name,
+            }))}
+          />
+        )}
         <TextInput
           control={form.control}
           name="name"

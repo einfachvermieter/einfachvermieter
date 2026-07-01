@@ -3,19 +3,25 @@ import {
   senderSettingsUpdateSchema,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RiBankLine, RiContactsBook2Line, RiImageLine } from "@remixicon/react";
 import type { BankData } from "bankdata-germany";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
+import { Disclose } from "@/components/common/Disclose";
+import { SectionCard } from "@/components/common/SectionCard";
+import { Spinner } from "@/components/common/Spinner";
 import { CheckboxInput } from "@/components/form/CheckboxInput";
 import { Form } from "@/components/form/Form";
-import { FormActions } from "@/components/form/FormActions";
+import { Savebar } from "@/components/form/Savebar";
 import { TextInput } from "@/components/form/TextInput";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { FieldDescription } from "@/components/ui/Field";
+import { gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import type { PendingLogo, SenderSettings } from "@/lib/senderSettings";
 import { SenderLogoSection } from "./SenderLogoSection";
+import { SenderSettingsSidebar } from "./SenderSettingsSidebar";
 
 const normalizeIban = (raw: string): string =>
   raw.replace(/\s+/gu, "").toUpperCase();
@@ -94,130 +100,163 @@ export const SenderSettingsForm = ({
   return (
     <Form form={form} onSubmit={onSubmit}>
       <fieldset disabled={submitting} className="contents">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("ui.settings.sender.sections.contact")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextInput
-                control={form.control}
-                name="senderName"
-                label={t("ui.settings.sender.fields.name")}
-                placeholder={t("ui.settings.sender.fields.namePlaceholder")}
-              />
-              <TextInput
-                control={form.control}
-                name="senderAddressStreet"
-                label={t("ui.settings.sender.fields.addressStreet")}
-                placeholder={t(
-                  "ui.settings.sender.fields.addressStreetPlaceholder",
-                )}
-              />
-              <TextInput
-                control={form.control}
-                name="senderAddressPostalCode"
-                label={t("ui.settings.sender.fields.addressPostalCode")}
-                inputMode="numeric"
-              />
-              <TextInput
-                control={form.control}
-                name="senderAddressCity"
-                label={t("ui.settings.sender.fields.addressCity")}
-              />
-              <TextInput
-                control={form.control}
-                name="senderPhone"
-                label={t("ui.settings.sender.fields.phone")}
-                placeholder={t("ui.settings.sender.fields.phonePlaceholder")}
-                optional={true}
-                inputMode="tel"
-              />
-              <TextInput
-                control={form.control}
-                name="senderFax"
-                label={t("ui.settings.sender.fields.fax")}
-                placeholder={t("ui.settings.sender.fields.faxPlaceholder")}
-                optional={true}
-                inputMode="tel"
-              />
-              <TextInput
-                control={form.control}
-                name="senderEmail"
-                label={t("ui.settings.sender.fields.email")}
-                placeholder={t("ui.settings.sender.fields.emailPlaceholder")}
-                optional={true}
-                inputMode="email"
-                type="email"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("ui.settings.sender.sections.bank")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextInput
-                control={form.control}
-                name="senderBankIban"
-                label={t("ui.settings.sender.fields.bankIban")}
-                placeholder={t("ui.settings.sender.fields.bankIbanPlaceholder")}
-                inputClassName="tabular-nums"
-                optional={true}
-              />
-              <TextInput
-                control={form.control}
-                name="senderBankBic"
-                label={t("ui.settings.sender.fields.bankBic")}
-                placeholder={t("ui.settings.sender.fields.bankBicPlaceholder")}
-                inputClassName="tabular-nums"
-                optional={true}
-              />
-              <TextInput
-                control={form.control}
-                name="senderBankName"
-                label={t("ui.settings.sender.fields.bankName")}
-                placeholder={t("ui.settings.sender.fields.bankNamePlaceholder")}
-                optional={true}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("ui.settings.sender.logo.title")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <CheckboxInput
+        <div className="grid items-start gap-5 lg:grid-cols-[1fr_320px]">
+          <div>
+            <SectionCard
+              icon={RiContactsBook2Line}
+              iconBackground={gradients.buildings}
+              title={t("ui.settings.sender.sections.contact")}
+              description={t("ui.settings.sender.sections.contactDescription")}
+            >
+              <div className="flex flex-col gap-4">
+                <TextInput
                   control={form.control}
-                  name="useLogo"
-                  label={t("ui.settings.sender.fields.useLogo")}
+                  name="senderName"
+                  label={t("ui.settings.sender.fields.name")}
+                  placeholder={t("ui.settings.sender.fields.namePlaceholder")}
                 />
-                <FieldDescription>
-                  {t("ui.settings.sender.fields.useLogoDescription")}
-                </FieldDescription>
+                <TextInput
+                  control={form.control}
+                  name="senderAddressStreet"
+                  label={t("ui.settings.sender.fields.addressStreet")}
+                  placeholder={t(
+                    "ui.settings.sender.fields.addressStreetPlaceholder",
+                  )}
+                />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <TextInput
+                    control={form.control}
+                    name="senderAddressPostalCode"
+                    label={t("ui.settings.sender.fields.addressPostalCode")}
+                    inputMode="numeric"
+                  />
+                  <TextInput
+                    control={form.control}
+                    name="senderAddressCity"
+                    label={t("ui.settings.sender.fields.addressCity")}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <TextInput
+                    control={form.control}
+                    name="senderPhone"
+                    label={t("ui.settings.sender.fields.phone")}
+                    placeholder={t(
+                      "ui.settings.sender.fields.phonePlaceholder",
+                    )}
+                    optional={true}
+                    inputMode="tel"
+                  />
+                  <TextInput
+                    control={form.control}
+                    name="senderEmail"
+                    label={t("ui.settings.sender.fields.email")}
+                    placeholder={t(
+                      "ui.settings.sender.fields.emailPlaceholder",
+                    )}
+                    optional={true}
+                    inputMode="email"
+                    type="email"
+                  />
+                </div>
+                <Disclose label={t("ui.settings.sender.moreFields")}>
+                  <TextInput
+                    control={form.control}
+                    name="senderFax"
+                    label={t("ui.settings.sender.fields.fax")}
+                    placeholder={t("ui.settings.sender.fields.faxPlaceholder")}
+                    optional={true}
+                    inputMode="tel"
+                  />
+                </Disclose>
               </div>
-              <SenderLogoSection
-                settings={settings}
-                pendingLogo={pendingLogo}
-                onPendingLogoChange={onPendingLogoChange}
-                logoVersion={logoVersion}
-              />
-            </div>
-          </CardContent>
-        </Card>
+            </SectionCard>
+
+            <SectionCard
+              icon={RiBankLine}
+              iconBackground={gradients.money}
+              title={t("ui.settings.sender.sections.bank")}
+              description={t("ui.settings.sender.sections.bankDescription")}
+            >
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <TextInput
+                    control={form.control}
+                    name="senderBankIban"
+                    label={t("ui.settings.sender.fields.bankIban")}
+                    placeholder={t(
+                      "ui.settings.sender.fields.bankIbanPlaceholder",
+                    )}
+                    inputClassName="tabular-nums"
+                    optional={true}
+                  />
+                  <TextInput
+                    control={form.control}
+                    name="senderBankBic"
+                    label={t("ui.settings.sender.fields.bankBic")}
+                    placeholder={t(
+                      "ui.settings.sender.fields.bankBicPlaceholder",
+                    )}
+                    inputClassName="tabular-nums"
+                    optional={true}
+                  />
+                </div>
+                <TextInput
+                  control={form.control}
+                  name="senderBankName"
+                  label={t("ui.settings.sender.fields.bankName")}
+                  placeholder={t(
+                    "ui.settings.sender.fields.bankNamePlaceholder",
+                  )}
+                  optional={true}
+                />
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              icon={RiImageLine}
+              iconBackground={gradients.statements}
+              title={t("ui.settings.sender.logo.title")}
+              description={t("ui.settings.sender.logo.description")}
+            >
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <CheckboxInput
+                    control={form.control}
+                    name="useLogo"
+                    label={t("ui.settings.sender.fields.useLogo")}
+                  />
+                  <FieldDescription>
+                    {t("ui.settings.sender.fields.useLogoDescription")}
+                  </FieldDescription>
+                </div>
+                <SenderLogoSection
+                  settings={settings}
+                  pendingLogo={pendingLogo}
+                  onPendingLogoChange={onPendingLogoChange}
+                  logoVersion={logoVersion}
+                />
+              </div>
+            </SectionCard>
+          </div>
+
+          <SenderSettingsSidebar />
+        </div>
       </fieldset>
-      <FormActions
-        submitting={submitting}
-        onCancel={onCancel}
-        submitLabel={t("ui.common.action.save")}
-      />
+      <Savebar>
+        <Button
+          variant="secondary"
+          type="button"
+          onClick={onCancel}
+          disabled={submitting}
+        >
+          {t("ui.common.action.cancel")}
+        </Button>
+        <Button type="submit" disabled={submitting}>
+          {submitting ? <Spinner data-icon="inline-start" /> : null}
+          {t("ui.common.action.save")}
+        </Button>
+      </Savebar>
     </Form>
   );
 };

@@ -15,6 +15,7 @@ import type { UseFormReturn } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
 import { SectionCard } from "@/components/common/SectionCard";
 import { DateInput } from "@/components/form/DateInput";
+import { ReadonlyField } from "@/components/form/ReadonlyField";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
@@ -108,17 +109,27 @@ export const MeterBaseFields = ({
               label: t(`meters.roles.${role}`),
             }))}
           />
-          <SelectInput
-            control={form.control}
-            name="buildingId"
-            label={t("ui.buildings.title")}
-            disabled={buildingFieldDisabled}
-            onValueChange={() => form.setValue("unitId", UNIT_NONE)}
-            options={buildings.map((building) => ({
-              value: building.id,
-              label: building.name,
-            }))}
-          />
+          {buildingFieldDisabled ? (
+            <ReadonlyField
+              label={t("ui.buildings.title")}
+              value={
+                buildings.find(
+                  (building) => building.id === form.getValues("buildingId"),
+                )?.name
+              }
+            />
+          ) : (
+            <SelectInput
+              control={form.control}
+              name="buildingId"
+              label={t("ui.buildings.title")}
+              onValueChange={() => form.setValue("unitId", UNIT_NONE)}
+              options={buildings.map((building) => ({
+                value: building.id,
+                label: building.name,
+              }))}
+            />
+          )}
           {showUnitField ? (
             <SelectInput
               control={form.control}

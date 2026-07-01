@@ -1,8 +1,6 @@
 import type { SenderSettingsUpdateDto } from "@einfachvermieter/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { Description } from "@/components/common/Description";
-import { PageHead } from "@/components/common/PageHead";
+import { type ReactNode, useState } from "react";
 import { FormSkeleton } from "@/components/FormSkeleton";
 import { t } from "@/lib/i18n";
 import {
@@ -15,6 +13,7 @@ import {
 } from "@/lib/senderSettings";
 import { useGoBack } from "@/lib/useGoBack";
 import { SenderSettingsForm } from "./SenderSettingsForm";
+import { SettingsLayout } from "./SettingsLayout";
 
 const toFormDefaults = (settings: SenderSettings): SenderSettingsUpdateDto => ({
   senderName: settings.senderName,
@@ -38,27 +37,23 @@ export const SenderSettingsPage = () => {
 
   const goHome = useGoBack("/");
 
+  const layout = (children: ReactNode) => (
+    <SettingsLayout
+      active="sender"
+      title={t("ui.settings.sender.title")}
+      description={t("ui.settings.sender.description")}
+    >
+      {children}
+    </SettingsLayout>
+  );
+
   if (settingsQuery.isPending) {
-    return (
-      <div className="space-y-6">
-        <PageHead
-          eyebrow={t("ui.navigation.configuration")}
-          title={t("ui.settings.sender.title")}
-        />
-        <FormSkeleton rows={6} />
-      </div>
-    );
+    return layout(<FormSkeleton rows={6} />);
   }
 
   if (settingsQuery.isError || !settingsQuery.data) {
-    return (
-      <div className="space-y-6">
-        <PageHead
-          eyebrow={t("ui.navigation.configuration")}
-          title={t("ui.settings.sender.title")}
-        />
-        <p className="text-sm text-destructive">{t("common.saveFailed")}</p>
-      </div>
+    return layout(
+      <p className="text-sm text-destructive">{t("common.saveFailed")}</p>,
     );
   }
 
@@ -84,24 +79,15 @@ export const SenderSettingsPage = () => {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <PageHead
-          eyebrow={t("ui.navigation.configuration")}
-          title={t("ui.settings.sender.title")}
-        />
-        <Description>{t("ui.settings.sender.description")}</Description>
-      </div>
-      <SenderSettingsForm
-        settings={settings}
-        defaultValues={toFormDefaults(settings)}
-        onSubmit={handleSubmit}
-        onCancel={goHome}
-        pendingLogo={pendingLogo}
-        onPendingLogoChange={setPendingLogo}
-        logoVersion={logoVersion}
-      />
-    </div>
+  return layout(
+    <SenderSettingsForm
+      settings={settings}
+      defaultValues={toFormDefaults(settings)}
+      onSubmit={handleSubmit}
+      onCancel={goHome}
+      pendingLogo={pendingLogo}
+      onPendingLogoChange={setPendingLogo}
+      logoVersion={logoVersion}
+    />,
   );
 };
