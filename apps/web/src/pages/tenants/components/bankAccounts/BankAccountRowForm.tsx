@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { BankData } from "bankdata-germany";
-import { useEffect, useState } from "react";
+import { bankDataByIBAN } from "bankdata-germany";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { CheckboxInput } from "@/components/form/CheckboxInput";
 import { DateInput } from "@/components/form/DateInput";
@@ -45,29 +45,11 @@ export const BankAccountRowForm = ({
     }
   }, [sepaEnabled, form]);
 
-  // IBAN-getriebene Bankerkennung: BIC wird automatisch befüllt, wenn
-  // das Feld leer ist; der Banknamen wird als Hinweis unter dem IBAN-
-  // Feld angezeigt. Funktioniert nur für deutsche IBANs.
+  // BIC wird automatisch befüllt, wenn das Feld leer ist
   const ibanRaw = form.watch("iban");
-  const [bankData, setBankData] = useState<BankData | null>(null);
-  useEffect(() => {
+  const bankData = useMemo(() => {
     const cleaned = normalizeIban(ibanRaw ?? "");
-    if (cleaned.length === 0) {
-      setBankData(null);
-      return;
-    }
-    let cancelled = false;
-    // BLZ-Verzeichnis erst beim Tippen laden (Chunk)
-    import("bankdata-germany")
-      .then(({ bankDataByIBAN }) => {
-        if (!cancelled) {
-          setBankData(bankDataByIBAN(cleaned));
-        }
-      })
-      .catch(() => setBankData(null));
-    return () => {
-      cancelled = true;
-    };
+    return cleaned.length === 0 ? null : bankDataByIBAN(cleaned);
   }, [ibanRaw]);
   useEffect(() => {
     if (bankData?.bic && !form.getValues("bic")) {

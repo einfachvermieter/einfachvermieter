@@ -10,7 +10,6 @@ import {
   createRoute,
   createRouter,
   Link,
-  lazyRouteComponent,
   Outlet,
   redirect,
   useRouterState,
@@ -61,145 +60,43 @@ import {
   tenantQueryOptions,
 } from "./lib/tenants";
 import { type Unit, unitQueryOptions, unitsQueryOptions } from "./lib/units";
-// LoginPage bleibt eager: erster Screen, soll aus dem Initial-Chunk sofort
-// malen. Alle Seiten hinter dem Login werden pro Route in eigene Chunks
-// gesplittet (lazyRouteComponent integriert mit defaultPreload: "intent",
-// lädt also beim Hover vor). Mehrfach genutzte Seiten (StatementDetailPage,
-// FeePage, MeterDetailPage) teilen sich über die Konstante einen Chunk.
+// Alle Seiten werden statisch importiert und in einen einzigen Bundle
+// gefaltet (kein Code-Splitting). Die App wird nur via Docker/Electron
+// vertrieben, wo Chunk-Splitting nur Blitzer beim Seitenwechsel bringt.
 import { LoginPage } from "./pages/auth/LoginPage";
-
-const BuildingCreatePage = lazyRouteComponent(
-  () => import("./pages/buildings/BuildingCreatePage"),
-  "BuildingCreatePage",
-);
-const BuildingEditPage = lazyRouteComponent(
-  () => import("./pages/buildings/BuildingEditPage"),
-  "BuildingEditPage",
-);
-const BuildingsOverview = lazyRouteComponent(
-  () => import("./pages/buildings/BuildingsOverview"),
-  "BuildingsOverview",
-);
-const CostsOverview = lazyRouteComponent(
-  () => import("./pages/costs/CostsOverview"),
-  "CostsOverview",
-);
-const CostTypeCreatePage = lazyRouteComponent(
-  () => import("./pages/costs/CostTypeCreatePage"),
-  "CostTypeCreatePage",
-);
-const CostTypeEditPage = lazyRouteComponent(
-  () => import("./pages/costs/CostTypeEditPage"),
-  "CostTypeEditPage",
-);
-const DashboardPage = lazyRouteComponent(
-  () => import("./pages/dashboard/DashboardPage"),
-  "DashboardPage",
-);
-const HeatingOverviewPage = lazyRouteComponent(
-  () => import("./pages/heating/HeatingOverviewPage"),
-  "HeatingOverviewPage",
-);
-const HeatingVersionCreatePage = lazyRouteComponent(
-  () => import("./pages/heating/HeatingVersionCreatePage"),
-  "HeatingVersionCreatePage",
-);
-const HeatingVersionEditPage = lazyRouteComponent(
-  () => import("./pages/heating/HeatingVersionEditPage"),
-  "HeatingVersionEditPage",
-);
-const CostEntryCreatePage = lazyRouteComponent(
-  () => import("./pages/invoices/CostEntryCreatePage"),
-  "CostEntryCreatePage",
-);
-const CostEntryEditPage = lazyRouteComponent(
-  () => import("./pages/invoices/CostEntryEditPage"),
-  "CostEntryEditPage",
-);
-const InvoicesPage = lazyRouteComponent(
-  () => import("./pages/invoices/InvoicesPage"),
-  "InvoicesPage",
-);
-const MeterCreatePage = lazyRouteComponent(
-  () => import("./pages/meters/MeterCreatePage"),
-  "MeterCreatePage",
-);
-const MeterDetailPage = lazyRouteComponent(
-  () => import("./pages/meters/MeterDetailPage"),
-  "MeterDetailPage",
-);
-const MeterReadingsPage = lazyRouteComponent(
-  () => import("./pages/meters/MeterReadingsPage"),
-  "MeterReadingsPage",
-);
-const MetersOverview = lazyRouteComponent(
-  () => import("./pages/meters/MetersOverview"),
-  "MetersOverview",
-);
-const FeePage = lazyRouteComponent(
-  () => import("./pages/mieterkonto/FeePage"),
-  "FeePage",
-);
-const MieterkontoDetail = lazyRouteComponent(
-  () => import("./pages/mieterkonto/MieterkontoDetail"),
-  "MieterkontoDetail",
-);
-const PaymentCreatePage = lazyRouteComponent(
-  () => import("./pages/payments/PaymentCreatePage"),
-  "PaymentCreatePage",
-);
-const PaymentEditPage = lazyRouteComponent(
-  () => import("./pages/payments/PaymentEditPage"),
-  "PaymentEditPage",
-);
-const PasswordSettingsPage = lazyRouteComponent(
-  () => import("./pages/settings/PasswordSettingsPage"),
-  "PasswordSettingsPage",
-);
-const SenderSettingsPage = lazyRouteComponent(
-  () => import("./pages/settings/SenderSettingsPage"),
-  "SenderSettingsPage",
-);
-const SetupPage = lazyRouteComponent(
-  () => import("./pages/setup/SetupPage"),
-  "SetupPage",
-);
-const StatementCreatePage = lazyRouteComponent(
-  () => import("./pages/statements/StatementCreatePage"),
-  "StatementCreatePage",
-);
-const StatementDetailPage = lazyRouteComponent(
-  () => import("./pages/statements/StatementDetailPage"),
-  "StatementDetailPage",
-);
-const StatementsPage = lazyRouteComponent(
-  () => import("./pages/statements/StatementsPage"),
-  "StatementsPage",
-);
-const TenantCreatePage = lazyRouteComponent(
-  () => import("./pages/tenants/TenantCreatePage"),
-  "TenantCreatePage",
-);
-const TenantEditPage = lazyRouteComponent(
-  () => import("./pages/tenants/TenantEditPage"),
-  "TenantEditPage",
-);
-const TenantsPage = lazyRouteComponent(
-  () => import("./pages/tenants/TenantsPage"),
-  "TenantsPage",
-);
-const UnitCreatePage = lazyRouteComponent(
-  () => import("./pages/units/UnitCreatePage"),
-  "UnitCreatePage",
-);
-const UnitEditPage = lazyRouteComponent(
-  () => import("./pages/units/UnitEditPage"),
-  "UnitEditPage",
-);
-const UnitsOverview = lazyRouteComponent(
-  () => import("./pages/units/UnitsOverview"),
-  "UnitsOverview",
-);
+import { BuildingCreatePage } from "./pages/buildings/BuildingCreatePage";
+import { BuildingEditPage } from "./pages/buildings/BuildingEditPage";
+import { BuildingsOverview } from "./pages/buildings/BuildingsOverview";
+import { CostsOverview } from "./pages/costs/CostsOverview";
+import { CostTypeCreatePage } from "./pages/costs/CostTypeCreatePage";
+import { CostTypeEditPage } from "./pages/costs/CostTypeEditPage";
+import { DashboardPage } from "./pages/dashboard/DashboardPage";
+import { HeatingOverviewPage } from "./pages/heating/HeatingOverviewPage";
+import { HeatingVersionCreatePage } from "./pages/heating/HeatingVersionCreatePage";
+import { HeatingVersionEditPage } from "./pages/heating/HeatingVersionEditPage";
+import { CostEntryCreatePage } from "./pages/invoices/CostEntryCreatePage";
+import { CostEntryEditPage } from "./pages/invoices/CostEntryEditPage";
+import { InvoicesPage } from "./pages/invoices/InvoicesPage";
+import { MeterCreatePage } from "./pages/meters/MeterCreatePage";
+import { MeterDetailPage } from "./pages/meters/MeterDetailPage";
+import { MeterReadingsPage } from "./pages/meters/MeterReadingsPage";
+import { MetersOverview } from "./pages/meters/MetersOverview";
+import { FeePage } from "./pages/mieterkonto/FeePage";
+import { MieterkontoDetail } from "./pages/mieterkonto/MieterkontoDetail";
+import { PaymentCreatePage } from "./pages/payments/PaymentCreatePage";
+import { PaymentEditPage } from "./pages/payments/PaymentEditPage";
+import { PasswordSettingsPage } from "./pages/settings/PasswordSettingsPage";
+import { SenderSettingsPage } from "./pages/settings/SenderSettingsPage";
+import { SetupPage } from "./pages/setup/SetupPage";
+import { StatementCreatePage } from "./pages/statements/StatementCreatePage";
+import { StatementDetailPage } from "./pages/statements/StatementDetailPage";
+import { StatementsPage } from "./pages/statements/StatementsPage";
+import { TenantCreatePage } from "./pages/tenants/TenantCreatePage";
+import { TenantEditPage } from "./pages/tenants/TenantEditPage";
+import { TenantsPage } from "./pages/tenants/TenantsPage";
+import { UnitCreatePage } from "./pages/units/UnitCreatePage";
+import { UnitEditPage } from "./pages/units/UnitEditPage";
+import { UnitsOverview } from "./pages/units/UnitsOverview";
 
 type RouterContext = {
   queryClient: QueryClient;
@@ -1203,7 +1100,6 @@ const RouteNotFound = () => {
 
 export const router = createRouter({
   routeTree,
-  defaultPreload: "intent",
   context: { queryClient: undefined as unknown as QueryClient },
   defaultErrorComponent: ({ error, reset }) => (
     <ErrorFallback

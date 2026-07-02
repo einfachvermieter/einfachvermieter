@@ -45,6 +45,13 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       exclude: ["@einfachvermieter/i18n"],
     },
+    build: {
+      rollupOptions: {
+        output: {
+          inlineDynamicImports: true,
+        },
+      },
+    },
     server: {
       host: "0.0.0.0",
       port: webPort,

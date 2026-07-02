@@ -4,8 +4,8 @@ import {
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiBankLine, RiContactsBook2Line, RiImageLine } from "@remixicon/react";
-import type { BankData } from "bankdata-germany";
-import { useEffect, useState } from "react";
+import { bankDataByIBAN } from "bankdata-germany";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { Disclose } from "@/components/common/Disclose";
@@ -57,29 +57,12 @@ export const SenderSettingsForm = ({
 
   const submitting = form.formState.isSubmitting;
 
-  // IBAN-getriebene Bankerkennung: BIC und Bankname werden automatisch
-  // befüllt, solange das jeweilige Feld leer ist. Funktioniert nur für
-  // deutsche IBANs.
+  // BIC und Bankname werden automatisch befüllt,
+  // solange das jeweilige Feld leer ist.
   const ibanRaw = form.watch("senderBankIban");
-  const [bankData, setBankData] = useState<BankData | null>(null);
-  useEffect(() => {
+  const bankData = useMemo(() => {
     const cleaned = normalizeIban(ibanRaw ?? "");
-    if (cleaned.length === 0) {
-      setBankData(null);
-      return;
-    }
-    let cancelled = false;
-    // BLZ-Verzeichnis erst beim Tippen laden (Chunk)
-    import("bankdata-germany")
-      .then(({ bankDataByIBAN }) => {
-        if (!cancelled) {
-          setBankData(bankDataByIBAN(cleaned));
-        }
-      })
-      .catch(() => setBankData(null));
-    return () => {
-      cancelled = true;
-    };
+    return cleaned.length === 0 ? null : bankDataByIBAN(cleaned);
   }, [ibanRaw]);
   useEffect(() => {
     if (bankData?.bic && !form.getValues("senderBankBic")) {

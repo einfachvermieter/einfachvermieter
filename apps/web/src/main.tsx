@@ -3,6 +3,9 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+// Font vor der Tailwind-CSS und via JS-Entry importieren,
+// damit Vite die woff2-Dateien mitbundelt.
+import "@fontsource-variable/geist/index.css";
 import "./index.css";
 import "./lib/i18n";
 
