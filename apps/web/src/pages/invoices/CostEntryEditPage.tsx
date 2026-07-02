@@ -223,7 +223,12 @@ export const CostEntryEditPage = () => {
         }
         eyebrow={t("ui.invoices.editTitle")}
         title={costEntryIdentityLabel(entry)}
-        meta={entry.vendor ?? t("ui.invoices.detail.vendorFallback")}
+        meta={[
+          entry.vendor ?? t("ui.invoices.detail.vendorFallback"),
+          entry.invoiceNumber,
+        ]
+          .filter(Boolean)
+          .join(t("ui.common.separators.bullet"))}
         stats={[
           {
             label: t("ui.invoices.detail.statAmount"),

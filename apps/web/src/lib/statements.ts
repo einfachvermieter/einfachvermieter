@@ -2,7 +2,7 @@ import type { StatementResult } from "@einfachvermieter/shared";
 import { queryOptions } from "@tanstack/react-query";
 import { api } from "./api";
 import { t } from "./i18n";
-import { contractPartyNames, type TenantAggregate } from "./tenants";
+import type { TenantAggregate } from "./tenants";
 import type { Unit } from "./units";
 
 export type Statement = {
@@ -72,34 +72,18 @@ export const statementQueryOptions = (id: string) =>
 
 /**
  * Identifizierende Bezeichnung einer Abrechnung für Überschrift, Breadcrumb
- * und Tab-Titel: Vertragspartner und Wohnung plus Abrechnungsjahr. Bewusst
- * ohne das Wort "Abrechnung". Das steht bereits im übergeordneten
- * Breadcrumb-Pfad und muss nicht wiederholt werden.
+ * und Tab-Titel
  */
 export const statementIdentityLabel = ({
   statement,
-  aggregate,
-  units,
 }: {
   statement: Pick<Statement, "periodStart">;
   aggregate: TenantAggregate;
   units: Unit[];
-}): string => {
-  const unitName =
-    units.find((unit) => unit.id === aggregate.tenant.unitId)?.name ?? "";
-
-  const residents = contractPartyNames(aggregate.residents);
-
-  const year = statement.periodStart.slice(0, 4);
-
-  return residents
-    ? t("ui.statements.detail.identityTitle", {
-        residents,
-        unit: unitName,
-        year,
-      })
-    : t("ui.statements.detail.identityTitleEmpty", { unit: unitName, year });
-};
+}): string =>
+  t("ui.statements.detail.identityYear", {
+    year: statement.periodStart.slice(0, 4),
+  });
 
 export const statementsQueryOptions = queryOptions({
   queryKey: ["statements"],

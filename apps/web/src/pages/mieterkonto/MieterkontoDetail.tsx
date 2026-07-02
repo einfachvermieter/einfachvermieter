@@ -18,7 +18,7 @@ import {
   RiSafe2Line,
 } from "@remixicon/react";
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EmptyNote } from "../../components/common/EmptyNote";
@@ -26,6 +26,7 @@ import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { InfoCard } from "../../components/common/InfoCard";
 import { SectionCard } from "../../components/common/SectionCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
+import { TextWithLink } from "../../components/TextWithLink";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import {
@@ -357,7 +358,21 @@ export const MieterkontoDetail = () => {
                   />
                 </div>
               ) : (
-                <EmptyNote>{t("ui.account.detail.emptyPayments")}</EmptyNote>
+                <EmptyNote>
+                  <TextWithLink
+                    template={t("ui.account.detail.emptyPayments")}
+                    link={
+                      <Link
+                        to="/mieter/$tenantId/konto"
+                        params={{ tenantId }}
+                        search={{ tab: "miete" }}
+                        className="font-semibold text-foreground underline"
+                      >
+                        {t("ui.account.tabs.rent")}
+                      </Link>
+                    }
+                  />
+                </EmptyNote>
               )}
             </SectionCard>
           </TabsContent>

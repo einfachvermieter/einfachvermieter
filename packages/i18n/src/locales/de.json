@@ -226,7 +226,7 @@
         "costsBilling": "Kosten & Abrechnung"
       },
       "dashboard": "Übersicht",
-      "configuration": "Konfiguration",
+      "configuration": "Einstellungen",
       "password": "Passwort",
       "buildings": "Gebäude",
       "units": "Wohnungen",
@@ -297,8 +297,7 @@
         "detail": "Detail",
         "settings": "Einstellungen",
         "settingsSender": "Absenderdaten",
-        "settingsPassword": "Passwort ändern",
-        "user": "Benutzer"
+        "settingsPassword": "Passwort ändern"
       },
       "columns": {
         "label": "Bezeichnung",
@@ -593,6 +592,7 @@
       "confirmDeleteMessage": "Soll „{name}“ wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
       "allBuildings": "Alle Gebäude",
       "editEyebrow": "Wohnung bearbeiten",
+      "unitNumberMeta": "Mieteinheit {number}",
       "sections": {
         "baseData": {
           "title": "Stammdaten",
@@ -653,10 +653,10 @@
       "openAccount": "Konto öffnen",
       "createTitle": "Neuer Mieter",
       "contractTitle": "Mietvertrag {unit} (ab {start})",
-      "identityTitle": "{residents} (Wohnung {unit})",
+      "identityTitle": "{residents} · {unit}",
       "identityTitleEmpty": "Wohnung {unit}",
       "summary": "{unit} – {residents}",
-      "addTenant": "Vertrag anlegen",
+      "addTenant": "Mieter anlegen",
       "noUnits": "Für dieses Gebäude sind noch keine Wohnungen angelegt. Bitte zuerst {link} anlegen, bevor Verträge erfasst werden können.",
       "confirmDeleteTenant": "Mietvertrag löschen?",
       "confirmDeleteTenantMessage": "Vertrag für „{unit}“ ({start} – {end}) wirklich löschen?",
@@ -768,7 +768,7 @@
       "empty": "Keine Buchungen vorhanden",
       "tabs": {
         "rent": "Miete",
-        "payments": "Zahlungen",
+        "payments": "Sonstige Zahlungen",
         "settlements": "Abrechnungen",
         "deposit": "Kaution",
         "fees": "Gebühren"
@@ -791,16 +791,16 @@
         "sepaGranted": "erteilt",
         "sepaMissing": "fehlt",
         "openStatement": "Abrechnung öffnen",
-        "emptyPayments": "Noch keine weiteren Zahlungen erfasst.",
+        "emptyPayments": "Noch keine sonstigen Zahlungen erfasst. Regelmäßige Mieteingänge finden Sie unter {link}.",
         "emptySettlements": "Noch keine Abrechnungen vorhanden.",
         "emptyFees": "Noch keine Gebühren erfasst."
       },
       "monthsEmpty": "Noch keine Monate im Vertragszeitraum.",
       "recordPayment": "Zahlung erfassen",
       "paymentsRecorded": "{count} Buchung(en) erfasst",
-      "otherPaymentsHeading": "Weitere Zahlungen",
+      "otherPaymentsHeading": "Sonstige Zahlungen",
       "otherPaymentsEmpty": "Keine weiteren Zahlungen erfasst",
-      "settlementsHeading": "NK-Abrechnungs-Saldi",
+      "settlementsHeading": "Abrechnungs-Salden",
       "settlementsEmpty": "Noch keine finalisierten NK-Abrechnungen für diesen Mieter.",
       "depositHeading": "Kaution",
       "depositEmpty": "Kaution-Daten konnten nicht geladen werden.",
@@ -1002,7 +1002,6 @@
         "deleteTitle": "Rechnung löschen?",
         "deleteMessage": "Soll diese Rechnung mit allen Positionen wirklich gelöscht werden?"
       },
-      "identityTitle": "{vendor} ({date})",
       "identityTitleNoVendor": "Rechnung vom {date}",
       "empty": "Noch keine Rechnungen erfasst",
       "emptyForBuilding": "Noch keine Rechnungen in Gebäude „{building}“ erfasst",
@@ -1094,6 +1093,7 @@
         "deleteAction": "Konfiguration löschen"
       },
       "identityTitle": "Gültig ab {validFrom}",
+      "heroTitle": "Heizkosten-Konfiguration ab {validFrom}",
       "empty": "Noch keine Heizkosten-Konfigurationen angelegt. Wählen Sie oben rechts ein Gebäude, um eine erste Konfiguration anzulegen.",
       "emptySearch": "Keine Konfigurationen gefunden für „{query}“",
       "emptyForBuilding": "Noch keine Heizkosten-Konfiguration für Gebäude „{building}“ angelegt.",
@@ -1333,8 +1333,7 @@
       },
       "detail": {
         "title": "Abrechnung {start} – {end}",
-        "identityTitle": "{residents} (Wohnung {unit}, {year})",
-        "identityTitleEmpty": "Wohnung {unit} ({year})",
+        "identityYear": "Abrechnung {year}",
         "draftLive": "Entwurf – Live-Berechnung",
         "finalizedAt": "Finalisiert am {date}",
         "calculating": "wird berechnet …",
@@ -1357,7 +1356,7 @@
           "occupancy": "Belegung",
           "taxableLabor": "§ 35a EStG",
           "payments": "Zahlungen",
-          "advance": "Künftige Vorauszahlung",
+          "advance": "Vorauszahlung",
           "pdf": "PDF-Vorschau"
         },
         "overviewTitle": "Übersicht",

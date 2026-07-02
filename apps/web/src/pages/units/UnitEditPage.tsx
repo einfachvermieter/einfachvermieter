@@ -115,7 +115,12 @@ export const UnitEditPage = () => {
         }
         eyebrow={t("ui.units.editEyebrow")}
         title={unit.name}
-        meta={[building?.name, unit.unitNumber]
+        meta={[
+          building?.name,
+          unit.unitNumber
+            ? t("ui.units.unitNumberMeta", { number: unit.unitNumber })
+            : undefined,
+        ]
           .filter(Boolean)
           .join(t("ui.common.separators.bullet"))}
         stats={[

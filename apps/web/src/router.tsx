@@ -31,8 +31,10 @@ import { authMeQueryOptions } from "./lib/auth";
 import { type Building, buildingQueryOptions } from "./lib/buildings";
 import {
   type CostEntryDetail,
+  type CostTypeDetail,
   costEntryIdentityLabel,
   costEntryQueryOptions,
+  costTypeQueryOptions,
 } from "./lib/costs";
 import { useDocumentTitle } from "./lib/documentTitle";
 import {
@@ -908,12 +910,29 @@ const costTypeEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/kostenarten/$costTypeId",
   beforeLoad: requireAuth,
+  loader: async ({ context, params }) => {
+    try {
+      return await context.queryClient.ensureQueryData(
+        costTypeQueryOptions(params.costTypeId),
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
   component: CostTypeEditPage,
   staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.costTypes"), to: "/kostenarten" },
-      { label: t("ui.common.crumbs.costTypeEdit") },
-    ],
+    crumb: ({ loaderData }) => {
+      const costType = loaderData as CostTypeDetail | null;
+      return [
+        { label: t("ui.common.crumbs.costTypes"), to: "/kostenarten" },
+        {
+          label: costType ? costType.name : t("ui.common.crumbs.costTypeEdit"),
+        },
+      ];
+    },
   },
 });
 
@@ -1113,7 +1132,7 @@ const passwordSettingsRoute = createRoute({
   component: PasswordSettingsPage,
   staticData: {
     crumb: () => [
-      { label: t("ui.common.crumbs.user") },
+      { label: t("ui.common.crumbs.settings") },
       { label: t("ui.common.crumbs.settingsPassword") },
     ],
   },

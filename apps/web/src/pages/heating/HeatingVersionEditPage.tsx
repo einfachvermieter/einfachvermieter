@@ -21,7 +21,6 @@ import { Badge } from "../../components/ui/Badge";
 import { type Building, buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import {
-  heatingIdentityLabel,
   heatingSettingsByIdQueryOptions,
   updateHeatingSettings,
 } from "../../lib/heating";
@@ -165,7 +164,9 @@ const HeatingVersionEditView = ({
           />
         }
         eyebrow={t("ui.heating.editTitle")}
-        title={heatingIdentityLabel(version)}
+        title={t("ui.heating.heroTitle", {
+          validFrom: formatDate(version.validFrom),
+        })}
         meta={building.name}
         stats={[
           { label: t("ui.heating.versions.columns.split"), value: sharesText },

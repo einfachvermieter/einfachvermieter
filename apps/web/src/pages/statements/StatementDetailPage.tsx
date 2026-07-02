@@ -560,9 +560,15 @@ export const StatementDetailPage = () => {
         meta={
           <span className="flex flex-wrap items-center gap-2">
             <span>
-              {`${formatDate(statement.periodStart)} – ${formatDate(
-                statement.periodEnd,
-              )}`}
+              {[
+                tenantName,
+                unit?.name,
+                `${formatDate(statement.periodStart)} – ${formatDate(
+                  statement.periodEnd,
+                )}`,
+              ]
+                .filter(Boolean)
+                .join(t("ui.common.separators.bullet"))}
             </span>
             {statusBadge}
             {isCalculating ? (

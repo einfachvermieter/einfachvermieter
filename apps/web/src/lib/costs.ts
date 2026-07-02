@@ -277,18 +277,11 @@ export const costEntryQueryOptions = (id: string) =>
 
 /**
  * Identifizierende Bezeichnung einer Lieferantenrechnung für Überschrift,
- * Breadcrumb und Tab-Titel: Lieferant und Rechnungsdatum. Ohne das Wort
- * "Rechnung". Der Typ steht bereits im Breadcrumb-Pfad ("Rechnungen");
- * fehlt der Lieferant, fällt es auf "Rechnung vom {date}" zurück.
+ * Breadcrumb und Tab-Titel
  */
 export const costEntryIdentityLabel = (
-  entry: Pick<CostEntry, "vendor" | "invoiceDate">,
+  entry: Pick<CostEntry, "invoiceDate">,
 ): string =>
-  entry.vendor
-    ? t("ui.invoices.identityTitle", {
-        vendor: entry.vendor,
-        date: formatDate(entry.invoiceDate),
-      })
-    : t("ui.invoices.identityTitleNoVendor", {
-        date: formatDate(entry.invoiceDate),
-      });
+  t("ui.invoices.identityTitleNoVendor", {
+    date: formatDate(entry.invoiceDate),
+  });
