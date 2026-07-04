@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { FormPage } from "../../components/common/FormPage";
 import { TextWithLink } from "../../components/TextWithLink";
+import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { t } from "../../lib/i18n";
 import type { TenantAggregate } from "../../lib/tenants";
@@ -17,7 +18,12 @@ import { useGoBack } from "../../lib/useGoBack";
 import { TenantForm } from "./TenantForm";
 
 export const TenantCreatePage = () => {
-  const { data: units } = useQuery(unitsQueryOptions);
+  const { buildingId } = useActiveBuilding();
+  const { data: allUnits } = useQuery(unitsQueryOptions);
+
+  const units = (allUnits ?? []).filter(
+    (unit) => unit.buildingId === buildingId,
+  );
 
   const goToList = useGoBack("/mieter", { search: { buildingId: undefined } });
 
@@ -28,7 +34,7 @@ export const TenantCreatePage = () => {
     onSuccess: goToList,
   });
 
-  const hasUnits = (units?.length ?? 0) > 0;
+  const hasUnits = units.length > 0;
   const today = todayIso();
 
   return (
@@ -55,7 +61,7 @@ export const TenantCreatePage = () => {
               link={
                 <Link
                   to="/wohnungen"
-                  search={{ buildingId: undefined }}
+                  search={{ buildingId }}
                   className="font-semibold text-foreground underline"
                 >
                   {t("ui.units.title")}

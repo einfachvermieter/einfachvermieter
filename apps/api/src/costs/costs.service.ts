@@ -225,7 +225,16 @@ export class CostsService {
         : [];
     const entryById = new Map(entries.map((entry) => [entry.id, entry]));
 
-    const year = new Date().getFullYear();
+    const latest = entries.reduce<CostEntry | null>(
+      (max, entry) =>
+        !max || entry.invoiceDate > max.invoiceDate ? entry : max,
+      null,
+    );
+
+    // Bezugsjahr ist das Jahr der jüngsten Rechnung, nicht das Kalenderjahr
+    const year = latest
+      ? Number(latest.invoiceDate.slice(0, 4))
+      : new Date().getFullYear();
     const isInYear = (item: CostEntryItem): boolean =>
       entryById.get(item.costEntryId)?.invoiceDate.slice(0, 4) === String(year);
 
@@ -235,12 +244,6 @@ export class CostsService {
     const totalAmountCents = items
       .filter(isInYear)
       .reduce((sum, item) => sum + item.amountCents, 0);
-
-    const latest = entries.reduce<CostEntry | null>(
-      (max, entry) =>
-        !max || entry.invoiceDate > max.invoiceDate ? entry : max,
-      null,
-    );
     const lastEntry = latest
       ? {
           id: latest.id,

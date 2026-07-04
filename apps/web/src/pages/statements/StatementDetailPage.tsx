@@ -289,13 +289,16 @@ const StatementTabs = ({
             </CardAction>
           </CardHeader>
           <CardContent className="h-full p-0">
-            <object
-              data={pdfSrc}
-              type="application/pdf"
-              width="100%"
-              height="100%"
-              aria-label={t("ui.statements.detail.tabs.pdf")}
-            />
+            {/* Heller Rahmen hinter dem Viewer: füllt Letterbox-/Ladeflächen */}
+            <div className="h-full bg-white dark:bg-slate-100">
+              <object
+                data={pdfSrc}
+                type="application/pdf"
+                width="100%"
+                height="100%"
+                aria-label={t("ui.statements.detail.tabs.pdf")}
+              />
+            </div>
           </CardContent>
         </Card>
       </TabsContent>

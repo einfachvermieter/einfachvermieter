@@ -3,6 +3,7 @@ import {
   formatEur,
   type MonthGridRow,
   type PotState,
+  todayIso,
 } from "@einfachvermieter/shared";
 import {
   RiAddLine,
@@ -53,7 +54,7 @@ const PotIstSollCell = ({ pot }: { pot: PotState }) => (
   </TableCell>
 );
 
-type MonthStatus = "balanced" | "credit" | "partial" | "open";
+type MonthStatus = "balanced" | "credit" | "partial" | "open" | "upcoming";
 
 /**
  * Kombinierter Monatsstatus aus beiden Töpfen (Kaltmiete + NK-Voraus):
@@ -75,16 +76,27 @@ const MONTH_STATUS_VARIANT = {
   credit: "lightBlue",
   partial: "lightYellow",
   open: "lightRed",
+  upcoming: "slate",
 } as const;
 
 const MonthStatusBadge = ({
   base,
   advance,
+  forMonth,
 }: {
   base: PotState;
   advance: PotState;
+  /**
+   * Monat der Zeile; ein noch nicht fälliger (aktueller/künftiger) Monat wird
+   * neutral als "noch nicht fällig" ausgewiesen.
+   * Für die Jahres-Summenzeile weggelassen.
+   */
+  forMonth?: string;
 }) => {
-  const status = monthStatus(base, advance);
+  const computed = monthStatus(base, advance);
+  const isUpcoming =
+    forMonth !== undefined && forMonth >= todayIso().slice(0, 7);
+  const status = isUpcoming && computed === "open" ? "upcoming" : computed;
   return (
     <TableCell className="px-4 py-3 align-top">
       <Badge variant={MONTH_STATUS_VARIANT[status]}>
@@ -317,6 +329,7 @@ export const MonthGridTable = ({
                         <MonthStatusBadge
                           base={row.baseRent}
                           advance={row.advance}
+                          forMonth={row.forMonth}
                         />
                       </TableRow>
                     ))

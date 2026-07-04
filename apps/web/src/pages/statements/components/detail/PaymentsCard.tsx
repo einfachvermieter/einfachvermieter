@@ -154,6 +154,22 @@ export const PaymentsCard = ({
               state: tileState(b),
             }))}
           />
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <span
+                aria-hidden={true}
+                className="size-2 rounded-full bg-teal-400"
+              />
+              {t("ui.statements.detail.legendReceived")}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span
+                aria-hidden={true}
+                className="size-2 rounded-full bg-amber-400"
+              />
+              {t("ui.statements.detail.legendOpen")}
+            </span>
+          </div>
           <ComputedValueRow
             label={t("ui.statements.detail.paymentsTotalAdvance")}
             value={formatEur(totalAdvance)}

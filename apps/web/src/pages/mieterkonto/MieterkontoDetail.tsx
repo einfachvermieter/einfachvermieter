@@ -257,7 +257,7 @@ export const MieterkontoDetail = () => {
           balance
             ? {
                 balanceCents: balance.balanceCents,
-                depositBalanceCents: balance.depositBalanceCents,
+                deposit: depositRow?.pot ?? { sollCents: 0, istCents: 0 },
               }
             : undefined
         }

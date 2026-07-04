@@ -35,8 +35,16 @@ export const MeterHero = ({
     b.readingDate.localeCompare(a.readingDate),
   );
   const latest = sorted[0] ?? null;
-  const year = new Date().getFullYear();
-  const baseline = sorted.find((r) => r.readingDate < `${year}-01-01`) ?? null;
+
+  // Bezugsjahr ist das Jahr der jüngsten Ablesung, nicht das Kalenderjahr
+  const year = latest
+    ? Number(latest.readingDate.slice(0, 4))
+    : new Date().getFullYear();
+
+  // Basiswert des Jahres: jüngster Stand am oder vor dem Jahresbeginn. Das
+  // "<=" nimmt eine Ablesung exakt zum 01.01. als Anfangsstand mit
+  const baseline = sorted.find((r) => r.readingDate <= `${year}-01-01`) ?? null;
+
   const consumption = latest && baseline ? latest.value - baseline.value : null;
 
   const lastReadingText = latest

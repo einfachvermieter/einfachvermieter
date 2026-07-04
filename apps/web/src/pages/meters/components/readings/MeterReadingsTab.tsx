@@ -38,6 +38,81 @@ import type {
   ReadingSubmitValues,
 } from "./readingForm.schema";
 
+/**
+ * Eine Zählerstands-Zeile inkl. berechnetem Verbrauch
+ */
+const ReadingRow = ({
+  reading,
+  previous,
+  valueDecimals,
+  showConsumption,
+  showEstimated,
+  showNotes,
+  deletion,
+  onEdit,
+}: {
+  reading: Reading;
+  previous: Reading | undefined;
+  valueDecimals: number;
+  showConsumption: boolean;
+  showEstimated: boolean;
+  showNotes: boolean;
+  deletion: ReturnType<typeof useDeleteResource<Reading>>;
+  onEdit: (reading: Reading) => void;
+}) => {
+  const numberFormat = (value: number, withSign: boolean): string =>
+    value.toLocaleString("de-DE", {
+      minimumFractionDigits: valueDecimals,
+      maximumFractionDigits: valueDecimals,
+      signDisplay: withSign ? "exceptZero" : "auto",
+    });
+  const delta = previous ? reading.value - previous.value : null;
+
+  return (
+    <TableRow className={deletion.rowClassName(reading)}>
+      <TableCell className="px-4 py-3">
+        <RowActions
+          isDeleting={reading.id === deletion.deletingId}
+          extraActions={
+            <RowActionButton
+              label={t("ui.common.action.edit")}
+              icon={<RiPencilLine />}
+              onSelect={() => onEdit(reading)}
+            />
+          }
+          onDelete={() => deletion.request(reading)}
+        />
+      </TableCell>
+      <TableCell className="px-4 py-3 tabular-nums">
+        {formatDate(reading.readingDate)}
+      </TableCell>
+      <TableCell className="px-4 py-3 text-right font-semibold tabular-nums">
+        {numberFormat(reading.value, false)}
+      </TableCell>
+      {showConsumption ? (
+        <TableCell className="px-4 py-3 text-right tabular-nums text-muted-foreground">
+          {delta === null
+            ? t("ui.common.emptyValue")
+            : numberFormat(delta, true)}
+        </TableCell>
+      ) : null}
+      <TableCell className="px-4 py-3">
+        {meterReadByLabel(reading.readBy)}
+      </TableCell>
+      {showEstimated ? (
+        <TableCell className="px-4 py-3">
+          {reading.isEstimated ? t("common.yes") : null}
+        </TableCell>
+      ) : null}
+      {showNotes ? (
+        <TableCell className="px-4 py-3 text-muted-foreground">
+          {reading.notes ?? ""}
+        </TableCell>
+      ) : null}
+    </TableRow>
+  );
+};
+
 const decimalPlaces = (value: number): number => {
   if (!Number.isFinite(value)) {
     return 0;
@@ -149,6 +224,11 @@ export const MeterReadingsTab = ({
         </CardContent>
       );
     }
+    // Verbrauch (Delta) nur bei mindestens zwei Ständen; die Spalten "Geschätzt"
+    // und "Notiz" erst zeigen, wenn wenigstens ein Eintrag sie füllt
+    const showConsumption = sorted.length >= 2;
+    const showEstimated = sorted.some((reading) => reading.isEstimated);
+    const showNotes = sorted.some((reading) => reading.notes?.trim());
     return (
       <Table>
         <TableHeader>
@@ -162,15 +242,26 @@ export const MeterReadingsTab = ({
                 unit: measurementUnitLabel(measurementUnit),
               })}
             </TableHead>
+            {showConsumption ? (
+              <TableHead className="px-4 text-right">
+                {t("ui.reading.fields.consumptionWithUnit", {
+                  unit: measurementUnitLabel(measurementUnit),
+                })}
+              </TableHead>
+            ) : null}
             <TableHead className="px-4">
               {t("ui.reading.fields.readBy")}
             </TableHead>
-            <TableHead className="px-4">
-              {t("ui.common.columns.estimated")}
-            </TableHead>
-            <TableHead className="px-4">
-              {t("ui.reading.fields.note")}
-            </TableHead>
+            {showEstimated ? (
+              <TableHead className="px-4">
+                {t("ui.common.columns.estimated")}
+              </TableHead>
+            ) : null}
+            {showNotes ? (
+              <TableHead className="px-4">
+                {t("ui.reading.fields.note")}
+              </TableHead>
+            ) : null}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -189,51 +280,20 @@ export const MeterReadingsTab = ({
                   <TableCell className="px-4 py-3">
                     <Skeleton className="h-4 w-[60%]" />
                   </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <Skeleton className="h-4 w-[40%]" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <Skeleton className="h-4 w-[80%]" />
-                  </TableCell>
                 </TableRow>
               ))
-            : sorted.map((reading) => (
-                <TableRow
+            : sorted.map((reading, index) => (
+                <ReadingRow
                   key={reading.id}
-                  className={deletion.rowClassName(reading)}
-                >
-                  <TableCell className="px-4 py-3">
-                    <RowActions
-                      isDeleting={reading.id === deletion.deletingId}
-                      extraActions={
-                        <RowActionButton
-                          label={t("ui.common.action.edit")}
-                          icon={<RiPencilLine />}
-                          onSelect={() => setEditTarget(reading)}
-                        />
-                      }
-                      onDelete={() => deletion.request(reading)}
-                    />
-                  </TableCell>
-                  <TableCell className="px-4 py-3 tabular-nums">
-                    {formatDate(reading.readingDate)}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-right font-semibold tabular-nums">
-                    {reading.value.toLocaleString("de-DE", {
-                      minimumFractionDigits: valueDecimals,
-                      maximumFractionDigits: valueDecimals,
-                    })}
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    {meterReadByLabel(reading.readBy)}
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    {reading.isEstimated ? t("common.yes") : null}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-muted-foreground">
-                    {reading.notes ?? ""}
-                  </TableCell>
-                </TableRow>
+                  reading={reading}
+                  previous={sorted[index + 1]}
+                  valueDecimals={valueDecimals}
+                  showConsumption={showConsumption}
+                  showEstimated={showEstimated}
+                  showNotes={showNotes}
+                  deletion={deletion}
+                  onEdit={setEditTarget}
+                />
               ))}
         </TableBody>
       </Table>

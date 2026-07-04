@@ -819,7 +819,8 @@
         "balanced": "Ausgeglichen",
         "arrears": "Rückstand",
         "partial": "Teilweise offen",
-        "open": "Offen"
+        "open": "Offen",
+        "upcoming": "Noch nicht fällig"
       },
       "columns": {
         "balance": "Saldo",
@@ -1417,6 +1418,8 @@
         "paymentsEmpty": "Keine Mieteingänge im Abrechnungszeitraum verbucht.",
         "paymentsIntro": "Im Abrechnungszeitraum wurden folgende Vorauszahlungen für Betriebs- und Heizkosten geleistet:",
         "paymentsTotalAdvance": "Summe Vorauszahlungen",
+        "legendReceived": "eingegangen",
+        "legendOpen": "offen",
         "showEntries": "Einzelbuchungen anzeigen",
         "showMeters": "Alle Zähler anzeigen",
         "paymentsTotal": "Summe Mieteingänge: {total}",
@@ -1680,6 +1683,7 @@
       "fields": {
         "value": "Zählerstand",
         "valueWithUnit": "Zählerstand ({unit})",
+        "consumptionWithUnit": "Verbrauch ({unit})",
         "estimatedHint": "Geschätzter Wert (z. B. kein Zugang zur Wohnung)",
         "readBy": "Abgelesen von",
         "note": "Notiz"

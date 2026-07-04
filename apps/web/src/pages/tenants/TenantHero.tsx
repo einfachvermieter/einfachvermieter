@@ -24,8 +24,13 @@ export const TenantHero = ({
 }: {
   tenantId: string;
   eyebrow: string;
-  /** Gesetzt = Konto-Variante mit Saldo/Kaution/Status statt Warmmiete-Stats */
-  balance?: { balanceCents: number; depositBalanceCents: number };
+  /**
+   * Gesetzt = Konto-Variante mit Saldo/Kaution/Status statt Warmmiete-Stats
+   */
+  balance?: {
+    balanceCents: number;
+    deposit: { sollCents: number; istCents: number };
+  };
 }) => {
   const { data: aggregate } = useQuery(tenantQueryOptions(tenantId));
   const { data: units } = useQuery(unitsQueryOptions);
@@ -78,7 +83,16 @@ export const TenantHero = ({
         },
         {
           label: t("ui.account.depositLabel"),
-          value: formatEur(balance.depositBalanceCents),
+          // Offene Kaution positiv als "... offen" ausweisen; ein negativer
+          // Betrag suggeriert fälschlich eine Schuld des Vermieters.
+          value:
+            balance.deposit.sollCents - balance.deposit.istCents > 0
+              ? t("ui.account.depositOpen", {
+                  amount: formatEur(
+                    balance.deposit.sollCents - balance.deposit.istCents,
+                  ),
+                })
+              : formatEur(balance.deposit.istCents),
         },
         statusStat,
       ]

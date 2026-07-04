@@ -213,6 +213,13 @@ export const AdvanceAdjustmentCard = ({
     [linesByCostTypeId, detail?.tenantBilledDays, autoTariffs],
   );
 
+  // Tarif-Vorschlag wird nur gezeigt, wenn er sich vom reinen
+  // Vorjahres-Ist unterscheidet; zwei gleichen Vorschläge wirken wie Bug
+  const withTariffsCents = isDraft
+    ? liveSuggestedCents
+    : suggestedWithTariffsCents;
+  const showWithTariffs = withTariffsCents !== suggestedCents;
+
   // Info-Hinweis, wenn der eingegebene Betrag von allen Standard-Werten
   // abweicht (alt / Vorjahres-Ist auf 12 Monate / mit Tarif-Erwartungen). In dem Fall
   // muss der Vermieter den Wert konkret belegen können. Die Warnung
@@ -300,7 +307,7 @@ export const AdvanceAdjustmentCard = ({
                 {formatEur(suggestedCents)}
               </td>
             </tr>
-            {isDraft ? (
+            {showWithTariffs ? (
               <tr>
                 <td className="py-1 text-muted-foreground">
                   {t(
@@ -308,21 +315,10 @@ export const AdvanceAdjustmentCard = ({
                   )}
                 </td>
                 <td className="py-1 text-right tabular-nums">
-                  {formatEur(liveSuggestedCents)}
+                  {formatEur(withTariffsCents)}
                 </td>
               </tr>
-            ) : (
-              <tr>
-                <td className="py-1 text-muted-foreground">
-                  {t(
-                    "ui.statements.advanceAdjustment.suggestedWithTariffsLabel",
-                  )}
-                </td>
-                <td className="py-1 text-right tabular-nums">
-                  {formatEur(suggestedWithTariffsCents)}
-                </td>
-              </tr>
-            )}
+            ) : null}
             {hasAdjustment ? (
               <tr className="border-t border-border font-semibold">
                 <td className="py-1.5">
@@ -395,19 +391,21 @@ export const AdvanceAdjustmentCard = ({
                   amount: formatEur(suggestedCents),
                 })}
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={() => applyAmount(liveSuggestedCents)}
-              >
-                {t(
-                  "ui.statements.advanceAdjustment.applySuggestedWithTariffs",
-                  {
-                    amount: formatEur(liveSuggestedCents),
-                  },
-                )}
-              </Button>
+              {showWithTariffs ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  onClick={() => applyAmount(liveSuggestedCents)}
+                >
+                  {t(
+                    "ui.statements.advanceAdjustment.applySuggestedWithTariffs",
+                    {
+                      amount: formatEur(liveSuggestedCents),
+                    },
+                  )}
+                </Button>
+              ) : null}
             </div>
             <SelectInput
               control={form.control}
