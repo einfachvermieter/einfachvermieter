@@ -288,7 +288,7 @@ export class PaymentsService {
 }
 
 /**
- * Leitet den Zahlungszweck aus den gesetzten Anker-Feldern der Zeile ab
+ * Leitet den Zahlungszweck aus den gesetzten Zweck-Feldern der Zeile ab
  * (forMonth/forStatementId/forDeposit/forFeeId).
  */
 const derivePurposeKindFromRow = (

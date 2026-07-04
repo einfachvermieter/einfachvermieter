@@ -21,7 +21,7 @@ export const costEntryExtractionResultSchema = z.object({
   invoiceDate: isoDate().nullable(),
   /**
    * Brutto-Endbetrag der gesamten Rechnung in Cent. Nicht persistiert, dient
-   * nur als Validierungs-Anker für die Summe der Positionen.
+   * nur als Validierungs-Zahlungszweck für die Summe der Positionen.
    */
   invoiceTotalCents: z.number().int().nonnegative().nullable(),
   items: z.array(aiExtractionItemSchema),
