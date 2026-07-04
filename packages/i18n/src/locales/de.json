@@ -1705,7 +1705,7 @@
       "eyebrow": "Portfolio",
       "sub": {
         "buildings": "{count, plural, one {# Gebäude} other {# Gebäude}}",
-        "tagline": "alles im Blick"
+        "tagline": "im gesamten Portfolio"
       },
       "buildingsCard": {
         "title": "Ihre Gebäude",

@@ -121,14 +121,17 @@ const ServerSearchInput = ({
 
 const SortIndicator = ({ sorted }: { sorted: false | "asc" | "desc" }) => {
   if (sorted === "asc") {
-    return <RiArrowUpLine className="size-3.5" />;
+    return <RiArrowUpLine className="size-3.5 text-muted-foreground" />;
   }
 
   if (sorted === "desc") {
-    return <RiArrowDownLine className="size-3.5" />;
+    return <RiArrowDownLine className="size-3.5 text-muted-foreground" />;
   }
 
-  return <RiArrowUpDownLine className="size-3.5 text-muted-foreground" />;
+  // Icon erst beim Hover einblenden (dezent)
+  return (
+    <RiArrowUpDownLine className="size-3.5 text-muted-foreground/60 opacity-0 transition-opacity group-hover:opacity-100" />
+  );
 };
 
 const renderHeaderContent = <TData,>(header: Header<TData, unknown>) => {
@@ -149,7 +152,7 @@ const renderHeaderContent = <TData,>(header: Header<TData, unknown>) => {
     <button
       type="button"
       onClick={header.column.getToggleSortingHandler()}
-      className="-mx-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 uppercase transition-colors hover:bg-muted-foreground/10 hover:text-foreground"
+      className="group -mx-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 uppercase transition-colors hover:bg-muted-foreground/10 hover:text-foreground"
     >
       {content}
       <SortIndicator sorted={header.column.getIsSorted()} />

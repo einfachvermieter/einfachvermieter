@@ -30,6 +30,11 @@ export const MainNavigationUser = ({
 }) => {
   const { isMobile } = useSidebar();
 
+  // E-Mail zweizeilig: lokaler Teil oben, Domain darunter (statt Abschneiden)
+  const atIndex = email.lastIndexOf("@");
+  const localPart = atIndex > 0 ? email.slice(0, atIndex) : email;
+  const domainPart = atIndex > 0 ? email.slice(atIndex) : "";
+
   return (
     <div className="rounded-[13px] border border-sidebar-border bg-background group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent">
       <SidebarMenu>
@@ -43,8 +48,15 @@ export const MainNavigationUser = ({
             >
               <DropdownMenuTrigger>
                 <InitialsAvatar name={email} size={34} />
-                <span className="flex-1 truncate text-left text-[13px] font-semibold">
-                  {email}
+                <span className="flex min-w-0 flex-1 flex-col text-left leading-tight">
+                  <span className="truncate text-[13px] font-semibold">
+                    {localPart}
+                  </span>
+                  {domainPart ? (
+                    <span className="truncate text-[11px] text-muted-foreground">
+                      {domainPart}
+                    </span>
+                  ) : null}
                 </span>
                 <RiExpandUpDownLine className="ml-auto size-4 shrink-0 text-muted-foreground" />
               </DropdownMenuTrigger>

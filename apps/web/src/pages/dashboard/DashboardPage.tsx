@@ -23,9 +23,15 @@ import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
 
 /**
- * KPI-Karte der Übersicht
+ * Klasse der KPI-Kacheln
  */
-const KpiCard = ({
+const KPI_CARD_CLASS =
+  "block rounded-[18px] border border-border bg-card p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-sky-200 hover:bg-sky-50/40";
+
+/**
+ * Innenleben einer KPI-Kachel
+ */
+const KpiCardBody = ({
   icon,
   gradient,
   value,
@@ -36,13 +42,13 @@ const KpiCard = ({
   value: number | undefined;
   label: string;
 }) => (
-  <div className="rounded-[18px] border border-border bg-card p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+  <>
     <IconTile icon={icon} size={40} background={gradient} />
     <div className="mt-3.5 text-[30px] font-semibold tabular-nums">
       {value ?? t("ui.common.emptyValue")}
     </div>
     <div className="text-[13px] text-muted-foreground">{label}</div>
-  </div>
+  </>
 );
 
 /**
@@ -96,30 +102,46 @@ export const DashboardPage = () => {
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard
-          icon={RiBuildingLine}
-          gradient={gradients.buildings}
-          value={stats?.buildings}
-          label={t("ui.dashboard.stats.buildings")}
-        />
-        <KpiCard
-          icon={RiHome4Line}
-          gradient={gradients.units}
-          value={stats?.units}
-          label={t("ui.dashboard.stats.units")}
-        />
-        <KpiCard
-          icon={RiGroupLine}
-          gradient={gradients.tenants}
-          value={stats?.tenants}
-          label={t("ui.dashboard.stats.tenants")}
-        />
-        <KpiCard
-          icon={RiFileList3Line}
-          gradient={gradients.statements}
-          value={stats?.openStatementsCount}
-          label={t("ui.dashboard.stats.openStatements")}
-        />
+        <Link to="/gebaeude" className={KPI_CARD_CLASS}>
+          <KpiCardBody
+            icon={RiBuildingLine}
+            gradient={gradients.buildings}
+            value={stats?.buildings}
+            label={t("ui.dashboard.stats.buildings")}
+          />
+        </Link>
+        <Link
+          to="/wohnungen"
+          search={{ buildingId: undefined }}
+          className={KPI_CARD_CLASS}
+        >
+          <KpiCardBody
+            icon={RiHome4Line}
+            gradient={gradients.units}
+            value={stats?.units}
+            label={t("ui.dashboard.stats.units")}
+          />
+        </Link>
+        <Link
+          to="/mieter"
+          search={{ buildingId: undefined }}
+          className={KPI_CARD_CLASS}
+        >
+          <KpiCardBody
+            icon={RiGroupLine}
+            gradient={gradients.tenants}
+            value={stats?.tenants}
+            label={t("ui.dashboard.stats.tenants")}
+          />
+        </Link>
+        <Link to="/abrechnungen" className={KPI_CARD_CLASS}>
+          <KpiCardBody
+            icon={RiFileList3Line}
+            gradient={gradients.statements}
+            value={stats?.openStatementsCount}
+            label={t("ui.dashboard.stats.openStatements")}
+          />
+        </Link>
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-[1.5fr_1fr]">

@@ -101,6 +101,18 @@ export const UnitEditPage = () => {
         .join(t("ui.common.separators.comma"))
     : undefined;
 
+  // Hero-Stat: Vornamen auf Initial kürzen ("M. Schmidt"), damit die
+  // Kennzahl bei schmalen Fenstern nicht umbricht
+  const tenantNamesShort = current
+    ? current.contractResidents
+        .map((resident) => {
+          const first = resident.firstName?.trim() ?? "";
+          const last = resident.lastName?.trim() ?? "";
+          return first && last ? `${first.charAt(0)}. ${last}` : last || first;
+        })
+        .join(t("ui.common.separators.comma"))
+    : undefined;
+
   const isCommercial = current?.kind === "commercial";
 
   return (
@@ -131,7 +143,7 @@ export const UnitEditPage = () => {
           { label: t("ui.units.status.label"), value: statusLabel },
           {
             label: t("ui.units.fields.tenant"),
-            value: tenantNames ?? t("ui.common.emptyValue"),
+            value: tenantNamesShort ?? t("ui.common.emptyValue"),
           },
         ]}
       />
