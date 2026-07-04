@@ -22,6 +22,36 @@ import { runSeed, runSeedAsScript, schema } from "./engine.js";
 
 const nid = (): string => crypto.randomUUID();
 
+/**
+ * Monatliche Kaltmiete + NK-Vorauszahlung von `fromMonth` bis `toMonth`
+ * (je "YYYY-MM", inklusive). Bewusst nicht bis zum aktuellen Monat, damit
+ * ein bis zwei jüngste Monate offen bleiben.
+ */
+const monthlyRentPayments = (
+  tenantId: string,
+  fromMonth: string,
+  toMonth: string,
+  baseRentCents: number,
+  advanceCents: number,
+) => {
+  const [startYear, startMonth] = fromMonth.split("-").map(Number);
+  const [endYear, endMonth] = toMonth.split("-").map(Number);
+  const count = (endYear - startYear) * 12 + (endMonth - startMonth) + 1;
+  return Array.from({ length: Math.max(count, 0) }, (_value, index) => {
+    const monthIndex = startMonth - 1 + index;
+    const year = startYear + Math.floor(monthIndex / 12);
+    const paddedMonth = String((monthIndex % 12) + 1).padStart(2, "0");
+    return {
+      id: nid(),
+      tenantId,
+      paymentDate: `${year}-${paddedMonth}-03`,
+      forMonth: `${year}-${paddedMonth}`,
+      baseRentCents,
+      advanceCents,
+    };
+  });
+};
+
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: linearer Seed-Daten-Builder (mehrere Gebäude), kein Logik-Zerlegungsbedarf.
 const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   // ── Globale Einstellungen + Login ──────────────────────────────────────
@@ -552,21 +582,23 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     accountHolder: "Michael Schmidt",
   });
 
-  // Monatszahlungen OG (NK-Vorauszahlung + Kaltmiete) für 2025
-  insert(
-    schema.payments,
-    Array.from({ length: 12 }, (_value, index) => {
-      const month = String(index + 1).padStart(2, "0");
-      return {
-        id: nid(),
-        tenantId: aTenantOg,
-        paymentDate: `2025-${month}-03`,
-        forMonth: `2025-${month}`,
-        baseRentCents: 92_000,
-        advanceCents: 24_000,
-      };
-    }),
-  );
+  // Monatszahlungen: pro Mietverhältnis von Vertragsbeginn bis
+  // 2026-05 durchbezahlt, damit die Konten überwiegend grün sind. Juni 2026
+  // bleibt offen (amber), Juli 2026 ist der laufende Monat (neutral). Bei
+  // Krüger sind bewusst zwei Monate (Mai+Juni) offen. Kaution des
+  // langjährigen OG-Mieters ist eingegangen, die übrigen bleiben offen.
+  insert(schema.payments, [
+    ...monthlyRentPayments(aTenantEgOld, "2022-05", "2025-06", 68_000, 18_000),
+    ...monthlyRentPayments(aTenantEgNew, "2025-07", "2026-04", 74_000, 20_000),
+    ...monthlyRentPayments(aTenantOg, "2021-09", "2026-05", 92_000, 24_000),
+    {
+      id: nid(),
+      tenantId: aTenantOg,
+      paymentDate: "2021-09-05",
+      forDeposit: true,
+      amountCents: 240_000,
+    },
+  ]);
 
   // Rechnungen A
   const aGasEntry = nid();
@@ -837,6 +869,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       name: "Treppenhausreinigung",
       category: "operating",
       defaultAllocationKey: "per_living_area",
+      laborCostCategory: "household_service",
     },
     {
       id: bCtInsurance,
@@ -1249,6 +1282,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       costEntryId: bMiscEntry,
       costTypeId: bCtCleaning,
       amountCents: 28_800,
+      laborCostsCents: 28_800,
       periodStart: "2025-01-01",
       periodEnd: "2025-12-31",
       position: 1,
@@ -1540,6 +1574,36 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     monthlyAdvanceCents: 30_000,
   });
 
+  // Monatszahlungen B/C, gleiches Muster wie Gebäude A: bis 2026-05
+  // durchbezahlt, Juni offen. Kautionen der langjährigen OG-Mieter eingegangen.
+  insert(schema.payments, [
+    ...monthlyRentPayments(bTenantEg, "2023-04", "2026-05", 60_000, 19_000),
+    ...monthlyRentPayments(bTenantOg, "2020-10", "2026-05", 61_000, 19_000),
+    ...monthlyRentPayments(
+      bTenantGewerbe,
+      "2022-01",
+      "2026-05",
+      95_000,
+      22_000,
+    ),
+    ...monthlyRentPayments(cTenantEg, "2024-06", "2026-05", 99_000, 28_000),
+    ...monthlyRentPayments(cTenantOg, "2019-03", "2026-05", 99_000, 30_000),
+    {
+      id: nid(),
+      tenantId: bTenantOg,
+      paymentDate: "2020-10-05",
+      forDeposit: true,
+      amountCents: 180_000,
+    },
+    {
+      id: nid(),
+      tenantId: cTenantOg,
+      paymentDate: "2019-03-05",
+      forDeposit: true,
+      amountCents: 250_000,
+    },
+  ]);
+
   const cWaterEntry = nid();
   insert(schema.costEntries, {
     id: cWaterEntry,
@@ -1613,6 +1677,19 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     periodEnd: "2025-12-31",
     documentDate: "2026-02-01",
     status: "draft",
+  });
+
+  // ════════════════════════════════════════════════════════════════════════
+  // Gebäude D - "Ahornweg 3", Duisburg
+  // Bewusst leer (keine Wohnungen/Mieter/Kostenarten): zeigt die Empty-States
+  // von Wohnungen-, Mieter-, Zähler- und Kostenarten-Liste bei aktivem Gebäude.
+  // ════════════════════════════════════════════════════════════════════════
+  insert(schema.buildings, {
+    id: nid(),
+    name: "Ahornweg 3",
+    addressStreet: "Ahornweg 3",
+    addressPostalCode: "47051",
+    addressCity: "Duisburg",
   });
 });
 
