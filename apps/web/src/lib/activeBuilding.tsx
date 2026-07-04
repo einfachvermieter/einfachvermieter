@@ -92,10 +92,12 @@ export const ActiveBuildingProvider = ({
         // localStorage nicht verfügbar. Auswahl bleibt nur in-memory.
       }
 
-      // Primärquelle ist die URL: aktuellen Pfad behalten, nur buildingId setzen.
+      // Detail-/Formularseiten gehören zum alten Gebäude: zurück zur Liste
+      // (erstes Pfadsegment); Suchparams (Seite, Filter) zurücksetzen
+      const listPath = `/${pathname.split("/")[1] ?? ""}`;
       navigate({
-        to: pathname,
-        search: (prev) => ({ ...prev, buildingId: id }),
+        to: listPath,
+        search: { buildingId: id },
       }).catch(() => undefined);
     },
     [navigate, pathname],
