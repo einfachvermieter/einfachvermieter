@@ -1511,7 +1511,10 @@
       "passwordRequired": "Passwort erforderlich",
       "welcome": "Willkommen zurück",
       "subtitle": "Melden Sie sich bei Ihrem EinfachVermieter-Konto an",
-      "brandTagline": "Hausverwaltung, einfach digital."
+      "brandTagline": "Hausverwaltung, einfach digital.",
+      "rememberMe": "Angemeldet bleiben",
+      "showPassword": "Passwort anzeigen",
+      "hidePassword": "Passwort verbergen"
     },
     "form": {
       "dateFormat": "Datum im Format YYYY-MM-DD",

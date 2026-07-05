@@ -5,6 +5,23 @@ import { Injectable, Logger } from "@nestjs/common";
 import type { AuthUser } from "./auth.service.js";
 import { SESSION_TTL_MS } from "./const.js";
 
+/**
+ * Ablaufzeitpunkt einer Session: der nächste 03:00-UTC-Zeitpunkt,
+ * aber mindestens `minHours` entfernt (Session-Ende besser nachts).
+ */
+const nextNightlyExpiry = (minHours: number, hour = 3): Date => {
+  const floor = new Date(Date.now() + minHours * 3_600_000);
+
+  const expiry = new Date(floor);
+  expiry.setUTCHours(hour, 0, 0, 0);
+
+  if (expiry <= floor) {
+    expiry.setUTCDate(expiry.getUTCDate() + 1);
+  }
+
+  return expiry;
+};
+
 @Injectable()
 export class SessionService {
   private readonly logger = new Logger(SessionService.name);
@@ -16,11 +33,18 @@ export class SessionService {
   }
 
   /**
-   * Session anlegen und Session-ID/Token zurückliefern
+   * Session anlegen; liefert Token und Ablaufdatum (für das passende Cookie).
+   * `persistent` (Default) läuft rund `SESSION_TTL_MS` später ab, ohne rund
+   * 6 h – beide auf 03 Uhr nachts gerundet.
    */
-  async create(userId: string): Promise<string> {
+  async create(
+    userId: string,
+    persistent = true,
+  ): Promise<{ token: string; expiresAt: Date }> {
     const token = randomBytes(32).toString("base64url");
-    const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
+    const expiresAt = nextNightlyExpiry(
+      persistent ? SESSION_TTL_MS / 3_600_000 : 6,
+    );
 
     const em = this.em.fork();
 
@@ -32,13 +56,13 @@ export class SessionService {
     const session = em.create(SessionSchema, {
       id: this.hashToken(token),
       userId,
-      expiresAt,
+      expiresAt: expiresAt.toISOString(),
     });
 
     em.persist(session);
     await em.flush();
 
-    return token;
+    return { token, expiresAt };
   }
 
   /**

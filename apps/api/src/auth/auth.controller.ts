@@ -29,6 +29,7 @@ import { SessionService } from "./session.service.js";
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+  rememberMe: z.boolean().default(false),
 });
 
 type LoginDto = z.infer<typeof loginSchema>;
@@ -63,8 +64,13 @@ export class AuthController {
       );
     }
 
-    const token = await this.sessionService.create(user.id);
-    setAuthCookie(response, token);
+    const { token, expiresAt } = await this.sessionService.create(
+      user.id,
+      dto.rememberMe,
+    );
+    // Ohne "angemeldet bleiben" ein Session-Cookie (kein Ablaufdatum), das der
+    // Browser beim Schließen verwirft; die DB-Session läuft trotzdem nachts ab.
+    setAuthCookie(response, token, dto.rememberMe ? expiresAt : undefined);
 
     return {
       user: {
@@ -136,8 +142,8 @@ export class AuthController {
 
     // changePassword verwirft alle Sessions des Users; dem ändernden Client
     // ein frisches Cookie ausstellen, damit er eingeloggt bleibt.
-    const token = await this.sessionService.create(user.userId);
-    setAuthCookie(response, token);
+    const { token, expiresAt } = await this.sessionService.create(user.userId);
+    setAuthCookie(response, token, expiresAt);
 
     return result;
   }

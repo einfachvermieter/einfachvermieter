@@ -1,8 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
-import { type ComponentProps, type FormEvent, useId } from "react";
+import { type ComponentProps, type FormEvent, useId, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { CheckboxInput } from "../../components/form/CheckboxInput";
 import { Button } from "../../components/ui/Button";
 import {
   Field,
@@ -11,6 +13,12 @@ import {
   FieldLabel,
 } from "../../components/ui/Field";
 import { Input } from "../../components/ui/Input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "../../components/ui/InputGroup";
 import { useLogin } from "../../lib/auth";
 import { t } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
@@ -18,6 +26,7 @@ import { cn } from "../../lib/utils";
 const schema = z.object({
   email: z.string().email(t("ui.auth.emailInvalid")),
   password: z.string().min(1, t("ui.auth.passwordRequired")),
+  rememberMe: z.boolean(),
 });
 
 type LoginFormValues = z.infer<typeof schema>;
@@ -29,9 +38,10 @@ export const LoginForm = ({
   const navigate = useNavigate();
   const login = useLogin();
   const formId = useId();
+  const [showPassword, setShowPassword] = useState(false);
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", rememberMe: false },
   });
 
   const submit = form.handleSubmit(async (values) => {
@@ -85,18 +95,39 @@ export const LoginForm = ({
               <FieldLabel htmlFor={`${formId}-password`}>
                 {t("ui.auth.password")}
               </FieldLabel>
-              <Input
-                {...field}
-                id={`${formId}-password`}
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={fieldState.invalid}
-              />
+              <InputGroup>
+                <InputGroupInput
+                  {...field}
+                  id={`${formId}-password`}
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  aria-invalid={fieldState.invalid}
+                />
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    size="icon-xs"
+                    aria-label={t(
+                      showPassword
+                        ? "ui.auth.hidePassword"
+                        : "ui.auth.showPassword",
+                    )}
+                    aria-pressed={showPassword}
+                    onClick={() => setShowPassword((shown) => !shown)}
+                  >
+                    {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
               {fieldState.invalid ? (
                 <FieldError errors={[fieldState.error]} />
               ) : null}
             </Field>
           )}
+        />
+        <CheckboxInput
+          control={form.control}
+          name="rememberMe"
+          label={t("ui.auth.rememberMe")}
         />
         {login.isError ? (
           <FieldError>{t("errors.loginFailed")}</FieldError>

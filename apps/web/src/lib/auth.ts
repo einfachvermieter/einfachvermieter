@@ -37,8 +37,11 @@ export const passwordPolicyQueryOptions = {
 export const useLogin = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (credentials: { email: string; password: string }) =>
-      api.post<{ user: AuthUser }>("/auth/login", credentials),
+    mutationFn: (credentials: {
+      email: string;
+      password: string;
+      rememberMe: boolean;
+    }) => api.post<{ user: AuthUser }>("/auth/login", credentials),
     onSuccess: (data) => {
       queryClient.setQueryData(["auth", "me"], data.user);
     },

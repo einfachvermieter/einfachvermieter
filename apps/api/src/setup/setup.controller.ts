@@ -52,8 +52,8 @@ export class SetupController {
     const user = await this.setupService.runSetup(dto);
 
     // Direkt einloggen, gleiches Cookie wie beim regulären Login.
-    const token = await this.sessionService.create(user.id);
-    setAuthCookie(response, token);
+    const { token, expiresAt } = await this.sessionService.create(user.id);
+    setAuthCookie(response, token, expiresAt);
 
     return {
       user: {
