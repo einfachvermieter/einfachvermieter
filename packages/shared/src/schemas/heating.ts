@@ -64,6 +64,27 @@ export const heatingFuelTypes = [
 export type HeatingFuelType = (typeof heatingFuelTypes)[number];
 
 /**
+ * Energieträger, für die überhaupt ein CO2-Preis nach BEHG/CO2KostAufG anfällt
+ * und eine CO2-Kostenaufteilung damit fachlich zulässig ist: fossile
+ * Brennstoffe (Heizöl, Erdgas) sowie Fernwärme (der Versorger reicht seine
+ * CO2-Kosten durch).
+ */
+const CO2_PRICE_ELIGIBLE_FUELS = new Set<HeatingFuelType>([
+  "gas",
+  "oil",
+  "district_heat",
+]);
+
+/**
+ * True, wenn für den Energieträger kein CO2-Preis anfällt und eine aktive
+ * CO2-Kostenaufteilung damit fachlich widersprüchlich ist (Holz, Pellets,
+ * Strom, Wärmepumpe). "other" bleibt unbewertet (kann z. B. Flüssiggas sein).
+ */
+export const isCo2SplitInapplicableFuel = (
+  fuelType: HeatingFuelType,
+): boolean => fuelType !== "other" && !CO2_PRICE_ELIGIBLE_FUELS.has(fuelType);
+
+/**
  * Write-Schema für die Heizkosten-Konfiguration. Wird sowohl beim
  * Anlegen einer neuen Version als auch beim Aktualisieren einer
  * bestehenden Version verwendet.

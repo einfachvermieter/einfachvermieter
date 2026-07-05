@@ -60,10 +60,15 @@ export const HeatingCard = ({
   detail,
   tenantPeriod,
   statementPeriod,
+  targetUnitId,
 }: {
   detail: NonNullable<StatementResult["heatingDetail"]>;
   tenantPeriod: Period;
   statementPeriod: Period;
+  /**
+   * Wohnung dieser Abrechnung, wird in den Tabellen hervorgehoben.
+   */
+  targetUnitId: string;
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Spiegel der PDF-Anlage.
 }) => {
   // Gemeinsames Anzeige-View-Model (WYSIWYG-Pflicht Web <-> PDF).
@@ -88,6 +93,20 @@ export const HeatingCard = ({
   const co2 = detail.co2Detail;
   const hw = detail.hotWaterDetail;
 
+  // Summenzeile Heizung + Warmwasser der abgerechneten Wohnung
+  const ownHeatingUnit = detail.perUnit.find((u) => u.unitId === targetUnitId);
+  const ownHotWaterUnit = hw?.perUnit.find((u) => u.unitId === targetUnitId);
+  const heatingIntro =
+    hw && ownHeatingUnit && ownHotWaterUnit
+      ? t("statements.pdf.heating.heatingIntroOverview", {
+          total: formatEur(
+            ownHeatingUnit.totalCents + ownHotWaterUnit.totalCents,
+          ),
+          heating: formatEur(ownHeatingUnit.totalCents),
+          hotWater: formatEur(ownHotWaterUnit.totalCents),
+        })
+      : null;
+
   // Vermieteranteil (Leerstand/Mieterwechsel) als eigene Tabellenzeile,
   // damit die Wohnungszeilen sichtbar auf "Haus gesamt" aufsummieren.
   const landlordRow = landlordShareRow(detail);
@@ -109,18 +128,16 @@ export const HeatingCard = ({
 
   return (
     <>
+      {heatingIntro ? (
+        <p className="mb-5 rounded-xl border border-border bg-card px-6.5 py-4 text-sm text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+          {heatingIntro}
+        </p>
+      ) : null}
       {hasBreakdown ? (
         <SectionCard
           icon={RiFireLine}
           iconBackground={gradients.heating}
           title={t("statements.pdf.heating.breakdown.title")}
-          description={
-            detail.fuelType
-              ? t("statements.pdf.heating.breakdown.fuelTypeNote", {
-                  fuel: t(`ui.heating.fuelTypes.${detail.fuelType}`),
-                })
-              : undefined
-          }
         >
           <ResultRows
             rows={[
@@ -145,68 +162,87 @@ export const HeatingCard = ({
               },
             ]}
           />
-          {co2 ? (
+          {co2 || detail.fuelType ? (
             <div className="mt-6">
               <h3 className={`mb-2.5 ${QUIET_TABLE_GROUP_HEAD}`}>
-                {t("statements.pdf.heating.co2.title")}
+                {co2
+                  ? t("statements.pdf.heating.co2.title")
+                  : t("statements.pdf.heating.energySource")}
               </h3>
               <table className="w-full text-sm">
                 <tbody>
-                  <tr className="border-b border-border">
-                    <th
-                      scope="row"
-                      className="py-2.5 text-left font-medium text-muted-foreground"
-                    >
-                      {t("statements.pdf.heating.co2.totalCost")}
-                    </th>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {formatEur(co2.totalCostCents)}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-border">
-                    <th
-                      scope="row"
-                      className="py-2.5 text-left font-medium text-muted-foreground"
-                    >
-                      {t("statements.pdf.heating.co2.emissions")}
-                    </th>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {`${formatNumber(co2.emissionsKgPerSqmYear, 1)} kg/m²a`}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-border">
-                    <th
-                      scope="row"
-                      className="py-2.5 text-left font-medium text-muted-foreground"
-                    >
-                      {t("statements.pdf.heating.co2.tier")}
-                    </th>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {co2TierText}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-border">
-                    <th
-                      scope="row"
-                      className="py-2.5 text-left font-medium text-muted-foreground"
-                    >
-                      {t("statements.pdf.heating.co2.sharePair")}
-                    </th>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {`${formatNumber(100 - co2.landlordSharePercent, 0)} % / ${formatNumber(co2.landlordSharePercent, 0)} %`}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-border">
-                    <th
-                      scope="row"
-                      className="py-2.5 text-left font-medium text-muted-foreground"
-                    >
-                      {t("statements.pdf.heating.co2.landlordDeduction")}
-                    </th>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {formatEur(co2.landlordDeductionCents)}
-                    </td>
-                  </tr>
+                  {detail.fuelType ? (
+                    <tr className={co2 ? "border-b border-border" : undefined}>
+                      <th
+                        scope="row"
+                        className="py-2.5 text-left font-medium text-muted-foreground"
+                      >
+                        {t("statements.pdf.heating.energySource")}
+                      </th>
+                      <td className="py-2.5 text-right">
+                        {t(`ui.heating.fuelTypes.${detail.fuelType}`)}
+                      </td>
+                    </tr>
+                  ) : null}
+                  {co2 ? (
+                    <>
+                      <tr className="border-b border-border">
+                        <th
+                          scope="row"
+                          className="py-2.5 text-left font-medium text-muted-foreground"
+                        >
+                          {t("statements.pdf.heating.co2.totalCost")}
+                        </th>
+                        <td className="py-2.5 text-right tabular-nums">
+                          {formatEur(co2.totalCostCents)}
+                        </td>
+                      </tr>
+                      <tr className="border-b border-border">
+                        <th
+                          scope="row"
+                          className="py-2.5 text-left font-medium text-muted-foreground"
+                        >
+                          {t("statements.pdf.heating.co2.emissions")}
+                        </th>
+                        <td className="py-2.5 text-right tabular-nums">
+                          {`${formatNumber(co2.emissionsKgPerSqmYear, 1)} kg/m²a`}
+                        </td>
+                      </tr>
+                      <tr className="border-b border-border">
+                        <th
+                          scope="row"
+                          className="py-2.5 text-left font-medium text-muted-foreground"
+                        >
+                          {t("statements.pdf.heating.co2.tier")}
+                        </th>
+                        <td className="py-2.5 text-right tabular-nums">
+                          {co2TierText}
+                        </td>
+                      </tr>
+                      <tr className="border-b border-border">
+                        <th
+                          scope="row"
+                          className="py-2.5 text-left font-medium text-muted-foreground"
+                        >
+                          {t("statements.pdf.heating.co2.sharePair")}
+                        </th>
+                        <td className="py-2.5 text-right tabular-nums">
+                          {`${formatNumber(100 - co2.landlordSharePercent, 0)} % / ${formatNumber(co2.landlordSharePercent, 0)} %`}
+                        </td>
+                      </tr>
+                      <tr className="border-b border-border">
+                        <th
+                          scope="row"
+                          className="py-2.5 text-left font-medium text-muted-foreground"
+                        >
+                          {t("statements.pdf.heating.co2.landlordDeduction")}
+                        </th>
+                        <td className="py-2.5 text-right tabular-nums">
+                          {formatEur(co2.landlordDeductionCents)}
+                        </td>
+                      </tr>
+                    </>
+                  ) : null}
                 </tbody>
               </table>
             </div>
@@ -260,28 +296,43 @@ export const HeatingCard = ({
               </tr>
             </thead>
             <tbody>
-              {detail.perUnit.map((unit) => (
-                <tr key={unit.unitId} className="border-b border-border">
-                  <td className="py-2.5 font-semibold text-foreground">
-                    {unit.unitName}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {`${formatNumber(unit.areaSqm, 2)} m²`}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {formatAggregatedConsumption(unit.consumptionKwh)}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {formatEur(unit.consumptionCostCents)}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {formatEur(unit.basicCostCents)}
-                  </td>
-                  <td className="py-2.5 text-right font-semibold tabular-nums">
-                    {formatEur(unit.totalCents)}
-                  </td>
-                </tr>
-              ))}
+              {detail.perUnit.map((unit) => {
+                const isTarget = unit.unitId === targetUnitId;
+                return (
+                  <tr key={unit.unitId} className="border-b border-border">
+                    <td
+                      className={
+                        isTarget
+                          ? "py-2.5 font-semibold text-foreground"
+                          : "py-2.5 text-foreground"
+                      }
+                    >
+                      {unit.unitName}
+                    </td>
+                    <td className="py-2.5 text-right tabular-nums">
+                      {`${formatNumber(unit.areaSqm, 2)} m²`}
+                    </td>
+                    <td className="py-2.5 text-right tabular-nums">
+                      {formatAggregatedConsumption(unit.consumptionKwh)}
+                    </td>
+                    <td className="py-2.5 text-right tabular-nums">
+                      {formatEur(unit.consumptionCostCents)}
+                    </td>
+                    <td className="py-2.5 text-right tabular-nums">
+                      {formatEur(unit.basicCostCents)}
+                    </td>
+                    <td
+                      className={
+                        isTarget
+                          ? "py-2.5 text-right font-semibold tabular-nums"
+                          : "py-2.5 text-right tabular-nums"
+                      }
+                    >
+                      {formatEur(unit.totalCents)}
+                    </td>
+                  </tr>
+                );
+              })}
               {landlordRow ? (
                 <tr className="border-b border-border">
                   <td className="py-2.5">
@@ -479,25 +530,40 @@ export const HeatingCard = ({
                 </tr>
               </thead>
               <tbody>
-                {hw.perUnit.map((unit) => (
-                  <tr key={unit.unitId} className="border-b border-border">
-                    <td className="py-2.5 font-semibold text-foreground">
-                      {unit.unitName}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {`${formatNumber(unit.hotWaterM3, 2)} m³`}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {formatEur(unit.consumptionCostCents)}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {formatEur(unit.basicCostCents)}
-                    </td>
-                    <td className="py-2.5 text-right font-semibold tabular-nums">
-                      {formatEur(unit.totalCents)}
-                    </td>
-                  </tr>
-                ))}
+                {hw.perUnit.map((unit) => {
+                  const isTarget = unit.unitId === targetUnitId;
+                  return (
+                    <tr key={unit.unitId} className="border-b border-border">
+                      <td
+                        className={
+                          isTarget
+                            ? "py-2.5 font-semibold text-foreground"
+                            : "py-2.5 text-foreground"
+                        }
+                      >
+                        {unit.unitName}
+                      </td>
+                      <td className="py-2.5 text-right tabular-nums">
+                        {`${formatNumber(unit.hotWaterM3, 2)} m³`}
+                      </td>
+                      <td className="py-2.5 text-right tabular-nums">
+                        {formatEur(unit.consumptionCostCents)}
+                      </td>
+                      <td className="py-2.5 text-right tabular-nums">
+                        {formatEur(unit.basicCostCents)}
+                      </td>
+                      <td
+                        className={
+                          isTarget
+                            ? "py-2.5 text-right font-semibold tabular-nums"
+                            : "py-2.5 text-right tabular-nums"
+                        }
+                      >
+                        {formatEur(unit.totalCents)}
+                      </td>
+                    </tr>
+                  );
+                })}
                 {hwLandlordRow ? (
                   <tr className="border-b border-border">
                     <td className="py-2.5">

@@ -4,6 +4,7 @@ import {
   heatingFuelTypes,
   heatingProrationMethods,
   heatingTypes,
+  isCo2SplitInapplicableFuel,
 } from "@einfachvermieter/shared";
 import { RiCalendarLine, RiFireLine, RiPercentLine } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
@@ -113,7 +114,14 @@ export const HeatingSettingsFields = ({
   const heatingType = form.watch("heatingType");
   const prorationMethod = form.watch("prorationMethod");
   const buildingId = form.watch("buildingId");
+  const fuelType = form.watch("fuelType");
+  const co2CostShareEnabled = form.watch("co2CostShareEnabled");
   const currentBillingType = toBillingType({ mode, consumptionMethod });
+
+  // Warnung: CO2-Aufteilung eingeschaltet, obwohl der Energieträger
+  // keinem CO2-Preis nach CO2KostAufG unterliegt (Biomasse/Strom).
+  const co2FuelMismatch =
+    co2CostShareEnabled && isCo2SplitInapplicableFuel(fuelType);
 
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
@@ -395,6 +403,15 @@ export const HeatingSettingsFields = ({
               name="co2CostShareEnabled"
               label={t("ui.heating.fields.co2CostShareEnabled")}
             />
+            {co2FuelMismatch ? (
+              <Alert variant="warning">
+                <AlertDescription>
+                  {t("ui.heating.fields.co2FuelMismatchWarning", {
+                    fuel: t(`ui.heating.fuelTypes.${fuelType}`),
+                  })}
+                </AlertDescription>
+              </Alert>
+            ) : null}
           </FieldGroup>
         </SectionCard>
       )}

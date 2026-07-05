@@ -257,6 +257,7 @@ const StatementTabs = ({
             detail={heatingDetail}
             tenantPeriod={result.tenantPeriod}
             statementPeriod={result.period}
+            targetUnitId={result.unitId}
           />
         </TabsContent>
       ) : null}

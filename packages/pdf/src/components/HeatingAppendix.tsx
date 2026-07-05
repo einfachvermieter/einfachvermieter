@@ -125,6 +125,107 @@ const distributionConsumptionHeader = (
     : t("statements.pdf.heating.consumptionUnitsRaw");
 };
 
+/**
+ * Rechte Info-Tabelle des Heizkosten-Anhangs: Energieträger als erste Zeile,
+ * darunter die CO2-Kostenaufteilung. Nur aufrufen, wenn Energieträger bekannt
+ * oder CO2 aufgeteilt ist (sonst wäre die Tabelle leer).
+ */
+const EnergyAndCo2Table = ({
+  fuelType,
+  co2,
+}: {
+  fuelType: HeatingDetail["fuelType"];
+  co2: HeatingDetail["co2Detail"];
+}) => {
+  // Einstufungs-Label (Stufe, in die der Gebäude-Ausstoß fällt).
+  const co2TierText = co2
+    ? (() => {
+        const label = co2TierLabel(co2.emissionsKgPerSqmYear);
+        return t(label.key, label.params);
+      })()
+    : "";
+
+  return (
+    <View>
+      <Text style={styles.sectionHeading}>
+        {co2
+          ? t("statements.pdf.heating.co2.title")
+          : t("statements.pdf.heating.energySource")}
+      </Text>
+      <View style={styles.table}>
+        {fuelType ? (
+          <View style={styles.row}>
+            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+              <Text>{t("statements.pdf.heating.energySource")}</Text>
+            </View>
+            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
+              <Text>{t(`ui.heating.fuelTypes.${fuelType}`)}</Text>
+            </View>
+          </View>
+        ) : null}
+        {co2 ? (
+          <>
+            <View style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+                <Text>{t("statements.pdf.heating.co2.totalCost")}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
+              >
+                <Text>{formatEur(co2.totalCostCents)}</Text>
+              </View>
+            </View>
+            <View style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+                <Text>{t("statements.pdf.heating.co2.emissions")}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
+              >
+                <Text>
+                  {renderSuperscripts(
+                    `${formatNumber(co2.emissionsKgPerSqmYear, 1)} kg/m²a`,
+                  )}
+                </Text>
+              </View>
+            </View>
+            <View style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+                <Text>{t("statements.pdf.heating.co2.tier")}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
+              >
+                <Text>{renderSuperscripts(co2TierText)}</Text>
+              </View>
+            </View>
+            <View style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+                <Text>{t("statements.pdf.heating.co2.sharePair")}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
+              >
+                <Text>{`${formatNumber(100 - co2.landlordSharePercent, 0)} % / ${formatNumber(co2.landlordSharePercent, 0)} %`}</Text>
+              </View>
+            </View>
+            <View style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+                <Text>{t("statements.pdf.heating.co2.landlordDeduction")}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
+              >
+                <Text>{formatEur(co2.landlordDeductionCents)}</Text>
+              </View>
+            </View>
+          </>
+        ) : null}
+      </View>
+    </View>
+  );
+};
+
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: Länge liegt am Markup
 export const HeatingAppendix = ({
   detail,
@@ -201,6 +302,21 @@ export const HeatingAppendix = ({
   // reduzierten Topf; das Warmwasser erscheint in einer eigenen Sektion.
   const hw = detail.hotWaterDetail;
 
+  // "Ihre Heizkosten"-Introzeile: Heizungs- und Warmwasseranteil der eigenen
+  // Wohnung zusammengefasst. Nur wenn Warmwasser abgespalten ist
+  const ownHeatingUnit = detail.perUnit.find((u) => u.unitId === targetUnitId);
+  const ownHotWaterUnit = hw?.perUnit.find((u) => u.unitId === targetUnitId);
+  const yourHeatingIntro =
+    hw && ownHeatingUnit && ownHotWaterUnit
+      ? t("statements.pdf.heating.yourHeatingIntro", {
+          total: formatEur(
+            ownHeatingUnit.totalCents + ownHotWaterUnit.totalCents,
+          ),
+          heating: formatEur(ownHeatingUnit.totalCents),
+          hotWater: formatEur(ownHotWaterUnit.totalCents),
+        })
+      : null;
+
   // Aufschlüsselung der Heizkosten-Gesamtsumme nach Kostenarten, stellt
   // sicher, dass der Mieter nachvollziehen kann, woraus sich der "Heizkosten
   // gesamt"-Wert oben zusammensetzt. Die größte Position trägt den
@@ -229,28 +345,22 @@ export const HeatingAppendix = ({
               <Text>{t("statements.pdf.heating.breakdown.amount")}</Text>
             </View>
           </View>
-          {detail.costBreakdown.map((row, idx) => {
-            const label =
-              idx === 0 && detail.fuelType
-                ? t(`ui.heating.fuelTypes.${detail.fuelType}`)
-                : row.label;
-            return (
-              <View key={row.label} style={[styles.row, styles.rowDivider]}>
-                <View style={[styles.cellLeft, BREAKDOWN_COL_LABEL]}>
-                  <Text>{label}</Text>
-                </View>
-                <View
-                  style={[
-                    styles.cellRight,
-                    styles.cellDivider,
-                    BREAKDOWN_COL_AMOUNT,
-                  ]}
-                >
-                  <Text>{formatEur(row.amountCents)}</Text>
-                </View>
+          {detail.costBreakdown.map((row) => (
+            <View key={row.label} style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeft, BREAKDOWN_COL_LABEL]}>
+                <Text>{row.label}</Text>
               </View>
-            );
-          })}
+              <View
+                style={[
+                  styles.cellRight,
+                  styles.cellDivider,
+                  BREAKDOWN_COL_AMOUNT,
+                ]}
+              >
+                <Text>{formatEur(row.amountCents)}</Text>
+              </View>
+            </View>
+          ))}
           {co2 ? (
             <View style={[styles.row, styles.rowDivider]}>
               <View style={[styles.cellLeft, BREAKDOWN_COL_LABEL]}>
@@ -282,68 +392,10 @@ export const HeatingAppendix = ({
     ) : null;
 
   // CO2-Aufteilungstabelle (Header-Zellen in der linken Spalte).
-  // Einstufungs-Label (Stufe, in die der Gebäude-Ausstoß fällt), eine der
-  // drei Bereichsformen (unterste/mittlere/oberste Stufe).
-  const co2TierText = co2
-    ? (() => {
-        const label = co2TierLabel(co2.emissionsKgPerSqmYear);
-        return t(label.key, label.params);
-      })()
-    : "";
-
-  const co2Section = co2 ? (
-    <View>
-      <Text style={styles.sectionHeading}>
-        {t("statements.pdf.heating.co2.title")}
-      </Text>
-      <View style={styles.table}>
-        <View style={styles.row}>
-          <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-            <Text>{t("statements.pdf.heating.co2.totalCost")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-            <Text>{formatEur(co2.totalCostCents)}</Text>
-          </View>
-        </View>
-        <View style={[styles.row, styles.rowDivider]}>
-          <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-            <Text>{t("statements.pdf.heating.co2.emissions")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-            <Text>
-              {renderSuperscripts(
-                `${formatNumber(co2.emissionsKgPerSqmYear, 1)} kg/m²a`,
-              )}
-            </Text>
-          </View>
-        </View>
-        <View style={[styles.row, styles.rowDivider]}>
-          <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-            <Text>{t("statements.pdf.heating.co2.tier")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-            <Text>{renderSuperscripts(co2TierText)}</Text>
-          </View>
-        </View>
-        <View style={[styles.row, styles.rowDivider]}>
-          <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-            <Text>{t("statements.pdf.heating.co2.sharePair")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-            <Text>{`${formatNumber(100 - co2.landlordSharePercent, 0)} % / ${formatNumber(co2.landlordSharePercent, 0)} %`}</Text>
-          </View>
-        </View>
-        <View style={[styles.row, styles.rowDivider]}>
-          <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-            <Text>{t("statements.pdf.heating.co2.landlordDeduction")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-            <Text>{formatEur(co2.landlordDeductionCents)}</Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  ) : null;
+  const infoSection =
+    co2 || detail.fuelType ? (
+      <EnergyAndCo2Table fuelType={detail.fuelType} co2={co2} />
+    ) : null;
 
   // Warmwasser-Sektion (§ 9 Abs. 2 HeizkostenV): Zerlegung Q_WW/Q_gesamt plus
   // eigene Verteilungstabelle. DSGVO-Hybrid wie bei der Heizung, eigene
@@ -393,6 +445,7 @@ export const HeatingAppendix = ({
           type HwRow = {
             key: string;
             label: string;
+            isTarget: boolean;
             hotWaterM3: number;
             consumptionCostCents: number;
             basicCostCents: number;
@@ -405,6 +458,7 @@ export const HeatingAppendix = ({
               label: t("statements.pdf.heating.targetUnitLabel", {
                 unit: target.unitName,
               }),
+              isTarget: true,
               hotWaterM3: target.hotWaterM3,
               consumptionCostCents: target.consumptionCostCents,
               basicCostCents: target.basicCostCents,
@@ -414,6 +468,7 @@ export const HeatingAppendix = ({
           if (others.length > 0) {
             rows.push({
               key: "other-units",
+              isTarget: false,
               label:
                 others.length === 1 && others[0]
                   ? others[0].unitName
@@ -435,7 +490,9 @@ export const HeatingAppendix = ({
           return rows.map((row) => (
             <View key={row.key} style={[styles.row, styles.rowDivider]}>
               <View style={[styles.cellLeft, DIST_COL_UNIT]}>
-                <Text>{row.label}</Text>
+                <Text style={row.isTarget ? styles.bold : undefined}>
+                  {row.label}
+                </Text>
               </View>
               <View
                 style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
@@ -457,7 +514,9 @@ export const HeatingAppendix = ({
               <View
                 style={[styles.cellRight, styles.cellDivider, DIST_COL_TOTAL]}
               >
-                <Text>{formatEur(row.totalCents)}</Text>
+                <Text style={row.isTarget ? styles.bold : undefined}>
+                  {formatEur(row.totalCents)}
+                </Text>
               </View>
             </View>
           ));
@@ -560,15 +619,18 @@ export const HeatingAppendix = ({
 
   return (
     <View>
-      {breakdownTable && co2Section ? (
+      {yourHeatingIntro ? (
+        <Text style={styles.paragraph}>{yourHeatingIntro}</Text>
+      ) : null}
+      {breakdownTable && infoSection ? (
         <View wrap={false} style={styles.twoColumnRow}>
           <View style={styles.twoColumnLeft}>{breakdownTable}</View>
-          <View style={styles.twoColumnRight}>{co2Section}</View>
+          <View style={styles.twoColumnRight}>{infoSection}</View>
         </View>
       ) : (
         <View wrap={false}>
           {breakdownTable}
-          {co2Section}
+          {infoSection}
         </View>
       )}
 
@@ -723,6 +785,7 @@ export const HeatingAppendix = ({
             type DistRow = {
               key: string;
               label: string;
+              isTarget: boolean;
               areaSqm: number;
               consumptionKwh: number;
               consumptionCostCents: number;
@@ -738,6 +801,7 @@ export const HeatingAppendix = ({
                 label: t("statements.pdf.heating.targetUnitLabel", {
                   unit: target.unitName,
                 }),
+                isTarget: true,
                 areaSqm: target.areaSqm,
                 consumptionKwh: target.consumptionKwh,
                 consumptionCostCents: target.consumptionCostCents,
@@ -753,6 +817,7 @@ export const HeatingAppendix = ({
               // aggregiert.
               rows.push({
                 key: "other-units",
+                isTarget: false,
                 label:
                   others.length === 1 && others[0]
                     ? others[0].unitName
@@ -778,7 +843,9 @@ export const HeatingAppendix = ({
             return rows.map((row) => (
               <View key={row.key} style={[styles.row, styles.rowDivider]}>
                 <View style={[styles.cellLeft, DIST_COL_UNIT]}>
-                  <Text>{row.label}</Text>
+                  <Text style={row.isTarget ? styles.bold : undefined}>
+                    {row.label}
+                  </Text>
                 </View>
                 <View
                   style={[styles.cellRight, styles.cellDivider, DIST_COL_AREA]}
@@ -805,7 +872,9 @@ export const HeatingAppendix = ({
                 <View
                   style={[styles.cellRight, styles.cellDivider, DIST_COL_TOTAL]}
                 >
-                  <Text>{formatEur(row.totalCents)}</Text>
+                  <Text style={row.isTarget ? styles.bold : undefined}>
+                    {formatEur(row.totalCents)}
+                  </Text>
                 </View>
               </View>
             ));

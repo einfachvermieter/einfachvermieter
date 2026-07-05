@@ -917,7 +917,8 @@
         "allocationKeyDescription": "Bestimmt, wie die Rechnungen dieser Kostenart auf die Mieter verteilt werden.",
         "laborCostCategory": "Steuerlich begünstigt (§ 35a EStG)",
         "laborCostCategoryDescription": "Wenn gesetzt, weisen Sie bei jeder Rechnung dieser Kostenart den Lohnkostenanteil aus. Er wird in der NK-Abrechnung als Bescheinigung für den Mieter ausgewiesen.",
-        "co2Tracked": "CO₂-Menge und -Kostenanteil auf den Rechnungen erfassen"
+        "co2Tracked": "CO₂-Menge und -Kostenanteil auf den Rechnungen erfassen",
+        "co2TrackedNoConfigWarning": "Derzeit nutzt keine Heizkosten-Konfiguration dieses Gebäudes die CO₂-Kostenaufteilung mit einem CO₂-pflichtigen Brennstoff. Die erfassten CO₂-Werte bleiben ohne Wirkung, bis eine passende Konfiguration besteht."
       },
       "laborCostCategoryOptions": {
         "__none__": "Nicht begünstigt",
@@ -1154,7 +1155,8 @@
         "hotWaterSupplyTemperatureDescription": "Üblich sind 60 °C. Wird in die Schätzformel und in die Mieter-Information übernommen.",
         "totalHeatEnergyKwh": "Gesamt-Wärmemenge (kWh)",
         "totalHeatEnergyKwhDescription": "Jahres-Wärmemenge der gesamten Heizungsanlage in kWh – Grundlage, um den Warmwasseranteil nach § 9 Abs. 2 HeizkostenV herauszurechnen. Entnehmen Sie den Wert Ihrer Energieabrechnung (Gas/Fernwärme weisen kWh aus). Liegt ein gebäudezentraler Wärmemengenzähler als Hauptzähler vor, wird ersatzweise dessen Verbrauch herangezogen.",
-        "co2CostShareEnabled": "CO₂-Kosten zwischen Vermieter und Mieter aufteilen (CO2KostAufG)"
+        "co2CostShareEnabled": "CO₂-Kosten zwischen Vermieter und Mieter aufteilen (CO2KostAufG)",
+        "co2FuelMismatchWarning": "Für den gewählten Energieträger {fuel} fällt kein CO₂-Preis nach CO2KostAufG an (nur fossile Brennstoffe und Fernwärme). Die CO₂-Kostenaufteilung ist hier in der Regel nicht zutreffend."
       },
       "tabs": {
         "settings": "Abrechnung",
@@ -1988,7 +1990,6 @@
           "title": "Zusammensetzung der Heizkosten",
           "position": "Kostenposition",
           "amount": "Betrag",
-          "fuelTypeNote": "Energieträger: {fuel}",
           "co2LandlordShare": "CO₂-Kostenanteil Vermieter",
           "total": "Summe"
         },
@@ -2003,7 +2004,10 @@
           "sharePair": "Anteil Mieter/Vermieter",
           "landlordDeduction": "Abzug Vermieter"
         },
+        "energySource": "Energieträger",
         "distributionPerUnit": "Verteilung pro Wohnung",
+        "yourHeatingIntro": "Ihre Heizkosten von {total} setzen sich zusammen aus {heating} Heizung und {hotWater} Warmwasser.",
+        "heatingIntroOverview": "Die Heizkosten von {total} setzen sich zusammen aus {heating} Heizung und {hotWater} Warmwasser.",
         "unit": "Wohnung",
         "heatingArea": "Heizfläche",
         "targetUnitLabel": "{unit} (Ihre Wohnung)",

@@ -1,4 +1,6 @@
+import { isCo2SplitInapplicableFuel } from "@einfachvermieter/shared";
 import { RiFireLine, RiHomeGearLine } from "@remixicon/react";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
@@ -7,12 +9,14 @@ import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { ReadonlyField } from "@/components/form/ReadonlyField";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
+import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
 import type { Building } from "../../../../lib/buildings";
 import {
   costTypeCategoryLabel,
   laborCostCategoryLabel,
 } from "../../../../lib/costs";
+import { heatingSettingsListQueryOptions } from "../../../../lib/heating";
 import { t } from "../../../../lib/i18n";
 import { AllocationKeySelectField } from "./AllocationKeySelectField";
 import {
@@ -42,8 +46,30 @@ export const CostTypeBaseFields = ({
 }) => {
   const selectedCategory = form.watch("category");
   const isHeating = selectedCategory === "heating";
+  const buildingId = form.watch("buildingId");
+  const co2Tracked = form.watch("co2Tracked");
   const hasLaborCategory =
     form.getValues("laborCostCategory") !== LABOR_CATEGORY_NONE;
+
+  // Warnung: CO2-Erfassung angehakt, aber keine Heizkosten-Konfiguration
+  // dieses Gebäudes nutzt die CO2-Aufteilung mit einem CO2-pflichtigen
+  // Brennstoff.
+  const heatingConfigs = useQuery({
+    ...heatingSettingsListQueryOptions(buildingId),
+    enabled: isHeating && co2Tracked === true && Boolean(buildingId),
+  });
+
+  const anyConfigUsesCo2 = (heatingConfigs.data ?? []).some(
+    (config) =>
+      config.co2CostShareEnabled &&
+      !isCo2SplitInapplicableFuel(config.fuelType),
+  );
+
+  const showCo2NoConfigHint =
+    isHeating &&
+    co2Tracked === true &&
+    heatingConfigs.isSuccess &&
+    !anyConfigUsesCo2;
 
   useEffect(() => {
     if (
@@ -53,8 +79,7 @@ export const CostTypeBaseFields = ({
       form.setValue("defaultAllocationKey", ALLOCATION_KEY_NONE);
     }
     // CO2-Erfassung gibt es nur für Heizkosten, bei Wechsel auf
-    // Betriebskosten das Flag zurücksetzen, sonst bliebe ein unsichtbarer
-    // Wert im Formular stehen.
+    // Betriebskosten das Flag zurücksetzen
     if (!isHeating && form.getValues("co2Tracked")) {
       form.setValue("co2Tracked", false);
     }
@@ -137,6 +162,13 @@ export const CostTypeBaseFields = ({
           name="co2Tracked"
           label={t("ui.costs.typeFields.co2Tracked")}
         />
+      ) : null}
+      {showCo2NoConfigHint ? (
+        <Alert variant="warning">
+          <AlertDescription>
+            {t("ui.costs.typeFields.co2TrackedNoConfigWarning")}
+          </AlertDescription>
+        </Alert>
       ) : null}
     </FieldGroup>
   );
