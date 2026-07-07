@@ -4,6 +4,8 @@ import {
   formatEur,
   formatNumber,
   HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
+  heatingColumnFootnotes,
+  hotWaterColumnFootnotes,
   landlordShareRow,
   type Period,
   perMeterDisplayDigits,
@@ -50,6 +52,43 @@ const consumptionUnitHeader = (
 };
 
 /**
+ * Wert-Zellen der Verteilungstabellen. Im Flächen-Fallback  (keine Zähler) eine
+ * zusammengefasste "100 % nach Fläche"-Zelle (= Gesamtbetrag), sonst die
+ * getrennten Spalten Verbrauch / Fläche / Summe.
+ */
+const distributionValueCells = (
+  consumptionCents: number,
+  basicCents: number,
+  totalCents: number,
+  merged: boolean,
+  emphasizeTotal: boolean,
+) => {
+  const totalClass = emphasizeTotal
+    ? "py-2.5 text-right font-semibold tabular-nums"
+    : "py-2.5 text-right tabular-nums";
+  if (merged) {
+    return <td className={totalClass}>{formatEur(totalCents)}</td>;
+  }
+  return (
+    <>
+      <td className="py-2.5 text-right tabular-nums">
+        {formatEur(consumptionCents)}
+      </td>
+      <td className="py-2.5 text-right tabular-nums">
+        {formatEur(basicCents)}
+      </td>
+      <td className={totalClass}>{formatEur(totalCents)}</td>
+    </>
+  );
+};
+
+/**
+ * Hochgestellte Fußnoten-Marker am Referenzort (Spaltenkopf)
+ */
+const columnMarkers = (indices: number[]) =>
+  indices.length > 0 ? <sup>{indices.join(", ")}</sup> : null;
+
+/**
  * Spiegel der PDF-Anlage `HeatingAppendix` im Browser. Im Gegensatz zur
  * PDF-Variante (für den Mieter, mit § 12 HeizkostenV-Anonymisierung
  * fremder Wohnungen) zeigt diese Card alle Wohnungen und alle Zähler.
@@ -84,6 +123,8 @@ export const HeatingCard = ({
     isPartialPeriod,
     hotWaterConsumptionPct,
     hotWaterBasicPct,
+    hotWaterSharePct,
+    heatingSharePct,
     formatAggregatedConsumption,
   } = prepareHeatingDisplay(detail, tenantPeriod, statementPeriod);
 
@@ -112,6 +153,12 @@ export const HeatingCard = ({
   const landlordRow = landlordShareRow(detail);
   const hwLandlordRow = hw ? landlordShareRow(hw) : null;
 
+  // Ohne Warmwasserzähler (Verteilung nach Fläche) sind alle m3-Werte 0,00,
+  // die Spalte entfällt, die Fußnote erklärt es.
+  const showHotWaterM3 = hw
+    ? hw.consumptionDistributionMethod !== "heating_area"
+    : false;
+
   // Einstufungs-Label (Stufe des Gebäude-Ausstoßes), analog zur PDF-Anlage.
   const co2TierText = co2
     ? (() => {
@@ -125,6 +172,25 @@ export const HeatingCard = ({
     perMeterDisplayDigits(perMeter);
 
   const hasBreakdown = detail.costBreakdown && detail.costBreakdown.length > 0;
+
+  // Nummerierte Spalten-Fußnoten (Heizfläche -> Bewertungspunkte -> Summe),
+  // gemeinsame Quelle mit der PDF-Anlage. Marker am jeweiligen Spaltenkopf.
+  const columnFootnotes = heatingColumnFootnotes(
+    detail,
+    useValuationPoints,
+    heatingSharePct,
+  );
+  const wwFootnotes = hw ? hotWaterColumnFootnotes(hw, hotWaterSharePct) : [];
+  const heatingIndices = (column: (typeof columnFootnotes)[number]["column"]) =>
+    columnFootnotes
+      .filter((note) => note.column === column)
+      .map((n) => n.index);
+  const wwIndices = () => wwFootnotes.map((note) => note.index);
+
+  // Flächen-Fallback: Verbrauchs- und Grundkostenspalte zu einer
+  // "100 % nach Fläche"-Spalte zusammenfassen (mangels Verbrauchsmessern).
+  const heatingMerged = distributionMethod === "heating_area";
+  const wwMerged = hw?.consumptionDistributionMethod === "heating_area";
 
   return (
     <>
@@ -273,26 +339,38 @@ export const HeatingCard = ({
                 <th className="py-2.5">{t("statements.pdf.heating.unit")}</th>
                 <th className="py-2.5 text-right">
                   {t("statements.pdf.heating.heatingArea")}
+                  {columnMarkers(heatingIndices("heatingArea"))}
                 </th>
                 <th className="whitespace-pre-line py-1.5 text-right">
                   {consumptionUnitHeader(
                     detail.consumptionMethod,
                     useValuationPoints,
                   )}
+                  {columnMarkers(heatingIndices("consumption"))}
                 </th>
-                <th className="whitespace-pre-line py-1.5 text-right">
-                  {t("statements.pdf.heating.consumptionShareHeader", {
-                    percent: formatNumber(consumptionPct, 0),
-                  })}
-                </th>
-                <th className="whitespace-pre-line py-1.5 text-right">
-                  {t("statements.pdf.heating.basicShareHeader", {
-                    percent: formatNumber(basicPct, 0),
-                  })}
-                </th>
-                <th className="py-2.5 text-right">
-                  {t("statements.pdf.heating.total")}
-                </th>
+                {heatingMerged ? (
+                  <th className="whitespace-pre-line py-1.5 text-right">
+                    {t("statements.pdf.heating.mergedAreaHeader")}
+                    {columnMarkers(heatingIndices("total"))}
+                  </th>
+                ) : (
+                  <>
+                    <th className="whitespace-pre-line py-1.5 text-right">
+                      {t("statements.pdf.heating.consumptionShareHeader", {
+                        percent: formatNumber(consumptionPct, 0),
+                      })}
+                    </th>
+                    <th className="whitespace-pre-line py-1.5 text-right">
+                      {t("statements.pdf.heating.basicShareHeader", {
+                        percent: formatNumber(basicPct, 0),
+                      })}
+                    </th>
+                    <th className="py-2.5 text-right">
+                      {t("statements.pdf.heating.total")}
+                      {columnMarkers(heatingIndices("total"))}
+                    </th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -315,21 +393,13 @@ export const HeatingCard = ({
                     <td className="py-2.5 text-right tabular-nums">
                       {formatAggregatedConsumption(unit.consumptionKwh)}
                     </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {formatEur(unit.consumptionCostCents)}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {formatEur(unit.basicCostCents)}
-                    </td>
-                    <td
-                      className={
-                        isTarget
-                          ? "py-2.5 text-right font-semibold tabular-nums"
-                          : "py-2.5 text-right tabular-nums"
-                      }
-                    >
-                      {formatEur(unit.totalCents)}
-                    </td>
+                    {distributionValueCells(
+                      unit.consumptionCostCents,
+                      unit.basicCostCents,
+                      unit.totalCents,
+                      heatingMerged,
+                      isTarget,
+                    )}
                   </tr>
                 );
               })}
@@ -344,15 +414,13 @@ export const HeatingCard = ({
                   <td className="py-2.5 text-right tabular-nums">
                     {t("ui.common.emptyValue")}
                   </td>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {formatEur(landlordRow.consumptionCostCents)}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {formatEur(landlordRow.basicCostCents)}
-                  </td>
-                  <td className="py-2.5 text-right font-semibold tabular-nums">
-                    {formatEur(landlordRow.totalCents)}
-                  </td>
+                  {distributionValueCells(
+                    landlordRow.consumptionCostCents,
+                    landlordRow.basicCostCents,
+                    landlordRow.totalCents,
+                    heatingMerged,
+                    true,
+                  )}
                 </tr>
               ) : null}
               {/* "Haus gesamt": Summenzeile (vormals die separate
@@ -368,34 +436,23 @@ export const HeatingCard = ({
                 <td className="py-2.5 text-right tabular-nums">
                   {formatAggregatedConsumption(totalConsumption)}
                 </td>
-                <td className="py-2.5 text-right tabular-nums">
-                  {formatEur(detail.consumptionPortionCents)}
-                </td>
-                <td className="py-2.5 text-right tabular-nums">
-                  {formatEur(detail.basicPortionCents)}
-                </td>
-                <td className="py-2.5 text-right tabular-nums">
-                  {formatEur(heatingPotForDisplay)}
-                </td>
+                {distributionValueCells(
+                  detail.consumptionPortionCents,
+                  detail.basicPortionCents,
+                  heatingPotForDisplay,
+                  heatingMerged,
+                  false,
+                )}
               </tr>
             </tbody>
           </table>
         </div>
-        {distributionMethod === "heating_area" ? (
-          <p className="mt-2 text-xs text-muted-foreground">
-            {t("statements.pdf.heating.consumptionDistributionHeatingArea")}
+        {columnFootnotes.map((footnote) => (
+          <p key={footnote.key} className="mt-2 text-xs text-muted-foreground">
+            <sup>{footnote.index}</sup>{" "}
+            {t(footnote.label.key, footnote.label.params)}
           </p>
-        ) : null}
-        {useValuationPoints ? (
-          <p className="mt-2 text-xs text-muted-foreground">
-            {t("statements.pdf.heating.valuationPointsNote")}
-          </p>
-        ) : null}
-        {detail.heatingAreaDiffersFromLivingArea ? (
-          <p className="mt-2 text-xs text-muted-foreground">
-            {t("statements.pdf.heating.heatingAreaNote")}
-          </p>
-        ) : null}
+        ))}
         {/* Hinweis zur zeitanteiligen Verteilung, nur bei unterjähriger
             Nutzung und nur bei interner Berechnung (im external-Modus ist
             `prorationMethod` undefiniert). Bei voller Nutzung findet keine
@@ -498,35 +555,39 @@ export const HeatingCard = ({
           iconBackground={gradients.water}
           title={t("statements.pdf.heating.hotWater.title")}
         >
-          <p className="mb-3 text-sm text-muted-foreground">
-            {t(`statements.pdf.heating.hotWater.method.${hw.method}`, {
-              heat: formatNumber(hw.hotWaterHeatKwh, 0),
-              total: formatNumber(hw.totalHeatEnergyKwh, 0),
-              share: formatNumber(hw.hotWaterShareBps / 100, 1),
-              pot: formatEur(hw.hotWaterPotCents),
-            })}
-          </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className={QUIET_TABLE_HEAD_ROW}>
                   <th className="py-2.5">{t("statements.pdf.heating.unit")}</th>
-                  <th className="py-2.5 text-right">
-                    {t("statements.pdf.heating.hotWater.consumptionM3")}
-                  </th>
-                  <th className="whitespace-pre-line py-1.5 text-right">
-                    {t("statements.pdf.heating.consumptionShareHeader", {
-                      percent: formatNumber(hotWaterConsumptionPct, 0),
-                    })}
-                  </th>
-                  <th className="whitespace-pre-line py-1.5 text-right">
-                    {t("statements.pdf.heating.basicShareHeader", {
-                      percent: formatNumber(hotWaterBasicPct, 0),
-                    })}
-                  </th>
-                  <th className="py-2.5 text-right">
-                    {t("statements.pdf.heating.total")}
-                  </th>
+                  {showHotWaterM3 ? (
+                    <th className="py-2.5 text-right">
+                      {t("statements.pdf.heating.hotWater.consumptionM3")}
+                    </th>
+                  ) : null}
+                  {wwMerged ? (
+                    <th className="whitespace-pre-line py-1.5 text-right">
+                      {t("statements.pdf.heating.mergedAreaHeader")}
+                      {columnMarkers(wwIndices())}
+                    </th>
+                  ) : (
+                    <>
+                      <th className="whitespace-pre-line py-1.5 text-right">
+                        {t("statements.pdf.heating.consumptionShareHeader", {
+                          percent: formatNumber(hotWaterConsumptionPct, 0),
+                        })}
+                      </th>
+                      <th className="whitespace-pre-line py-1.5 text-right">
+                        {t("statements.pdf.heating.basicShareHeader", {
+                          percent: formatNumber(hotWaterBasicPct, 0),
+                        })}
+                      </th>
+                      <th className="py-2.5 text-right">
+                        {t("statements.pdf.heating.total")}
+                        {columnMarkers(wwIndices())}
+                      </th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -543,24 +604,18 @@ export const HeatingCard = ({
                       >
                         {unit.unitName}
                       </td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {`${formatNumber(unit.hotWaterM3, 2)} m³`}
-                      </td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {formatEur(unit.consumptionCostCents)}
-                      </td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {formatEur(unit.basicCostCents)}
-                      </td>
-                      <td
-                        className={
-                          isTarget
-                            ? "py-2.5 text-right font-semibold tabular-nums"
-                            : "py-2.5 text-right tabular-nums"
-                        }
-                      >
-                        {formatEur(unit.totalCents)}
-                      </td>
+                      {showHotWaterM3 ? (
+                        <td className="py-2.5 text-right tabular-nums">
+                          {`${formatNumber(unit.hotWaterM3, 2)} m³`}
+                        </td>
+                      ) : null}
+                      {distributionValueCells(
+                        unit.consumptionCostCents,
+                        unit.basicCostCents,
+                        unit.totalCents,
+                        wwMerged,
+                        isTarget,
+                      )}
                     </tr>
                   );
                 })}
@@ -569,48 +624,52 @@ export const HeatingCard = ({
                     <td className="py-2.5">
                       {t("statements.pdf.heating.landlordShare")}
                     </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {t("ui.common.emptyValue")}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {formatEur(hwLandlordRow.consumptionCostCents)}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {formatEur(hwLandlordRow.basicCostCents)}
-                    </td>
-                    <td className="py-2.5 text-right font-semibold tabular-nums">
-                      {formatEur(hwLandlordRow.totalCents)}
-                    </td>
+                    {showHotWaterM3 ? (
+                      <td className="py-2.5 text-right tabular-nums">
+                        {t("ui.common.emptyValue")}
+                      </td>
+                    ) : null}
+                    {distributionValueCells(
+                      hwLandlordRow.consumptionCostCents,
+                      hwLandlordRow.basicCostCents,
+                      hwLandlordRow.totalCents,
+                      wwMerged,
+                      true,
+                    )}
                   </tr>
                 ) : null}
                 <tr className="border-t-2 border-foreground font-semibold">
                   <td className="py-2.5">
                     {t("statements.pdf.heating.totalHouse")}
                   </td>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {`${formatNumber(
-                      hw.perUnit.reduce((acc, u) => acc + u.hotWaterM3, 0),
-                      2,
-                    )} m³`}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {formatEur(hw.consumptionPortionCents)}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {formatEur(hw.basicPortionCents)}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {formatEur(hw.hotWaterPotCents)}
-                  </td>
+                  {showHotWaterM3 ? (
+                    <td className="py-2.5 text-right tabular-nums">
+                      {`${formatNumber(
+                        hw.perUnit.reduce((acc, u) => acc + u.hotWaterM3, 0),
+                        2,
+                      )} m³`}
+                    </td>
+                  ) : null}
+                  {distributionValueCells(
+                    hw.consumptionPortionCents,
+                    hw.basicPortionCents,
+                    hw.hotWaterPotCents,
+                    wwMerged,
+                    false,
+                  )}
                 </tr>
               </tbody>
             </table>
           </div>
-          {hw.consumptionDistributionMethod === "heating_area" ? (
-            <p className="mt-2 text-xs text-muted-foreground">
-              {t("statements.pdf.heating.hotWater.consumptionFallbackArea")}
+          {wwFootnotes.map((footnote) => (
+            <p
+              key={footnote.key}
+              className="mt-2 text-xs text-muted-foreground"
+            >
+              <sup>{footnote.index}</sup>{" "}
+              {t(footnote.label.key, footnote.label.params)}
             </p>
-          ) : null}
+          ))}
         </SectionCard>
       ) : null}
     </>

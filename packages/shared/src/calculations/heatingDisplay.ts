@@ -60,6 +60,14 @@ export type HeatingDisplay = {
   hotWaterConsumptionPct: number;
   hotWaterBasicPct: number;
   /**
+   * Anteil des Heizungs- bzw. Warmwasser-Topfes an den gesamten Heizkosten
+   * (§ 9 Abs. 2 HeizkostenV-Abspaltung), aus `hotWaterShareBps` abgeleitet und
+   * damit auf 100 % komplementär. 0 bzw. 100, wenn kein Warmwasser abgespalten
+   * ist; die Anzeige der Anteils-Fußnote wird dann ohnehin unterdrückt.
+   */
+  hotWaterSharePct: number;
+  heatingSharePct: number;
+  /**
    * Aggregierte Verbrauchseinheiten (Summary + Verteilung pro Wohnung). Bei
    * HKVs mit aktiven Bewertungspunkten skaliert auf (Wert / 1.000), sonst der
    * rohe kWh-/Einheiten-Wert. Reine Anzeige-Skalierung.
@@ -122,6 +130,8 @@ export const prepareHeatingDisplay = (
     : detail.totalHeatingCostsCents;
   const hotWaterConsumptionPct = hw ? hw.consumptionShareBps / 100 : 0;
   const hotWaterBasicPct = 100 - hotWaterConsumptionPct;
+  const hotWaterSharePct = hw ? hw.hotWaterShareBps / 100 : 0;
+  const heatingSharePct = 100 - hotWaterSharePct;
 
   return {
     consumptionPct,
@@ -135,6 +145,8 @@ export const prepareHeatingDisplay = (
     isPartialPeriod,
     hotWaterConsumptionPct,
     hotWaterBasicPct,
+    hotWaterSharePct,
+    heatingSharePct,
     formatAggregatedConsumption,
   };
 };
@@ -170,6 +182,103 @@ export const perMeterDisplayDigits = (
 export type HeatingLabelDescriptor = {
   key: string;
   params?: Record<string, string>;
+};
+
+export type HeatingColumnFootnote = {
+  key: "heatingArea" | "valuationPoints" | "totalShare" | "areaFallback";
+  column: "heatingArea" | "consumption" | "total";
+  /**
+   * 1..N in Spalten-Reihenfolge; liefert den hochgestellten Marker sowohl am
+   * Spaltenkopf als auch vor dem Fußnotentext. Mehrere Fußnoten dürfen auf
+   * dieselbe Spalte zeigen (z. B. Summe: Anteil + Flächen-Fallback).
+   */
+  index: number;
+  label: HeatingLabelDescriptor;
+};
+
+/**
+ * Nummerierte Spalten-Fußnoten der Heizungs-Verteilungstabelle in Spalten-
+ * Reihenfolge (Heizfläche -> Verbrauch/Bewertungspunkte -> Summe). Nur die
+ * tatsächlich zutreffenden Einträge. Gemeinsame Quelle für Web-Karte und
+ * PDF-Anlage, damit beide dieselbe Nummerierung zeigen (WYSIWYG). Die
+ * Summen-Fußnote (Anteil an den Heizkosten) erscheint nur, wenn Warmwasser
+ * abgespalten ist; die Flächen-Fallback-Fußnote nur, wenn mangels Verbrauchs-
+ * messern ersatzweise nach Fläche verteilt wurde (dann fasst die Tabelle die
+ * Verbrauchs- und Grundkostenspalte zu einer "100 % nach Fläche"-Spalte
+ * zusammen, an der beide Marker hängen).
+ */
+export const heatingColumnFootnotes = (
+  detail: HeatingDetail,
+  useValuationPoints: boolean,
+  heatingSharePct: number,
+): HeatingColumnFootnote[] => {
+  const notes: Omit<HeatingColumnFootnote, "index">[] = [];
+  if (detail.heatingAreaDiffersFromLivingArea) {
+    notes.push({
+      key: "heatingArea",
+      column: "heatingArea",
+      label: { key: "statements.pdf.heating.heatingAreaNote" },
+    });
+  }
+  if (useValuationPoints) {
+    notes.push({
+      key: "valuationPoints",
+      column: "consumption",
+      label: { key: "statements.pdf.heating.valuationPointsNote" },
+    });
+  }
+  if (detail.hotWaterDetail) {
+    notes.push({
+      key: "totalShare",
+      column: "total",
+      label: {
+        key: "statements.pdf.heating.totalShareNote",
+        params: { percent: formatNumber(heatingSharePct, 1) },
+      },
+    });
+  }
+  if (
+    (detail.consumptionDistributionMethod ?? "consumption") === "heating_area"
+  ) {
+    notes.push({
+      key: "areaFallback",
+      column: "total",
+      label: {
+        key: "statements.pdf.heating.consumptionDistributionHeatingArea",
+      },
+    });
+  }
+  return notes.map((note, idx) => ({ ...note, index: idx + 1 }));
+};
+
+/**
+ * Spalten-Fußnoten der Warmwasser-Verteilungstabelle: der Anteil an den
+ * Heizkosten sowie – falls mangels Warmwasserzählern nach Fläche verteilt –
+ * die Flächen-Fallback-Note. Beide hängen an der Summen- bzw. (im Fallback)
+ * "100 % nach Fläche"-Spalte. Eigene Nummerierung je Tabelle (1..N).
+ */
+export const hotWaterColumnFootnotes = (
+  hotWater: NonNullable<HeatingDetail["hotWaterDetail"]>,
+  hotWaterSharePct: number,
+): HeatingColumnFootnote[] => {
+  const notes: Omit<HeatingColumnFootnote, "index">[] = [
+    {
+      key: "totalShare",
+      column: "total",
+      label: {
+        key: "statements.pdf.heating.totalShareNote",
+        params: { percent: formatNumber(hotWaterSharePct, 1) },
+      },
+    },
+  ];
+  if (hotWater.consumptionDistributionMethod === "heating_area") {
+    notes.push({
+      key: "areaFallback",
+      column: "total",
+      label: { key: "statements.pdf.heating.hotWater.consumptionFallbackArea" },
+    });
+  }
+  return notes.map((note, idx) => ({ ...note, index: idx + 1 }));
 };
 
 /**

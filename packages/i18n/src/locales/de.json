@@ -2017,18 +2017,16 @@
         "consumptionUnitsRaw": "Verbrauchs-\neinheiten",
         "consumptionShareHeader": "{percent} % nach\nVerbrauch",
         "basicShareHeader": "{percent} % nach\nFläche",
+        "mergedAreaHeader": "100 % nach Fläche",
         "total": "Summe",
         "landlordShare": "Vermieteranteil (Leerstand/Mieterwechsel)",
         "totalHouse": "Haus gesamt",
         "hotWater": {
           "title": "Warmwasser",
           "consumptionM3": "Warmwasser (m³)",
-          "consumptionFallbackArea": "Mangels Warmwasserzählern wurde auch der Verbrauchsanteil des Warmwassers nach Wohnfläche verteilt.",
-          "method": {
-            "boiler_meter": "Der Warmwasseranteil wurde nach § 9 Abs. 2 HeizkostenV abgespalten: am Warmwasserzähler gemessene {heat} kWh von insgesamt {total} kWh = {share} % der Heizkosten ({pot}).",
-            "estimated": "Der Warmwasseranteil wurde nach der Schätzformel des § 9 Abs. 2 HeizkostenV ermittelt: {heat} kWh von insgesamt {total} kWh = {share} % der Heizkosten ({pot})."
-          }
+          "consumptionFallbackArea": "Mangels Warmwasserzählern wurde auch der Verbrauchsanteil des Warmwassers nach Wohnfläche verteilt."
         },
+        "totalShareNote": "Insgesamt {percent} % der Heizkosten",
         "consumptionDistributionHeatingArea": "Verbrauchsanteil ersatzweise nach Heizfläche verteilt (keine bzw. Differenz von 0 bei den Verbrauchsmessern).",
         "heatingAreaNote": "Die Heizfläche umfasst ausschließlich die beheizten Räume und kann von der Wohnfläche abweichen.",
         "prorationNoteLinearBase": "Da das Mietverhältnis nicht den gesamten Abrechnungszeitraum umfasste, wurde der Grundkostenanteil der Heizkosten zeitanteilig nach Nutzungstagen verteilt.",
