@@ -4,7 +4,7 @@ import {
 } from "@einfachvermieter/shared";
 import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import { CheckboxGroupInput } from "@/components/form/CheckboxGroupInput";
+import { SwitchGroupInput } from "@/components/form/SwitchGroupInput";
 import {
   type AllocationKey,
   allocationLabel,
@@ -67,7 +67,7 @@ export const CostTypeAssignment = ({
   }, [eligibleCostTypes, form]);
 
   return (
-    <CheckboxGroupInput
+    <SwitchGroupInput
       control={form.control}
       name="costTypeIds"
       label={t("ui.meters.fields.costTypes")}

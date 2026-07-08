@@ -398,11 +398,16 @@ export const HeatingSettingsFields = ({
                 </FieldGroup>
               </Disclose>
             ) : null}
-            <SwitchInput
-              control={form.control}
-              name="co2CostShareEnabled"
-              label={t("ui.heating.fields.co2CostShareEnabled")}
-            />
+            <div className="border-t border-border pt-4">
+              <SwitchInput
+                control={form.control}
+                name="co2CostShareEnabled"
+                label={t("ui.heating.fields.co2CostShareEnabled")}
+                description={t(
+                  "ui.heating.fields.co2CostShareEnabledDescription",
+                )}
+              />
+            </div>
             {co2FuelMismatch ? (
               <Alert variant="warning">
                 <AlertDescription>

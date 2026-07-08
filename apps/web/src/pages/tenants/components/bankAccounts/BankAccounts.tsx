@@ -4,6 +4,7 @@ import { RiAddLine, RiBankCardLine } from "@remixicon/react";
 import { useState } from "react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
 import { SectionCard } from "@/components/common/SectionCard";
+import { DateInput } from "@/components/form/DateInput";
 import {
   EditableListSection,
   type EditableListSectionRowFormProps,
@@ -23,6 +24,9 @@ import {
   emptyBankAccountRow,
 } from "./bankAccountRow";
 
+const today = new Date();
+const mandateCalendarStart = new Date(today.getFullYear() - 20, 0, 1);
+
 export const BankAccounts = ({
   form,
   tenantStartDate,
@@ -37,6 +41,7 @@ export const BankAccounts = ({
     name: "bankAccounts",
   });
   const watchedBankAccounts = form.watch("bankAccounts");
+  const simpleSepaEnabled = form.watch("bankAccounts.0.sepaEnabled");
   const error = translateKey(form.formState.errors.bankAccounts?.message);
 
   // Wachsende Ansicht.
@@ -113,9 +118,25 @@ export const BankAccounts = ({
             control={form.control}
             name="bankAccounts.0.sepaEnabled"
             label={t("ui.tenant.fields.sepaEnabled")}
-            description={t("ui.tenant.sepaDetailsHint")}
           />
         </div>
+        {simpleSepaEnabled ? (
+          <FieldGroup className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TextInput
+              control={form.control}
+              name="bankAccounts.0.mandateReference"
+              label={t("ui.tenant.fields.mandateReference")}
+              inputClassName="tabular-nums"
+            />
+            <DateInput
+              control={form.control}
+              name="bankAccounts.0.mandateSignedAt"
+              label={t("ui.tenant.fields.mandateSignedAt")}
+              startMonth={mandateCalendarStart}
+              endMonth={today}
+            />
+          </FieldGroup>
+        ) : null}
         {hiddenError || error ? (
           <p className="mt-2 text-sm text-destructive">
             {hiddenError || error}

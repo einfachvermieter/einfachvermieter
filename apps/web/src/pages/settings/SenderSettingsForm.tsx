@@ -11,12 +11,11 @@ import type { z } from "zod";
 import { Disclose } from "@/components/common/Disclose";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Spinner } from "@/components/common/Spinner";
-import { CheckboxInput } from "@/components/form/CheckboxInput";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
+import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Button } from "@/components/ui/Button";
-import { FieldDescription } from "@/components/ui/Field";
 import { gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import type { PendingLogo, SenderSettings } from "@/lib/senderSettings";
@@ -203,16 +202,14 @@ export const SenderSettingsForm = ({
               description={t("ui.settings.sender.logo.description")}
             >
               <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1">
-                  <CheckboxInput
-                    control={form.control}
-                    name="useLogo"
-                    label={t("ui.settings.sender.fields.useLogo")}
-                  />
-                  <FieldDescription>
-                    {t("ui.settings.sender.fields.useLogoDescription")}
-                  </FieldDescription>
-                </div>
+                <SwitchInput
+                  control={form.control}
+                  name="useLogo"
+                  label={t("ui.settings.sender.fields.useLogo")}
+                  description={t(
+                    "ui.settings.sender.fields.useLogoDescription",
+                  )}
+                />
                 <SenderLogoSection
                   settings={settings}
                   pendingLogo={pendingLogo}

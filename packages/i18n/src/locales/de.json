@@ -1155,7 +1155,8 @@
         "hotWaterSupplyTemperatureDescription": "Üblich sind 60 °C. Wird in die Schätzformel und in die Mieter-Information übernommen.",
         "totalHeatEnergyKwh": "Gesamt-Wärmemenge (kWh)",
         "totalHeatEnergyKwhDescription": "Jahres-Wärmemenge der gesamten Heizungsanlage in kWh – Grundlage, um den Warmwasseranteil nach § 9 Abs. 2 HeizkostenV herauszurechnen. Entnehmen Sie den Wert Ihrer Energieabrechnung (Gas/Fernwärme weisen kWh aus). Liegt ein gebäudezentraler Wärmemengenzähler als Hauptzähler vor, wird ersatzweise dessen Verbrauch herangezogen.",
-        "co2CostShareEnabled": "CO₂-Kosten zwischen Vermieter und Mieter aufteilen (CO2KostAufG)",
+        "co2CostShareEnabled": "CO₂-Kosten aufteilen (CO2KostAufG)",
+        "co2CostShareEnabledDescription": "Aufteilung zwischen Vermieter und Mieter nach Emissionsstufe",
         "co2FuelMismatchWarning": "Für den gewählten Energieträger {fuel} fällt kein CO₂-Preis nach CO2KostAufG an (nur fossile Brennstoffe und Fernwärme). Die CO₂-Kostenaufteilung ist hier in der Regel nicht zutreffend."
       },
       "tabs": {
@@ -1538,7 +1539,6 @@
       "rentSimpleDescription": "Aktueller Mietsatz. Änderungen hier korrigieren den bestehenden Satz.",
       "rentHistoryHint": "Frühere Sätze bleiben für die Abrechnung erhalten.",
       "bankSimpleDescription": "Aktuelle Bankverbindung des Mieters",
-      "sepaDetailsHint": "Mandatsreferenz und Unterschriftsdatum pflegen Sie im Verlauf.",
       "sections": {
         "contract": {
           "title": "Vertrag",

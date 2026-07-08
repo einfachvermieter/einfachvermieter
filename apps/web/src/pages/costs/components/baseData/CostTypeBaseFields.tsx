@@ -4,10 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
-import { CheckboxInput } from "@/components/form/CheckboxInput";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { ReadonlyField } from "@/components/form/ReadonlyField";
 import { SelectInput } from "@/components/form/SelectInput";
+import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
@@ -157,7 +157,7 @@ export const CostTypeBaseFields = ({
       </Disclose>
 
       {isHeating ? (
-        <CheckboxInput
+        <SwitchInput
           control={form.control}
           name="co2Tracked"
           label={t("ui.costs.typeFields.co2Tracked")}

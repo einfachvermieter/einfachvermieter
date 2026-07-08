@@ -84,7 +84,7 @@ export const ChoiceTilesInput = <T extends FieldValues>({
                     id={optionId}
                     value={option.value}
                     disabled={option.disabled}
-                    className="sr-only"
+                    className="absolute size-px opacity-0"
                   />
                   <span className="flex items-center gap-2 text-sm font-semibold">
                     {Icon ? (
