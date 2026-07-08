@@ -224,8 +224,6 @@ export const Residents = ({
       onRemove={(index) => residentsArray.remove(index)}
       resolveDefaultValues={resolveDefaultValues}
       renderRowForm={renderRowForm}
-      addDialogTitle={t("ui.tenant.addResident")}
-      editDialogTitle={t("ui.tenant.editResident")}
       confirmDeleteTitle={t("ui.tenant.confirmRemoveResident")}
       error={error}
       rowError={(index) =>

@@ -243,8 +243,6 @@ export const Rents = ({
       onRemove={(index) => rentsArray.remove(index)}
       resolveDefaultValues={resolveDefaultValues}
       renderRowForm={renderRowForm}
-      addDialogTitle={t("ui.tenant.addRent")}
-      editDialogTitle={t("ui.tenant.editRent")}
       confirmDeleteTitle={t("ui.tenant.confirmRemoveRent")}
       error={error}
       rowError={(index) =>

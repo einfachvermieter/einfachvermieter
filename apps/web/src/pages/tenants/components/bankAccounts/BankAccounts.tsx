@@ -27,6 +27,27 @@ import {
 const today = new Date();
 const mandateCalendarStart = new Date(today.getFullYear() - 20, 0, 1);
 
+/**
+ * Nur der explizit erfasste Zeitraum wird ausgewiesen: fehlt eine Grenze,
+ * "ab"/"bis", fehlen beide, leere Angabe (gilt implizit für die gesamte
+ * Mietdauer).
+ */
+const bankPeriodText = (start: string, end: string): string => {
+  if (start && end) {
+    return t("ui.common.periodLabel", {
+      start: formatDate(start),
+      end: formatDate(end),
+    });
+  }
+  if (start) {
+    return t("ui.common.periodSince", { date: formatDate(start) });
+  }
+  if (end) {
+    return t("ui.common.periodUntil", { date: formatDate(end) });
+  }
+  return "";
+};
+
 export const BankAccounts = ({
   form,
   tenantStartDate,
@@ -170,10 +191,14 @@ export const BankAccounts = ({
           ? formatIban(row.iban)
           : t("ui.tenant.bankAccountIndex", { index: index + 1 });
 
+        const periodText = bankPeriodText(row.startDate, row.endDate);
+
         return (
           <>
             <div className="flex items-center gap-2">
-              <p className="truncate font-semibold tabular-nums">{title}</p>
+              <p className="truncate text-sm font-semibold tabular-nums">
+                {title}
+              </p>
               {periodStatus === "active" ? (
                 <Badge variant="lightGreen">
                   {t("ui.tenant.bankAccountCurrent")}
@@ -188,17 +213,19 @@ export const BankAccounts = ({
                 <Badge variant="lightBlue">{t("ui.tenant.mandateBadge")}</Badge>
               ) : null}
             </div>
-            {row.accountHolder ? (
-              <p className="truncate text-sm">{row.accountHolder}</p>
+            {row.accountHolder || periodText ? (
+              <p className="truncate text-sm">
+                {row.accountHolder}
+                {row.accountHolder && periodText
+                  ? t("ui.common.separators.bullet")
+                  : null}
+                {periodText ? (
+                  <span className="text-muted-foreground tabular-nums">
+                    {periodText}
+                  </span>
+                ) : null}
+              </p>
             ) : null}
-            <p className="text-sm text-muted-foreground tabular-nums">
-              {t("ui.common.periodLabel", {
-                start: effectiveStart ? formatDate(effectiveStart) : "?",
-                end: effectiveEnd
-                  ? formatDate(effectiveEnd)
-                  : t("ui.tenant.openEnded"),
-              })}
-            </p>
           </>
         );
       }}
@@ -209,8 +236,6 @@ export const BankAccounts = ({
         current ?? emptyBankAccountRow()
       }
       renderRowForm={renderRowForm}
-      addDialogTitle={t("ui.tenant.addBankAccount")}
-      editDialogTitle={t("ui.tenant.editBankAccount")}
       confirmDeleteTitle={t("ui.tenant.confirmRemoveBankAccount")}
       error={error}
       rowError={(index) =>

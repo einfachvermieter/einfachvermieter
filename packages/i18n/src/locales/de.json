@@ -263,6 +263,8 @@
       },
       "emptyValue": "—",
       "periodLabel": "{start} – {end}",
+      "periodSince": "ab {date}",
+      "periodUntil": "bis {date}",
       "deductionAmount": "− {amount}",
       "crumbs": {
         "dashboard": "Übersicht",

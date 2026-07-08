@@ -10,6 +10,7 @@ import { IconTile } from "@/components/common/IconTile";
 import { SectionCard } from "@/components/common/SectionCard";
 import { DestructiveConfirmDialog } from "@/components/DestructiveConfirmDialog";
 import { InlineSubform } from "@/components/form/InlineSubform";
+import { SubformSubmitProvider } from "@/components/form/subformSubmit";
 import { Button } from "@/components/ui/Button";
 import {
   Tooltip,
@@ -77,8 +78,6 @@ export type EditableListSectionProps<T> = {
    */
   renderRowForm: (props: EditableListSectionRowFormProps<T>) => ReactNode;
 
-  addDialogTitle: string;
-  editDialogTitle: string;
   confirmDeleteTitle: string;
 
   error?: string;
@@ -122,8 +121,6 @@ export const EditableListSection = <T,>({
   onRemove,
   resolveDefaultValues,
   renderRowForm,
-  addDialogTitle,
-  editDialogTitle,
   confirmDeleteTitle,
   error,
   rowError,
@@ -145,22 +142,26 @@ export const EditableListSection = <T,>({
 
   const subform = formOpen ? (
     <InlineSubform>
-      <p className="mb-3 text-[13px] font-semibold">
-        {editIndex !== null ? editDialogTitle : addDialogTitle}
-      </p>
-      {renderRowForm({
-        defaultValues,
-        editIndex,
-        onSubmit: (values) => {
-          if (editIndex !== null) {
-            onUpdate(editIndex, values);
-          } else {
-            onAppend(values);
-          }
-          closeForm();
-        },
-        onCancel: closeForm,
-      })}
+      <SubformSubmitProvider
+        value={{
+          label: editIndex !== null ? t("ui.common.action.save") : addLabel,
+          icon: editIndex !== null ? undefined : <RiAddLine />,
+        }}
+      >
+        {renderRowForm({
+          defaultValues,
+          editIndex,
+          onSubmit: (values) => {
+            if (editIndex !== null) {
+              onUpdate(editIndex, values);
+            } else {
+              onAppend(values);
+            }
+            closeForm();
+          },
+          onCancel: closeForm,
+        })}
+      </SubformSubmitProvider>
     </InlineSubform>
   ) : null;
 

@@ -99,8 +99,6 @@ export const Addresses = ({
         current ?? emptyAddressRow()
       }
       renderRowForm={renderRowForm}
-      addDialogTitle={t("ui.tenant.addAddress")}
-      editDialogTitle={t("ui.tenant.editAddress")}
       confirmDeleteTitle={t("ui.tenant.confirmRemoveAddress")}
       error={error}
       rowError={(index) =>

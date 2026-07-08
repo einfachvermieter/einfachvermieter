@@ -98,8 +98,6 @@ export const GasFactorsCard = ({
       onRemove={(index) => gasFactorsArray.remove(index)}
       resolveDefaultValues={resolveDefaultValues}
       renderRowForm={renderRowForm}
-      addDialogTitle={t("ui.meters.gasFactors.addPeriodTitle")}
-      editDialogTitle={t("ui.meters.gasFactors.editPeriodTitle")}
       confirmDeleteTitle={t("ui.meters.gasFactors.confirmRemovePeriod")}
       error={error}
       rowError={(index) =>
