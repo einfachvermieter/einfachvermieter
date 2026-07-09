@@ -12,7 +12,7 @@ export const SenderSettingsSidebar = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col gap-4 lg:sticky lg:top-24">
+    <div className="flex flex-col gap-4 xl:sticky xl:top-24">
       <InfoCard
         title={t("ui.settings.sender.sidebar.appearance")}
         rows={[

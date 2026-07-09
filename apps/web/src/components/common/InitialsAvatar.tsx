@@ -43,7 +43,7 @@ export const InitialsAvatar = ({
   <div
     aria-hidden={true}
     className={cn(
-      "grid shrink-0 place-items-center font-bold text-white",
+      "grid shrink-0 place-items-center font-bold text-white!",
       SIZE_CLASSES[size],
       className,
     )}

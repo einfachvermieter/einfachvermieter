@@ -18,13 +18,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/Sidebar";
 import { useActiveBuilding } from "@/lib/activeBuilding";
 import { t } from "@/lib/i18n";
 
 export const BuildingSwitcher = () => {
-  const { isMobile } = useSidebar();
   const { building, buildings, buildingId, setBuildingId } =
     useActiveBuilding();
 
@@ -38,26 +36,27 @@ export const BuildingSwitcher = () => {
             tooltip={
               building?.name ?? t("ui.navigation.buildingSwitcher.empty")
             }
-            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            className="h-auto rounded-t-[13px] rounded-b-none py-3 pr-3 pl-1.5 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
             <DropdownMenuTrigger>
-              <InitialsAvatar name={building?.name ?? "?"} size={34} />
+              <InitialsAvatar name={building?.name ?? "?"} size={29} />
               <div className="flex flex-1 flex-col gap-0.5 overflow-hidden text-left leading-none">
-                <span className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+                <span className="text-[10px] font-semibold tracking-wider text-sidebar-foreground/60 uppercase">
                   {t("ui.navigation.buildingSwitcher.label")}
                 </span>
-                <span className="truncate text-[13.5px] font-semibold">
+                <span className="truncate text-[13.5px] font-semibold text-slate-900 dark:text-slate-100">
                   {building?.name ?? t("ui.navigation.buildingSwitcher.empty")}
                 </span>
               </div>
-              <RiExpandUpDownLine className="ml-auto size-4 shrink-0 text-muted-foreground" />
+              <RiExpandUpDownLine className="ml-auto size-4 shrink-0 text-sidebar-foreground/50" />
             </DropdownMenuTrigger>
           </SidebarMenuButton>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            className="w-[calc(var(--radix-dropdown-menu-trigger-width)-1rem)] rounded-lg"
+            side="bottom"
             align="start"
             sideOffset={4}
+            alignOffset={8}
           >
             <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
               {t("ui.navigation.buildingSwitcher.switchLabel")}

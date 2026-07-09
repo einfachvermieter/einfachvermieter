@@ -148,7 +148,7 @@ export const UnitEditPage = () => {
         ]}
       />
 
-      <div className="grid items-start gap-5 lg:grid-cols-[1fr_320px]">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
         <UnitForm
           mode="edit"
           buildings={buildings}
@@ -169,7 +169,7 @@ export const UnitEditPage = () => {
           onCancel={goBack}
         />
 
-        <div className="flex flex-col gap-4 lg:sticky lg:top-24">
+        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
           <InfoCard title={t("ui.common.infoCards.links")}>
             {current ? (
               <ActionLink

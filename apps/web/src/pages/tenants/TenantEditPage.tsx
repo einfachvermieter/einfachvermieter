@@ -81,13 +81,9 @@ export const TenantEditPage = () => {
     <div className="pb-24">
       <TenantHero tenantId={tenantId} eyebrow={t("ui.tenant.editEyebrow")} />
 
-      <TenantDetailHeader
-        tenantId={tenantId}
-        active="stammdaten"
-        hideTitle={true}
-      />
+      <TenantDetailHeader tenantId={tenantId} active="stammdaten" />
 
-      <div className="mt-6 grid items-start gap-5 lg:grid-cols-[1fr_320px]">
+      <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
         <TenantForm
           mode="edit"
           units={units}
@@ -104,7 +100,7 @@ export const TenantEditPage = () => {
           onCancel={goToList}
         />
 
-        <div className="flex flex-col gap-4 lg:sticky lg:top-24">
+        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
           <InfoCard title={t("ui.common.infoCards.links")}>
             {unit ? (
               <ActionLink

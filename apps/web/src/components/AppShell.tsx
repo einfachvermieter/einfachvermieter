@@ -14,15 +14,16 @@ export const AppShell = ({ children }: { children?: ReactNode }) => (
 
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-border bg-background/80 px-6 pt-[env(safe-area-inset-top)] backdrop-blur-lg sm:px-8">
-          <SidebarTrigger className="-mx-2" />
+          {/* Sidebar ist ab 1024 immer sichtbar */}
+          <SidebarTrigger className="-mx-2 lg:hidden" />
 
           <Separator
             orientation="vertical"
-            className="mx-2 data-vertical:h-full"
+            className="mx-2 data-vertical:h-full lg:hidden"
           />
 
-          {/* Logo nur auf Mobile / Desktop bereits in Sidebar */}
-          <div className="flex items-center gap-2 md:hidden">
+          {/* Logo nur auf Mobile / ab Desktop bereits in der Sidebar */}
+          <div className="flex items-center gap-2 lg:hidden">
             <img
               src={logoUrl}
               alt="EinfachVermieter"

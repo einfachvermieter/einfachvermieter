@@ -78,7 +78,7 @@ export const ChoiceTilesInput = <T extends FieldValues>({
                 <label
                   key={option.value}
                   htmlFor={optionId}
-                  className="block cursor-pointer rounded-[13px] border-[1.5px] border-input bg-card px-4 py-3.5 transition hover:border-slate-400 has-data-checked:border-sky-700 has-data-checked:bg-sky-50 has-data-disabled:cursor-not-allowed has-data-disabled:opacity-60 has-data-disabled:hover:border-input has-data-checked:**:data-[slot=tile-icon]:text-sky-700"
+                  className="block cursor-pointer rounded-[13px] border-[1.5px] border-input bg-card px-4 py-3.5 transition hover:border-slate-400 has-data-checked:border-sky-700 has-data-disabled:cursor-not-allowed has-data-disabled:opacity-60 has-data-disabled:hover:border-input has-data-checked:**:data-[slot=tile-icon]:text-sky-700 has-data-checked:**:data-[slot=tile-title]:text-foreground"
                 >
                   <RadioGroupItem
                     id={optionId}
@@ -86,7 +86,10 @@ export const ChoiceTilesInput = <T extends FieldValues>({
                     disabled={option.disabled}
                     className="absolute size-px opacity-0"
                   />
-                  <span className="flex items-center gap-2 text-sm font-semibold">
+                  <span
+                    data-slot="tile-title"
+                    className="flex items-center gap-2 text-sm font-semibold text-slate-400"
+                  >
                     {Icon ? (
                       <Icon
                         data-slot="tile-icon"

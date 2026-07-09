@@ -4,9 +4,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
   SidebarHeader,
-  SidebarRail,
 } from "@/components/ui/Sidebar";
 import { statsQueryOptions } from "@/lib/stats";
 import logoUrl from "../../img/logo/logo.svg";
@@ -31,15 +29,11 @@ export const MainNavigation = () => {
   });
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="offcanvas">
       <SidebarHeader>
-        <div className="flex h-12 items-center gap-2 px-2 transition-[gap,padding] duration-200 ease-linear group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-1.5">
-          <img
-            src={logoUrl}
-            alt=""
-            className="size-7 shrink-0 transition-[width,height] duration-200 ease-linear group-data-[collapsible=icon]:size-5"
-          />
-          <span className="max-w-48 truncate text-base font-heading font-bold transition-[max-width,opacity] duration-200 ease-linear group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0">
+        <div className="flex h-12 items-center gap-2 px-2">
+          <img src={logoUrl} alt="" className="size-7 shrink-0" />
+          <span className="max-w-48 truncate text-xl font-heading font-bold">
             <span className="text-sky-700">{t("common.appName.Einfach")}</span>
             <span className="text-teal-600">
               {t("common.appName.Vermieter")}
@@ -55,11 +49,9 @@ export const MainNavigation = () => {
           currentPath={currentPath}
         />
 
-        <div className="mx-2 mt-1 rounded-[14px] border border-sidebar-border bg-card pb-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)] group-data-[collapsible=icon]:mx-1 group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:pb-0 group-data-[collapsible=icon]:shadow-none">
-          <div className="border-b border-sidebar-border group-data-[collapsible=icon]:border-transparent">
-            <SidebarGroup>
-              <BuildingSwitcher />
-            </SidebarGroup>
+        <div className="mx-2 mt-1 rounded-[14px] border border-sidebar-border bg-card pb-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+          <div className="border-b border-sidebar-border">
+            <BuildingSwitcher />
           </div>
           <NavGroup
             label={t("ui.navigation.groups.masterData")}
@@ -89,8 +81,6 @@ export const MainNavigation = () => {
           />
         ) : null}
       </SidebarFooter>
-
-      <SidebarRail />
     </Sidebar>
   );
 };

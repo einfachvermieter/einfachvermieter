@@ -585,7 +585,7 @@ export const StatementDetailPage = () => {
         stats={resultStats}
       />
 
-      <div className="grid items-start gap-5 lg:grid-cols-[1fr_320px]">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
         <div className="space-y-6">
           {statement.status === "cancelled" && statement.cancellationReason ? (
             <Alert variant="warning">
@@ -630,7 +630,7 @@ export const StatementDetailPage = () => {
           )}
         </div>
 
-        <div className="flex flex-col gap-4 lg:sticky lg:top-24">
+        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
           <InfoCard title={t("ui.common.infoCards.links")}>
             {tenantName ? (
               <ActionLink

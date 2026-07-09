@@ -82,7 +82,7 @@ export const SenderSettingsForm = ({
   return (
     <Form form={form} onSubmit={onSubmit}>
       <fieldset disabled={submitting} className="contents">
-        <div className="grid items-start gap-5 lg:grid-cols-[1fr_320px]">
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
           <div>
             <SectionCard
               icon={RiContactsBook2Line}

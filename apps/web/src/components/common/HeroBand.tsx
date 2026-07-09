@@ -22,7 +22,7 @@ export const HeroBand = ({
   /** Aktions-Buttons rechts außen (z. B. Finalisieren/Stornieren) */
   action?: ReactNode;
 }) => (
-  <div className="relative mb-5.5 flex items-center gap-5.5 overflow-hidden rounded-xl border border-border bg-card px-6.5 py-5.5 max-md:flex-wrap">
+  <div className="relative mb-5.5 flex items-center gap-4 overflow-hidden rounded-xl border border-border bg-card px-4 py-4 max-lg:flex-wrap sm:gap-5.5 sm:px-6.5 sm:py-5.5">
     <div
       aria-hidden={true}
       className="pointer-events-none absolute inset-0 bg-[radial-gradient(30rem_16rem_at_0%_0%,var(--color-sky-50),transparent_60%),radial-gradient(28rem_16rem_at_100%_130%,var(--color-teal-50),transparent_60%)] dark:bg-none"
@@ -34,7 +34,7 @@ export const HeroBand = ({
           {eyebrow}
         </div>
       ) : null}
-      <h1 className="mt-0.75 text-[26px] leading-tight font-semibold">
+      <h1 className="mt-0.75 text-2xl leading-tight font-semibold sm:text-[26px]">
         {title}
       </h1>
       {meta ? (
@@ -42,16 +42,16 @@ export const HeroBand = ({
       ) : null}
     </div>
     {stats && stats.length > 0 ? (
-      <div className="relative ml-auto flex max-md:ml-0 max-md:w-full max-md:justify-between">
+      <div className="relative ml-auto flex max-lg:ml-0 max-lg:w-full max-lg:justify-between max-sm:grid max-sm:grid-cols-2 max-sm:gap-x-4 max-sm:gap-y-3">
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="border-l border-border px-5.5 text-right first:border-l-0 last:pr-0 max-md:first:pl-0"
+            className="border-l border-border px-4 text-right first:border-l-0 last:pr-0 max-lg:first:pl-0 sm:px-5.5 max-sm:border-l-0 max-sm:px-0"
           >
             <div className="text-[11.5px] font-semibold text-slate-400">
               {stat.label}
             </div>
-            <div className="mt-0.75 text-xl font-semibold tabular-nums">
+            <div className="mt-0.75 text-base font-semibold tabular-nums lg:text-xl">
               {stat.value}
             </div>
           </div>
