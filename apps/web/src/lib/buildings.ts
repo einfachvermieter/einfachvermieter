@@ -12,6 +12,7 @@ export type Building = {
    * Mietverhältnisse mit laufendem Vertrag (Stichtag heute)
    */
   activeTenantsCount: number;
+  updatedAt?: string;
 };
 
 export type BuildingSortColumn =

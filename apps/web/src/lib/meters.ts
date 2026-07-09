@@ -55,6 +55,7 @@ export type Meter = {
   costAllocationModeLocked: boolean;
   costTypeIds: string[];
   differenceConfig: MeterDifferenceConfig | null;
+  updatedAt?: string;
 };
 
 export type Reading = {

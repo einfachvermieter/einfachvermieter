@@ -1,4 +1,8 @@
-import { type BuildingCreateDto, formatNumber } from "@einfachvermieter/shared";
+import {
+  type BuildingCreateDto,
+  formatDate,
+  formatNumber,
+} from "@einfachvermieter/shared";
 import { RiDeleteBinLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
@@ -86,6 +90,11 @@ export const BuildingEditPage = () => {
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
         <BuildingForm
           mode="edit"
+          savedAt={
+            building.updatedAt
+              ? formatDate(building.updatedAt.slice(0, 10))
+              : undefined
+          }
           defaultValues={{
             name: building.name,
             addressStreet: building.addressStreet,

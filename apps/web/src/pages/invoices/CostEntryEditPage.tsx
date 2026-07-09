@@ -249,7 +249,7 @@ export const CostEntryEditPage = () => {
             form={form}
             costTypes={costTypes}
             units={units ?? []}
-            savedAt=""
+            savedAt={formatDate(entry.updatedAt.slice(0, 10))}
             onSubmit={async (values) => {
               await updateCostEntry.mutateAsync(values);
             }}

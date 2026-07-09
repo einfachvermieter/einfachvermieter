@@ -102,7 +102,9 @@ export const MeterDetailPage = () => {
           defaultValues={meterToFormValues(meter)}
           costAllocationModeLocked={meter.costAllocationModeLocked}
           currentMeterId={meter.id}
-          savedAt=""
+          savedAt={
+            meter.updatedAt ? formatDate(meter.updatedAt.slice(0, 10)) : ""
+          }
           onSubmit={async (values) => {
             await updateMeter.mutateAsync(values);
           }}

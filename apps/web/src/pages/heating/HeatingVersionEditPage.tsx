@@ -187,7 +187,7 @@ const HeatingVersionEditView = ({
             buildings={buildings}
             buildingFieldDisabled={true}
             hotWaterMeterCandidates={hotWaterMeterCandidates}
-            savedAt=""
+            savedAt={formatDate(version.updatedAt.slice(0, 10))}
             onSubmit={async (dto) => {
               await update.mutateAsync(dto);
             }}

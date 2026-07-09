@@ -13,7 +13,7 @@ export const AppShell = ({ children }: { children?: ReactNode }) => (
       <MainNavigation />
 
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-border bg-background/80 px-6 pt-[env(safe-area-inset-top)] backdrop-blur-lg sm:px-8">
+        <header className="sticky top-0 z-10 flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-border bg-background/70 px-6 pt-[env(safe-area-inset-top)] backdrop-blur-lg sm:px-8">
           {/* Sidebar ist ab 1024 immer sichtbar */}
           <SidebarTrigger className="-mx-2 lg:hidden" />
 

@@ -75,6 +75,7 @@ export type CostEntryItem = {
 };
 
 export type CostEntryDetail = CostEntry & {
+  updatedAt: string;
   items: CostEntryItem[];
 };
 

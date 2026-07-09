@@ -64,6 +64,7 @@ export type CostEntryDetail = {
   invoiceNumber: string | null;
   vendor: string | null;
   notes: string | null;
+  updatedAt: string;
   items: CostEntryItemRow[];
 };
 
@@ -448,6 +449,7 @@ export class CostsService {
       invoiceNumber: entry.invoiceNumber,
       vendor: entry.vendor,
       notes: entry.notes,
+      updatedAt: entry.updatedAt,
       items,
     };
   }

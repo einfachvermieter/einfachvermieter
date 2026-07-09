@@ -19,11 +19,13 @@ import { BuildingDataFields } from "./components/baseData/BuildingDataFields";
 export const BuildingForm = ({
   mode,
   defaultValues,
+  savedAt,
   onSubmit,
   onCancel,
 }: {
   mode: "create" | "edit";
   defaultValues: BuildingCreateDto;
+  savedAt?: string;
   onSubmit: (values: BuildingCreateDto) => Promise<void>;
   onCancel: () => void;
 }) => {
@@ -66,7 +68,7 @@ export const BuildingForm = ({
       >
         {fields}
       </SectionCard>
-      <Savebar>
+      <Savebar savedAt={savedAt}>
         <Button
           variant="secondary"
           type="button"
