@@ -1,4 +1,40 @@
 {
+  "desktop": {
+    "menu": {
+      "about": "Über EinfachVermieter",
+      "services": "Dienste",
+      "hide": "EinfachVermieter ausblenden",
+      "hideOthers": "Andere ausblenden",
+      "unhide": "Alle einblenden",
+      "quit": "EinfachVermieter beenden",
+      "file": "Datei",
+      "openDataFolder": "Datenordner öffnen",
+      "edit": "Bearbeiten",
+      "undo": "Widerrufen",
+      "redo": "Wiederholen",
+      "cut": "Ausschneiden",
+      "copy": "Kopieren",
+      "paste": "Einsetzen",
+      "selectAll": "Alles auswählen",
+      "view": "Ansicht",
+      "resetZoom": "Originalgröße",
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "toggleFullScreen": "Vollbild ein/aus",
+      "toggleDevTools": "Entwicklerwerkzeuge",
+      "window": "Fenster",
+      "minimize": "Minimieren",
+      "zoom": "Zoomen",
+      "close": "Schließen",
+      "front": "Alle nach vorne bringen"
+    },
+    "error": {
+      "apiStartTitle": "EinfachVermieter konnte nicht gestartet werden.",
+      "apiStartMessage": "Der interne Server hat nicht geantwortet. Bitte starten Sie die App neu.",
+      "apiCrashTitle": "EinfachVermieter wurde unerwartet beendet.",
+      "apiCrashMessage": "Der interne Server ist abgestürzt. Bitte starten Sie die App neu."
+    }
+  },
   "common": {
     "appName": {
       "Einfach": "Einfach",

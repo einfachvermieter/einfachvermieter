@@ -26,6 +26,10 @@ packages/db/scripts/seed-fixtures/local/
 
 
 
+# Desktop-App: Staging-Verzeichnis und gebaute Installer
+apps/desktop/staging/
+apps/desktop/release/
+
 # Local scratch / verification artifacts (screenshots, throwaway files)
 tmp/
 

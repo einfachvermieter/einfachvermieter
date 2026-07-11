@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    // Der Main-Prozess wird als CJS gebündelt (Electrons `electron`-Modul
+    // liefert im ESM-Kontext keine Named Exports); esbuild übersetzt die
+    // Imports, daher hier kein verbatim-Modus.
+    "verbatimModuleSyntax": false,
+    "types": ["node"]
+  },
+  "include": ["src"]
+}
