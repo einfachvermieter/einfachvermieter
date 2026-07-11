@@ -14,7 +14,7 @@ import { Test } from "@nestjs/testing";
 import cookieParser from "cookie-parser";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-const ADMIN_EMAIL = "e2e-admin@einfachvermieter.local";
+const ADMIN_EMAIL = "e2e.admin@einfachvermieter.invalid";
 const ADMIN_PASSWORD = "e2e-test-passwort-123";
 
 let app: INestApplication;

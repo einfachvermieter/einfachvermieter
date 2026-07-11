@@ -102,18 +102,18 @@ type RouterContext = {
   queryClient: QueryClient;
 };
 
-const isSetupNeeded = async (context: RouterContext): Promise<boolean> => {
+const getSetupStatus = async (context: RouterContext) => {
   try {
-    const status = await context.queryClient.ensureQueryData(
-      setupStatusQueryOptions,
-    );
-    return status.needsSetup;
+    return await context.queryClient.ensureQueryData(setupStatusQueryOptions);
   } catch {
     // Status-Endpoint nicht erreichbar: nicht in den Assistenten umleiten,
     // sondern den regulären Auth-Pfad entscheiden lassen.
-    return false;
+    return null;
   }
 };
+
+const isSetupNeeded = async (context: RouterContext): Promise<boolean> =>
+  (await getSetupStatus(context))?.needsSetup ?? false;
 
 const requireAuth = async ({ context }: { context: RouterContext }) => {
   if (await isSetupNeeded(context)) {
@@ -132,13 +132,31 @@ const requireAuth = async ({ context }: { context: RouterContext }) => {
 };
 
 // Login-Seite: ist die App noch nicht eingerichtet, zuerst zum Assistenten.
+// Im `local`-Auth-Modus (Desktop-App) gibt es keinen Login -> Dashboard.
 const redirectToSetupIfNeeded = async ({
   context,
 }: {
   context: RouterContext;
 }) => {
-  if (await isSetupNeeded(context)) {
+  const status = await getSetupStatus(context);
+  if (status?.needsSetup) {
     throw redirect({ to: "/einrichtung" });
+  }
+
+  if (status?.authMode === "local") {
+    throw redirect({ to: "/" });
+  }
+};
+
+// Passwort-Seite: im `local`-Auth-Modus gibt es kein Konto-Passwort.
+const redirectAwayIfLocalAuth = async ({
+  context,
+}: {
+  context: RouterContext;
+}) => {
+  await requireAuth({ context });
+  if ((await getSetupStatus(context))?.authMode === "local") {
+    throw redirect({ to: "/einstellungen/absender" });
   }
 };
 
@@ -1025,7 +1043,7 @@ const senderSettingsRoute = createRoute({
 const passwordSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/einstellungen/passwort",
-  beforeLoad: requireAuth,
+  beforeLoad: redirectAwayIfLocalAuth,
   component: PasswordSettingsPage,
   staticData: {
     crumb: () => [

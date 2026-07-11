@@ -15,6 +15,7 @@ import {
 import { Throttle } from "@nestjs/throttler";
 import type { Response } from "express";
 import { setAuthCookie } from "../auth/auth-cookie.js";
+import { authMode } from "../auth/auth-mode.js";
 import { SessionService } from "../auth/session.service.js";
 import { ZodValidationPipe } from "../common/zod-validation.pipe.js";
 import { SetupService } from "./setup.service.js";
@@ -43,7 +44,9 @@ export class SetupController {
   async run(
     @Body(
       new ZodValidationPipe(
-        makeSetupSchema(passwordPolicyFromEnv(process.env)),
+        makeSetupSchema(passwordPolicyFromEnv(process.env), {
+          requireAdmin: authMode() !== "local",
+        }),
       ),
     )
     dto: SetupDto,
@@ -51,17 +54,13 @@ export class SetupController {
   ) {
     const user = await this.setupService.runSetup(dto);
 
-    // Direkt einloggen, gleiches Cookie wie beim regulären Login.
-    const { token, expiresAt } = await this.sessionService.create(user.id);
-    setAuthCookie(response, token, expiresAt);
+    // Direkt einloggen, gleiches Cookie wie beim regulären Login. Im
+    // `local`-Modus gibt es keine Sessions; jede Request ist lokaler Admin
+    if (authMode() !== "local") {
+      const { token, expiresAt } = await this.sessionService.create(user.id);
+      setAuthCookie(response, token, expiresAt);
+    }
 
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        residentId: user.residentId,
-      },
-    };
+    return { user };
   }
 }

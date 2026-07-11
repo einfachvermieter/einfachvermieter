@@ -74,7 +74,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   await copyFixture(demoLogoStorageKey);
 
   insert(schema.users, {
-    email: "demo@einfachvermieter.local",
+    email: "demo@einfachvermieter.example",
     passwordHash: await hashPassword("demo"),
     role: "admin",
   });

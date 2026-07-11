@@ -1463,6 +1463,7 @@
     "setup": {
       "title": "Einrichtung",
       "description": "Willkommen! Richten Sie hier Ihr Administrator-Konto ein. Absender und erstes Gebäude können Sie überspringen und später ergänzen.",
+      "descriptionLocal": "Willkommen! Hinterlegen Sie Ihren Absender und Ihr erstes Gebäude – beides können Sie überspringen und später ergänzen.",
       "stepIndicator": "Schritt {current} von {total}",
       "requiredBadge": "Erforderlich",
       "optionalBadge": "Optional",

@@ -11,20 +11,33 @@ import { Reflector } from "@nestjs/core";
 import type { Request } from "express";
 import { getI18n } from "../i18n/i18n.registry.js";
 import type { AuthUser } from "./auth.service.js";
+import { authMode } from "./auth-mode.js";
 import { AUTH_COOKIE_NAME } from "./const.js";
+import { LocalAdminService } from "./local-admin.service.js";
 import { SessionService } from "./session.service.js";
 
 /**
  * Authentifiziert Requests über das Session-Cookie: löst den Token zur
  * aktuellen Identität auf und hängt sie als `request.user` an. Ohne gültige
- * Session -> 401.
+ * Session -> 401. Im `local`-Auth-Modus (Desktop-App) entfällt die
+ * Cookie-Prüfung; jeder Request läuft als lokaler Admin.
  */
 @Injectable()
 export class SessionAuthGuard implements CanActivate {
-  constructor(private readonly sessions: SessionService) {}
+  constructor(
+    private readonly sessions: SessionService,
+    private readonly localAdmin: LocalAdminService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
+
+    if (authMode() === "local") {
+      request.user = await this.localAdmin.ensure();
+
+      return true;
+    }
+
     const cookies = request.cookies as Record<string, string> | undefined;
     const token = cookies?.[AUTH_COOKIE_NAME];
     if (!token) {

@@ -11,6 +11,7 @@ import logoUrl from "../../img/logo/logo.svg";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { useCurrentUser, useLogout } from "../../lib/auth";
 import { t } from "../../lib/i18n";
+import { useAuthMode } from "../../lib/setup";
 import { BuildingSwitcher } from "./BuildingSwitcher";
 import { MainNavigationUser } from "./MainNavigationUser";
 import { NavGroup } from "./NavGroup";
@@ -19,6 +20,7 @@ import { dashboardNav, kostenAbrechnungNav, stammdatenNav } from "./navConfig";
 export const MainNavigation = () => {
   const { data: user } = useCurrentUser();
   const logout = useLogout();
+  const authMode = useAuthMode();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const { buildingId } = useActiveBuilding();
@@ -74,7 +76,8 @@ export const MainNavigation = () => {
       </SidebarContent>
 
       <SidebarFooter>
-        {user ? (
+        {/* Desktop-App (`local`): kein Konto, kein Benutzer-Menü  */}
+        {user && authMode !== "local" ? (
           <MainNavigationUser
             email={user.email}
             onLogout={() => logout.mutate()}
