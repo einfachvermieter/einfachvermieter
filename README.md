@@ -49,6 +49,7 @@ ich versuche, den Funktionsumfang künftig weiter auszubauen.
 apps/
   api/       NestJS Backend
   web/       React Frontend
+  desktop/   Electron-Verpackung (macOS/Windows, bündelt API + Web lokal)
 packages/
   db/        MikroORM EntitySchemas, Migrations, Seed-Profile
   shared/    Zod-Schemas, Domain-Typen, reine Berechnungslogik
@@ -69,7 +70,7 @@ npm run db:reset:demo    # Schema + Daten (:minimal | :demo | :local)
 npm run dev              # Web :7272, API :7273
 ```
 
-Login nach Demo-Seed: `demo@einfachvermieter.local` / `demo`.
+Login nach Demo-Seed: `demo@einfachvermieter.example` / `demo`.
 
 Ohne Demo-Daten (`:minimal`) führt beim ersten Start ein Assistent durch das
 Anlegen des Administrator-Kontos.
@@ -82,6 +83,19 @@ docker compose up -d
 
 Der Container legt die Datenbank an und wendet Migrationen beim Start an. Beim
 ersten Aufruf im Browser legt der Assistent das Administrator-Konto an.
+
+### Desktop-App (Electron)
+
+Alternative zum Docker-Betrieb für den Einzelplatz: eine installierbare
+Desktop-App ohne Login (Daten liegen im Benutzerprofil, z. B.
+`~/Library/Application Support/EinfachVermieter/data`).
+
+```bash
+npm run desktop        # Entwicklung: baut alles und startet die App
+npm run desktop:dist   # Installer bauen (dmg/zip bzw. NSIS)
+```
+
+Status und Details: `docs/electron-todo.md` (Signierung/Auto-Update folgen).
 
 ## Tests
 
