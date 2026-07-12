@@ -1806,15 +1806,6 @@
           "bank": "Bankdaten",
           "bankDescription": "Für den Zahlungshinweis auf der Abrechnung"
         },
-        "sidebar": {
-          "appearance": "Wo erscheint das?",
-          "letterhead": "Briefkopf",
-          "letterheadValue": "Abrechnungs-PDF",
-          "footer": "Footer",
-          "footerValue": "Jede PDF-Seite",
-          "paymentHint": "Zahlungshinweis",
-          "paymentHintValue": "IBAN/BIC"
-        },
         "fields": {
           "name": "Name",
           "namePlaceholder": "z. B. Max Mustermann oder Mustermann Hausverwaltung",
