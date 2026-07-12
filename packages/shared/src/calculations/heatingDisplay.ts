@@ -253,7 +253,7 @@ export const heatingColumnFootnotes = (
 
 /**
  * Spalten-Fußnoten der Warmwasser-Verteilungstabelle: der Anteil an den
- * Heizkosten sowie – falls mangels Warmwasserzählern nach Fläche verteilt –
+ * Heizkosten sowie, falls mangels Warmwasserzählern nach Fläche verteilt,
  * die Flächen-Fallback-Note. Beide hängen an der Summen- bzw. (im Fallback)
  * "100 % nach Fläche"-Spalte. Eigene Nummerierung je Tabelle (1..N).
  */

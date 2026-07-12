@@ -131,8 +131,10 @@ const requireAuth = async ({ context }: { context: RouterContext }) => {
   }
 };
 
-// Login-Seite: ist die App noch nicht eingerichtet, zuerst zum Assistenten.
-// Im `local`-Auth-Modus (Desktop-App) gibt es keinen Login -> Dashboard.
+/**
+ * Login-Seite: ist die App noch nicht eingerichtet, zuerst zum Assistenten.
+ * Im `local`-Auth-Modus (Desktop-App) gibt es keinen Login -> Dashboard.
+ */
 const redirectToSetupIfNeeded = async ({
   context,
 }: {
@@ -148,7 +150,9 @@ const redirectToSetupIfNeeded = async ({
   }
 };
 
-// Passwort-Seite: im `local`-Auth-Modus gibt es kein Konto-Passwort.
+/**
+ * Passwort-Seite: im `local`-Auth-Modus gibt es kein Konto-Passwort.
+ */
 const redirectAwayIfLocalAuth = async ({
   context,
 }: {
@@ -160,7 +164,9 @@ const redirectAwayIfLocalAuth = async ({
   }
 };
 
-// Assistent: ist die App bereits eingerichtet, gibt es nichts mehr zu tun.
+/**
+ * Assistent: ist die App bereits eingerichtet, gibt es nichts mehr zu tun.
+ */
 const redirectAwayIfSetupDone = async ({
   context,
 }: {
@@ -400,8 +406,10 @@ const kontoSearchSchema = (
   return tab ? { tab } : {};
 };
 
-// Konto-Tab des Mieters. Lädt Mieter-Aggregat nur für die Breadcrumb vor;
-// die Seite selbst holt ihre Daten via useQueries.
+/**
+ * Konto-Tab des Mieters. Lädt Mieter-Aggregat nur für die Breadcrumb vor;
+ * die Seite selbst holt ihre Daten via useQueries.
+ */
 const tenantAccountRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mieter/$tenantId/konto",
@@ -536,8 +544,10 @@ const paymentEditRoute = createRoute({
   },
 });
 
-// Gebühren leben im Mieterkonto: gemeinsame Crumb-Basis "Mieter ›
-// {Mietvertrag, verlinkt aufs Konto}"; die Blatt-Crumb variiert je Seite.
+/**
+ * Gebühren leben im Mieterkonto: gemeinsame Crumb-Basis "Mieter ›
+ * {Mietvertrag, verlinkt aufs Konto}"; die Blatt-Crumb variiert je Seite.
+ */
 const tenantAccountCrumbBase = (
   data: { aggregate: TenantAggregate; units: Unit[] } | undefined,
   tenantId: string,
@@ -625,7 +635,9 @@ const feeEditRoute = createRoute({
   },
 });
 
-// Alt-URL bleibt gültig: leitet auf den Konto-Tab des Mieters um.
+/**
+ * Alt-URL bleibt gültig: leitet auf den Konto-Tab des Mieters um.
+ */
 const mieterkontoDetailRedirectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mieterkonto/$tenantId",
@@ -701,8 +713,10 @@ const meterEditRoute = createRoute({
   },
 });
 
-// Zählerstände-Tab des Zählers. Gleiche Entität wie die Stammdaten, nur ein
-// anderer Reiter -> Crumb konstant zur Zähler-Crumb (keine eigene Ebene).
+/**
+ * Zählerstände-Tab des Zählers. Gleiche Entität wie die Stammdaten, nur ein
+ * anderer Reiter -> Crumb konstant zur Zähler-Crumb (keine eigene Ebene).
+ */
 const meterReadingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/zaehler/$meterId/zaehlerstaende",
@@ -931,11 +945,13 @@ const statementCreateRoute = createRoute({
   },
 });
 
-// Alle Tabs der Abrechnungs-Detailseite sind eigene Routen (URL-adressierbar);
-// Loader + Crumb teilen sich diese Helper. Der Loader wärmt denselben Query-
-// Cache wie die Seite und lädt zusätzlich Mietvertrag + Wohnungen, damit die
-// Crumb die Abrechnung über Mieter und Wohnung identifiziert (statt nur über
-// den Zeitraum, der bei mehreren Mietern mehrdeutig wäre).
+/**
+ * Alle Tabs der Abrechnungs-Detailseite sind eigene Routen (URL-adressierbar);
+ * Loader + Crumb teilen sich diese Helper. Der Loader wärmt denselben Query-
+ * Cache wie die Seite und lädt zusätzlich Mietvertrag + Wohnungen, damit die
+ * Crumb die Abrechnung über Mieter und Wohnung identifiziert (statt nur über
+ * den Zeitraum, der bei mehreren Mietern mehrdeutig wäre).
+ */
 type StatementDetailLoaderData = {
   statement: Statement;
   aggregate: TenantAggregate;
@@ -976,9 +992,11 @@ const statementDetailCrumb: Crumb = ({ loaderData }) => {
   ];
 };
 
-// Gemeinsame Optionen. `path` bleibt pro Route ein Literal, damit TanStack
-// die Pfade als gültige Navigationsziele typt (eine Helper-Funktion mit
-// `path: string` würde diese Ableitung zerstören).
+/**
+ * Gemeinsame Optionen. `path` bleibt pro Route ein Literal, damit TanStack
+ * die Pfade als gültige Navigationsziele typt (eine Helper-Funktion mit
+ * `path: string` würde diese Ableitung zerstören).
+ */
 const statementDetailShared = {
   beforeLoad: requireAuth,
   loader: statementDetailLoader,
@@ -1099,8 +1117,10 @@ const routeTree = rootRoute.addChildren([
   passwordSettingsRoute,
 ]);
 
-// Steht ausserhalb der Breadcrumb-Shell und erbt den Tab-Titel sonst vom
-// zuvor besuchten Screen -> Titel selbst setzen.
+/**
+ * Steht ausserhalb der Breadcrumb-Shell und erbt den Tab-Titel sonst vom
+ * zuvor besuchten Screen -> Titel selbst setzen.
+ */
 const RouteNotFound = () => {
   useDocumentTitle(t("ui.common.routeNotFound.title"));
   return (

@@ -14,15 +14,21 @@ import {
 const ACCEPT_ATTR = "image/png,image/jpeg,image/webp,image/svg+xml";
 const SVG_MIME = "image/svg+xml";
 
-// Native PDF-Viewer-Bedienelemente ausblenden (Best effort je nach Browser).
+/**
+ * Native PDF-Viewer-Bedienelemente ausblenden (Best effort je nach Browser)
+ */
 const PDF_VIEWER_PARAMS = "#toolbar=0&navpanes=0&scrollbar=0";
 
-// Briefkopf-Band: A4-Breite (210 mm) x 45 mm Höhe, dasselbe Verhältnis wie
-// die PDF-Vorschau, damit Raster-Logos identisch platziert wirken.
+/**
+ * Briefkopf-Band: A4-Breite (210 mm) x 45 mm Höhe, dasselbe Verhältnis wie
+ * die PDF-Vorschau, damit Raster-Logos identisch platziert wirken.
+ */
 const BAND_ASPECT = "210 / 45";
 
-// Logo-Box innerhalb des Bandes, prozentual passend zu styles.senderLogo
-// (links 25 mm, oben 10 mm, 165 mm x 25 mm in einem 210 x 45 mm Band).
+/**
+ * Logo-Box innerhalb des Bandes, prozentual passend zu styles.senderLogo
+ * (links 25 mm, oben 10 mm, 165 mm x 25 mm in einem 210 x 45 mm Band).
+ */
 const RASTER_LOGO_BOX = {
   left: "11.905%",
   top: "22.222%",

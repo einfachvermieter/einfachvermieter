@@ -42,8 +42,10 @@ type FormValues = {
 
 const amountRegex = /^\d+([.,]\d{1,2})?$/u;
 
-// Formatiert einen Basispunkte-Wert als deutsches Prozent mit Vorzeichen
-// ("+5 %", "-2,5 %"). 0 oder undefined -> "-" via i18n-Schlüssel im Caller.
+/**
+ * Formatiert einen Basispunkte-Wert als deutsches Prozent mit Vorzeichen
+ * ("+5 %", "-2,5 %"). 0 oder undefined -> "-" via i18n-Schlüssel im Caller.
+ */
 const formatBpsAsPercent = (bps: number): string => {
   const percent = bps / 100;
   const sign = percent > 0 ? "+" : "";

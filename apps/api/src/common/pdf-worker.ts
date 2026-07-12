@@ -31,8 +31,10 @@ type WorkerResponse =
 
 const workerUrl = new URL("./pdf-worker.entry.js", import.meta.url);
 
-// Nur nutzbar, wenn der Worker als gebautes `.js` neben diesem Modul liegt
-// (Regelbetrieb aus `dist`). Unter Vitest fehlt es -> In-Process.
+/**
+ * Nur nutzbar, wenn der Worker als gebautes `.js` neben diesem Modul liegt
+ * (Regelbetrieb aus `dist`). Unter Vitest fehlt es -> In-Process.
+ */
 const workerAvailable = existsSync(fileURLToPath(workerUrl));
 
 let worker: Worker | null = null;

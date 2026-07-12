@@ -15,7 +15,9 @@ import type { StatsResult } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
 import { Injectable } from "@nestjs/common";
 
-/** Gebäude-Scope: vorab aufgelöste Id-Ketten fürs Zählen */
+/**
+ * Gebäude-Scope: vorab aufgelöste Id-Ketten fürs Zählen
+ */
 type Scope = {
   unitIds: string[];
   tenantIds: string[];

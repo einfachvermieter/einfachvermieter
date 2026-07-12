@@ -25,8 +25,10 @@ export const authMeQueryOptions = {
 
 export const useCurrentUser = () => useQuery(authMeQueryOptions);
 
-// Passwort-Richtlinie vom Server (ENV-konfiguriert)
-// Zum  Anzeigen der Regeln und die clientseitige Vorab-Validierung
+/**
+ * Passwort-Richtlinie vom Server (ENV-konfiguriert), zum Anzeigen der
+ * Regeln und für die clientseitige Vorab-Validierung.
+ */
 export const passwordPolicyQueryOptions = {
   queryKey: ["auth", "password-policy"],
   queryFn: () => api.get<PasswordPolicy>("/auth/password-policy"),

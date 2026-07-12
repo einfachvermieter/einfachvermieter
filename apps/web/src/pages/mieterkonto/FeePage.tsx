@@ -32,8 +32,10 @@ import { t } from "@/lib/i18n";
 import { useCrudMutation } from "@/lib/useCrudMutation";
 import { useGoBack } from "@/lib/useGoBack";
 
-// "charge" = Forderung (positives Soll), "credit" = Gutschrift (negatives
-// Soll -> Guthaben für den Mieter, z. B. rückwirkende Korrektur).
+/**
+ * "charge" = Forderung (positives Soll), "credit" = Gutschrift (negatives
+ * Soll -> Guthaben für den Mieter, z. B. rückwirkende Korrektur).
+ */
 const formSchema = z.object({
   kind: z.enum(["charge", "credit"]),
   date: z.string().min(1),

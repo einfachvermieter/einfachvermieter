@@ -35,7 +35,7 @@ export class SessionService {
   /**
    * Session anlegen; liefert Token und Ablaufdatum (für das passende Cookie).
    * `persistent` (Default) läuft rund `SESSION_TTL_MS` später ab, ohne rund
-   * 6 h – beide auf 03 Uhr nachts gerundet.
+   * 6 h, Beide auf 03 Uhr nachts gerundet.
    */
   async create(
     userId: string,

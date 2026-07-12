@@ -68,8 +68,10 @@ const iterPeriodMonths = (
   return result;
 };
 
-// Spiegel von `aggregateByMonth` aus packages/pdf/.../PaymentsAppendix:
-// pro Kalendermonat der Periode ein Bucket mit Summe NK-Voraus-Anteil.
+/**
+ * Spiegel von `aggregateByMonth` aus packages/pdf/.../PaymentsAppendix:
+ * pro Kalendermonat der Periode ein Bucket mit Summe NK-Voraus-Anteil.
+ */
 const aggregatePaymentsByMonth = (
   payments: NonNullable<StatementResult["payments"]>,
   period: Period,

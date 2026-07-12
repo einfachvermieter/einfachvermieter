@@ -9,9 +9,11 @@ import type {
 export const ALLOCATION_KEY_NONE = "__none__";
 export const LABOR_CATEGORY_NONE = "__none__";
 
-// Im Formular wählbare Verteilerschlüssel. Bewusst ohne `heating_ordinance`
-// (verbrauchsabhängige Heizkosten laufen nicht über die Kostenart) und ohne
-// `per_consumption_kwh` (noch nicht implementiert).
+/**
+ * Im Formular wählbare Verteilerschlüssel. Bewusst ohne `heating_ordinance`
+ * (verbrauchsabhängige Heizkosten laufen nicht über die Kostenart) und ohne
+ * `per_consumption_kwh` (noch nicht implementiert).
+ */
 export const costTypeAllocationKeySchema = z.enum([
   ALLOCATION_KEY_NONE,
   "per_living_area",

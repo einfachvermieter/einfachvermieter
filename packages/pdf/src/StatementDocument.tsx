@@ -86,7 +86,9 @@ export type StatementDocumentProps = {
   };
 };
 
-// Zeile fürs Adressfenster über dem Empfänger
+/**
+ * Zeile fürs Adressfenster über dem Empfänger
+ */
 const senderAddressLine = (meta: StatementDocumentProps["meta"]): string =>
   `${meta.senderName} – ${meta.senderAddressStreet} – ${meta.senderAddressPostalCode} ${meta.senderAddressCity}`;
 

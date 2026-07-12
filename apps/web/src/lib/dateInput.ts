@@ -9,10 +9,12 @@ type ParseRule = {
   format: string;
 };
 
-// Nur Patterns mit 4-stelligem Jahr sind fürs Live-Parsing zugelassen. Eine
-// 2-stellige Jahresregel würde mitten im Tippen greifen (z. B. "01.01.19" von
-// "01.01.1983" parst als 2019 und überschreibt das Feld, bevor der User fertig
-// getippt hat).
+/**
+ * Nur Patterns mit 4-stelligem Jahr sind fürs Live-Parsing zugelassen. Eine
+ * 2-stellige Jahresregel würde mitten im Tippen greifen (z. B. "01.01.19" von
+ * "01.01.1983" parst als 2019 und überschreibt das Feld, bevor der User fertig
+ * getippt hat).
+ */
 const DATE_PARSE_RULES: readonly ParseRule[] = [
   { regex: /^\d{1,2}\.\d{1,2}\.\d{4}$/u, format: "d.M.yyyy" },
   { regex: /^\d{8}$/u, format: "ddMMyyyy" },

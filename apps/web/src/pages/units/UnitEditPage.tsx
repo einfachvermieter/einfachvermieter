@@ -29,7 +29,9 @@ import { UnitForm } from "./UnitForm";
 
 const routeApi = getRouteApi("/wohnungen/$unitId");
 
-/** Aktueller Mietvertrag der Wohnung (aktiv zum Stichtag heute) */
+/**
+ * Aktueller Mietvertrag der Wohnung (aktiv zum Stichtag heute)
+ */
 const currentTenantOf = (
   rows: TenantOverviewRow[] | undefined,
   unitId: string,

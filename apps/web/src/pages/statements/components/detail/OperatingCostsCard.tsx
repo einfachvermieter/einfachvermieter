@@ -37,8 +37,10 @@ type NumberedFootnote = FootnoteDef & {
   marker: number;
 };
 
-// Fußnoten-Marker werden in der Reihenfolge des ersten Auftretens in der
-// Tabelle vergeben (1, 2, 3 ...), analog zur PDF-`CostsTable`.
+/**
+ * Fußnoten-Marker werden in der Reihenfolge des ersten Auftretens in der
+ * Tabelle vergeben (1, 2, 3 ...), analog zur PDF-`CostsTable`.
+ */
 const numberFootnotes = (
   lines: CostLineResult[],
   defs: FootnoteDef[],
@@ -56,9 +58,11 @@ const numberFootnotes = (
   return ordered.map((def, idx) => ({ ...def, marker: idx + 1 }));
 };
 
-// Bruch-Darstellung Mieter/Gesamt (Zähler über Nenner), Spiegel der
-// gestapelten Bruch-Zellen im PDF: fetter dunkler Zähler mit dezentem
-// Bruchstrich, gedämpfter Nenner darunter.
+/**
+ * Bruch-Darstellung Mieter/Gesamt (Zähler über Nenner), Spiegel der
+ * gestapelten Bruch-Zellen im PDF: fetter dunkler Zähler mit dezentem
+ * Bruchstrich, gedämpfter Nenner darunter.
+ */
 const Fraction = ({ top, bottom }: { top: string; bottom: string }) => (
   <span className="inline-flex flex-col items-center text-[12.5px] leading-tight">
     <span className="border-b border-muted-foreground/40 px-1.5 pb-px font-semibold text-foreground">

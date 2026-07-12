@@ -66,7 +66,9 @@ declare module "@tanstack/react-table" {
 const PAGE_SIZES = [25, 50, 100] as const;
 const SEARCH_DEBOUNCE_MS = 300;
 
-// Suchfeld erst ab dieser Zeilenzahl zeigen (progressive disclosure)
+/**
+ * Suchfeld erst ab dieser Zeilenzahl zeigen (progressive disclosure)
+ */
 const SEARCH_MIN_ROWS = 10;
 
 const ServerSearchInput = ({

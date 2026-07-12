@@ -12,9 +12,11 @@ import { t } from "../../../../lib/i18n";
 
 type Category = "household_service" | "craftsman";
 
-// Feste Reihenfolge wie in der PDF-Anlage: § 35a Abs. 2 (haushaltsnah) vor
-// Abs. 3 (Handwerker). Leere Kategorien werden mit Hinweis gezeigt, damit
-// beide Absätze sichtbar bleiben.
+/**
+ * Feste Reihenfolge wie in der PDF-Anlage: § 35a Abs. 2 (haushaltsnah) vor
+ * Abs. 3 (Handwerker). Leere Kategorien werden mit Hinweis gezeigt, damit
+ * beide Absätze sichtbar bleiben.
+ */
 const CATEGORY_ORDER: Category[] = ["household_service", "craftsman"];
 
 export const TaxableLaborCard = ({ detail }: { detail: TaxableLaborCosts }) => {

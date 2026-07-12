@@ -3,7 +3,6 @@ import type { DomainKey } from "@/lib/domainVisuals";
 export type NavItem = {
   to: string;
   labelKey: string;
-  /** Icon + Kachel-Farbe kommen aus lib/domainVisuals.ts */
   domain: DomainKey;
   exact?: boolean;
 };
@@ -22,7 +21,9 @@ export const dashboardNav: NavItem[] = [
   },
 ];
 
-// Gebäudegebundene Bereiche (alles unter dem Switcher).
+/**
+ * Gebäudegebundene Bereiche (alles unter dem Switcher).
+ */
 export const stammdatenNav: NavItem[] = [
   {
     to: "/wohnungen",

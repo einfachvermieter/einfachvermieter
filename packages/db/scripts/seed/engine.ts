@@ -87,8 +87,10 @@ const scriptsDir = resolve(engineDir, ".."); // packages/db/scripts
 const repoRoot = resolve(scriptsDir, "../../.."); // Repo-Wurzel
 const fixturesBaseDir = resolve(scriptsDir, "seed-fixtures");
 
-// Uploads-Wurzel analog zu `apps/api/src/storage/storage.service.ts`:
-// `UPLOADS_DIR` (relativ -> repoRoot, absolut 1:1), Default `data/uploads`.
+/**
+ * Uploads-Wurzel analog zu `apps/api/src/storage/storage.service.ts`:
+ * `UPLOADS_DIR` (relativ -> repoRoot, absolut 1:1), Default `data/uploads`.
+ */
 const resolveUploadsDir = (): string => {
   const configured = process.env.UPLOADS_DIR ?? "data/uploads";
   return isAbsolute(configured) ? configured : resolve(repoRoot, configured);

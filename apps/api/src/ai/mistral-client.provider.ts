@@ -6,7 +6,9 @@ import {
 } from "@nestjs/common";
 import { getI18n } from "../i18n/i18n.registry.js";
 
-// ENV `MISTRAL_API_BASE` überschreibt den Endpoint (z. B. Proxy/Azure-Mistral).
+/**
+ * ENV `MISTRAL_API_BASE` überschreibt den Endpoint (z. B. Proxy/Azure-Mistral).
+ */
 const MISTRAL_API_BASE =
   process.env.MISTRAL_API_BASE?.trim() || "https://api.mistral.ai/v1";
 const DEFAULT_MODEL = "mistral-medium-latest";

@@ -34,8 +34,10 @@ const loginSchema = z.object({
 
 type LoginDto = z.infer<typeof loginSchema>;
 
-// Striktes Limit gegen Brute-Force + Argon2-DoS: 10 Versuche pro Minute
-// und IP (überschreibt das globale Limit)
+/**
+ * Striktes Limit gegen Brute-Force + Argon2-DoS: 10 Versuche pro Minute
+ * und IP (überschreibt das globale Limit)
+ */
 const PASSWORD_BRUTE_FORCE_LIMITS = { ttl: 60_000, limit: 10 };
 
 @Controller("auth")

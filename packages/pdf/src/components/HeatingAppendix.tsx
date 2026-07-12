@@ -70,10 +70,12 @@ const DIST_COL_UNIT = { flex: 1.6 };
 const DIST_COL_AREA = { flex: 1 };
 const DIST_COL_NUM = { flex: 1 };
 const DIST_COL_TOTAL = { flex: 1.2 };
-// Flächen-Fallback: die drei Kostenspalten (Verbrauch + Fläche + Summe)
-// zu einer "100 % nach Fläche"-Spalte zusammengefasst. In der Heizungstabelle
-// mit gleicher Gesamtbreite (3.2); in der Warmwassertabelle, die dann nur noch
-// zwei Spalten hat (Wohnung + Betrag), stattdessen 50/50 (DIST_COL_HALF).
+/**
+ * Flächen-Fallback: die drei Kostenspalten (Verbrauch + Fläche + Summe)
+ * zu einer "100 % nach Fläche"-Spalte zusammengefasst. In der Heizungstabelle
+ * mit gleicher Gesamtbreite (3.2); in der Warmwassertabelle, die dann nur noch
+ * zwei Spalten hat (Wohnung + Betrag), stattdessen 50/50 (DIST_COL_HALF).
+ */
 const DIST_COL_MERGED = { flex: 3.2 };
 const DIST_COL_HALF = { flex: 1 };
 

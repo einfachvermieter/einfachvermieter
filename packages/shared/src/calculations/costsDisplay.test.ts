@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { formatBemessung } from "./costsDisplay.js";
 
-// Übersetzungs-Stub: nur der Plural-Pfad (Personen) ruft ihn auf.
+/**
+ * Übersetzungs-Stub: nur der Plural-Pfad (Personen) ruft ihn auf.
+ */
 const translate = (key: string, params?: Record<string, unknown>): string =>
   `${key}#${params?.count}`;
 

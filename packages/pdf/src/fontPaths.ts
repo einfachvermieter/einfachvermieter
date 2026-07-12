@@ -24,7 +24,9 @@ export const geistSemiboldPath = fontsourceFile(
   "geist-sans-latin-600-normal.woff",
 );
 
-// tnum-Variante mit eingefrorenem Feature (siehe scripts/freeze-pdf-assets.mjs).
+/**
+ * tnum-Variante mit eingefrorenem Feature (siehe scripts/freeze-pdf-assets.mjs).
+ */
 export const geistTnumNormalPath = tnumFile("geist-sans-tnum-400-normal.woff");
 export const geistTnumSemiboldPath = tnumFile(
   "geist-sans-tnum-600-normal.woff",

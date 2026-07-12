@@ -253,7 +253,9 @@ export type StatementResult = {
    * summiert `advanceCents`.
    */
   payments?: PaymentSummary[];
-  /** Vorauszahlung, Vorschlag und Anpassung. Erst in der API ergänzt (Rentenlookup). */
+  /**
+   * Vorauszahlung, Vorschlag und Anpassung. Erst in der API ergänzt (Rentenlookup).
+   */
   advanceAdjustment?: AdvanceAdjustmentDetail;
   /**
    * Umgelegte Lohnkosten nach § 35a EStG (Handwerker Abs. 3 / haushaltsnah Abs. 2),
@@ -355,7 +357,8 @@ export type OccupancyDetail = {
      */
     personDays: number;
     /**
-     * Je Bewohner; Reihenfolge stabil, damit "Person 1" reproduzierbar dieselbe ist. */
+     * Je Bewohner; Reihenfolge stabil, damit "Person 1" reproduzierbar dieselbe ist.
+     */
     residents: Array<{
       label: string;
       from: string;
@@ -363,8 +366,8 @@ export type OccupancyDetail = {
       days: number;
     }>;
   }>;
-  /** S
-   * umme Personentage inkl. Vermieter-Basisperson (1 x landlordOccupiedDays).
+  /**
+   * Summe Personentage inkl. Vermieter-Basisperson (1 x landlordOccupiedDays).
    */
   totalPersonDays: number;
   /**

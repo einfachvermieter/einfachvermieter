@@ -14,22 +14,32 @@ const LINE_HEIGHT_TIGHT = 1.2; // nur Fußnoten
 
 const SEMIBOLD = 600; // einzige Hervorhebung, kein Bold
 
-// Linie in Tabellen
+/**
+ * Linie in Tabellen
+ */
 const LINE = `0.5pt solid ${BLACK}`;
-// Stärkere Variante über Summenzeilen, hebt die Zeile optisch ab.
+/**
+ * Stärkere Variante über Summenzeilen, hebt die Zeile optisch ab.
+ */
 const LINE_STRONG = `1.5pt solid ${BLACK}`;
 
-// Innenabstand der Tabellenzellen, nur auf der Alignment-Seite, damit
-// rechtsbündige Zahlen nicht durch unbenutztes Left-Padding gequetscht
-// werden. Vertikal beidseitig, damit Text nicht am Rahmen klebt.
+/**
+ * Innenabstand der Tabellenzellen, nur auf der Alignment-Seite, damit
+ * rechtsbündige Zahlen nicht durch unbenutztes Left-Padding gequetscht
+ * werden. Vertikal beidseitig, damit Text nicht am Rahmen klebt.
+ */
 const CELL_PAD_X = 4;
 
-// Vertikales Zell-Padding bewusst asymmetrisch: Geist Font wirkt bei
-// vertikal zentrierter Ausrichtung leider optisch nicht mittig.
-// -> Deshalb entsprechend unterschiedliche Paddings oben und unten.
+/**
+ * Vertikales Zell-Padding bewusst asymmetrisch: Geist Font wirkt bei
+ * vertikal zentrierter Ausrichtung leider optisch nicht mittig.
+ * -> Deshalb entsprechend unterschiedliche Paddings oben und unten.
+ */
 const CELL_PAD_TOP = 5.4;
 const CELL_PAD_BOTTOM = 4.6;
-// Gleiche Geist Problematik für die rahmenlosen Zellen (Erste Seite)
+/**
+ * Gleiche Geist-Problematik für die rahmenlosen Zellen (erste Seite)
+ */
 const CELL_PAD_PLAIN_TOP = 3.5;
 const CELL_PAD_PLAIN_BOTTOM = 2.5;
 

@@ -29,7 +29,9 @@ const SORTABLE_COLUMNS: ReadonlySet<UnitSortColumn> = new Set([
   "tenant",
 ]);
 
-/** "frei ab MM/JJJJ" bezieht sich auf den Monat nach Vertragsende */
+/**
+ * "frei ab MM/JJJJ" bezieht sich auf den Monat nach Vertragsende
+ */
 const vacantFromMonth = (vacantFrom: string): string => {
   const dayAfterEnd = new Date(`${vacantFrom}T00:00:00Z`);
   dayAfterEnd.setUTCDate(dayAfterEnd.getUTCDate() + 1);

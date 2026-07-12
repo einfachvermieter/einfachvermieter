@@ -33,7 +33,9 @@ export type UnitSort = "name" | "areaSqm" | "status" | "tenant";
 
 export type UnitOverviewRow = Unit & { occupancy: UnitOccupancy };
 
-/** Sortierreihenfolge der Belegungs-Status in der Liste */
+/**
+ * Sortierreihenfolge der Belegungs-Status in der Liste
+ */
 const STATUS_SORT_ORDER = new Map<UnitOccupancy["status"], number>([
   ["rented", 0],
   ["vacant_from", 1],

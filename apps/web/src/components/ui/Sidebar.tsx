@@ -33,7 +33,9 @@ import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const SIDEBAR_STORAGE_KEY = "sidebar:open";
-// Ab dieser Breite ist die Sidebar fest sichtbar; darunter Drawer (Sheet)
+/**
+ * Ab dieser Breite ist die Sidebar fest sichtbar; darunter Drawer (Sheet)
+ */
 const SIDEBAR_MOBILE_BREAKPOINT = 1024;
 const SIDEBAR_WIDTH = "17rem";
 const SIDEBAR_WIDTH_MOBILE = "17rem";

@@ -24,7 +24,9 @@ import {
 import { initOrm } from "./orm.js";
 import { hashPassword } from "./password.js";
 
-// Beschreibt die aktive Policy in Klartext fürs CLI-Feedback (kein i18n hier).
+/**
+ * Beschreibt die aktive Policy in Klartext fürs CLI-Feedback (kein i18n hier).
+ */
 const describePolicy = (env: NodeJS.ProcessEnv): string => {
   const policy = passwordPolicyFromEnv(env);
   const parts = [`mindestens ${policy.minLength} Zeichen`];

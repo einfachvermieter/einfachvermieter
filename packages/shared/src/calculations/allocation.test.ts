@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import type { CostEntry, UnitInfo, WaterDetail } from "../types/index.js";
 import { aggregateCostsForPeriod, allocateCost } from "./allocation.js";
 
-// Test-Period: 365 Tage. Beide Wohnungen ganzjährig vermietet - d. h.
-// Personentage / Flächentage entsprechen der Snapshot-Verteilung (kein
-// Vermieter-Anteil), so dass Erwartungswerte wie bei einfacher
-// Snapshot-Verteilung gelten.
+/**
+ * Test-Periode: 365 Tage. Beide Wohnungen ganzjährig vermietet - d. h.
+ * Personentage / Flächentage entsprechen der Snapshot-Verteilung (kein
+ * Vermieter-Anteil), so dass Erwartungswerte wie bei einfacher
+ * Snapshot-Verteilung gelten.
+ */
 const PERIOD_DAYS = 365;
 
 const unitEg: UnitInfo = {

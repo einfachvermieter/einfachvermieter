@@ -15,7 +15,7 @@ export type SetupStatus = {
 
 /**
  * Eingabe des Erststart-Assistenten. Schritt 1 (Admin-Konto) ist Pflicht,
- * außer im `local`-Auth-Modus (`requireAdmin: false` – die Desktop-App hat
+ * außer im `local`-Auth-Modus (`requireAdmin: false`, die Desktop-App hat
  * keinen Login); Absender und erstes Gebäude sind überspringbar. Der
  * Endpoint ist serverseitig hart gesperrt, sobald die Einrichtung erledigt
  * ist. Das Admin-Passwort wird gegen die (per ENV konfigurierbare) Policy

@@ -9,9 +9,11 @@ const optionalText = (max: number) =>
     .nullable()
     .optional();
 
-// Optionales IBAN-Feld: leer -> null; sonst Whitespace strippen, uppercase
-// und gegen `ibantools-germany` prüfen. Gleiches Verhalten wie bei den
-// Mieter-Bankkonten, nur dass hier der gesamte Eintrag optional ist.
+/**
+ * Optionales IBAN-Feld: leer -> null; sonst Whitespace strippen, uppercase
+ * und gegen `ibantools-germany` prüfen. Gleiches Verhalten wie bei den
+ * Mieter-Bankkonten, nur dass hier der gesamte Eintrag optional ist.
+ */
 const optionalIban = z
   .union([z.literal(""), z.string()])
   .nullable()

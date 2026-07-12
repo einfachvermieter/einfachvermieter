@@ -21,7 +21,9 @@ const MONTH_KEYS = [
 ] as const;
 
 const maxPromille = Math.max(...HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH);
-// Σ Promille = 1.000 (HeizkostenV-Anlage), lineare Vergleichslinie = Jahr/12
+/**
+ * Summe Promille = 1.000 (HeizkostenV-Anlage), lineare Vergleichslinie = Jahr/12
+ */
 const linearAvgPromille = Math.round(1000 / MONTH_KEYS.length);
 
 /**

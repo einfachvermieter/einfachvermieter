@@ -15,8 +15,10 @@ import { api } from "@/lib/api";
 import { t } from "@/lib/i18n";
 import { useCrudMutation } from "@/lib/useCrudMutation";
 
-// "charge" = Forderung (positives Soll), "credit" = Gutschrift (negatives
-// Soll -> Guthaben für den Mieter).
+/**
+ * "charge" = Forderung (positives Soll), "credit" = Gutschrift (negatives
+ * Soll -> Guthaben für den Mieter).
+ */
 const feeFormSchema = z.object({
   kind: z.enum(["charge", "credit"]),
   date: z.string().min(1),

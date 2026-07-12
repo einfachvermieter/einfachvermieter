@@ -31,15 +31,19 @@ const COL_TOTAL_COSTS = { flex: 1 };
 const COL_BEMESSUNG = { flex: 1.5 };
 const COL_TAGE = { flex: 1 };
 const COL_AMOUNT = { flex: 1 };
-// Summe aller Spalten links vom Betrag (2 + 1 + 1.5 + 1 = 5.5).
+/**
+ * Summe aller Spalten links vom Betrag (2 + 1 + 1.5 + 1 = 5.5)
+ */
 const COL_TOTAL_LABEL = { flex: 5.5 };
 
 const isWasteWaterName = (name: string): boolean =>
   /schmutzwasser|abwasser/iu.test(name);
 
-// Definition einer Fußnote: eine Hochstellziffer auf Zeilen-Ebene plus der
-// Erläuterungstext. Marker werden dynamisch in der Reihenfolge des
-// ersten Auftretens in der Tabelle vergeben (1, 2, 3, ...).
+/**
+ * Definition einer Fußnote: eine Hochstellziffer auf Zeilen-Ebene plus der
+ * Erläuterungstext. Marker werden dynamisch in der Reihenfolge des
+ * ersten Auftretens in der Tabelle vergeben (1, 2, 3, ...).
+ */
 type FootnoteDef = {
   applies: (line: CostLineResult) => boolean;
   text: string;

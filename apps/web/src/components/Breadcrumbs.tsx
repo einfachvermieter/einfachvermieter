@@ -17,7 +17,9 @@ import {
   BreadcrumbSeparator,
 } from "./ui/Breadcrumb";
 
-// Gebäudegebundene Bereiche = die gescopten Nav-Gruppen (eine Quelle: navConfig).
+/**
+ * Gebäudegebundene Bereiche = die gescopten Nav-Gruppen (eine Quelle: navConfig)
+ */
 const buildingScopedNav = [...stammdatenNav, ...kostenAbrechnungNav];
 
 type ResolveContext = {

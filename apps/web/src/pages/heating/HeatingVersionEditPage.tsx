@@ -32,7 +32,9 @@ import { useGoBack } from "../../lib/useGoBack";
 import { ExternalHeatingEntriesSection } from "./components/externalEntries/ExternalHeatingEntriesSection";
 import { HeatingForm } from "./HeatingForm";
 
-/** Version aktiv zum Stichtag: validFrom <= heute <= validTo (bzw. offen) */
+/**
+ * Version aktiv zum Stichtag: validFrom <= heute <= validTo (bzw. offen)
+ */
 const isVersionActive = (version: HeatingSettings, today: string): boolean =>
   version.validFrom <= today &&
   (version.validTo === null || version.validTo >= today);

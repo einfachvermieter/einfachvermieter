@@ -19,9 +19,11 @@ import { FieldGroup } from "@/components/ui/Field";
 import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 
-// Lokales Form-Schema: wie das geteilte `makePasswordChangeSchema`, plus
-// Wiederholungsfeld (nicht mit über die API mitgesendet). Das neue Passwort wird
-// gegen die (per ENV konfigurierbare) Policy geprüft.
+/**
+ * Lokales Form-Schema: wie das geteilte `makePasswordChangeSchema`, plus
+ * Wiederholungsfeld (nicht mit über die API mitgesendet). Das neue Passwort wird
+ * gegen die (per ENV konfigurierbare) Policy geprüft.
+ */
 const makeSchema = (policy: PasswordPolicy) =>
   z
     .object({

@@ -6,10 +6,12 @@ export type CostTypeForPrompt = {
   category: "operating" | "heating";
 };
 
-// JSON-Schema, das Mistral via response_format=json_schema einhalten muss.
-// Pro Position liefert die KI Rohwerte aus der Rechnung (Netto- bzw.
-// Brutto-Betrag und USt-Satz); die Brutto-Umrechnung übernimmt das Backend
-// selbst. LLM-"Multiplikation" ist zu fehleranfällig.
+/**
+ * JSON-Schema, das Mistral via response_format=json_schema einhalten muss.
+ * Pro Position liefert die KI Rohwerte aus der Rechnung (Netto- bzw.
+ * Brutto-Betrag und USt-Satz); die Brutto-Umrechnung übernimmt das Backend
+ * selbst. LLM-"Multiplikation" ist zu fehleranfällig.
+ */
 export const COST_ENTRY_EXTRACTION_JSON_SCHEMA = {
   name: "cost_entry_extraction",
   strict: true,
@@ -76,7 +78,9 @@ export const COST_ENTRY_EXTRACTION_JSON_SCHEMA = {
   },
 } as const;
 
-// Zod-Schema zur Validierung der Mistral Antwort
+/**
+ * Zod-Schema zur Validierung der Mistral-Antwort
+ */
 export const mistralRawItemSchema = z.object({
   description: z.string(),
   amountNetCents: z.number().int().nonnegative().nullable(),
