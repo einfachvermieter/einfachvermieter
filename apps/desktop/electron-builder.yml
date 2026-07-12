@@ -1,0 +1,43 @@
+# Packaging-Konfiguration der Desktop-App (macOS + Windows).
+# `staging/` wird von scripts/stage.mjs erzeugt und landet im Paket unter
+# `resources/app`. Dort erwartet der Main-Prozess API-, Web-Build und
+# node_modules.
+
+appId: de.einfachvermieter.app
+productName: EinfachVermieter
+copyright: © EinfachVermieter
+
+directories:
+  buildResources: build
+  output: release
+
+# Nur der gebündelte Main-Prozess wandert in die asar; die Server-Ressourcen
+# (inkl. nativer Module) liegen unverpackt unter resources/app.
+files:
+  - dist/**
+extraResources:
+  - from: staging
+    to: app
+
+# Das Staging installiert seine node_modules selbst (npm ci + rebuild).
+npmRebuild: false
+
+# @TODO: echte Signierung/Notarisierung; bis dahin Ad-hoc-Signatur, sonst
+# verweigert LaunchServices den Start auf Apple Silicon (siehe after-pack.cjs).
+afterPack: scripts/after-pack.cjs
+
+mac:
+  category: public.app-category.finance
+  target:
+    - dmg
+    - zip
+  # @TODO: Signierung/Notarisierung (Developer-ID-Zertifikat), bis dahin
+  # unsigniert bauen.
+  identity: null
+
+win:
+  target: nsis
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
