@@ -85,7 +85,7 @@ const occupancyDetailSchema = z.object({
   landlordPersonDays: z.number().int().nonnegative(),
 });
 
-const heatingDetailSchema = z.object({
+export const heatingDetailSchema = z.object({
   totalHeatingCostsCents: z.number().int(),
   heatingPotCents: z.number().int().optional(),
   consumptionShareBps: z.number().int().min(0).max(10_000),
@@ -127,6 +127,13 @@ const heatingDetailSchema = z.object({
       totalCents: z.number().int(),
     }),
   ),
+  /**
+   * Vermieteranteil (Leerstand/Mieterwechsel) an Grund- bzw.
+   * Verbrauchskosten, letzte Position der Flächen-/Verbrauchs-
+   * Verteilung.
+   */
+  landlordBasicCostCents: z.number().int().optional(),
+  landlordConsumptionCostCents: z.number().int().optional(),
   /**
    * Wird gesetzt, wenn mindestens eine Wohnung eine eigene Heizfläche hat,
    * die von der Wohnfläche abweicht -> Hinweit in Anlage
