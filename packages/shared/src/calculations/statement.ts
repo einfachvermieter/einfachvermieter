@@ -203,7 +203,12 @@ const buildHeatingLines = (
 const buildOperatingLines = (
   costTypes: StatementCalculationInput["costTypes"],
   period: Period,
-  ctx: { units: UnitInfo[]; targetUnitId: string; waterDetail: WaterDetail },
+  ctx: {
+    units: UnitInfo[];
+    targetUnitId: string;
+    waterDetail: WaterDetail;
+    tenantPeriod: Period;
+  },
 ): CostLineResult[] => {
   const lines: CostLineResult[] = [];
 
@@ -217,7 +222,15 @@ const buildOperatingLines = (
         ? costType.costs.filter((cost) => cost.unitId === ctx.targetUnitId)
         : costType.costs;
 
-    const totalAmountCents = aggregateCostsForPeriod(relevantCosts, period);
+    // "fixed" geht komplett an den Ziel-Mieter. Deshalb zählt hier nur die
+    // Mietzeit, sonst zahlen bei Mieterwechsel beide Mieter die volle
+    // Pauschale. Alle anderen Schlüssel kürzen über die UnitInfo-Gewichte.
+    const aggregationPeriod =
+      costType.allocationKey === "fixed" ? ctx.tenantPeriod : period;
+    const totalAmountCents = aggregateCostsForPeriod(
+      relevantCosts,
+      aggregationPeriod,
+    );
     if (totalAmountCents === 0) {
       continue;
     }
@@ -287,6 +300,7 @@ export const calculateStatement = (
       units,
       targetUnitId,
       waterDetail,
+      tenantPeriod: consumptionPeriod,
     }),
   ];
 

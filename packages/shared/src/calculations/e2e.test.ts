@@ -770,12 +770,78 @@ describe("End-to-End Abrechnung 2025", () => {
 
     // Summen-Invariante: Alle Mieter-Anteile zusammen überschreiten die
     // Jahres-Kosten nicht. Die kleine Lücke (~83 Cent) ist der nicht
-    // zugerechnete Verbrauchs-Tag zwischen Auszug A und Einzug B (N2).
+    // zugerechnete Verbrauchs-Tag zwischen Auszug A und Einzug B.
     const tenantSum =
       (waterA?.tenantAmountCents ?? 0) +
       (waterB?.tenantAmountCents ?? 0) +
       (waterOg?.tenantAmountCents ?? 0);
     expect(tenantSum).toBeLessThanOrEqual(60_000);
     expect(tenantSum).toBeGreaterThan(59_800);
+  });
+
+  it("Pauschale gefixt bei Mieterwechsel: A + B = Jahresbetrag", () => {
+    const period = { start: periodStart, end: periodEnd };
+    const emptyHeating = calculateHeating({
+      totalHeatingCostsCents: 0,
+      config: { consumptionShareBps: 7000 },
+      units,
+      consumptionMethod: "heat_meter",
+      consumptionMeters: [],
+      periodStart,
+      periodEnd,
+    });
+
+    const buildFixedInput = (
+      targetTenantId: string,
+      tenantPeriod: { start: string; end: string } | undefined,
+    ): StatementCalculationInput => ({
+      period,
+      tenantPeriod,
+      units,
+      targetTenantId,
+      targetUnitId: "u-eg",
+      costTypes: [
+        {
+          id: "ct-tv",
+          name: "TV/Internet Pauschale",
+          allocationKey: "fixed",
+          costs: [{ ..._tvCost, unitId: "u-eg" }],
+        },
+      ],
+      waterMeters,
+      heatingDetail: emptyHeating,
+      totalAdvancesCents: 0,
+    });
+
+    const tvLine = (input: StatementCalculationInput) =>
+      calculateStatement(input).lines.find(
+        (l) => l.costTypeName === "TV/Internet Pauschale",
+      );
+
+    // Mieter A: 01.01.-30.06. (181 Tage), Nachmieter B: 01.07.-31.12. (184 Tage)
+    const tvA = tvLine(
+      buildFixedInput("t-mieter-a", {
+        start: "2025-01-01",
+        end: "2025-06-30",
+      }),
+    );
+    const tvB = tvLine(
+      buildFixedInput("t-mieter-b", {
+        start: "2025-07-01",
+        end: "2025-12-31",
+      }),
+    );
+
+    // 18000 x 181/365 = 8926, 18000 x 184/365 = 9074
+    expect(tvA?.tenantAmountCents).toBe(8926);
+    expect(tvB?.tenantAmountCents).toBe(9074);
+    // Invariante: beide Mieter zusammen zahlen die Pauschale genau einmal.
+    expect((tvA?.tenantAmountCents ?? 0) + (tvB?.tenantAmountCents ?? 0)).toBe(
+      18_000,
+    );
+
+    // Ganzjahres-Mieter unverändert: voller Betrag.
+    const tvFull = tvLine(buildFixedInput("t-mieter1", undefined));
+    expect(tvFull?.tenantAmountCents).toBe(18_000);
   });
 });
