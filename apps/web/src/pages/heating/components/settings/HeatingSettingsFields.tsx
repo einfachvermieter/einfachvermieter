@@ -296,17 +296,21 @@ export const HeatingSettingsFields = ({
                   })}
                 />
               ) : null}
-              <SelectInput
-                control={form.control}
-                name="prorationMethod"
-                label={t("ui.heating.fields.prorationMethod")}
-                labelHelp={t("ui.heating.fields.prorationMethodDescription")}
-                options={prorationMethodOptions}
-                triggerClassName="max-w-md"
-              />
-              <HeatingProrationChart method={prorationMethod} />
             </>
           )}
+          <SelectInput
+            control={form.control}
+            name="prorationMethod"
+            label={t("ui.heating.fields.prorationMethod")}
+            labelHelp={
+              mode === "external"
+                ? t("ui.heating.fields.prorationMethodDescriptionExternal")
+                : t("ui.heating.fields.prorationMethodDescription")
+            }
+            options={prorationMethodOptions}
+            triggerClassName="max-w-md"
+          />
+          <HeatingProrationChart method={prorationMethod} />
         </FieldGroup>
       </SectionCard>
 

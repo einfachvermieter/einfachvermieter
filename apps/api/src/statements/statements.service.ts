@@ -29,10 +29,12 @@ import {
   consumptionBetween,
   type DifferenceConfigInput,
   daysBetween,
+  type ExternalHeatingEntry,
   formatWarningParams,
   type HeatingDetail,
   type HotWaterInput,
   inferTariffAdjustmentBpsFromInvoices,
+  intersect,
   type MeterInfo,
   type OperatingCostStatementAdvanceAdjustmentDto,
   type OperatingCostStatementCancelDto,
@@ -218,6 +220,63 @@ const heatingTenantShareOf = (
     (target?.totalCents ?? 0) + (targetHotWater?.totalCents ?? 0);
 
   return tenantHeatingCents / total;
+};
+
+/**
+ * Kürzt eine externe Heizkosten-Position auf die Abrechnungsperiode. Bei
+ * `prorationMethod === "degree_days"` folgt der Verbrauchskostenanteil
+ * (§ 9b HeizkostenV) der Gradtagstabelle, Grundkosten und unklassifizierter
+ * Rest bleiben tagesanteilig linear - wie im internen Modus
+ * (`aggregateHeatingCosts`).
+ */
+export const prorateExternalHeatingEntry = (
+  entry: ExternalHeatingEntry,
+  prorationMethod: Awaited<
+    ReturnType<HeatingService["getForBuildingAt"]>
+  >["prorationMethod"],
+  effectivePeriod: { start: string; end: string },
+): {
+  unitId: string;
+  totalCents: number;
+  baseCostCents: number | null;
+  consumptionCostCents: number | null;
+} => {
+  const entryPeriod = { start: entry.periodStart, end: entry.periodEnd };
+  const linearFactor = prorationFactor(entryPeriod, effectivePeriod);
+
+  let consumptionFactor = linearFactor;
+  if (prorationMethod === "degree_days") {
+    const overlap = intersect(entryPeriod, effectivePeriod);
+    const itemDegreeDays = overlap ? sumDegreeDays(entryPeriod) : 0;
+    const overlapDegreeDays =
+      overlap && itemDegreeDays > 0 ? sumDegreeDays(overlap) : 0;
+    if (overlapDegreeDays > 0) {
+      consumptionFactor = overlapDegreeDays / itemDegreeDays;
+    }
+  }
+
+  const baseCostCents =
+    entry.baseCostCents === null
+      ? null
+      : Math.round(entry.baseCostCents * linearFactor);
+  const consumptionCostCents =
+    entry.consumptionCostCents === null
+      ? null
+      : Math.round(entry.consumptionCostCents * consumptionFactor);
+  const restCents =
+    entry.totalCents -
+    (entry.baseCostCents ?? 0) -
+    (entry.consumptionCostCents ?? 0);
+
+  return {
+    unitId: entry.unitId,
+    totalCents:
+      (baseCostCents ?? 0) +
+      (consumptionCostCents ?? 0) +
+      Math.round(restCents * linearFactor),
+    baseCostCents,
+    consumptionCostCents,
+  };
 };
 
 /**
@@ -1421,22 +1480,13 @@ export class StatementsService {
 
       heatingDetail = calculateExternalHeating({
         units,
-        entries: entries.map((entry) => {
-          const factor = prorationFactor(
-            { start: entry.periodStart, end: entry.periodEnd },
+        entries: entries.map((entry) =>
+          prorateExternalHeatingEntry(
+            entry,
+            heatingSettings.prorationMethod,
             effectivePeriod,
-          );
-
-          const prorate = (cents: number | null) =>
-            cents === null ? null : Math.round(cents * factor);
-
-          return {
-            unitId: entry.unitId,
-            totalCents: Math.round(entry.totalCents * factor),
-            baseCostCents: prorate(entry.baseCostCents),
-            consumptionCostCents: prorate(entry.consumptionCostCents),
-          };
-        }),
+          ),
+        ),
       });
 
       return heatingDetail;

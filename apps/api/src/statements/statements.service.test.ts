@@ -1,0 +1,63 @@
+import { describe, expect, it } from "vitest";
+import { prorateExternalHeatingEntry } from "./statements.service.js";
+
+const entryBase = {
+  unitId: "unit-1",
+  periodStart: "2025-01-01",
+  periodEnd: "2025-12-31",
+};
+
+describe("prorateExternalHeatingEntry", () => {
+  it("kürzt Grundkosten linear und Verbrauchskosten nach Gradtagstabelle bei Mieterwechsel (§ 9b HeizkostenV)", () => {
+    const entry = {
+      ...entryBase,
+      totalCents: 130_000,
+      baseCostCents: 30_000,
+      consumptionCostCents: 100_000,
+    };
+    const effectivePeriod = { start: "2025-01-01", end: "2025-06-30" };
+
+    const linear = prorateExternalHeatingEntry(
+      entry,
+      "linear",
+      effectivePeriod,
+    );
+    const degreeDays = prorateExternalHeatingEntry(
+      entry,
+      "degree_days",
+      effectivePeriod,
+    );
+
+    // Grundkosten bleiben in beiden Modi gleich (tagesanteilig, 181/365 Tage)
+    expect(linear.baseCostCents).toBe(14_877);
+    expect(degreeDays.baseCostCents).toBe(14_877);
+
+    // Verbrauchskosten: linear 181/365, Gradtagstabelle Jan-Jun = 583 von 1.000 ‰
+    expect(linear.consumptionCostCents).toBe(49_589);
+    expect(degreeDays.consumptionCostCents).toBe(58_300);
+
+    expect(degreeDays.totalCents).toBe(
+      degreeDays.baseCostCents + degreeDays.consumptionCostCents,
+    );
+  });
+
+  it("kürzt ohne Grund-/Verbrauchs-Aufteilung den Gesamtbetrag weiterhin rein linear", () => {
+    const entry = {
+      ...entryBase,
+      totalCents: 100_000,
+      baseCostCents: null,
+      consumptionCostCents: null,
+    };
+    const effectivePeriod = { start: "2025-01-01", end: "2025-06-30" };
+
+    const result = prorateExternalHeatingEntry(
+      entry,
+      "degree_days",
+      effectivePeriod,
+    );
+
+    expect(result.baseCostCents).toBeNull();
+    expect(result.consumptionCostCents).toBeNull();
+    expect(result.totalCents).toBe(49_589);
+  });
+});

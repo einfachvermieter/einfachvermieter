@@ -1176,6 +1176,7 @@
         "baseShareDescription": "Wird nach Fläche verteilt. Verbrauchs- und Grundkostenanteil ergeben zusammen 100 %.",
         "prorationMethod": "Aufteilung bei Mieter-/Leerstandswechsel",
         "prorationMethodDescription": "Wie werden Heizkostenrechnungen aufgeteilt, deren Zeitraum nur teilweise in die Mietzeit fällt? Linear verteilt tagesproportional, ignoriert aber die Wintersaisonalität. Heizgradtagszahlen folgen der Anlage zu § 9 Abs. 3 HeizkostenV (Promille-Verteilung, Σ = 1.000) und gewichten Wintertage stärker – rechtlich verbindliche Verteilung für tagesgenaue Abgrenzung.",
+        "prorationMethodDescriptionExternal": "Betrifft nur den Verbrauchskostenanteil der externen Abrechnung bei Mieter-/Leerstandswechsel. Grundkosten bleiben immer tagesproportional. Linear verteilt tagesproportional, ignoriert aber die Wintersaisonalität. Heizgradtagszahlen folgen der Anlage zu § 9 Abs. 3 HeizkostenV – rechtlich verbindliche Verteilung für tagesgenaue Abgrenzung.",
         "validFrom": "Gültig ab",
         "validFromDescription": "Datum, ab dem diese Konfiguration für Abrechnungen gilt.",
         "validTo": "Gültig bis",
