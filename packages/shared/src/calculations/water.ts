@@ -1,6 +1,14 @@
+import { formatNumberLoose } from "../format.js";
 import type { UnitInfo, WaterDetail } from "../types/index.js";
 import { CalculationError, type CalcWarning } from "./diagnostics.js";
 import { computeMeterConsumption, type MeterBundle } from "./virtualMeter.js";
+
+/**
+ * Toleranz für den Abgleich Hauptzähler-Total vs. Summe der
+ * Wohnungsverbräuche. Rundungsdifferenzen aus Zwischenständen
+ * werden ausgeglichen.
+ */
+const UNIT_SUM_MISMATCH_TOLERANCE_M3 = 0.01;
 
 /**
  * Dedupliziert eine Warnungsliste (z. B. wenn derselbe Zähler einmal
@@ -289,6 +297,21 @@ export const calculateWater = (input: WaterCalculationInput): WaterDetail => {
       meterContributions: unitMeters.get(unit.id) ?? [],
     };
   });
+
+  const unitSumM3 =
+    perUnit.reduce((sum, unit) => sum + unit.consumptionM3, 0) +
+    landlordConsumptionM3;
+  if (
+    Math.abs(unitSumM3 - totalConsumptionM3) > UNIT_SUM_MISMATCH_TOLERANCE_M3
+  ) {
+    warnings.push({
+      code: "waterUnitSumMismatch",
+      params: {
+        total: formatNumberLoose(totalConsumptionM3),
+        unitSum: formatNumberLoose(unitSumM3),
+      },
+    });
+  }
 
   const dedupedWarnings = dedupe(warnings);
   return {

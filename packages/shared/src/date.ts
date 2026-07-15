@@ -32,6 +32,18 @@ export const maxDate = (...dates: string[]): string =>
   dates.reduce((acc, date) => (date > acc ? date : acc));
 
 /**
+ * ISO-Datum plus ein Jahr, rein als String (Tag/Monat unverändert)
+ *
+ * Kann ein ungültiges Kalenderdatum liefern (z. B. `2025-02-29`).
+ * Als Text verglichen (`<`, `>`) ergibt es trotzdem die
+ * richtige Reihenfolge gegenüber echten ISO-Daten.
+ */
+export const isoDatePlusOneYear = (iso: string): string => {
+  const { year, month, day } = splitIsoDate(iso);
+  return `${pad4(year + 1)}-${pad2(month)}-${pad2(day)}`;
+};
+
+/**
  * ISO `YYYY-MM-DD` in Object zerlegen
  */
 export const splitIsoDate = (

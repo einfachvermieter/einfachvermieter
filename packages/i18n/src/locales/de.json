@@ -243,6 +243,7 @@
     "readingEstimated": "Der Zählerstand vom {date} ist geschätzt – der ausgewiesene Verbrauch beruht teilweise auf Schätzwerten.",
     "differenceMeterNegative": "Der Differenzzähler „{label}“ ergibt einen negativen Verbrauch – die Summe der Subtraktionszähler übersteigt den Basiszähler. Der Verbrauch wurde auf 0 m³ gesetzt. Bitte prüfen Sie die Quellzähler und deren Zählerstände.",
     "commonConsumptionUnallocated": "Der Allgemeinzähler „{label}“ ist keiner Wohnung zugeordnet – sein Verbrauch wird nicht gesondert ausgewiesen, sondern anteilig auf alle Wohnungen mitverteilt. Bitte ordnen Sie ihn einer Wohnung zu oder prüfen Sie, ob ein Vorwegabzug gewünscht ist.",
+    "waterUnitSumMismatch": "Der Hauptzähler weist {total} m³ aus, die Summe der Wohnungsverbräuche (inkl. Vermieteranteil) ergibt aber {unitSum} m³. Vermutlich fehlt ein Differenzzähler, die Kosten werden nach der tatsächlichen Verbrauchssumme verteilt. Bitte prüfen Sie die Zählerzuordnung.",
     "hotWaterTotalHeatMissing": "Zentrale Warmwasserbereitung erfasst, aber die Gesamt-Wärmemenge (kWh) fehlt – der Warmwasseranteil kann nicht nach § 9 Abs. 2 HeizkostenV herausgerechnet werden.",
     "hotWaterSourceMissing": "Zentrale Warmwasserbereitung erfasst, aber weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch vorhanden – der Warmwasseranteil konnte nicht ermittelt werden.",
     "hotWaterShareCapped": "Die geschätzte Warmwasser-Wärmemenge übersteigt die erfasste Gesamt-Wärmemenge – der Warmwasseranteil wurde auf 100 % begrenzt. Bitte Gesamt-Wärmemenge prüfen.",
@@ -1336,6 +1337,7 @@
         "tenantRequired": "Mieter wählen",
         "buildingRequired": "Gebäude erforderlich",
         "documentDateRequired": "Bitte ein Ausstellungsdatum angeben.",
+        "periodMax12Months": "Der Abrechnungszeitraum darf höchstens 12 Monate umfassen.",
         "adjustmentBothOrNone": "Betrag und Gültig-ab-Datum müssen beide gesetzt oder beide leer sein."
       },
       "advanceAdjustment": {

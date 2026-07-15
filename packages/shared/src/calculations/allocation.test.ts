@@ -251,6 +251,43 @@ describe("allocateCost per_consumption_m3", () => {
     expect(result.tenantAmountCents).toBe(3500); // 70/200 = 35 %
   });
 
+  it("totalBase folgt der Gewichtssumme, nicht dem Hauptzähler-Total (fehlender Differenzzähler)", () => {
+    // Hauptzähler 100 m3, A 40 m3, B 40 m3, 20 m3 ungemessen (kein
+    // Differenzzähler) - totalBase muss 80 sein (Summe der tatsächlich
+    // verteilten Gewichte), sonst weicht der gedruckte Dreisatz von der
+    // Geldverteilung ab.
+    const waterDetail: WaterDetail = {
+      totalConsumptionM3: 100,
+      perUnit: [
+        {
+          unitId: "unit-eg",
+          unitName: "EG",
+          consumptionM3: 40,
+          sharePct: 40,
+          isDifferential: false,
+          meterContributions: [],
+        },
+        {
+          unitId: "unit-og",
+          unitName: "OG/DG",
+          consumptionM3: 40,
+          sharePct: 40,
+          isDifferential: false,
+          meterContributions: [],
+        },
+      ],
+    };
+    const result = allocateCost("Wasser", "per_consumption_m3", 100_000, {
+      units,
+      targetUnitId: "unit-eg",
+      waterDetail,
+    });
+    expect(result.totalBase).toBe(80);
+    expect(result.tenantBase).toBe(40);
+    expect(result.tenantAmountCents).toBe(50_000); // 40/80 = 50 %, nicht 40 %
+    expect(result.shareBps).toBe(5000);
+  });
+
   it("wirft ohne waterDetail", () => {
     expect(() =>
       allocateCost("Wasser", "per_consumption_m3", 10_000, {

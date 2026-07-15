@@ -294,12 +294,17 @@ const allocatePerConsumptionM3 = ({
     );
   }
 
-  const totalBase = waterDetail.totalConsumptionM3;
   const landlordConsumptionM3 = waterDetail.landlordConsumptionM3 ?? 0;
   const weights = units.map((u) => {
     const entry = waterDetail.perUnit.find((p) => p.unitId === u.id);
     return entry?.consumptionM3 ?? 0;
   });
+  // Bemessungsgrundlage ist die tatsächliche Gewichtssumme (nicht das
+  // Hauptzähler-Total aus waterDetail.totalConsumptionM3), ansonsten weicht der
+  // gedruckte Dreisatz von der tatsächlichen Geldverteilung ab, sobald ein
+  // Differenzzähler fehlt.
+  const totalBase =
+    weights.reduce((sum, weight) => sum + weight, 0) + landlordConsumptionM3;
   const shares = distributeCents(totalAmountCents, [
     ...weights,
     landlordConsumptionM3,

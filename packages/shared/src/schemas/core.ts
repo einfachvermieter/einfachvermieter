@@ -1,5 +1,6 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import { z } from "zod";
+import { isoDatePlusOneYear } from "../date.js";
 import {
   costTypeAllocationKeys,
   costTypeCategories,
@@ -172,6 +173,10 @@ export const operatingCostStatementCreateSchema = z
   .strict()
   .refine((d) => d.periodStart < d.periodEnd, {
     message: "periodStart muss < periodEnd sein",
+  })
+  .refine((d) => d.periodEnd < isoDatePlusOneYear(d.periodStart), {
+    message: messageKey("ui.statements.validation.periodMax12Months"),
+    path: ["periodEnd"],
   });
 
 export type OperatingCostStatementCreateDto = z.infer<

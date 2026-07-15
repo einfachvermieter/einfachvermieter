@@ -320,5 +320,11 @@ describe("calculateWater", () => {
     const eg = result.perUnit.find((u) => u.unitId === "unit-eg");
     expect(eg?.consumptionM3).toBe(0);
     expect(eg?.isDifferential).toBe(false);
+    // Ohne Differenzzähler bleiben 100 m3 (200 Haupt − 100 OG − 0 EG)
+    // unerklärt
+    expect(result.warnings).toContainEqual({
+      code: "waterUnitSumMismatch",
+      params: { total: "200", unitSum: "100" },
+    });
   });
 });
