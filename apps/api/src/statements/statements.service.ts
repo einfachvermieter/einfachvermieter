@@ -543,9 +543,45 @@ export class StatementsService {
   }
 
   /**
+   * Blockiert Anlegen/Finalisieren, wenn für denselben Mieter bereits eine
+   * finalisierte Abrechnung mit überlappendem Zeitraum existiert.
+   */
+  private async assertNoOverlappingFinalized(
+    em: EntityManager,
+    tenantId: string,
+    periodStart: string,
+    periodEnd: string,
+    ignoreStatementId?: string | null,
+  ) {
+    const overlapping = await em.findOne(OperatingCostStatementSchema, {
+      tenantId,
+      status: "finalized",
+      periodStart: { $lte: periodEnd },
+      periodEnd: { $gte: periodStart },
+      ...(ignoreStatementId ? { id: { $ne: ignoreStatementId } } : {}),
+    });
+
+    if (overlapping) {
+      throw new BadRequestException(
+        getI18n().t("errors.statementPeriodOverlapsFinalized", {
+          periodStart: overlapping.periodStart,
+          periodEnd: overlapping.periodEnd,
+        }),
+      );
+    }
+  }
+
+  /**
    * Erstellt eine neue Abrechnung im Status "draft"
    */
   async create(dto: OperatingCostStatementCreateDto) {
+    await this.assertNoOverlappingFinalized(
+      this.em,
+      dto.tenantId,
+      dto.periodStart,
+      dto.periodEnd,
+    );
+
     const created = this.em.create(OperatingCostStatementSchema, {
       buildingId: dto.buildingId,
       tenantId: dto.tenantId,
@@ -1812,6 +1848,14 @@ export class StatementsService {
           getI18n().t("errors.statementAlreadyFinalized"),
         );
       }
+
+      await this.assertNoOverlappingFinalized(
+        em,
+        row.tenantId,
+        row.periodStart,
+        row.periodEnd,
+        row.supersedesStatementId,
+      );
 
       if (needsRentRotation) {
         await this.rotateTenantRents(

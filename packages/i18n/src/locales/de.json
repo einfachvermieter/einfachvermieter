@@ -171,6 +171,7 @@
     "statementDeleteFinalized": "Finalisierte Abrechnungen können nicht gelöscht werden",
     "statementNotCancellable": "Nur finalisierte Abrechnungen können storniert werden",
     "statementNotCorrectable": "Zu dieser Abrechnung kann keine Korrektur erstellt werden (sie muss finalisiert oder storniert sein)",
+    "statementPeriodOverlapsFinalized": "Für diesen Mieter existiert bereits eine finalisierte Abrechnung für den Zeitraum {periodStart} – {periodEnd}. Eine erneute Abrechnung dieser Periode ist nur als Korrektur der bestehenden möglich.",
     "statementFinalizeCalculationIncomplete": "Berechnungsergebnis ist unvollständig, Finalisierung abgebrochen: {message}",
     "tenantNotBillable": "Mietvertrag „{tenantId}“ ist im Zeitraum {periodStart}–{periodEnd} nicht abrechnungsberechtigt (Vertragszeitraum überlappt nicht).",
     "tenantHasNoRent": "Mietvertrag „{tenantId}“ hat keinen Mietsatz – Anpassung der Vorauszahlung nicht möglich.",
