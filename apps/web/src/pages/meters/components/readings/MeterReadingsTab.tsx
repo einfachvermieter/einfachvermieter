@@ -184,6 +184,17 @@ export const MeterReadingsTab = ({
   const dialogOpen = editTarget !== null;
   const dialogEntry = editTarget && editTarget !== "new" ? editTarget : null;
 
+  const otherReadings = useMemo(
+    () =>
+      sorted
+        .filter((reading) => reading.id !== dialogEntry?.id)
+        .map((reading) => ({
+          readingDate: reading.readingDate,
+          value: reading.value,
+        })),
+    [sorted, dialogEntry],
+  );
+
   const defaultValues: ReadingFormValues = dialogEntry
     ? {
         readingDate: dialogEntry.readingDate,
@@ -336,6 +347,7 @@ export const MeterReadingsTab = ({
             <ReadingForm
               defaultValues={defaultValues}
               warnIfBefore={dialogEntry ? null : (latestReadingDate ?? null)}
+              otherReadings={otherReadings}
               onSubmit={async (values) => {
                 if (dialogEntry) {
                   await updateMutation.mutateAsync({

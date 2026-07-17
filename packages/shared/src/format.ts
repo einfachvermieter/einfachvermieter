@@ -40,9 +40,10 @@ export const formatDate = (
 };
 
 /**
- * Bereitet die Parameter einer Calc-Warnung für die Anzeige auf: das
- * konventionelle `date`-Feld (ISO `YYYY-MM-DD` aus der sprachneutralen
- * Calc-Schicht) wird ins deutsche `DD.MM.YYYY` übersetzt.
+ * Wandelt Datumsfelder einer Calc-Warnung fürs Anzeigen um: aus dem
+ * ISO-Format `YYYY-MM-DD` wird `DD.MM.YYYY`. Betroffen sind Felder
+ * namens `date` und alle Felder, deren Name auf `Date` endet (z. B.
+ * `fromDate`).
  */
 export const formatWarningParams = (
   params: Record<string, string | number> | undefined,
@@ -51,11 +52,14 @@ export const formatWarningParams = (
     return {};
   }
 
-  if (typeof params.date !== "string") {
-    return params;
+  const formatted: Record<string, string | number> = { ...params };
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === "string" && (key === "date" || key.endsWith("Date"))) {
+      formatted[key] = formatDate(value);
+    }
   }
 
-  return { ...params, date: formatDate(params.date) };
+  return formatted;
 };
 
 /**

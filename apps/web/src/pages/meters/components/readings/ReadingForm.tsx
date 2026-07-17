@@ -27,12 +27,17 @@ export const ReadingForm = ({
   onCancel,
   submitting = false,
   warnIfBefore = null,
+  otherReadings = [],
 }: {
   defaultValues: ReadingFormValues;
   onSubmit: (values: ReadingSubmitValues) => Promise<void>;
   onCancel: () => void;
   submitting?: boolean;
   warnIfBefore?: string | null;
+  /**
+   * Übrige Ablesungen desselben Zählers (ohne den gerade bearbeiteten)
+   */
+  otherReadings?: { readingDate: string; value: number }[];
 }) => {
   const form = useForm<ReadingFormValues>({
     resolver: zodResolver(readingFormSchema),
@@ -40,8 +45,27 @@ export const ReadingForm = ({
   });
 
   const watchedDate = form.watch("readingDate");
+  const watchedValue = form.watch("value");
   const showOlderWarning =
     warnIfBefore !== null && watchedDate !== "" && watchedDate < warnIfBefore;
+
+  const parsedValue = Number.parseFloat(watchedValue.replace(",", "."));
+  const sortedOthers = [...otherReadings].sort((a, b) =>
+    a.readingDate.localeCompare(b.readingDate),
+  );
+
+  const before = sortedOthers
+    .filter((reading) => reading.readingDate < watchedDate)
+    .at(-1);
+  const after = sortedOthers.find(
+    (reading) => reading.readingDate > watchedDate,
+  );
+
+  const showNonMonotonicWarning =
+    watchedDate !== "" &&
+    !Number.isNaN(parsedValue) &&
+    ((before !== undefined && parsedValue < before.value) ||
+      (after !== undefined && parsedValue > after.value));
 
   return (
     <Form
@@ -55,6 +79,14 @@ export const ReadingForm = ({
             {t("ui.reading.olderDateWarningDescription", {
               date: formatDate(warnIfBefore),
             })}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {showNonMonotonicWarning ? (
+        <Alert variant="warning">
+          <AlertTitle>{t("ui.reading.nonMonotonicWarningTitle")}</AlertTitle>
+          <AlertDescription>
+            {t("ui.reading.nonMonotonicWarningDescription")}
           </AlertDescription>
         </Alert>
       ) : null}

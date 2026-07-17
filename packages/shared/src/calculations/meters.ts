@@ -1,3 +1,4 @@
+import { formatNumberLoose } from "../format.js";
 import type { ReadingPoint } from "../types/index.js";
 import { CalculationError, type CalcWarning } from "./diagnostics.js";
 import { daysBetween } from "./period.js";
@@ -157,6 +158,52 @@ export const interpolateReading = (
 };
 
 /**
+ * Meldet einen rückläufigen Stand zwischen chronologisch benachbarten
+ * Ablesungen eines kumulativen Zählers (Zählertausch ohne Erfassung des
+ * Endstands, Ablesefehler, vertauschte Werte).
+ */
+const warnNonMonotonic = (
+  readings: ReadingPoint[],
+  options?: InterpolateOptions,
+): void => {
+  if (!options?.warnings) {
+    return;
+  }
+
+  const cumulative = readings
+    .filter((reading) => reading.isCumulative)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  for (let i = 1; i < cumulative.length; i++) {
+    const before = cumulative[i - 1];
+    const after = cumulative[i];
+    if (!before || !after || after.value >= before.value) {
+      continue;
+    }
+
+    const params = {
+      fromDate: before.date,
+      fromValue: formatNumberLoose(before.value),
+      toDate: after.date,
+      toValue: formatNumberLoose(after.value),
+      ...(options.label ? { label: options.label } : {}),
+    };
+
+    const duplicate = options.warnings.some(
+      (existing) =>
+        existing.code === "readingNonMonotonic" &&
+        existing.params?.fromDate === params.fromDate &&
+        existing.params?.toDate === params.toDate &&
+        existing.params?.label === params.label,
+    );
+
+    if (!duplicate) {
+      options.warnings.push({ code: "readingNonMonotonic", params });
+    }
+  }
+};
+
+/**
  * Verbrauch zwischen zwei Stichtagen für einen kumulativen Zähler.
  *
  * Wichtig: Angrenzende Mietperioden nutzen die tatsächlichen
@@ -169,6 +216,8 @@ export const consumptionBetween = (
   periodEnd: string,
   options?: InterpolateOptions,
 ): number => {
+  warnNonMonotonic(readings, options);
+
   const startValue = interpolateReading(readings, periodStart, options);
   const endValue = interpolateReading(readings, periodEnd, options);
 

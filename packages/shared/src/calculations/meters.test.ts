@@ -181,3 +181,82 @@ describe("readingEstimated-Kennzeichnung", () => {
     expect(consumptionBetween(readings, "2025-01-01", "2025-12-31")).toBe(100);
   });
 });
+
+describe("readingNonMonotonic-Warnung", () => {
+  it("meldet einen rückläufigen Stand (Zählerrücklauf)", () => {
+    const warnings: CalcWarning[] = [];
+    // 0 (01.01.) -> 95 (30.06.) -> 90 (31.12.) - der zweite
+    // Sprung ist rückläufig und würde unbemerkt einen überhöhten Verbrauch
+    // in die Vorperiode verschieben.
+    const readings = [
+      reading("2025-01-01", 0),
+      reading("2025-06-30", 95),
+      reading("2025-12-31", 90),
+    ];
+    consumptionBetween(readings, "2025-01-01", "2025-09-30", {
+      warnings,
+      label: "Küche",
+    });
+    expect(warnings).toContainEqual({
+      code: "readingNonMonotonic",
+      params: {
+        fromDate: "2025-06-30",
+        fromValue: "95",
+        toDate: "2025-12-31",
+        toValue: "90",
+        label: "Küche",
+      },
+    });
+  });
+
+  it("dedupliziert bei wiederholten Aufrufen mit denselben Ständen", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      reading("2025-01-01", 0),
+      reading("2025-06-30", 95),
+      reading("2025-12-31", 90),
+    ];
+    consumptionBetween(readings, "2025-01-01", "2025-06-30", { warnings });
+    consumptionBetween(readings, "2025-07-01", "2025-12-31", { warnings });
+    const nonMonotonic = warnings.filter(
+      (warning) => warning.code === "readingNonMonotonic",
+    );
+    expect(nonMonotonic).toHaveLength(1);
+  });
+
+  it("ignoriert nicht-kumulative Stände", () => {
+    const warnings: CalcWarning[] = [];
+    const readings: ReadingPoint[] = [
+      { date: "2025-01-01", value: 0, isCumulative: false, isEstimated: false },
+      {
+        date: "2025-06-30",
+        value: 95,
+        isCumulative: false,
+        isEstimated: false,
+      },
+      {
+        date: "2025-12-31",
+        value: 90,
+        isCumulative: false,
+        isEstimated: false,
+      },
+    ];
+    consumptionBetween(readings, "2025-01-01", "2025-12-31", { warnings });
+    expect(
+      warnings.filter((warning) => warning.code === "readingNonMonotonic"),
+    ).toEqual([]);
+  });
+
+  it("steigende Stände lösen keine Warnung aus", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      reading("2025-01-01", 0),
+      reading("2025-06-30", 50),
+      reading("2025-12-31", 100),
+    ];
+    consumptionBetween(readings, "2025-01-01", "2025-12-31", { warnings });
+    expect(
+      warnings.filter((warning) => warning.code === "readingNonMonotonic"),
+    ).toEqual([]);
+  });
+});

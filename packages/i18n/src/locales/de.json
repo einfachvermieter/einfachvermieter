@@ -242,6 +242,7 @@
     "readingMissingBefore": "Kein Zählerstand vor {date} – Verbrauch davor unbekannt, Abrechnung evtl. unvollständig.",
     "readingMissingAfter": "Kein Zählerstand nach {date} – Verbrauch danach unbekannt, Abrechnung evtl. unvollständig.",
     "readingEstimated": "Der Zählerstand vom {date} ist geschätzt – der ausgewiesene Verbrauch beruht teilweise auf Schätzwerten.",
+    "readingNonMonotonic": "Zählerstand rückläufig: Am {toDate} wurde {toValue} erfasst, niedriger als am {fromDate} mit {fromValue}. Bitte prüfen ob möglicher Zählertausch oder Ablesefehler.",
     "differenceMeterNegative": "Der Differenzzähler „{label}“ ergibt einen negativen Verbrauch – die Summe der Subtraktionszähler übersteigt den Basiszähler. Der Verbrauch wurde auf 0 m³ gesetzt. Bitte prüfen Sie die Quellzähler und deren Zählerstände.",
     "commonConsumptionUnallocated": "Der Allgemeinzähler „{label}“ ist keiner Wohnung zugeordnet – sein Verbrauch wird nicht gesondert ausgewiesen, sondern anteilig auf alle Wohnungen mitverteilt. Bitte ordnen Sie ihn einer Wohnung zu oder prüfen Sie, ob ein Vorwegabzug gewünscht ist.",
     "waterUnitSumMismatch": "Der Hauptzähler weist {total} m³ aus, die Summe der Wohnungsverbräuche (inkl. Vermieteranteil) ergibt aber {unitSum} m³. Vermutlich fehlt ein Differenzzähler, die Kosten werden nach der tatsächlichen Verbrauchssumme verteilt. Bitte prüfen Sie die Zählerzuordnung.",
@@ -1728,6 +1729,8 @@
       "confirmDeleteMessage": "Soll der Zählerstand vom {date} wirklich gelöscht werden?",
       "olderDateWarningTitle": "Datum liegt vor letzter Ablesung",
       "olderDateWarningDescription": "Das eingegebene Datum liegt vor der zuletzt erfassten Ablesung am {date}. Bitte prüfen Sie, ob das beabsichtigt ist.",
+      "nonMonotonicWarningTitle": "Zählerstand ist rückläufig",
+      "nonMonotonicWarningDescription": "Der Wert weicht von den benachbarten Ablesungen ab (z. B. niedriger als eine frühere oder höher als eine spätere Ablesung). Das ist bei einem fortlaufenden Zähler nur nach einem Zählertausch normal. Bitte prüfen Sie den Wert.",
       "fields": {
         "value": "Zählerstand",
         "valueWithUnit": "Zählerstand ({unit})",
