@@ -59,7 +59,8 @@ packages/
 
 ## Setup (Development)
 
-Voraussetzungen: Node 24.11+ (siehe `.nvmrc`), npm 11+
+Voraussetzungen: Node 24.11+ (siehe `.nvmrc`), npm 11+,
+pyftfeatfreeze (`pip install opentype-feature-freezer`)
 
 ```bash
 nvm use
