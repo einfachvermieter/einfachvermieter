@@ -970,6 +970,25 @@ describe("calculateHeating mit CO2KostAufG", () => {
       true,
     );
   });
+
+  it("warnt, wenn die Aufteilung aktiviert ist, aber keiner Kostenart CO2-Kosten zugeordnet sind", () => {
+    const result = calculateHeating({
+      ...baseInput,
+      totalHeatingCostsCents: 100_000,
+      co2: {
+        enabled: true,
+        totalCostCents: 0, // keine Kostenart mit CO2-Kosten hinterlegt
+        totalAmountGrams: 3_500_000,
+        livingAreaSqm: 200,
+        periodDays: 365,
+      },
+    });
+    expect(result.co2Detail).toBeUndefined();
+    expect(result.totalHeatingCostsCents).toBe(100_000);
+    expect(
+      result.warnings?.some((w) => w.code === "co2SplitEnabledNoData"),
+    ).toBe(true);
+  });
 });
 
 describe("calculateHeating - Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV)", () => {

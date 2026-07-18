@@ -660,7 +660,12 @@ const computeCo2Deduction = (
   co2Detail: Co2SplitResult | undefined;
   landlordCo2DeductionCents: number;
 } => {
-  if (!(co2?.enabled && co2.totalCostCents > 0)) {
+  if (!co2?.enabled) {
+    return { co2Detail: undefined, landlordCo2DeductionCents: 0 };
+  }
+
+  if (co2.totalCostCents === 0) {
+    warnings.push({ code: "co2SplitEnabledNoData" });
     return { co2Detail: undefined, landlordCo2DeductionCents: 0 };
   }
 
