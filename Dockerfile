@@ -4,8 +4,9 @@
 # (tnum-Font, Logo) werden im Build erzeugt, nicht aus dem Repo erwartet.
 #
 # Stage 1: Build (volle Dev-Deps, baut API + Web)
-# Node-Version muss zu engines/.nvmrc passen (>= 24.11).
-FROM node:24-alpine AS builder
+# Node-Version exakt an .nvmrc gepinnt, da sonst Abweichungen
+# bei der npm Version auftreten können.
+FROM node:24.11.0-alpine AS builder
 
 # python3/make/g++ fuer native Module; pyftfeatfreeze (opentype-feature-freezer)
 # fuer den tnum-Font-Freeze der PDF-Assets. Dieser Stage wird verworfen -> kein
@@ -37,7 +38,7 @@ RUN npm run build
 # Stage 2: Produktions-Dependencies - nur die API-Workspace-Closure.
 # Eigener Install statt Prune, damit Web-exklusive Deps (date-fns, @tanstack,
 # react-dom, react-day-picker, libphonenumber-js ...) gar nicht erst landen.
-FROM node:24-alpine AS prod-deps
+FROM node:24.11.0-alpine AS prod-deps
 
 RUN apk add --no-cache python3 make g++ libc6-compat
 
@@ -54,7 +55,7 @@ RUN npm ci --omit=dev --workspace=apps/api --include-workspace-root
 RUN npm_config_ignore_scripts=false npm rebuild libsql argon2
 
 # Stage 3: Runtime
-FROM node:24-alpine AS runtime
+FROM node:24.11.0-alpine AS runtime
 
 RUN apk add --no-cache libc6-compat sqlite su-exec
 

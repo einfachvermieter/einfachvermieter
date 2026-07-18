@@ -37,7 +37,7 @@ describe("prorateExternalHeatingEntry", () => {
     expect(degreeDays.consumptionCostCents).toBe(58_300);
 
     expect(degreeDays.totalCents).toBe(
-      degreeDays.baseCostCents + degreeDays.consumptionCostCents,
+      (degreeDays.baseCostCents ?? 0) + (degreeDays.consumptionCostCents ?? 0),
     );
   });
 

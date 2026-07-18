@@ -1,4 +1,4 @@
-// biome-ignore lint/nursery/noExcessiveClassesPerFile: paired NestJS guards belong together
+// biome-ignore lint/style/noExcessiveClassesPerFile: paired NestJS guards belong together
 import {
   type CanActivate,
   type ExecutionContext,

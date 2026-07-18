@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.4/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -14,7 +14,8 @@
       "!.vite",
       "!node_modules",
       "!packages/db/src/migrations",
-      "!**/*.css"
+      "!**/*.css",
+      "!**/*.svg"
     ]
   },
   "formatter": {
@@ -25,7 +26,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "complexity": {
         "noExcessiveLinesPerFunction": {
           "level": "warn",
@@ -42,7 +43,11 @@
         "noUselessStringConcat": "warn",
         "noUselessUndefined": "warn",
         "noVoid": "warn",
-        "useWhile": "warn"
+        "useWhile": "warn",
+        "noDivRegex": "warn",
+        "noRedundantDefaultExport": "warn",
+        "noUselessReturn": "warn",
+        "useArrayFind": "warn"
       },
       "correctness": {
         "noNestedComponentDefinitions": "warn",
@@ -51,47 +56,21 @@
         "noUndeclaredDependencies": "warn",
         "noUndeclaredVariables": "warn",
         "useSingleJsDocAsterisk": "warn",
-        "useUniqueElementIds": "warn"
+        "useUniqueElementIds": "warn",
+        "noUnusedInstantiation": "warn"
       },
       "nursery": {
         "noConditionalExpect": "warn",
-        "noDivRegex": "warn",
-        "noDuplicateEnumValues": "warn",
-        "noDuplicatedSpreadProps": "warn",
-        "noEqualsToNull": "warn",
-        "noExcessiveClassesPerFile": "warn",
-        "noFloatingClasses": "warn",
         "noFloatingPromises": "error",
-        "noForIn": "warn",
         "noMisusedPromises": "warn",
-        "noMultiAssign": "warn",
-        "noMultiStr": "warn",
-        "noNestedPromises": "warn",
-        "noParametersOnlyUsedInRecursion": "warn",
-        "noProto": "warn",
-        "noRedundantDefaultExport": "warn",
-        "noReturnAssign": "warn",
-        "noScriptUrl": "warn",
-        "noShadow": "warn",
-        "noUndeclaredEnvVars": "warn",
-        "noUnknownAttribute": "warn",
-        "noUnnecessaryConditions": "warn",
-        "noUselessReturn": "warn",
         "useArraySome": "warn",
-        "useArraySortCompare": "warn",
         "useAwaitThenable": "warn",
-        "useConsistentEnumValueType": "warn",
-        "useConsistentMethodSignatures": "warn",
-        "useDestructuring": "info",
-        "useErrorCause": "warn",
         "useExhaustiveSwitchCases": "warn",
         "useExpect": "warn",
-        "useFind": "warn",
         "useImportsFirst": "warn",
         "useNullishCoalescing": "warn",
         "useRegexpExec": "warn",
         "useSortedClasses": "off",
-        "useSpread": "warn",
         "useUnicodeRegex": "warn"
       },
       "style": {
@@ -172,7 +151,15 @@
         "useThrowNewError": "warn",
         "useThrowOnlyError": "warn",
         "useTrimStartEnd": "warn",
-        "useUnifiedTypeSignatures": "warn"
+        "useUnifiedTypeSignatures": "warn",
+        "noExcessiveClassesPerFile": "warn",
+        "noMultiAssign": "warn",
+        "noMultilineString": "warn",
+        "useConsistentEnumValueType": "warn",
+        "useConsistentMethodSignatures": "warn",
+        "useDestructuring": "info",
+        "useErrorCause": "warn",
+        "useSpreadOverApply": "warn"
       },
       "suspicious": {
         "noAlert": "warn",
@@ -198,7 +185,23 @@
         "useGuardForIn": "warn",
         "useNumberToFixedDigitsArgument": "warn",
         "useStaticResponseMethods": "warn",
-        "useStrictMode": "warn"
+        "useStrictMode": "warn",
+        "noDuplicateEnumValues": "warn",
+        "noDuplicatedSpreadProps": "warn",
+        "noEqualsToNull": "warn",
+        "noForIn": "warn",
+        "noNestedPromises": "warn",
+        "noParametersOnlyUsedInRecursion": "warn",
+        "noProto": "warn",
+        "noReturnAssign": "warn",
+        "noShadow": "warn",
+        "noUndeclaredEnvVars": "warn",
+        "noUnknownAttribute": "warn",
+        "noUnnecessaryConditions": "warn",
+        "useArraySortCompare": "warn"
+      },
+      "security": {
+        "noScriptUrl": "warn"
       }
     }
   },
@@ -268,7 +271,8 @@
           "correctness": {
             "noNestedComponentDefinitions": "off"
           },
-          "nursery": {
+          "nursery": {},
+          "suspicious": {
             "noShadow": "off"
           }
         }

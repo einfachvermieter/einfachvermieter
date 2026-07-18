@@ -42,3 +42,12 @@ jobs:
 
       - name: Build (inkl. Typecheck)
         run: npm run build
+
+      - name: Docker Buildx einrichten
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker-Image bauen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false

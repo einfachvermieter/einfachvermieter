@@ -230,7 +230,15 @@ const heatingTenantShareOf = (
  * (`aggregateHeatingCosts`).
  */
 export const prorateExternalHeatingEntry = (
-  entry: ExternalHeatingEntry,
+  entry: Pick<
+    ExternalHeatingEntry,
+    | "unitId"
+    | "periodStart"
+    | "periodEnd"
+    | "totalCents"
+    | "baseCostCents"
+    | "consumptionCostCents"
+  >,
   prorationMethod: Awaited<
     ReturnType<HeatingService["getForBuildingAt"]>
   >["prorationMethod"],
