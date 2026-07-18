@@ -1101,6 +1101,28 @@ describe("calculateHeating - Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV)", (
     expect(hwSum).toBe(20_000);
   });
 
+  it("ohne Boiler-WMZ und ohne Warmwasserverbrauch greift die 32-kWh-Pauschalformel", () => {
+    // Q_WW = 32 kWh/(m² x a) x 200 m² x (365/365 Tage) = 6.400 kWh.
+    const result = calculateHeating({
+      ...baseInput(),
+      hotWater: {
+        totalHeatEnergyKwh: 25_600,
+        boilerHeatKwh: null,
+        hotWaterVolumeM3: null,
+        supplyTemperatureCelsius: 60,
+        unitHotWaterM3: [],
+      },
+    });
+    expect(result.hotWaterDetail?.method).toBe("flat_rate_fallback");
+    expect(result.hotWaterDetail?.hotWaterHeatKwh).toBe(6400);
+    // 6.400 / 25.600 = 25 % -> WW-Topf 25.000 Cent.
+    expect(result.hotWaterDetail?.hotWaterShareBps).toBe(2500);
+    expect(result.hotWaterDetail?.hotWaterPotCents).toBe(25_000);
+    expect(
+      result.warnings?.some((w) => w.code === "hotWaterFlatRateFallback"),
+    ).toBe(true);
+  });
+
   it("fehlende Q_gesamt -> keine Abspaltung, Warnung gesetzt", () => {
     const result = calculateHeating({
       ...baseInput(),

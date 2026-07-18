@@ -248,6 +248,7 @@
     "waterUnitSumMismatch": "Der Hauptzähler weist {total} m³ aus, die Summe der Wohnungsverbräuche (inkl. Vermieteranteil) ergibt aber {unitSum} m³. Vermutlich fehlt ein Differenzzähler, die Kosten werden nach der tatsächlichen Verbrauchssumme verteilt. Bitte prüfen Sie die Zählerzuordnung.",
     "hotWaterTotalHeatMissing": "Zentrale Warmwasserbereitung erfasst, aber die Gesamt-Wärmemenge (kWh) fehlt – der Warmwasseranteil kann nicht nach § 9 Abs. 2 HeizkostenV herausgerechnet werden.",
     "hotWaterSourceMissing": "Zentrale Warmwasserbereitung erfasst, aber weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch vorhanden – der Warmwasseranteil konnte nicht ermittelt werden.",
+    "hotWaterFlatRateFallback": "Weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch erfasst. Der Warmwasseranteil wurde daher ersatzweise mit der Pauschalformel aus § 9 Abs. 2 Satz 5 HeizkostenV geschätzt (32 kWh je Quadratmeter Wohnfläche und Jahr). Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
     "hotWaterShareCapped": "Die geschätzte Warmwasser-Wärmemenge übersteigt die erfasste Gesamt-Wärmemenge – der Warmwasseranteil wurde auf 100 % begrenzt. Bitte Gesamt-Wärmemenge prüfen.",
     "co2SplitMissingData": "CO₂-Kosten sind erfasst, aber CO₂-Menge oder Wohnfläche fehlt – eine Aufteilung nach CO2KostAufG ist nicht möglich.",
     "consumptionFallbackZeroDelta": "Verbrauchsmessungen liefern Differenz von 0 für die Periode – Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt.",

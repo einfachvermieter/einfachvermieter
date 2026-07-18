@@ -454,8 +454,15 @@ export type HotWaterInput = {
 const HOT_WATER_ESTIMATION_FACTOR = 2.5;
 const COLD_WATER_INLET_TEMPERATURE_CELSIUS = 10;
 
+/**
+ * HeizkostenV-Pauschalformel, wenn weder Boiler-WMZ noch Warmwasser-
+ * verbrauch vorliegen: 32 kWh je Quadratmeter Wohnfläche und Jahr, auf
+ * die tatsächliche Periodenlänge anteilig umgerechnet.
+ */
+const HOT_WATER_FLAT_RATE_KWH_PER_SQM_YEAR = 32;
+
 type HotWaterSplitMeta = {
-  method: "boiler_meter" | "estimated";
+  method: "boiler_meter" | "estimated" | "flat_rate_fallback";
   totalHeatEnergyKwh: number;
   hotWaterHeatKwh: number;
   hotWaterShareBps: number;
@@ -472,6 +479,8 @@ type HotWaterSplitMeta = {
 const computeHotWaterSplit = (
   hotWater: HotWaterInput | undefined,
   distributablePotCents: number,
+  totalLivingAreaSqm: number,
+  periodDays: number,
   warnings: CalcWarning[],
 ): HotWaterSplitMeta | undefined => {
   if (!hotWater) {
@@ -507,6 +516,15 @@ const computeHotWaterSplit = (
       supplyTemperatureCelsius: hotWater.supplyTemperatureCelsius,
       hotWaterVolumeM3: hotWater.hotWaterVolumeM3,
     };
+  } else if (totalLivingAreaSqm > 0 && periodDays > 0) {
+    core = {
+      method: "flat_rate_fallback",
+      hotWaterHeatKwh:
+        HOT_WATER_FLAT_RATE_KWH_PER_SQM_YEAR *
+        totalLivingAreaSqm *
+        (periodDays / 365),
+    };
+    warnings.push({ code: "hotWaterFlatRateFallback" });
   } else {
     warnings.push({ code: "hotWaterSourceMissing" });
     return;
@@ -1028,6 +1046,8 @@ export const calculateHeating = (
   const hotWaterSplit = computeHotWaterSplit(
     input.hotWater,
     distributablePotCents,
+    units.reduce((acc, u) => acc + u.areaSqm, 0),
+    units[0]?.periodDays ?? 0,
     warnings,
   );
 

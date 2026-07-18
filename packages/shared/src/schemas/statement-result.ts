@@ -189,7 +189,7 @@ export const heatingDetailSchema = z.object({
    */
   hotWaterDetail: z
     .object({
-      method: z.enum(["boiler_meter", "estimated"]),
+      method: z.enum(["boiler_meter", "estimated", "flat_rate_fallback"]),
       totalHeatEnergyKwh: z.number(),
       hotWaterHeatKwh: z.number(),
       hotWaterShareBps: z.number().int().min(0).max(10_000),

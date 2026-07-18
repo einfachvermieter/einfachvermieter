@@ -523,10 +523,12 @@ export type HeatingDetail = {
   hotWaterDetail?: {
     /**
      * Ermittlung Q_WW.
-     * - "boiler_meter": am Boiler-WMZ gemessen (kWh-Delta).
-     * - "estimated":    2,5 x V_WW x (t_WW − 10).
+     * - "boiler_meter":       am Boiler-WMZ gemessen (kWh-Delta).
+     * - "estimated":          2,5 x V_WW x (t_WW − 10).
+     * - "flat_rate_fallback": wenn weder Boiler-WMZ noch Warmwasserverbrauch
+     *                         vorliegen (32 kWh je qm Wohnfläche und Jahr)
      */
-    method: "boiler_meter" | "estimated";
+    method: "boiler_meter" | "estimated" | "flat_rate_fallback";
     /**
      * Gesamt-Wärmemenge Q_gesamt (kWh), Nenner des Anteils.
      */
