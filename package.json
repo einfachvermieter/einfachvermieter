@@ -32,7 +32,7 @@
     "db:reset:local": "npm run db:wipe && npm run db:seed:local"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.9",
+    "@biomejs/biome": "2.4.16",
     "turbo": "^2.8.21",
     "typescript": "^6.0.2"
   },

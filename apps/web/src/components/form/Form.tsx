@@ -17,7 +17,7 @@ import { t } from "@/lib/i18n";
 import { applyApiFieldErrors } from "../../lib/formErrors";
 
 const logInvalidSubmit = <T extends FieldValues>(errors: FieldErrors<T>) => {
-  // biome-ignore lint/suspicious/noUndeclaredEnvVars: import.meta.env.DEV is a Vite compile-time constant, not a runtime env var
+  // biome-ignore lint/nursery/noUndeclaredEnvVars: import.meta.env.DEV is a Vite compile-time constant, not a runtime env var
   if (!import.meta.env.DEV) {
     return;
   }

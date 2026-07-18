@@ -75,7 +75,7 @@ createRoot(rootElement).render(
         </ErrorBoundary>
         <Sonner />
       </TooltipProvider>
-      {/* biome-ignore lint/suspicious/noUndeclaredEnvVars: Vite compile-time constant, keine runtime env var */}
+      {/* biome-ignore lint/nursery/noUndeclaredEnvVars: Vite compile-time constant, keine runtime env var */}
       {import.meta.env.DEV ? (
         <ReactQueryDevtools
           initialIsOpen={false}
