@@ -20,8 +20,11 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - name: Abhängigkeiten installieren
+      - name: Dependencies installieren
         run: npm ci
+
+      - name: Dependency-Audit
+        run: npm audit --omit=dev --audit-level=high
 
       - name: PDF-Asset-Tooling (pyftfeatfreeze)
         run: pipx install opentype-feature-freezer

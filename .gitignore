@@ -32,5 +32,3 @@ apps/desktop/release/
 
 # Local scratch / verification artifacts (screenshots, throwaway files)
 tmp/
-
-package-lock.json
