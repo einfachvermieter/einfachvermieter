@@ -197,7 +197,7 @@
         "noShadow": "warn",
         "noUndeclaredEnvVars": "warn",
         "noUnknownAttribute": "warn",
-        "noUnnecessaryConditions": "warn",
+        "noUnnecessaryConditions": "off",
         "useArraySortCompare": "warn"
       },
       "security": {
