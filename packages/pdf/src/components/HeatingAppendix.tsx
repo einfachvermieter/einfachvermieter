@@ -1030,7 +1030,7 @@ export const HeatingAppendix = ({
             {prorationNote(detail, tenantPeriod)}
           </Text>
         ) : null}
-        {/* Berechnungs-Hinweise aus der Calc-Schicht, v. a. die rechtlich
+        {/* Hinweise aus der Berechnung, v. a. die rechtlich
             gebotene Kennzeichnung geschätzter bzw. fehlender Ablesewerte. */}
         {(detail.warnings ?? []).map((warning) => (
           <Text key={calcWarningKey(warning)} style={styles.footnote}>

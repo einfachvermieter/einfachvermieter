@@ -252,9 +252,10 @@
     "hotWaterShareCapped": "Die geschätzte Warmwasser-Wärmemenge übersteigt die erfasste Gesamt-Wärmemenge – der Warmwasseranteil wurde auf 100 % begrenzt. Bitte Gesamt-Wärmemenge prüfen.",
     "co2SplitEnabledNoData": "Die CO₂-Kostenaufteilung ist aktiviert, aber keiner Kostenart sind CO₂-Kosten zugeordnet. Die Aufteilung nach CO2KostAufG entfällt.",
     "co2SplitMissingData": "CO₂-Kosten sind erfasst, aber CO₂-Menge oder Wohnfläche fehlt – eine Aufteilung nach CO2KostAufG ist nicht möglich.",
-    "consumptionFallbackZeroDelta": "Verbrauchsmessungen liefern Differenz von 0 für die Periode – Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt.",
-    "consumptionFallbackNoAllocators": "Keine Heizkostenverteiler erfasst – Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt.",
-    "consumptionFallbackNoHeatMeters": "Keine Wärmemengenzähler erfasst – Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt.",
+    "consumptionFallbackZeroDelta": "Die Verbrauchsmessungen liefern für die Periode eine Differenz von 0. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "consumptionFallbackNoAllocators": "Es sind keine Heizkostenverteiler erfasst. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "consumptionFallbackNoHeatMeters": "Es sind keine Wärmemengenzähler erfasst. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "hotWaterConsumptionFallbackArea": "Es ist kein Warmwasserverbrauch je Wohnung erfasst. Der Verbrauchsanteil der Warmwasserkosten wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
     "aiNoCostTypes": "Keine Kostenarten hinterlegt: Bitte zuerst Kostenarten anlegen, danach kann die KI eindeutig zuordnen.",
     "aiUnknownCostType": "Position {position}: Die KI hat eine unbekannte Kostenart vorgeschlagen. Bitte manuell wählen.",
     "aiGrossMismatch": "Brutto-Validierung fehlgeschlagen: Die Summe der Positionen weicht um {diffCents} ct vom Brutto-Endbetrag ab. Bitte Beträge manuell prüfen."

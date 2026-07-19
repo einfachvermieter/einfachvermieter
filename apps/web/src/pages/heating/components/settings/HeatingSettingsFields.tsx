@@ -339,7 +339,10 @@ export const HeatingSettingsFields = ({
               triggerClassName="max-w-md"
             />
             {isCentralWithHotWater ? (
-              <Disclose label={t("ui.heating.detail.hotWaterDisclose")}>
+              <Disclose
+                label={t("ui.heating.detail.hotWaterDisclose")}
+                defaultOpen={true}
+              >
                 <FieldGroup className="gap-4">
                   {hotWaterMeterCandidates.length === 0 ? (
                     <Alert variant="info">

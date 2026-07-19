@@ -1135,6 +1135,11 @@ describe("calculateHeating - Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV)", (
     expect(result.hotWaterDetail?.consumptionDistributionMethod).toBe(
       "heating_area",
     );
+    expect(
+      result.warnings?.some(
+        (w) => w.code === "hotWaterConsumptionFallbackArea",
+      ),
+    ).toBe(true);
     // WW-Topf 20.000 vollständig nach Fläche (40/60) verteilt.
     const hwSum = (result.hotWaterDetail?.perUnit ?? []).reduce(
       (acc, u) => acc + u.totalCents,

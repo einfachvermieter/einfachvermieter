@@ -560,6 +560,7 @@ type HotWaterDistributionInput = {
   areaWeightsWithLandlord: number[];
   totalAreaDays: number;
   heatingAreaFor: (unit: UnitInfo) => number;
+  warnings: CalcWarning[];
 };
 
 /**
@@ -588,6 +589,7 @@ const distributeHotWater = (
     areaWeightsWithLandlord,
     totalAreaDays,
     heatingAreaFor,
+    warnings,
   } = input;
   const consumptionFactor = bpsToFactor(consumptionShareBps);
   const consumptionPortionCents = Math.round(potCents * consumptionFactor);
@@ -613,6 +615,10 @@ const distributeHotWater = (
       totalAreaDays > 0
         ? distributeCents(consumptionPortionCents, areaWeightsWithLandlord)
         : [...units.map(() => 0), 0];
+
+    if (consumptionPortionCents > 0) {
+      warnings.push({ code: "hotWaterConsumptionFallbackArea" });
+    }
   }
 
   const landlordConsumptionCostCents = consumptionShares.at(-1) ?? 0;
@@ -988,6 +994,7 @@ const buildHotWaterDetail = (params: {
   hotWater: HotWaterInput | undefined;
   areaWeightsWithLandlord: number[];
   totalAreaDays: number;
+  warnings: CalcWarning[];
 }): HeatingDetail["hotWaterDetail"] => {
   const {
     hotWaterSplit,
@@ -996,6 +1003,7 @@ const buildHotWaterDetail = (params: {
     hotWater,
     areaWeightsWithLandlord,
     totalAreaDays,
+    warnings,
   } = params;
   if (!hotWaterSplit) {
     return;
@@ -1018,6 +1026,7 @@ const buildHotWaterDetail = (params: {
       areaWeightsWithLandlord,
       totalAreaDays,
       heatingAreaFor,
+      warnings,
     }),
   };
 };
@@ -1136,6 +1145,7 @@ export const calculateHeating = (
     hotWater: input.hotWater,
     areaWeightsWithLandlord,
     totalAreaDays,
+    warnings,
   });
 
   return {

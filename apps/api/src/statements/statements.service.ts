@@ -997,7 +997,7 @@ export class StatementsService {
     // Gebäudeweite WMZ (role=main für totalHeatEnergyKwh, role=common als
     // Warmwasser-Boiler via hotWaterMeterId) werden über eigene Pfade
     // angesprochen und dürfen nicht in die Pro-Wohnung-Verteilung. Sonst
-    // wirft die Calc-Schicht `heatingMeterNoUnit`.
+    // wirft die Berechnung `heatingMeterNoUnit`.
     const heatMeters = metersRaw
       .filter((m) => m.type === "heat_meter" && m.role === "unit")
       .map(toMeterBundle);
@@ -1391,6 +1391,7 @@ export class StatementsService {
     statementPeriod: { start: string; end: string };
     effectivePeriod: { start: string; end: string };
     targetUnitId: string;
+    warnings: CalcWarning[];
   }): HotWaterInput | undefined {
     const {
       heatingSettings,
@@ -1400,21 +1401,27 @@ export class StatementsService {
       statementPeriod,
       effectivePeriod,
       targetUnitId,
+      warnings,
     } = input;
     if (heatingSettings.heatingType !== "central_with_hot_water") {
       return;
     }
+    // warnings durchreichen: Fehlt am Perioden-Rand eine Ablesung, begrenzt die
+    // Berechnung auf den letzten Stand und warnt. Ohne das Array würde sie
+    // stattdessen einen Fehler werfen.
     const deltaBetween = (
       meterId: string,
       period: { start: string; end: string },
+      label?: string,
     ): number =>
       consumptionBetween(
         readingsByMeter.get(meterId) ?? [],
         period.start,
         period.end,
+        { warnings, ...(label ? { label } : {}) },
       );
-    const deltaOverPeriod = (meterId: string): number =>
-      deltaBetween(meterId, statementPeriod);
+    const deltaOverPeriod = (meterId: string, label?: string): number =>
+      deltaBetween(meterId, statementPeriod, label);
 
     let { totalHeatEnergyKwh } = heatingSettings;
     if (totalHeatEnergyKwh === null) {
@@ -1423,12 +1430,18 @@ export class StatementsService {
       );
 
       if (mainHeatMeter) {
-        totalHeatEnergyKwh = deltaOverPeriod(mainHeatMeter.id);
+        totalHeatEnergyKwh = deltaOverPeriod(
+          mainHeatMeter.id,
+          mainHeatMeter.label,
+        );
       }
     }
 
+    const boilerMeterLabel = heatingSettings.hotWaterMeterId
+      ? metersRaw.find((m) => m.id === heatingSettings.hotWaterMeterId)?.label
+      : undefined;
     const boilerHeatKwh = heatingSettings.hotWaterMeterId
-      ? deltaOverPeriod(heatingSettings.hotWaterMeterId)
+      ? deltaOverPeriod(heatingSettings.hotWaterMeterId, boilerMeterLabel)
       : null;
 
     // Ziel-Wohnung: Zähler = Mietzeit-Delta, der Rest der vollen Periode
@@ -1443,9 +1456,11 @@ export class StatementsService {
         if (m.type !== "water_hot" || m.role !== "unit" || m.unitId !== u.id) {
           continue;
         }
-        const meterFullM3 = deltaOverPeriod(m.id);
+        const meterFullM3 = deltaOverPeriod(m.id, m.label);
         fullM3 += meterFullM3;
-        m3 += isTarget ? deltaBetween(m.id, effectivePeriod) : meterFullM3;
+        m3 += isTarget
+          ? deltaBetween(m.id, effectivePeriod, m.label)
+          : meterFullM3;
       }
       if (isTarget) {
         landlordM3 += Math.max(0, fullM3 - m3);
@@ -1602,6 +1617,7 @@ export class StatementsService {
     // Warmwasserbereitung über die Heizung. Q_WW kommt aus dem Boiler-WMZ
     // (gemessen) oder der Schätzformel über den Warmwasserverbrauch; Q_gesamt
     // aus den Heizungseinstellungen, ersatzweise aus einem Haupt-WMZ.
+    const hotWaterWarnings: CalcWarning[] = [];
     const hotWater = this.buildHotWaterInput({
       heatingSettings,
       unitsRaw,
@@ -1610,6 +1626,7 @@ export class StatementsService {
       statementPeriod,
       effectivePeriod,
       targetUnitId,
+      warnings: hotWaterWarnings,
     });
 
     try {
@@ -1638,6 +1655,10 @@ export class StatementsService {
       });
       heatingDetail.costBreakdown = costBreakdown;
       heatingDetail.fuelType = heatingSettings.fuelType;
+      if (!heatingDetail.warnings) {
+        heatingDetail.warnings = [];
+      }
+      heatingDetail.warnings.push(...hotWaterWarnings);
     } catch (err) {
       throw this.toCalcHttpError(err);
     }
