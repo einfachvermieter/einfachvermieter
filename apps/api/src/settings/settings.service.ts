@@ -45,12 +45,13 @@ const MIME_TO_EXT: Record<string, string> = {
 };
 
 /**
- * Bildet den Storage-Key fürs Absender-Logo aus der (gesäuberten) Endung.
+ * Bildet einen eindeutigen Storage-Key fürs Absender-Logo aus der
+ * (gesäuberten) Endung.
  */
 const storageKeyForLogo = (extension: string): string => {
   const safeExt = extension.replace(/[^a-z0-9]/giu, "").toLowerCase();
   const suffix = safeExt ? `.${safeExt}` : "";
-  return `settings/sender-logo${suffix}`;
+  return `settings/sender-logo-${crypto.randomUUID()}${suffix}`;
 };
 
 /**
@@ -135,8 +136,8 @@ export class SettingsService {
   }
 
   /**
-   * Validiert/härtet das Logo, schreibt es in den Storage und ersetzt eine
-   * ggf. vorhandene Datei mit abweichendem Key.
+   * Validiert/härtet das Logo, schreibt es unter einem neuen Key in den
+   * Storage und räumt die vorherige Datei nach dem DB-Commit ab.
    */
   async uploadLogo(file: LogoUploadInput): Promise<SenderSettingsDto> {
     const data = await this.prepareLogoData(file);
@@ -145,23 +146,38 @@ export class SettingsService {
     const extension = MIME_TO_EXT[file.mimetype] ?? "bin";
     const newKey = storageKeyForLogo(extension);
 
+    const previousKey = row.logoStorageKey;
     await this.storage.write(newKey, data);
-
-    if (row.logoStorageKey && row.logoStorageKey !== newKey) {
-      await this.storage.delete(row.logoStorageKey).catch((err) => {
-        this.logger.warn(
-          `Altes Logo ${row.logoStorageKey} konnte nicht gelöscht werden`,
-          err instanceof Error ? err.stack : String(err),
-        );
-      });
-    }
 
     this.em.assign(row, {
       logoStorageKey: newKey,
       logoMimeType: file.mimetype,
       updatedAt: new Date().toISOString(),
     });
-    await this.em.flush();
+
+    try {
+      await this.em.flush();
+    } catch (error) {
+      // DB-Update fehlgeschlagen -> neue Datei wieder entfernen, damit die DB
+      // weiter auf die alte zeigt.
+      await this.storage.delete(newKey).catch((err) => {
+        this.logger.warn(
+          `Logo-Rollback fehlgeschlagen, Datei ${newKey} bleibt verwaist`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      });
+      throw error;
+    }
+
+    // Alte Datei erst nach erfolgreichem Commit löschen
+    if (previousKey) {
+      await this.storage.delete(previousKey).catch((err) => {
+        this.logger.warn(
+          `Altes Logo ${previousKey} konnte nicht gelöscht werden`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      });
+    }
 
     return toDto(row);
   }
@@ -230,14 +246,7 @@ export class SettingsService {
    */
   async deleteLogo(): Promise<SenderSettingsDto> {
     const row = await this.ensureRow();
-    if (row.logoStorageKey) {
-      await this.storage.delete(row.logoStorageKey).catch((err) => {
-        this.logger.warn(
-          `Logo ${row.logoStorageKey} konnte nicht gelöscht werden`,
-          err instanceof Error ? err.stack : String(err),
-        );
-      });
-    }
+    const previousKey = row.logoStorageKey;
 
     this.em.assign(row, {
       logoStorageKey: null,
@@ -246,6 +255,17 @@ export class SettingsService {
     });
 
     await this.em.flush();
+
+    // Datei erst nach erfolgreichem Commit löschen; schlägt der
+    // Flush fehl, bleibt die DB-Referenz samt Datei intakt.
+    if (previousKey) {
+      await this.storage.delete(previousKey).catch((err) => {
+        this.logger.warn(
+          `Logo ${previousKey} konnte nicht gelöscht werden`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      });
+    }
 
     return toDto(row);
   }
