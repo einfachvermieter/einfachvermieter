@@ -313,9 +313,14 @@ export type Co2SplitResult = {
  * wendet diesen Prozentsatz auf die tatsächlichen Perioden-CO2-Kosten an.
  */
 export const calculateCo2Split = (input: Co2SplitInput): Co2SplitResult => {
+  // § 5 Abs. 1 S. 3 CO2KostAufG: erst auf eine Nachkommastelle runden,
+  // dann einstufen, sonst kippt der Vermieteranteil an Stufengrenzen.
   const emissionsKgPerSqmYear =
-    (input.totalAmountGrams / 1000 / input.livingAreaSqm) *
-    (365 / input.periodDays);
+    Math.round(
+      (input.totalAmountGrams / 1000 / input.livingAreaSqm) *
+        (365 / input.periodDays) *
+        10,
+    ) / 10;
 
   const landlordSharePercent = co2LandlordSharePercent(emissionsKgPerSqmYear);
   const landlordDeductionCents = Math.round(

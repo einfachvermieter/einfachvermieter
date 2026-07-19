@@ -886,9 +886,32 @@ describe("calculateCo2Split", () => {
       livingAreaSqm: 200,
       periodDays: 182,
     });
-    // (1750/200) x (365/182) ~= 17,55 -> Stufe 17..<22 -> 20 %.
-    expect(split.emissionsKgPerSqmYear).toBeCloseTo(17.55, 1);
+    // (1750/200) x (365/182) ~= 17,55 -> gerundet 17,5 -> Stufe 17..<22 -> 20 %.
+    expect(split.emissionsKgPerSqmYear).toBeCloseTo(17.5, 5);
     expect(split.landlordSharePercent).toBe(20);
+  });
+
+  it("rundet den Ausstoß auf eine Nachkommastelle, bevor eingestuft wird", () => {
+    const splitFor = (kgPerSqm: number) =>
+      calculateCo2Split({
+        totalCostCents: 10_000,
+        totalAmountGrams: kgPerSqm * 100 * 1000,
+        livingAreaSqm: 100,
+        periodDays: 365,
+      });
+
+    // 16,96 -> 17,0 -> Stufe 17..<22 -> 20 %; ungerundet wären es 10 %.
+    expect(splitFor(16.96).emissionsKgPerSqmYear).toBe(17);
+    expect(splitFor(16.96).landlordSharePercent).toBe(20);
+    // 16,94 -> 16,9 -> bleibt unter 17 -> 10 %.
+    expect(splitFor(16.94).emissionsKgPerSqmYear).toBe(16.9);
+    expect(splitFor(16.94).landlordSharePercent).toBe(10);
+    // 11,95 -> 12,0 -> Stufe 12..<17 -> 10 %.
+    expect(splitFor(11.95).emissionsKgPerSqmYear).toBe(12);
+    expect(splitFor(11.95).landlordSharePercent).toBe(10);
+    // 11,94 -> 11,9 -> bleibt unter 12 -> 0 %.
+    expect(splitFor(11.94).emissionsKgPerSqmYear).toBe(11.9);
+    expect(splitFor(11.94).landlordSharePercent).toBe(0);
   });
 });
 
