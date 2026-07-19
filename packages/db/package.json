@@ -15,6 +15,7 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "migration:create": "tsx scripts/migration.ts create",
     "migration:up": "tsx scripts/migration.ts up",
     "schema:fresh": "tsx scripts/schema.ts fresh",
@@ -36,6 +37,7 @@
     "@mikro-orm/cli": "^7.0.6",
     "@types/node": "^24.12.0",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
   }
 }
