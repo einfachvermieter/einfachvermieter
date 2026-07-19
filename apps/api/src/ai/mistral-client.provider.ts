@@ -92,7 +92,10 @@ export class MistralClient {
     this.apiKey = process.env.MISTRAL_API_KEY?.trim() || null;
     this.model = process.env.MISTRAL_MODEL?.trim() || DEFAULT_MODEL;
     this.ocrModel = process.env.MISTRAL_OCR_MODEL?.trim() || DEFAULT_OCR_MODEL;
+    // In Produktion hart deaktiviert: die Debug-Dumps enthalten den
+    // OCR-Volltext der Belege (personenbezogene Daten) im Klartext.
     this.debugEnabled =
+      process.env.NODE_ENV !== "production" &&
       process.env.MISTRAL_DEBUG?.trim().toLowerCase() === "true";
   }
 
