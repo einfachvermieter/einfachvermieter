@@ -1,5 +1,8 @@
 import { z } from "zod";
-import type { StatementResult } from "../types/index.js";
+import {
+  STATEMENT_RESULT_VERSION,
+  type StatementResult,
+} from "../types/index.js";
 import { allocationKeys, isoDate } from "./common.js";
 
 const periodSchema = z.object({
@@ -262,7 +265,7 @@ const taxableLaborCostsSchema = z.object({
  * Bewusst strikt gehalten.
  */
 export const statementResultSchema: z.ZodType<StatementResult> = z.object({
-  version: z.number().int().positive(),
+  version: z.literal(STATEMENT_RESULT_VERSION),
   tenantId: z.string().min(1),
   unitId: z.string().min(1),
   period: periodSchema,
