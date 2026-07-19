@@ -18,10 +18,15 @@ const bootstrap = async (): Promise<void> => {
     await orm.migrator.up();
   }
 
-  // Hinter dem Caddy-Reverse-Proxy: erste Hop als vertrauenswürdig markieren,
-  // damit `req.ip` (und damit das Rate-Limiting) die echte Client-IP aus
-  // X-Forwarded-For nutzt statt der Proxy-IP
-  app.getHttpAdapter().getInstance().set("trust proxy", 1);
+  // Hinter einem Reverse-Proxy (Compose: Caddy) markiert TRUST_PROXY die
+  // Hop-Anzahl als vertrauenswürdig, damit `req.ip` (und damit das
+  // Rate-Limiting) die echte Client-IP aus X-Forwarded-For nutzt. Default 0:
+  // ohne Proxy dürfte sonst jeder Client seine IP per Header selbst bestimmen
+  // und das Login-Rate-Limit umgehen.
+  const trustProxy = Number(process.env.TRUST_PROXY ?? 0);
+  if (trustProxy > 0) {
+    app.getHttpAdapter().getInstance().set("trust proxy", trustProxy);
+  }
 
   // Default-CSP von Helmet setzt `object-src 'none'`. Im Production-Setup
   // serviert der API das Web-Build via ServeStaticModule. Diese CSP gilt

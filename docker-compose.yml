@@ -19,6 +19,8 @@ services:
       # - DB_DRIVER=postgres
       # - DATABASE_URL=postgres://user:pass@db:5432/einfachvermieter
       - WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:7273}
+      # Erster Hop ist Caddy -> dessen X-Forwarded-For vertrauen.
+      - TRUST_PROXY=1
       # Passwort-Richtlinie. Per Host-ENV/.env ueberschreibbar; Defaults bewusst
       # lasch (lokal gehostet). Fuer exponierte Deployments verschaerfen.
       - PASSWORD_MIN_LENGTH=${PASSWORD_MIN_LENGTH:-8}

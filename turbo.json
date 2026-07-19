@@ -11,6 +11,7 @@
     "HOST",
     "LOOPBACK_TOKEN",
     "PORT",
+    "TRUST_PROXY",
     "WEB_ORIGIN",
     "WEB_DIST_PATH",
     "UPLOADS_DIR",
