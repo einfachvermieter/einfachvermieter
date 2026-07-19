@@ -166,6 +166,25 @@ describe("readingEstimated-Kennzeichnung", () => {
     ]);
   });
 
+  it("Rand-Extrapolation an beiden Enden meldet die Warnung nur einmal", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [reading("2025-01-01", 1000), reading("2025-06-30", 1100)];
+    // Start und Ende liegen beide nach der letzten Ablesung.
+    consumptionBetween(readings, "2025-07-01", "2025-12-31", {
+      warnings,
+      label: "Wärmemengenzähler EG",
+    });
+    const missingAfter = warnings.filter(
+      (warning) => warning.code === "readingMissingAfter",
+    );
+    expect(missingAfter).toEqual([
+      {
+        code: "readingMissingAfter",
+        params: { date: "2025-06-30", label: "Wärmemengenzähler EG" },
+      },
+    ]);
+  });
+
   it("ohne geschätzte Stände keine Warnung", () => {
     const warnings: CalcWarning[] = [];
     const readings = [reading("2025-01-01", 1000), reading("2025-12-31", 1100)];

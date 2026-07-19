@@ -120,7 +120,16 @@ export const interpolateReading = (
       const params = options.label
         ? { ...warning.params, label: options.label }
         : warning.params;
-      options.warnings.push(params ? { ...warning, params } : warning);
+      const entry = params ? { ...warning, params } : warning;
+      const duplicate = options.warnings.some(
+        (existing) =>
+          existing.code === entry.code &&
+          existing.params?.date === entry.params?.date &&
+          existing.params?.label === entry.params?.label,
+      );
+      if (!duplicate) {
+        options.warnings.push(entry);
+      }
     }
 
     return value;
