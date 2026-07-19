@@ -234,7 +234,7 @@
   },
   "warnings": {
     "line": "{category}: {message}",
-    "labeled": "{label}: {message}",
+    "affected": "{message} Betrifft: {labels}",
     "category": {
       "heating": "Heizkosten",
       "water": "Wasser"
@@ -1388,6 +1388,7 @@
         "finalizedAt": "Finalisiert am {date}",
         "calculating": "wird berechnet …",
         "confirmFinalize": "Abrechnung wirklich finalisieren? Danach sind keine Änderungen mehr möglich.",
+        "confirmFinalizeWithDataIssues": "Es {count, plural, one {liegt noch ein Hinweis} other {liegen noch # Hinweise}} zur Datenqualität vor (siehe „Hinweise zur Berechnung“). Trotzdem finalisieren? Danach sind keine Änderungen mehr möglich.",
         "finalizing": "Wird finalisiert …",
         "finalizeStatement": "Abrechnung finalisieren",
         "correctionDraft": "Korrektur (Entwurf)",

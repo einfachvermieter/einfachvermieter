@@ -3,6 +3,8 @@ import {
   formatEur,
   formatIban,
   formatNumber,
+  groupCalcWarnings,
+  isTenantWarning,
   type StatementResult,
 } from "@einfachvermieter/shared";
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
@@ -449,10 +451,13 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
                 wasteWaterNote={wasteWaterNote}
               />
               {/* Berechnungs-Hinweise der Wasser-Verteilung, v. a. die
-                  Kennzeichnung geschätzter bzw. fehlender Ablesewerte. */}
-              {(result.waterDetail?.warnings ?? []).map((warning) => (
-                <Text key={calcWarningKey(warning)} style={styles.footnote}>
-                  {formatCalcWarning(warning)}
+                  Kennzeichnung geschätzter Ablesewerte. Datenqualitäts-
+                  Hinweise an den Vermieter bleiben in der Web-Oberfläche. */}
+              {groupCalcWarnings(
+                (result.waterDetail?.warnings ?? []).filter(isTenantWarning),
+              ).map((group) => (
+                <Text key={calcWarningKey(group)} style={styles.footnote}>
+                  {formatCalcWarning(group)}
                 </Text>
               ))}
             </>

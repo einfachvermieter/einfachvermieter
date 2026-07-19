@@ -1,21 +1,27 @@
 import {
-  type CalcWarning,
+  type CalcWarningGroup,
   formatWarningParams,
 } from "@einfachvermieter/shared";
 import { t } from "./i18n.js";
 
 /**
- * Übersetzt eine sprachneutrale Calc-Warnung für die Anzeige im Dokument.
+ * Übersetzt eine gebündelte Berechnungswarnung für die Anzeige im Dokument.
  * Wichtig v. a. für die rechtlich gebotene Kennzeichnung geschätzter
- * Ablesewerte (`readingEstimated`).
+ * Ablesewerte (`readingEstimated`). Trägt die Warnung Zähler-Labels,
+ * gefolgt von der Liste der Betroffenen hinter der Nachricht.
  */
-export const formatCalcWarning = (warning: CalcWarning): string => {
-  const params = formatWarningParams(warning.params);
-  const message = t(`warnings.${warning.code}`, params);
-  return typeof params.label === "string"
-    ? t("warnings.labeled", { label: params.label, message })
-    : message;
+export const formatCalcWarning = (group: CalcWarningGroup): string => {
+  const params = formatWarningParams(group.params);
+  const message = t(`warnings.${group.code}`, params);
+
+  if (group.labels.length > 0) {
+    return t("warnings.affected", {
+      message,
+      labels: group.labels.join(", "),
+    });
+  }
+  return message;
 };
 
-export const calcWarningKey = (warning: CalcWarning): string =>
-  `${warning.code}:${JSON.stringify(warning.params ?? {})}`;
+export const calcWarningKey = (group: CalcWarningGroup): string =>
+  `${group.code}:${JSON.stringify(group.params ?? {})}`;

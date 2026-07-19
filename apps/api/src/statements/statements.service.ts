@@ -22,6 +22,7 @@ import {
   aggregateHeatingCosts,
   CalculationError,
   type CalcWarning,
+  type CalcWarningGroup,
   type CostEntry,
   calculateExternalHeating,
   calculateHeating,
@@ -31,6 +32,7 @@ import {
   daysBetween,
   type ExternalHeatingEntry,
   formatWarningParams,
+  groupCalcWarnings,
   type HeatingDetail,
   type HotWaterInput,
   inferTariffAdjustmentBpsFromInvoices,
@@ -622,21 +624,23 @@ export class StatementsService {
   }
 
   /**
-   * Lokalisiert eine Berechnungs-Warnung für die UI/PDF-Anzeige.
+   * Lokalisiert eine gebündelte Berechnungs-Warnung für die UI-Anzeige.
+   * Trägt die Warnung Zähler-Labels, folgt die Liste der Betroffenen
+   * hinter der Nachricht.
    */
-  private formatWarning(
+  private formatWarningGroup(
     source: "heating" | "water",
-    warning: CalcWarning,
+    group: CalcWarningGroup,
   ): string {
     const i18n = getI18n();
-    const params = formatWarningParams(warning.params);
+    const params = formatWarningParams(group.params);
 
-    let message = i18n.t(`warnings.${warning.code}`, params);
+    let message = i18n.t(`warnings.${group.code}`, params);
 
-    if (params.label !== undefined) {
-      message = i18n.t("warnings.labeled", {
-        label: params.label,
+    if (group.labels.length > 0) {
+      message = i18n.t("warnings.affected", {
         message,
+        labels: group.labels.join(", "),
       });
     }
 
@@ -756,11 +760,11 @@ export class StatementsService {
     }
 
     const warnings: string[] = [
-      ...(result.heatingDetail?.warnings ?? []).map((warning) =>
-        this.formatWarning("heating", warning),
+      ...groupCalcWarnings(result.heatingDetail?.warnings ?? []).map((group) =>
+        this.formatWarningGroup("heating", group),
       ),
-      ...(result.waterDetail?.warnings ?? []).map((warning) =>
-        this.formatWarning("water", warning),
+      ...groupCalcWarnings(result.waterDetail?.warnings ?? []).map((group) =>
+        this.formatWarningGroup("water", group),
       ),
     ];
 

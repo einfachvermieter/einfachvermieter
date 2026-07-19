@@ -3,10 +3,12 @@ import {
   degreeDaysMonthlyBreakdown,
   formatEur,
   formatNumber,
+  groupCalcWarnings,
   type HeatingDetail,
   HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
   heatingColumnFootnotes,
   hotWaterColumnFootnotes,
+  isTenantWarning,
   landlordShareRow,
   type Period,
   perMeterDisplayDigits,
@@ -1030,13 +1032,17 @@ export const HeatingAppendix = ({
             {prorationNote(detail, tenantPeriod)}
           </Text>
         ) : null}
-        {/* Hinweise aus der Berechnung, v. a. die rechtlich
-            gebotene Kennzeichnung geschätzter bzw. fehlender Ablesewerte. */}
-        {(detail.warnings ?? []).map((warning) => (
-          <Text key={calcWarningKey(warning)} style={styles.footnote}>
-            {formatCalcWarning(warning)}
-          </Text>
-        ))}
+        {/* Hinweise aus der Berechnung, v. a. die rechtlich gebotene
+            Kennzeichnung geschätzter Werte und der Ersatzverfahren.
+            Datenqualitäts-Hinweise an den Vermieter bleiben in der
+            Web-Oberfläche. */}
+        {groupCalcWarnings((detail.warnings ?? []).filter(isTenantWarning)).map(
+          (group) => (
+            <Text key={calcWarningKey(group)} style={styles.footnote}>
+              {formatCalcWarning(group)}
+            </Text>
+          ),
+        )}
       </View>
 
       {hotWaterSection}

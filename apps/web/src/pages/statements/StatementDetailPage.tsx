@@ -1,5 +1,11 @@
 import type { StatementResult } from "@einfachvermieter/shared";
-import { formatDate, formatEur, formatName } from "@einfachvermieter/shared";
+import {
+  formatDate,
+  formatEur,
+  formatName,
+  groupCalcWarnings,
+  isTenantWarning,
+} from "@einfachvermieter/shared";
 import {
   RiBuildingLine,
   RiCloseCircleLine,
@@ -458,6 +464,22 @@ export const StatementDetailPage = () => {
 
   const isDraft = statement.status === "draft";
 
+  /**
+   * Datenqualitäts-Hinweise an den Vermieter (fehlende/rückläufige
+   * Zählerstände etc.). Sie erscheinen nicht im Mieter-PDF, sollten aber
+   * vor dem Abschließen behoben sein.
+   */
+  const dataIssueCount = [
+    result?.heatingDetail?.warnings ?? [],
+    result?.waterDetail?.warnings ?? [],
+  ].reduce(
+    (count, warnings) =>
+      count +
+      groupCalcWarnings(warnings.filter((warning) => !isTenantWarning(warning)))
+        .length,
+    0,
+  );
+
   const renderPreviewFallback = () => {
     if (previewError) {
       return (
@@ -760,7 +782,13 @@ export const StatementDetailPage = () => {
         open={confirmFinalizeOpen}
         onOpenChange={setConfirmFinalizeOpen}
         title={t("ui.statements.detail.finalizeStatement")}
-        description={t("ui.statements.detail.confirmFinalize")}
+        description={
+          dataIssueCount > 0
+            ? t("ui.statements.detail.confirmFinalizeWithDataIssues", {
+                count: dataIssueCount,
+              })
+            : t("ui.statements.detail.confirmFinalize")
+        }
         confirmLabel={t("ui.statements.detail.finalizeStatement")}
         onConfirm={() => {
           setConfirmFinalizeOpen(false);
