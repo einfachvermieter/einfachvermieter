@@ -17,6 +17,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { assertBuildingExists } from "../common/assert-exists.js";
 import { FieldValidationException } from "../common/field-validation.exception.js";
 import { likeContains } from "../common/like-search.js";
 import { getI18n } from "../i18n/i18n.registry.js";
@@ -206,6 +207,8 @@ export class UnitsService {
    * Wohnung anlegen. Der Name muss innerhalb des Gebaeudes eindeutig sein.
    */
   async create(dto: UnitCreateDto) {
+    await assertBuildingExists(this.em, dto.buildingId);
+
     if (await this.nameTaken(dto.buildingId, dto.name)) {
       throw new FieldValidationException([
         { path: ["name"], message: nameTakenMessage(dto.name) },

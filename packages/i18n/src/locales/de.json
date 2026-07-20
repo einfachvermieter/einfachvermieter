@@ -95,6 +95,7 @@
     "fixedUnitRequired": "Bitte wählen Sie für diese Pauschale eine Wohnung aus.",
     "fixedUnitWrongBuilding": "Die gewählte Wohnung gehört nicht zum Gebäude dieser Kostenart.",
     "unitOnlyForFixed": "Eine Wohnungs-Zuordnung ist nur bei pauschalen Kostenarten möglich.",
+    "costTypeUnknown": "Die gewählte Kostenart existiert nicht.",
     "generic": "Ungültiger Wert"
   },
   "entities": {
@@ -624,6 +625,33 @@
         "description": "Dieses Gebäude existiert nicht oder wurde gelöscht."
       }
     },
+    "prerequisites": {
+      "building": {
+        "title": "Kein Gebäude vorhanden",
+        "action": "Zu den Gebäuden"
+      },
+      "units": {
+        "title": "Keine Wohnungen vorhanden",
+        "action": "Zu den Wohnungen"
+      },
+      "costTypes": {
+        "title": "Keine Kostenarten vorhanden",
+        "action": "Zu den Kostenarten"
+      },
+      "tenants": {
+        "title": "Keine Mietverträge vorhanden",
+        "action": "Zu den Mietern"
+      },
+      "descriptions": {
+        "units": "Legen Sie zuerst ein Gebäude an. Wohnungen gehören immer zu einem Gebäude.",
+        "meters": "Legen Sie zuerst eine Wohnung an, bevor Sie Zähler erfassen.",
+        "tenants": "Legen Sie zuerst eine Wohnung an, bevor Sie Mietverträge erfassen.",
+        "costTypes": "Legen Sie zuerst ein Gebäude an. Kostenarten gehören zu einem Gebäude.",
+        "invoices": "Legen Sie zuerst eine Kostenart an, bevor Sie Rechnungen erfassen.",
+        "heating": "Legen Sie zuerst eine Wohnung an, bevor Sie die Heizkosten einrichten.",
+        "statements": "Legen Sie zuerst einen Mietvertrag an, bevor Sie abrechnen."
+      }
+    },
     "units": {
       "title": "Wohnungen",
       "createTitle": "Neue Wohnung",
@@ -701,7 +729,6 @@
       "identityTitleEmpty": "Wohnung {unit}",
       "summary": "{unit} – {residents}",
       "addTenant": "Mieter anlegen",
-      "noUnits": "Für dieses Gebäude sind noch keine Wohnungen angelegt. Bitte zuerst {link} anlegen, bevor Verträge erfasst werden können.",
       "confirmDeleteTenant": "Mietvertrag löschen?",
       "confirmDeleteTenantMessage": "Vertrag für „{unit}“ ({start} – {end}) wirklich löschen?",
       "empty": "Keine Mietverträge vorhanden",
@@ -1053,7 +1080,6 @@
       "emptyForBuilding": "Noch keine Rechnungen in Gebäude „{building}“ erfasst",
       "emptySearch": "Keine Rechnungen gefunden für „{query}“",
       "emptySearchForBuilding": "Keine Rechnungen gefunden für „{query}“ in Gebäude „{building}“",
-      "noCostTypes": "Bitte zuerst eine {link} anlegen.",
       "itemCount": "{count, plural, one {1 Position} other {# Positionen}}",
       "items": {
         "title": "Positionen",

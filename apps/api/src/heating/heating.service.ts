@@ -15,9 +15,9 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { assertBuildingExists } from "../common/assert-exists.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
-import { assertBuildingExists } from "./assert-building-exists.js";
 
 export type HeatingSort = "building" | "mode" | "validFrom";
 

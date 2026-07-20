@@ -12,6 +12,7 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHead } from "../../components/common/PageHead";
+import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
@@ -22,6 +23,7 @@ import {
   heatingOverviewQueryOptions,
 } from "../../lib/heating";
 import { t } from "../../lib/i18n";
+import { usePrerequisite } from "../../lib/prerequisites";
 import { rowActionsColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 import {
@@ -190,6 +192,10 @@ export const HeatingOverviewPage = () => {
   const pageCount = Math.max(1, Math.ceil(total / table.pagination.pageSize));
   const today = todayIso();
 
+  const { met: canAddHeating, isPending: prereqPending } =
+    usePrerequisite("heating");
+  const prerequisiteMissing = !canAddHeating && !prereqPending;
+
   const columns = useMemo(
     () => heatingColumns(deletion, today),
     [today, deletion],
@@ -218,14 +224,16 @@ export const HeatingOverviewPage = () => {
             : undefined
         }
         action={
-          <Button asChild={true}>
-            <Link to="/heizkosten/neu" search={{ buildingId }}>
-              <RiAddLine />
-              <span className="hidden sm:inline">
-                {t("ui.heating.versions.add")}
-              </span>
-            </Link>
-          </Button>
+          canAddHeating ? (
+            <Button asChild={true}>
+              <Link to="/heizkosten/neu" search={{ buildingId }}>
+                <RiAddLine />
+                <span className="hidden sm:inline">
+                  {t("ui.heating.versions.add")}
+                </span>
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
 
@@ -234,7 +242,13 @@ export const HeatingOverviewPage = () => {
         columns={columns}
         loading={isFetching || buildingsPending}
         totalRows={total}
-        emptyMessage={emptyMessage}
+        emptyMessage={
+          prerequisiteMissing ? (
+            <PrerequisiteEmpty domain="heating" />
+          ) : (
+            emptyMessage
+          )
+        }
         rowClassName={deletion.rowClassName}
         onRowClick={(row) =>
           navigate({ to: "/heizkosten/$id", params: { id: row.id } })

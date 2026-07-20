@@ -1,5 +1,5 @@
 import { formatDate, formatEur } from "@einfachvermieter/shared";
-import { RiAddLine, RiInformationLine } from "@remixicon/react";
+import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -8,8 +8,8 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHead } from "../../components/common/PageHead";
+import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
-import { TextWithLink } from "../../components/TextWithLink";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import {
@@ -27,6 +27,7 @@ import {
 } from "../../lib/costs";
 import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
+import { usePrerequisite } from "../../lib/prerequisites";
 import { useServerTableState } from "../../lib/tableState";
 
 const SORTABLE_COLUMNS: ReadonlySet<CostEntrySortColumn> = new Set([
@@ -175,9 +176,9 @@ export const InvoicesPage = () => {
     [costTypeByName],
   );
 
-  const hasCostTypes = (costTypes ?? []).some(
-    (costType) => costType.buildingId === buildingId,
-  );
+  const { met: canAddInvoice, isPending: prereqPending } =
+    usePrerequisite("invoices");
+  const prerequisiteMissing = !canAddInvoice && !prereqPending;
   const trimmedSearch = table.search.trim();
   let emptyMessage: string;
   if (trimmedSearch) {
@@ -209,47 +210,31 @@ export const InvoicesPage = () => {
         title={t("ui.invoices.title")}
         sub={sub}
         action={
-          <Button
-            asChild={true}
-            disabled={!hasCostTypes}
-            aria-disabled={!hasCostTypes}
-          >
-            <Link to="/rechnungen/neu">
-              <RiAddLine />
-              <span className="hidden sm:inline">
-                {t("ui.invoices.addEntry")}
-              </span>
-            </Link>
-          </Button>
+          canAddInvoice ? (
+            <Button asChild={true}>
+              <Link to="/rechnungen/neu">
+                <RiAddLine />
+                <span className="hidden sm:inline">
+                  {t("ui.invoices.addEntry")}
+                </span>
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
-
-      {!hasCostTypes && costTypes !== undefined ? (
-        <div className="flex items-start gap-2 rounded-md border border-border bg-muted/50 p-3 text-sm text-muted-foreground">
-          <RiInformationLine className="mt-0.5 size-4 shrink-0" />
-          <span>
-            <TextWithLink
-              template={t("ui.invoices.noCostTypes")}
-              link={
-                <Link
-                  to="/kostenarten"
-                  search={{ buildingId }}
-                  className="font-semibold text-foreground underline"
-                >
-                  {t("ui.costs.title")}
-                </Link>
-              }
-            />
-          </span>
-        </div>
-      ) : null}
 
       <DataTable
         data={items}
         columns={columns}
         loading={isFetching || buildingsPending}
         totalRows={total}
-        emptyMessage={emptyMessage}
+        emptyMessage={
+          prerequisiteMissing ? (
+            <PrerequisiteEmpty domain="invoices" />
+          ) : (
+            emptyMessage
+          )
+        }
         onRowClick={(entry) =>
           navigate({
             to: "/rechnungen/$costEntryId",

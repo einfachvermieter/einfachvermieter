@@ -7,6 +7,7 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHead } from "../../components/common/PageHead";
+import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { RowActionButton } from "../../components/RowActions";
 import { Badge } from "../../components/ui/Badge";
@@ -21,6 +22,7 @@ import {
   metersOverviewQueryOptions,
   meterTypeLabel,
 } from "../../lib/meters";
+import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
 import { rowActionsColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
@@ -65,6 +67,8 @@ export const MetersOverview = () => {
     isPending: buildingsPending,
   } = useActiveBuilding();
 
+  const { met: canAddMeter, isPending: prereqPending } =
+    usePrerequisite("meters");
   const { data: units } = useQuery(unitsQueryOptions);
   const { unitId: unitIdFilter } = routeApi.useSearch();
 
@@ -164,6 +168,7 @@ export const MetersOverview = () => {
     [unitName],
   );
 
+  const prerequisiteMissing = !canAddMeter && !prereqPending;
   const trimmedSearch = table.search.trim();
   let emptyMessage: string;
   if (trimmedSearch) {
@@ -187,15 +192,17 @@ export const MetersOverview = () => {
         title={t("ui.meters.title")}
         sub={sub}
         action={
-          <Button asChild={true}>
-            <Link
-              to="/zaehler/neu"
-              search={{ buildingId, type: undefined, unitId: undefined }}
-            >
-              <RiAddLine />
-              <span className="hidden sm:inline">{t("ui.meters.add")}</span>
-            </Link>
-          </Button>
+          canAddMeter ? (
+            <Button asChild={true}>
+              <Link
+                to="/zaehler/neu"
+                search={{ buildingId, type: undefined, unitId: undefined }}
+              >
+                <RiAddLine />
+                <span className="hidden sm:inline">{t("ui.meters.add")}</span>
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
 
@@ -204,7 +211,13 @@ export const MetersOverview = () => {
         columns={columns}
         loading={isFetching || buildingsPending}
         totalRows={stats?.meters}
-        emptyMessage={emptyMessage}
+        emptyMessage={
+          prerequisiteMissing ? (
+            <PrerequisiteEmpty domain="meters" />
+          ) : (
+            emptyMessage
+          )
+        }
         onRowClick={(meter) =>
           navigate({ to: "/zaehler/$meterId", params: { meterId: meter.id } })
         }

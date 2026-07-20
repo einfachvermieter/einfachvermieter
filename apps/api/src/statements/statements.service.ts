@@ -63,6 +63,10 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { AccountsService } from "../accounts/accounts.service.js";
+import {
+  assertBuildingExists,
+  assertTenantExists,
+} from "../common/assert-exists.js";
 import { ExternalHeatingEntriesService } from "../heating/external-heating-entries.service.js";
 import { HeatingService } from "../heating/heating.service.js";
 import { getI18n } from "../i18n/i18n.registry.js";
@@ -585,6 +589,8 @@ export class StatementsService {
    * Erstellt eine neue Abrechnung im Status "draft"
    */
   async create(dto: OperatingCostStatementCreateDto) {
+    await assertBuildingExists(this.em, dto.buildingId);
+    await assertTenantExists(this.em, dto.tenantId);
     await this.assertNoOverlappingFinalized(
       this.em,
       dto.tenantId,

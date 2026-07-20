@@ -1,6 +1,28 @@
 import { queryOptions } from "@tanstack/react-query";
 import { api } from "./api";
 
+const ACTIVE_BUILDING_STORAGE_KEY = "activeBuildingId";
+
+/**
+ * Zuletzt gewähltes Gebäude aus dem localStorage (Fallback für die Auswahl,
+ * auch im Router-Guard nutzbar).
+ */
+export const readStoredBuildingId = (): string | undefined => {
+  try {
+    return localStorage.getItem(ACTIVE_BUILDING_STORAGE_KEY) ?? undefined;
+  } catch {
+    // localStorage nicht verfügbar
+  }
+};
+
+export const writeStoredBuildingId = (id: string): void => {
+  try {
+    localStorage.setItem(ACTIVE_BUILDING_STORAGE_KEY, id);
+  } catch {
+    // localStorage nicht verfügbar. Auswahl bleibt nur in-memory.
+  }
+};
+
 export type Building = {
   id: string;
   name: string;

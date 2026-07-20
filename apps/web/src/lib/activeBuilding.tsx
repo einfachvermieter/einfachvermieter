@@ -9,9 +9,12 @@ import {
   useMemo,
   useState,
 } from "react";
-import { type Building, buildingsQueryOptions } from "./buildings";
-
-const STORAGE_KEY = "activeBuildingId";
+import {
+  type Building,
+  buildingsQueryOptions,
+  readStoredBuildingId,
+  writeStoredBuildingId,
+} from "./buildings";
 
 type ActiveBuildingValue = {
   /**
@@ -26,21 +29,15 @@ type ActiveBuildingValue = {
 
 const ActiveBuildingContext = createContext<ActiveBuildingValue | null>(null);
 
-const readStoredId = (): string | undefined => {
-  try {
-    return localStorage.getItem(STORAGE_KEY) ?? undefined;
-  } catch {
-    // localStorage nicht verfügbar (z. B. Private Mode)
-  }
-};
-
 export const ActiveBuildingProvider = ({
   children,
 }: {
   children: ReactNode;
 }) => {
   const { data: buildings, isPending } = useQuery(buildingsQueryOptions);
-  const [storedId, setStoredId] = useState<string | undefined>(readStoredId);
+  const [storedId, setStoredId] = useState<string | undefined>(
+    readStoredBuildingId,
+  );
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -73,24 +70,14 @@ export const ActiveBuildingProvider = ({
   useEffect(() => {
     if (buildingId && buildingId !== storedId) {
       setStoredId(buildingId);
-
-      try {
-        localStorage.setItem(STORAGE_KEY, buildingId);
-      } catch {
-        // localStorage nicht verfügbar. Auswahl bleibt nur in-memory.
-      }
+      writeStoredBuildingId(buildingId);
     }
   }, [buildingId, storedId]);
 
   const setBuildingId = useCallback(
     (id: string) => {
       setStoredId(id);
-
-      try {
-        localStorage.setItem(STORAGE_KEY, id);
-      } catch {
-        // localStorage nicht verfügbar. Auswahl bleibt nur in-memory.
-      }
+      writeStoredBuildingId(id);
 
       // Detail-/Formularseiten gehören zum alten Gebäude: zurück zur Liste
       // (erstes Pfadsegment); Suchparams (Seite, Filter) zurücksetzen

@@ -37,6 +37,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { assertUnitExists } from "../common/assert-exists.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
 import { isPresent, referenceDateFor } from "./occupancy.js";
@@ -587,6 +588,7 @@ export class TenantsService {
    * nicht mit einem bestehenden Vertrag derselben Wohnung ueberschneidet.
    */
   async create(dto: TenantSaveDto) {
+    await assertUnitExists(this.em, dto.unitId);
     await this.assertNoOverlap(dto.unitId, dto.startDate, dto.endDate ?? null);
 
     return this.em.transactional((em) => this.persist(em, null, dto));

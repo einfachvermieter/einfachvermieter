@@ -31,14 +31,14 @@ export const stammdatenNav: NavItem[] = [
     domain: "units",
   },
   {
-    to: "/zaehler",
-    labelKey: "ui.navigation.meters",
-    domain: "meters",
-  },
-  {
     to: "/mieter",
     labelKey: "ui.navigation.tenants",
     domain: "tenants",
+  },
+  {
+    to: "/zaehler",
+    labelKey: "ui.navigation.meters",
+    domain: "meters",
   },
 ];
 

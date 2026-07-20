@@ -8,12 +8,14 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHead } from "../../components/common/PageHead";
+import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
+import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
 import { useServerTableState } from "../../lib/tableState";
 import {
@@ -89,6 +91,9 @@ export const UnitsOverview = () => {
     enabled: buildingId !== undefined,
   });
   const { data: stats } = useQuery(statsQueryOptions(buildingId));
+  const { met: canAddUnit, isPending: prereqPending } =
+    usePrerequisite("units");
+  const prerequisiteMissing = !canAddUnit && !prereqPending;
 
   const items = data?.items ?? [];
 
@@ -182,12 +187,14 @@ export const UnitsOverview = () => {
         title={t("ui.units.title")}
         sub={sub}
         action={
-          <Button asChild={true}>
-            <Link to="/wohnungen/neu" search={{ buildingId }}>
-              <RiAddLine />
-              <span className="hidden sm:inline">{t("ui.units.add")}</span>
-            </Link>
-          </Button>
+          canAddUnit ? (
+            <Button asChild={true}>
+              <Link to="/wohnungen/neu" search={{ buildingId }}>
+                <RiAddLine />
+                <span className="hidden sm:inline">{t("ui.units.add")}</span>
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
 
@@ -196,7 +203,13 @@ export const UnitsOverview = () => {
         columns={columns}
         loading={isFetching || buildingsPending}
         totalRows={stats?.units}
-        emptyMessage={emptyMessage}
+        emptyMessage={
+          prerequisiteMissing ? (
+            <PrerequisiteEmpty domain="units" />
+          ) : (
+            emptyMessage
+          )
+        }
         onRowClick={(unit) =>
           navigate({
             to: "/wohnungen/$unitId",

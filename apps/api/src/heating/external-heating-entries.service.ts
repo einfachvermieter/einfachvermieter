@@ -6,8 +6,8 @@ import type {
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { assertBuildingExists } from "../common/assert-exists.js";
 import { notFoundMessage } from "../i18n/notFound.js";
-import { assertBuildingExists } from "./assert-building-exists.js";
 
 /**
  * CRUD für externe Heizkosten-Einträge pro Wohnung und Zeitraum.

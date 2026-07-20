@@ -48,6 +48,11 @@ import {
   paymentIdentityLabel,
   paymentQueryOptions,
 } from "./lib/payments";
+import {
+  ensurePrerequisiteMet,
+  type GatedDomain,
+  PREREQUISITES,
+} from "./lib/prerequisites";
 import { setupStatusQueryOptions } from "./lib/setup";
 import {
   type Statement,
@@ -130,6 +135,31 @@ const requireAuth = async ({ context }: { context: RouterContext }) => {
     throw error;
   }
 };
+
+/**
+ * Anlage-Route absichern: erst Auth, dann ob die fachliche Voraussetzung fürs
+ * aktive Gebäude erfüllt ist. Fehlt sie, zurück zur Liste, deren Leer-Hinweis
+ * auf die zuerst benötigte Entität verweist.
+ */
+const requirePrerequisite =
+  (domain: GatedDomain) =>
+  async ({
+    context,
+    search,
+  }: {
+    context: RouterContext;
+    search?: { buildingId?: string };
+  }) => {
+    await requireAuth({ context });
+    const met = await ensurePrerequisiteMet(
+      context.queryClient,
+      domain,
+      search ?? {},
+    );
+    if (!met) {
+      throw redirect({ to: PREREQUISITES[domain].listTo });
+    }
+  };
 
 /**
  * Login-Seite: ist die App noch nicht eingerichtet, zuerst zum Assistenten.
@@ -283,7 +313,7 @@ const unitsRoute = createRoute({
 const unitCreateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/wohnungen/neu",
-  beforeLoad: requireAuth,
+  beforeLoad: requirePrerequisite("units"),
   validateSearch: unitsSearchSchema,
   component: UnitCreatePage,
   staticData: {
@@ -343,7 +373,7 @@ const tenantsRoute = createRoute({
 const tenantCreateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mieter/neu",
-  beforeLoad: requireAuth,
+  beforeLoad: requirePrerequisite("tenants"),
   component: TenantCreatePage,
   staticData: {
     crumb: () => [
@@ -672,7 +702,7 @@ const metersRoute = createRoute({
 const meterCreateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/zaehler/neu",
-  beforeLoad: requireAuth,
+  beforeLoad: requirePrerequisite("meters"),
   validateSearch: metersSearchSchema,
   component: MeterCreatePage,
   staticData: {
@@ -764,7 +794,7 @@ const heatingRoute = createRoute({
 const heatingVersionCreateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/heizkosten/neu",
-  beforeLoad: requireAuth,
+  beforeLoad: requirePrerequisite("heating"),
   validateSearch: heatingSearchSchema,
   component: HeatingVersionCreatePage,
   staticData: {
@@ -824,7 +854,7 @@ const costsRoute = createRoute({
 const costTypeCreateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/kostenarten/neu",
-  beforeLoad: requireAuth,
+  beforeLoad: requirePrerequisite("costTypes"),
   validateSearch: costsSearchSchema,
   component: CostTypeCreatePage,
   staticData: {
@@ -882,7 +912,7 @@ const invoicesRoute = createRoute({
 const costEntryCreateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/rechnungen/neu",
-  beforeLoad: requireAuth,
+  beforeLoad: requirePrerequisite("invoices"),
   component: CostEntryCreatePage,
   staticData: {
     crumb: () => [
@@ -935,7 +965,7 @@ const statementsRoute = createRoute({
 const statementCreateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/abrechnungen/neu",
-  beforeLoad: requireAuth,
+  beforeLoad: requirePrerequisite("statements"),
   component: StatementCreatePage,
   staticData: {
     crumb: () => [

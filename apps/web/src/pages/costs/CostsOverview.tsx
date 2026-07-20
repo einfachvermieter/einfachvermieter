@@ -7,6 +7,7 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHead } from "../../components/common/PageHead";
+import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -25,6 +26,7 @@ import {
 } from "../../lib/costs";
 import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
+import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
 import { useServerTableState } from "../../lib/tableState";
 
@@ -51,6 +53,9 @@ export const CostsOverview = () => {
     enabled: buildingId !== undefined,
   });
   const { data: stats } = useQuery(statsQueryOptions(buildingId));
+  const { met: canAddCostType, isPending: prereqPending } =
+    usePrerequisite("costTypes");
+  const prerequisiteMissing = !canAddCostType && !prereqPending;
 
   const items = data?.items ?? [];
 
@@ -150,12 +155,16 @@ export const CostsOverview = () => {
         title={t("ui.costs.title")}
         sub={sub}
         action={
-          <Button asChild={true}>
-            <Link to="/kostenarten/neu" search={{ buildingId }}>
-              <RiAddLine />
-              <span className="hidden sm:inline">{t("ui.costs.addType")}</span>
-            </Link>
-          </Button>
+          canAddCostType ? (
+            <Button asChild={true}>
+              <Link to="/kostenarten/neu" search={{ buildingId }}>
+                <RiAddLine />
+                <span className="hidden sm:inline">
+                  {t("ui.costs.addType")}
+                </span>
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
 
@@ -164,7 +173,13 @@ export const CostsOverview = () => {
         columns={columns}
         loading={isFetching || buildingsPending}
         totalRows={stats?.costTypes}
-        emptyMessage={emptyMessage}
+        emptyMessage={
+          prerequisiteMissing ? (
+            <PrerequisiteEmpty domain="costTypes" />
+          ) : (
+            emptyMessage
+          )
+        }
         onRowClick={(costType) =>
           navigate({
             to: "/kostenarten/$costTypeId",

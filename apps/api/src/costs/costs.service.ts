@@ -23,6 +23,7 @@ import {
   type QueryOrderMap,
 } from "@mikro-orm/core";
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { assertBuildingExists } from "../common/assert-exists.js";
 import { FieldValidationException } from "../common/field-validation.exception.js";
 import { likeContains } from "../common/like-search.js";
 import { getI18n } from "../i18n/i18n.registry.js";
@@ -185,6 +186,8 @@ export class CostsService {
    * Kostenart anlegen
    */
   async createCostType(dto: CostTypeCreateDto) {
+    await assertBuildingExists(this.em, dto.buildingId);
+
     const created = this.em.create(CostTypeSchema, dto);
 
     this.em.persist(created);
@@ -570,7 +573,16 @@ export class CostsService {
 
     items.forEach((item, index) => {
       const costType = costTypeById.get(item.costTypeId);
-      const isFixed = costType?.defaultAllocationKey === "fixed";
+
+      if (!costType) {
+        errors.push({
+          path: ["items", index, "costTypeId"],
+          message: i18n.t("validation.costTypeUnknown"),
+        });
+        return;
+      }
+
+      const isFixed = costType.defaultAllocationKey === "fixed";
 
       if (isFixed) {
         if (!item.unitId) {
@@ -583,7 +595,7 @@ export class CostsService {
 
         const unit = unitById.get(item.unitId);
 
-        if (!unit || unit.buildingId !== costType?.buildingId) {
+        if (!unit || unit.buildingId !== costType.buildingId) {
           errors.push({
             path: ["items", index, "unitId"],
             message: i18n.t("validation.fixedUnitWrongBuilding"),

@@ -8,6 +8,7 @@ import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHead } from "../../components/common/PageHead";
+import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -18,6 +19,7 @@ import {
 } from "../../components/ui/Tooltip";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { t } from "../../lib/i18n";
+import { usePrerequisite } from "../../lib/prerequisites";
 import {
   type StatementOverviewRow,
   type StatementSortColumn,
@@ -25,7 +27,6 @@ import {
   statementsOverviewQueryOptions,
 } from "../../lib/statements";
 import { useServerTableState } from "../../lib/tableState";
-import { tenantsOverviewQueryOptions } from "../../lib/tenants";
 
 const SORTABLE_COLUMNS: ReadonlySet<StatementSortColumn> = new Set([
   "tenant",
@@ -96,11 +97,9 @@ export const StatementsPage = () => {
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
 
-  const { data: tenantsCount } = useQuery({
-    ...tenantsOverviewQueryOptions({ page: 0, pageSize: 1, buildingId }),
-    enabled: buildingId !== undefined,
-  });
-  const hasTenants = (tenantsCount?.total ?? 0) > 0;
+  const { met: canAddStatement, isPending: prereqPending } =
+    usePrerequisite("statements");
+  const prerequisiteMissing = !canAddStatement && !prereqPending;
 
   const columns = useMemo<ColumnDef<StatementOverviewRow>[]>(
     () => [
@@ -220,18 +219,16 @@ export const StatementsPage = () => {
         title={t("ui.statements.pageTitle")}
         sub={sub}
         action={
-          <Button
-            asChild={true}
-            disabled={!hasTenants}
-            aria-disabled={!hasTenants}
-          >
-            <Link to="/abrechnungen/neu">
-              <RiAddLine />
-              <span className="hidden sm:inline">
-                {t("ui.statements.addStatement")}
-              </span>
-            </Link>
-          </Button>
+          canAddStatement ? (
+            <Button asChild={true}>
+              <Link to="/abrechnungen/neu">
+                <RiAddLine />
+                <span className="hidden sm:inline">
+                  {t("ui.statements.addStatement")}
+                </span>
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
 
@@ -240,7 +237,13 @@ export const StatementsPage = () => {
         columns={columns}
         loading={isFetching || buildingsPending}
         totalRows={total}
-        emptyMessage={emptyMessage}
+        emptyMessage={
+          prerequisiteMissing ? (
+            <PrerequisiteEmpty domain="statements" />
+          ) : (
+            emptyMessage
+          )
+        }
         onRowClick={(statement) =>
           navigate({
             to: "/abrechnungen/$statementId",
