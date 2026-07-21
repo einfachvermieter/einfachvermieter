@@ -80,6 +80,8 @@ export const MainNavigation = () => {
         {user && authMode !== "local" ? (
           <MainNavigationUser
             email={user.email}
+            firstName={user.firstName}
+            lastName={user.lastName}
             onLogout={() => logout.mutate()}
           />
         ) : null}

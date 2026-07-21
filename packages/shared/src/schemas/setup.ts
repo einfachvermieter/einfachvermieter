@@ -28,6 +28,14 @@ export const makeSetupSchema = (
   z.object({
     admin: z
       .object({
+        firstName: z
+          .string()
+          .min(1, messageKey("validation.required"))
+          .max(100, messageKey("validation.tooLong", { max: 100 })),
+        lastName: z
+          .string()
+          .min(1, messageKey("validation.required"))
+          .max(100, messageKey("validation.tooLong", { max: 100 })),
         email: z.string().email(messageKey("ui.setup.validation.emailFormat")),
         password: passwordSchema(policy),
       })

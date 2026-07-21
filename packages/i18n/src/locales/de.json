@@ -342,7 +342,8 @@
         "detail": "Detail",
         "settings": "Einstellungen",
         "settingsSender": "Absenderdaten",
-        "settingsPassword": "Passwort ändern"
+        "settingsPassword": "Passwort ändern",
+        "settingsProfile": "Profil"
       },
       "columns": {
         "label": "Bezeichnung",
@@ -1544,7 +1545,9 @@
         "heading": "Administrator-Konto",
         "email": "E-Mail-Adresse des Administrators",
         "password": "Passwort",
-        "passwordConfirm": "Passwort bestätigen"
+        "passwordConfirm": "Passwort bestätigen",
+        "firstName": "Vorname",
+        "lastName": "Nachname"
       },
       "sender": {
         "heading": "Absender",
@@ -1812,7 +1815,8 @@
       "eyebrow": "Einstellungen",
       "nav": {
         "sender": "Absenderdaten",
-        "password": "Passwort"
+        "password": "Passwort",
+        "profile": "Profil"
       },
       "password": {
         "title": "Passwort ändern",
@@ -1881,6 +1885,16 @@
           "previewLoading": "Vorschau wird erstellt …",
           "previewError": "Die Vorschau konnte nicht erstellt werden."
         }
+      },
+      "profile": {
+        "title": "Profil",
+        "description": "Ändern Sie Ihren angezeigten Namen.",
+        "sectionTitle": "Ihr Name",
+        "fields": {
+          "firstName": "Vorname",
+          "lastName": "Nachname"
+        },
+        "saveSuccess": "Profil gespeichert"
       }
     }
   },

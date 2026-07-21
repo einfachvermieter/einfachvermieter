@@ -23,17 +23,20 @@ import { t } from "@/lib/i18n";
 
 export const MainNavigationUser = ({
   email,
+  firstName,
+  lastName,
   onLogout,
 }: {
   email: string;
+  firstName: string | null;
+  lastName: string | null;
   onLogout: () => void;
 }) => {
   const { isMobile } = useSidebar();
 
-  // E-Mail zweizeilig: lokaler Teil oben, Domain darunter (statt Abschneiden)
-  const atIndex = email.lastIndexOf("@");
-  const localPart = atIndex > 0 ? email.slice(0, atIndex) : email;
-  const domainPart = atIndex > 0 ? email.slice(atIndex) : "";
+  // Voller Name als primäre Zeile, E-Mail darunter; ohne Namen die E-Mail
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
+  const displayName = fullName || email;
 
   return (
     <div className="rounded-[13px] border border-sidebar-border bg-background group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent">
@@ -43,18 +46,18 @@ export const MainNavigationUser = ({
             <SidebarMenuButton
               asChild={true}
               size="lg"
-              tooltip={email}
+              tooltip={displayName}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <DropdownMenuTrigger>
-                <InitialsAvatar name={email} size={34} />
+                <InitialsAvatar name={displayName} size={34} />
                 <span className="flex min-w-0 flex-1 flex-col text-left leading-tight">
                   <span className="truncate text-[13px] font-semibold">
-                    {localPart}
+                    {displayName}
                   </span>
-                  {domainPart ? (
+                  {fullName ? (
                     <span className="truncate text-[11px] text-muted-foreground">
-                      {domainPart}
+                      {email}
                     </span>
                   ) : null}
                 </span>

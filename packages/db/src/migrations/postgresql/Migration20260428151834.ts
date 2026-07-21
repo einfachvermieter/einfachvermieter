@@ -68,7 +68,7 @@ export class Migration20260428151834 extends Migration {
     this.addSql(`create index "cost_entry_items_cost_type_id" on "cost_entry_items" ("cost_type_id");`);
     this.addSql(`create index "cost_entry_items_unit_id" on "cost_entry_items" ("unit_id");`);
 
-    this.addSql(`create table "users" ("id" varchar(255) not null, "email" varchar(255) not null, "password_hash" varchar(255) not null, "role" varchar(255) not null default 'resident', "resident_id" varchar(255) null, "last_login_at" varchar(255) null, "created_at" varchar(255) not null default current_timestamp, "updated_at" varchar(255) not null default current_timestamp, primary key ("id"));`);
+    this.addSql(`create table "users" ("id" varchar(255) not null, "email" varchar(255) not null, "first_name" varchar(255) null, "last_name" varchar(255) null, "password_hash" varchar(255) not null, "role" varchar(255) not null default 'resident', "resident_id" varchar(255) null, "last_login_at" varchar(255) null, "created_at" varchar(255) not null default current_timestamp, "updated_at" varchar(255) not null default current_timestamp, primary key ("id"));`);
     this.addSql(`alter table "users" add constraint "users_email_unique" unique ("email");`);
 
     this.addSql(`create table "sessions" ("id" varchar(255) not null, "user_id" varchar(255) not null, "expires_at" varchar(255) not null, "created_at" varchar(255) not null default current_timestamp, primary key ("id"));`);

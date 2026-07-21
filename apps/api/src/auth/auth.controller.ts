@@ -1,7 +1,9 @@
 import {
   makePasswordChangeSchema,
   type PasswordChangeDto,
+  type ProfileUpdateDto,
   passwordPolicyFromEnv,
+  profileUpdateSchema,
 } from "@einfachvermieter/shared";
 import {
   Body,
@@ -78,6 +80,8 @@ export class AuthController {
       user: {
         id: user.id,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
         residentId: user.residentId,
       },
@@ -111,9 +115,25 @@ export class AuthController {
       user: {
         id: user.userId,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
         residentId: user.residentId,
       },
+    };
+  }
+
+  @Post("profile")
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(SessionAuthGuard)
+  async updateProfile(
+    @Req() request: Request,
+    @Body(new ZodValidationPipe(profileUpdateSchema)) dto: ProfileUpdateDto,
+  ) {
+    const user = request.user as AuthUser;
+
+    return {
+      user: await this.authService.updateProfile(user.userId, dto),
     };
   }
 

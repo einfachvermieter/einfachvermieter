@@ -81,7 +81,7 @@ export class Migration20260428151822 extends Migration {
     this.addSql(`create index \`cost_entry_items_cost_type_id\` on \`cost_entry_items\` (\`cost_type_id\`);`);
     this.addSql(`create index \`cost_entry_items_unit_id\` on \`cost_entry_items\` (\`unit_id\`);`);
 
-    this.addSql(`create table \`users\` (\`id\` text not null primary key, \`email\` text not null, \`password_hash\` text not null, \`role\` text not null default 'resident', \`resident_id\` text null, \`last_login_at\` text null, \`created_at\` text not null default current_timestamp, \`updated_at\` text not null default current_timestamp, constraint \`users_resident_id_foreign\` foreign key (\`resident_id\`) references \`residents\` (\`id\`) on delete set null);`);
+    this.addSql(`create table \`users\` (\`id\` text not null primary key, \`email\` text not null, \`first_name\` text null, \`last_name\` text null, \`password_hash\` text not null, \`role\` text not null default 'resident', \`resident_id\` text null, \`last_login_at\` text null, \`created_at\` text not null default current_timestamp, \`updated_at\` text not null default current_timestamp, constraint \`users_resident_id_foreign\` foreign key (\`resident_id\`) references \`residents\` (\`id\`) on delete set null);`);
     this.addSql(`create index \`users_resident_id_index\` on \`users\` (\`resident_id\`);`);
     this.addSql(`create unique index \`users_email_unique\` on \`users\` (\`email\`);`);
 

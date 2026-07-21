@@ -101,6 +101,8 @@ export class SetupService {
         return {
           id: admin.userId,
           email: admin.email,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
           role: admin.role,
           residentId: admin.residentId,
         };
@@ -113,6 +115,8 @@ export class SetupService {
 
       const user = em.create(UserSchema, {
         email: dto.admin.email.toLowerCase(),
+        firstName: dto.admin.firstName.trim(),
+        lastName: dto.admin.lastName.trim(),
         passwordHash: await hashPassword(dto.admin.password),
         role: "admin",
         residentId: null,
@@ -122,6 +126,8 @@ export class SetupService {
       return {
         id: user.id,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
         residentId: user.residentId,
       };

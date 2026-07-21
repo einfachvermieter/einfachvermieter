@@ -91,6 +91,7 @@ import { MieterkontoDetail } from "./pages/mieterkonto/MieterkontoDetail";
 import { PaymentCreatePage } from "./pages/payments/PaymentCreatePage";
 import { PaymentEditPage } from "./pages/payments/PaymentEditPage";
 import { PasswordSettingsPage } from "./pages/settings/PasswordSettingsPage";
+import { ProfileSettingsPage } from "./pages/settings/ProfileSettingsPage";
 import { SenderSettingsPage } from "./pages/settings/SenderSettingsPage";
 import { SetupPage } from "./pages/setup/SetupPage";
 import { StatementCreatePage } from "./pages/statements/StatementCreatePage";
@@ -1075,6 +1076,19 @@ const statementDetailPdfRoute = createRoute({
   ...statementDetailShared,
 });
 
+const profileSettingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/einstellungen/profil",
+  beforeLoad: redirectAwayIfLocalAuth,
+  component: ProfileSettingsPage,
+  staticData: {
+    crumb: () => [
+      { label: t("ui.common.crumbs.settings") },
+      { label: t("ui.common.crumbs.settingsProfile") },
+    ],
+  },
+});
+
 const senderSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/einstellungen/absender",
@@ -1143,6 +1157,7 @@ const routeTree = rootRoute.addChildren([
   statementDetailPaymentsRoute,
   statementDetailAdvanceRoute,
   statementDetailPdfRoute,
+  profileSettingsRoute,
   senderSettingsRoute,
   passwordSettingsRoute,
 ]);

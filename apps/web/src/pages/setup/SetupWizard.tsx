@@ -39,6 +39,8 @@ const addIssueIf = (
 const makeSetupFormSchema = (policy: PasswordPolicy, withAdmin: boolean) =>
   z
     .object({
+      adminFirstName: z.string(),
+      adminLastName: z.string(),
       adminEmail: z.string(),
       adminPassword: withAdmin ? passwordSchema(policy) : z.string(),
       adminPasswordConfirm: z.string(),
@@ -57,6 +59,18 @@ const makeSetupFormSchema = (policy: PasswordPolicy, withAdmin: boolean) =>
       const required = t("ui.setup.validation.required");
 
       if (withAdmin) {
+        addIssueIf(
+          ctx,
+          values.adminFirstName.trim().length === 0,
+          "adminFirstName",
+          required,
+        );
+        addIssueIf(
+          ctx,
+          values.adminLastName.trim().length === 0,
+          "adminLastName",
+          required,
+        );
         addIssueIf(
           ctx,
           !z.string().email().safeParse(values.adminEmail).success,
@@ -115,7 +129,13 @@ type SetupFormValues = z.infer<ReturnType<typeof makeSetupFormSchema>>;
 type StepKey = "admin" | "sender" | "building";
 
 const STEP_FIELDS: Record<StepKey, FieldPath<SetupFormValues>[]> = {
-  admin: ["adminEmail", "adminPassword", "adminPasswordConfirm"],
+  admin: [
+    "adminFirstName",
+    "adminLastName",
+    "adminEmail",
+    "adminPassword",
+    "adminPasswordConfirm",
+  ],
   sender: ["senderName", "senderStreet", "senderPostalCode", "senderCity"],
   building: [
     "buildingName",
@@ -127,7 +147,12 @@ const STEP_FIELDS: Record<StepKey, FieldPath<SetupFormValues>[]> = {
 
 const toDto = (values: SetupFormValues, withAdmin: boolean): SetupDto => ({
   admin: withAdmin
-    ? { email: values.adminEmail.trim(), password: values.adminPassword }
+    ? {
+        firstName: values.adminFirstName.trim(),
+        lastName: values.adminLastName.trim(),
+        email: values.adminEmail.trim(),
+        password: values.adminPassword,
+      }
     : undefined,
   sender: values.senderSkipped
     ? undefined
@@ -195,6 +220,8 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   const form = useForm<SetupFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      adminFirstName: "",
+      adminLastName: "",
       adminEmail: "",
       adminPassword: "",
       adminPasswordConfirm: "",
@@ -294,6 +321,20 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
 
       {stepKey === "admin" ? (
         <div className="flex flex-col gap-4">
+          <TextInput
+            control={form.control}
+            name="adminFirstName"
+            label={t("ui.setup.admin.firstName")}
+            required={true}
+            autoComplete="given-name"
+          />
+          <TextInput
+            control={form.control}
+            name="adminLastName"
+            label={t("ui.setup.admin.lastName")}
+            required={true}
+            autoComplete="family-name"
+          />
           <TextInput
             control={form.control}
             name="adminEmail"

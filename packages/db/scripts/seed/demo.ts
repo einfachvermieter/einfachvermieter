@@ -75,6 +75,8 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
 
   insert(schema.users, {
     email: "demo@einfachvermieter.example",
+    firstName: "Demo",
+    lastName: "Nutzer",
     passwordHash: await hashPassword("demo"),
     role: "admin",
   });

@@ -1,6 +1,7 @@
 import type {
   PasswordChangeDto,
   PasswordPolicy,
+  ProfileUpdateDto,
 } from "@einfachvermieter/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -9,6 +10,8 @@ import { api } from "./api";
 export type AuthUser = {
   id: string;
   email: string;
+  firstName: string | null;
+  lastName: string | null;
   role: "admin" | "resident";
   residentId: string | null;
 };
@@ -52,6 +55,17 @@ export const useLogin = () => {
 
 export const changePassword = (dto: PasswordChangeDto) =>
   api.post<{ success: boolean }>("/auth/change-password", dto);
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: ProfileUpdateDto) =>
+      api.post<{ user: AuthUser }>("/auth/profile", dto),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["auth", "me"], data.user);
+    },
+  });
+};
 
 export const useLogout = () => {
   const queryClient = useQueryClient();

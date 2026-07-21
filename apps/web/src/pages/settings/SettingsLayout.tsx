@@ -1,4 +1,8 @@
-import { RiContactsBook2Line, RiLockPasswordLine } from "@remixicon/react";
+import {
+  RiContactsBook2Line,
+  RiLockPasswordLine,
+  RiUserLine,
+} from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { PageHead } from "@/components/common/PageHead";
@@ -6,7 +10,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { t } from "@/lib/i18n";
 import { useAuthMode } from "@/lib/setup";
 
-type SettingsTab = "sender" | "password";
+type SettingsTab = "profile" | "sender" | "password";
+
+const TAB_ROUTES: Record<SettingsTab, string> = {
+  profile: "/einstellungen/profil",
+  sender: "/einstellungen/absender",
+  password: "/einstellungen/passwort",
+};
 
 /**
  * Rahmen des Einstellungen-Bereichs: gemeinsamer Eyebrow, Seitentitel und
@@ -40,15 +50,16 @@ export const SettingsLayout = ({
           <Tabs
             value={active}
             onValueChange={(value) => {
-              navigate({
-                to:
-                  value === "password"
-                    ? "/einstellungen/passwort"
-                    : "/einstellungen/absender",
-              }).catch(() => undefined);
+              navigate({ to: TAB_ROUTES[value as SettingsTab] }).catch(
+                () => undefined,
+              );
             }}
           >
             <TabsList variant="default">
+              <TabsTrigger value="profile">
+                <RiUserLine />
+                {t("ui.settings.nav.profile")}
+              </TabsTrigger>
               <TabsTrigger value="sender">
                 <RiContactsBook2Line />
                 {t("ui.settings.nav.sender")}

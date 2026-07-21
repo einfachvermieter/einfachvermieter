@@ -283,6 +283,8 @@ export const TenantAddressSchema = new EntitySchema<TenantAddress>({
 export type User = {
   id: string;
   email: string;
+  firstName: string | null;
+  lastName: string | null;
   passwordHash: string;
   role: UserRole;
   residentId: string | null;
@@ -297,6 +299,8 @@ export const UserSchema = new EntitySchema<User>({
   properties: {
     id: { type: "string", primary: true, onCreate: () => crypto.randomUUID() },
     email: { type: "string" },
+    firstName: { type: "string", fieldName: "first_name", nullable: true },
+    lastName: { type: "string", fieldName: "last_name", nullable: true },
     passwordHash: { type: "string", fieldName: "password_hash" },
     role: { type: "string", default: "resident" },
     residentId: fk(() => ResidentSchema, "resident_id", "set null", {

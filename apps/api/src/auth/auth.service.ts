@@ -1,5 +1,8 @@
 import { hashPassword, SessionSchema, UserSchema } from "@einfachvermieter/db";
-import type { PasswordChangeDto } from "@einfachvermieter/shared";
+import type {
+  PasswordChangeDto,
+  ProfileUpdateDto,
+} from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import argon2 from "argon2";
@@ -9,6 +12,8 @@ import { getI18n } from "../i18n/i18n.registry.js";
 export type AuthUser = {
   userId: string;
   email: string;
+  firstName: string | null;
+  lastName: string | null;
   role: "admin" | "resident";
   residentId: string | null;
 };
@@ -51,6 +56,29 @@ export class AuthService {
     await this.em.flush();
 
     return created;
+  }
+
+  async updateProfile(userId: string, dto: ProfileUpdateDto) {
+    const user = await this.em.findOne(UserSchema, { id: userId });
+    if (!user) {
+      throw new UnauthorizedException(getI18n().t("errors.sessionUserMissing"));
+    }
+
+    this.em.assign(user, {
+      firstName: dto.firstName.trim(),
+      lastName: dto.lastName.trim(),
+      updatedAt: new Date().toISOString(),
+    });
+    await this.em.flush();
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      residentId: user.residentId,
+    };
   }
 
   async changePassword(userId: string, dto: PasswordChangeDto) {

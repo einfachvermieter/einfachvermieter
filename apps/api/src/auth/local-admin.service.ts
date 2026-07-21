@@ -51,6 +51,8 @@ export class LocalAdminService implements OnModuleInit {
     this.cached = {
       userId: user.id,
       email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
       role: "admin",
       residentId: null,
     };

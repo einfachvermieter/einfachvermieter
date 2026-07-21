@@ -10,6 +10,7 @@ export * from "./meters.js";
 export * from "./password.js";
 export * from "./payment-form.js";
 export * from "./payments.js";
+export * from "./profile.js";
 export * from "./residents.js";
 export * from "./sender-settings.js";
 export * from "./setup.js";
