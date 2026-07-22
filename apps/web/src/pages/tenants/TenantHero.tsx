@@ -6,9 +6,11 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
-import { HeroBand } from "../../components/common/HeroBand";
+import { IconTile } from "../../components/common/IconTile";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
+import { PageHeader } from "../../components/common/PageHeader";
 import { buildingsQueryOptions } from "../../lib/buildings";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { tenantQueryOptions } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
@@ -19,11 +21,9 @@ import { unitsQueryOptions } from "../../lib/units";
  */
 export const TenantHero = ({
   tenantId,
-  eyebrow,
   balance,
 }: {
   tenantId: string;
-  eyebrow: string;
   /**
    * Gesetzt = Konto-Variante mit Saldo/Kaution/Status statt Warmmiete-Stats
    */
@@ -37,7 +37,20 @@ export const TenantHero = ({
   const { data: buildings } = useQuery(buildingsQueryOptions);
 
   if (!aggregate) {
-    return null;
+    return (
+      <PageHeader
+        tile={
+          <IconTile
+            icon={domainVisuals.tenants.icon}
+            size={44}
+            background={gradients.tenants}
+          />
+        }
+        title=""
+        loading={true}
+        statsSkeleton={balance ? 3 : 4}
+      />
+    );
   }
 
   const { tenant } = aggregate;
@@ -119,11 +132,10 @@ export const TenantHero = ({
       ];
 
   return (
-    <HeroBand
-      tile={<InitialsAvatar name={heroName} size={64} />}
-      eyebrow={eyebrow}
+    <PageHeader
+      tile={<InitialsAvatar name={heroName} size={44} />}
       title={heroName}
-      meta={[
+      sub={[
         building?.name,
         unit?.name,
         t("ui.tenants.termSince", { date: formatDate(tenant.startDate) }),

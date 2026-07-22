@@ -63,10 +63,6 @@ export const TenantEditPage = () => {
   const { tenant } = aggregate;
   const unit = units?.find((entry) => entry.id === tenant.unitId);
 
-  if (!units) {
-    return <FormSkeleton rows={6} />;
-  }
-
   const today = todayIso();
 
   const currentOccupants = aggregate.residents.filter((resident) => {
@@ -79,92 +75,96 @@ export const TenantEditPage = () => {
 
   return (
     <div className="pb-24">
-      <TenantHero tenantId={tenantId} eyebrow={t("ui.tenant.editEyebrow")} />
+      <TenantHero tenantId={tenantId} />
 
       <TenantDetailHeader tenantId={tenantId} active="stammdaten" />
 
-      <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
-        <TenantForm
-          mode="edit"
-          units={units}
-          defaultValues={tenantAggregateToFormValues(aggregate)}
-          serverVersion={aggregate.tenant.updatedAt}
-          savedAt={
-            tenant.updatedAt
-              ? formatDate(tenant.updatedAt.slice(0, 10))
-              : undefined
-          }
-          onSubmit={async (values) => {
-            await updateTenant.mutateAsync(values);
-          }}
-          onCancel={goToList}
-        />
+      {units ? (
+        <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
+          <TenantForm
+            mode="edit"
+            units={units}
+            defaultValues={tenantAggregateToFormValues(aggregate)}
+            serverVersion={aggregate.tenant.updatedAt}
+            savedAt={
+              tenant.updatedAt
+                ? formatDate(tenant.updatedAt.slice(0, 10))
+                : undefined
+            }
+            onSubmit={async (values) => {
+              await updateTenant.mutateAsync(values);
+            }}
+            onCancel={goToList}
+          />
 
-        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
-          <InfoCard title={t("ui.common.infoCards.links")}>
-            {unit ? (
+          <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+            <InfoCard title={t("ui.common.infoCards.links")}>
+              {unit ? (
+                <ActionLink
+                  icon={domainVisuals.units.icon}
+                  iconBackground={domainVisuals.units.accent}
+                  onClick={() =>
+                    navigate({
+                      to: "/wohnungen/$unitId",
+                      params: { unitId: unit.id },
+                    })
+                  }
+                >
+                  {unit.name}
+                </ActionLink>
+              ) : null}
               <ActionLink
-                icon={domainVisuals.units.icon}
-                iconBackground={domainVisuals.units.accent}
+                icon={RiWallet3Line}
+                iconBackground="var(--i-cyan)"
                 onClick={() =>
                   navigate({
-                    to: "/wohnungen/$unitId",
-                    params: { unitId: unit.id },
+                    to: "/mieter/$tenantId/konto",
+                    params: { tenantId },
                   })
                 }
               >
-                {unit.name}
+                {t("ui.tenants.tabs.account")}
               </ActionLink>
-            ) : null}
-            <ActionLink
-              icon={RiWallet3Line}
-              iconBackground="var(--i-cyan)"
-              onClick={() =>
-                navigate({
-                  to: "/mieter/$tenantId/konto",
-                  params: { tenantId },
-                })
-              }
-            >
-              {t("ui.tenants.tabs.account")}
-            </ActionLink>
-          </InfoCard>
+            </InfoCard>
 
-          <InfoCard
-            title={t("ui.common.infoCards.details")}
-            rows={[
-              {
-                label: t("ui.tenant.fields.residents"),
-                value: currentOccupants,
-              },
-              {
-                label: t("ui.tenant.atAGlance.account"),
-                value:
-                  balanced === undefined ? (
-                    t("ui.common.emptyValue")
-                  ) : (
-                    <Badge variant={balanced ? "ok" : "warn"} dot={true}>
-                      {balanced
-                        ? t("ui.account.status.balanced")
-                        : t("ui.account.status.open")}
-                    </Badge>
-                  ),
-              },
-            ]}
-          />
+            <InfoCard
+              title={t("ui.common.infoCards.details")}
+              rows={[
+                {
+                  label: t("ui.tenant.fields.residents"),
+                  value: currentOccupants,
+                },
+                {
+                  label: t("ui.tenant.atAGlance.account"),
+                  value:
+                    balanced === undefined ? (
+                      t("ui.common.emptyValue")
+                    ) : (
+                      <Badge variant={balanced ? "ok" : "warn"} dot={true}>
+                        {balanced
+                          ? t("ui.account.status.balanced")
+                          : t("ui.account.status.open")}
+                      </Badge>
+                    ),
+                },
+              ]}
+            />
 
-          <InfoCard title={t("ui.common.infoCards.actions")}>
-            <ActionLink
-              icon={RiDeleteBinLine}
-              iconBackground="var(--color-rose-400)"
-              danger={true}
-              onClick={() => deletion.request({ id: tenantId })}
-            >
-              {t("ui.tenant.actions.delete")}
-            </ActionLink>
-          </InfoCard>
+            <InfoCard title={t("ui.common.infoCards.actions")}>
+              <ActionLink
+                icon={RiDeleteBinLine}
+                iconBackground="var(--color-rose-400)"
+                danger={true}
+                onClick={() => deletion.request({ id: tenantId })}
+              >
+                {t("ui.tenant.actions.delete")}
+              </ActionLink>
+            </InfoCard>
+          </div>
         </div>
-      </div>
+      ) : (
+        <FormSkeleton rows={6} />
+      )}
 
       {deletion.dialog}
     </div>

@@ -23,23 +23,23 @@ export const MeterReadingsPage = () => {
     );
   }
 
-  if (!meter) {
-    return <FormSkeleton rows={4} />;
-  }
-
   return (
     <div className="pb-24">
-      <MeterHero meterId={meterId} eyebrow={t("ui.meters.editTitle")} />
+      <MeterHero meterId={meterId} />
 
       <MeterDetailHeader meterId={meterId} active="zaehlerstaende" />
 
-      <div className="mt-6">
-        <MeterReadingsTab
-          meterId={meterId}
-          measurementUnit={meter.measurementUnit}
-          role={meter.role}
-        />
-      </div>
+      {meter ? (
+        <div className="mt-6">
+          <MeterReadingsTab
+            meterId={meterId}
+            measurementUnit={meter.measurementUnit}
+            role={meter.role}
+          />
+        </div>
+      ) : (
+        <FormSkeleton rows={4} />
+      )}
     </div>
   );
 };

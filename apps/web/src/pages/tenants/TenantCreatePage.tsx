@@ -7,9 +7,11 @@ import { RiInformationLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { FormPage } from "../../components/common/FormPage";
+import { IconTile } from "../../components/common/IconTile";
 import { TextWithLink } from "../../components/TextWithLink";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { TenantAggregate } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
@@ -39,7 +41,13 @@ export const TenantCreatePage = () => {
 
   return (
     <FormPage
-      eyebrow={t("ui.navigation.groups.masterData")}
+      tile={
+        <IconTile
+          icon={domainVisuals.tenants.icon}
+          size={44}
+          background={gradients.tenants}
+        />
+      }
       title={t("ui.tenants.createTitle")}
     >
       {hasUnits ? (

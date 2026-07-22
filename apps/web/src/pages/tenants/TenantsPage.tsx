@@ -6,8 +6,9 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
+import { IconTile } from "../../components/common/IconTile";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
-import { PageHead } from "../../components/common/PageHead";
+import { PageHeader } from "../../components/common/PageHeader";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { RowActionButton } from "../../components/RowActions";
@@ -18,6 +19,7 @@ import {
   type TenantBalanceSummary,
 } from "../../lib/accounts";
 import { useActiveBuilding } from "../../lib/activeBuilding";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { rowActionsColumn } from "../../lib/tableColumns";
@@ -238,10 +240,17 @@ export const TenantsPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHead
-        eyebrow={t("ui.navigation.groups.masterData")}
+      <PageHeader
+        tile={
+          <IconTile
+            icon={domainVisuals.tenants.icon}
+            size={44}
+            background={gradients.tenants}
+          />
+        }
         title={t("ui.tenants.title")}
         sub={sub}
+        subLoading={!data}
         action={
           canAddTenant ? (
             <Button asChild={true}>

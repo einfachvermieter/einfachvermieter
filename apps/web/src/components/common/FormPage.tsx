@@ -1,20 +1,23 @@
 import type { ReactNode } from "react";
-import { PageHead } from "./PageHead";
+import { PageHeader } from "./PageHeader";
 
 /**
- * Einheitlicher Rahmen für Create-/Edit-Formularseiten: `PageHead` mit
- * Gruppenlabel (Eyebrow) plus optionale Beschreibung als Sub-Zeile.
- * Detailseiten bestehender Entitäten übergeben stattdessen ihr `HeroBand`
- * als `head` (Header-Regel: Liste = Eyebrow-Kopf, Ding = Hero).
+ * Einheitlicher Rahmen für Create-/Edit-Formularseiten: der Seitenkopf mit
+ * Icon-Kachel, Breadcrumb-Eyebrow und Titel plus optionale Beschreibung als
+ * Unterzeile. Detailseiten bestehender Entitäten übergeben stattdessen ihren
+ * fertigen Kopf als `head`.
  */
 export const FormPage = ({
-  eyebrow,
+  tile,
   title,
   description,
   head,
   children,
 }: {
-  eyebrow?: string;
+  /**
+   * IconTile oder InitialsAvatar in Größe 44
+   */
+  tile?: ReactNode;
 
   /**
    * Pflicht, sofern kein `head` übergeben wird
@@ -23,7 +26,7 @@ export const FormPage = ({
   description?: ReactNode;
 
   /**
-   * Ersetzt den PageHead komplett, z. B. durch ein HeroBand
+   * Ersetzt den Kopf komplett, z. B. durch einen eigenen PageHeader
    */
   head?: ReactNode;
   children: ReactNode;
@@ -31,7 +34,7 @@ export const FormPage = ({
   <div className="space-y-6">
     {head ??
       (title ? (
-        <PageHead eyebrow={eyebrow} title={title} sub={description} />
+        <PageHeader tile={tile} title={title} sub={description} />
       ) : null)}
     {children}
   </div>

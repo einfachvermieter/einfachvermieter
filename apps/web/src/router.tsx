@@ -4,6 +4,7 @@ import {
   type PaymentPurposeKind,
   paymentPurposeKinds,
 } from "@einfachvermieter/shared";
+import { RiBuilding4Line, RiHome4Line } from "@remixicon/react";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
@@ -15,9 +16,10 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { AppShell } from "./components/AppShell";
+import { DetailPending } from "./components/common/DetailPending";
+import { IconTile } from "./components/common/IconTile";
 import { TenantScopedNotFound } from "./components/common/TenantScopedNotFound";
 import { ErrorFallback } from "./components/ErrorBoundary";
-import { FormSkeleton } from "./components/FormSkeleton";
 import { NotFound } from "./components/NotFound";
 import { Button } from "./components/ui/Button";
 import {
@@ -36,6 +38,7 @@ import {
   costTypeQueryOptions,
 } from "./lib/costs";
 import { useDocumentTitle } from "./lib/documentTitle";
+import { domainVisuals, gradients } from "./lib/domainVisuals";
 import {
   type HeatingSettings,
   heatingIdentityLabel,
@@ -284,7 +287,19 @@ const buildingEditRoute = createRoute({
     }
   },
   component: BuildingEditPage,
-  pendingComponent: () => <FormSkeleton rows={4} />,
+  pendingComponent: () => (
+    <DetailPending
+      tile={
+        <IconTile
+          icon={RiBuilding4Line}
+          size={44}
+          background={gradients.buildings}
+        />
+      }
+      statsSkeleton={3}
+      rows={4}
+    />
+  ),
   pendingMs: 0,
   staticData: {
     crumb: ({ loaderData }) => {
@@ -343,7 +358,15 @@ const unitEditRoute = createRoute({
     }
   },
   component: UnitEditPage,
-  pendingComponent: () => <FormSkeleton rows={3} />,
+  pendingComponent: () => (
+    <DetailPending
+      tile={
+        <IconTile icon={RiHome4Line} size={44} background={gradients.units} />
+      }
+      statsSkeleton={3}
+      rows={3}
+    />
+  ),
   pendingMs: 0,
   staticData: {
     crumb: ({ loaderData }) => {
@@ -396,7 +419,19 @@ const tenantEditRoute = createRoute({
     return { aggregate, units };
   },
   component: TenantEditPage,
-  pendingComponent: () => <FormSkeleton rows={6} />,
+  pendingComponent: () => (
+    <DetailPending
+      tile={
+        <IconTile
+          icon={domainVisuals.tenants.icon}
+          size={44}
+          background={gradients.tenants}
+        />
+      }
+      statsSkeleton={4}
+      rows={6}
+    />
+  ),
   pendingMs: 0,
   errorComponent: TenantScopedNotFound,
   staticData: {
@@ -731,7 +766,19 @@ const meterEditRoute = createRoute({
     }
   },
   component: MeterDetailPage,
-  pendingComponent: () => <FormSkeleton rows={4} />,
+  pendingComponent: () => (
+    <DetailPending
+      tile={
+        <IconTile
+          icon={domainVisuals.meters.icon}
+          size={44}
+          background={gradients.water}
+        />
+      }
+      statsSkeleton={3}
+      rows={4}
+    />
+  ),
   pendingMs: 0,
   staticData: {
     crumb: ({ loaderData }) => {
@@ -765,7 +812,19 @@ const meterReadingsRoute = createRoute({
     }
   },
   component: MeterReadingsPage,
-  pendingComponent: () => <FormSkeleton rows={4} />,
+  pendingComponent: () => (
+    <DetailPending
+      tile={
+        <IconTile
+          icon={domainVisuals.meters.icon}
+          size={44}
+          background={gradients.water}
+        />
+      }
+      statsSkeleton={3}
+      rows={4}
+    />
+  ),
   pendingMs: 0,
   staticData: {
     crumb: ({ loaderData }) => {

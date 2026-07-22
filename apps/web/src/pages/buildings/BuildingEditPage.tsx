@@ -8,9 +8,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { HeroBand } from "../../components/common/HeroBand";
 import { InfoCard } from "../../components/common/InfoCard";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
+import { PageHeader } from "../../components/common/PageHeader";
 import { api } from "../../lib/api";
 import type { Building } from "../../lib/buildings";
 import { domainVisuals } from "../../lib/domainVisuals";
@@ -66,11 +66,10 @@ export const BuildingEditPage = () => {
 
   return (
     <div className="pb-24">
-      <HeroBand
-        tile={<InitialsAvatar name={building.name} size={64} />}
-        eyebrow={t("ui.buildings.editEyebrow")}
+      <PageHeader
+        tile={<InitialsAvatar name={building.name} size={44} />}
         title={building.name}
-        meta={[
+        sub={[
           building.addressStreet,
           `${building.addressPostalCode} ${building.addressCity}`,
         ].join(t("ui.common.separators.bullet"))}

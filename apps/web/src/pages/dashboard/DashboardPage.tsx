@@ -15,10 +15,10 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { IconTile } from "../../components/common/IconTile";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
-import { PageHead } from "../../components/common/PageHead";
+import { PageHeader } from "../../components/common/PageHeader";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { buildingsQueryOptions } from "../../lib/buildings";
-import { gradients } from "../../lib/domainVisuals";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
 
@@ -95,10 +95,17 @@ export const DashboardPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHead
-        eyebrow={t("ui.dashboard.eyebrow")}
+      <PageHeader
+        tile={
+          <IconTile
+            icon={domainVisuals.dashboard.icon}
+            size={44}
+            background={gradients.brand}
+          />
+        }
         title={t("ui.dashboard.title")}
         sub={sub}
+        subLoading={!stats}
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

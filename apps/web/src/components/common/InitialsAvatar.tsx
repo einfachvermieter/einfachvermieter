@@ -5,6 +5,7 @@ const SIZE_CLASSES = {
   29: "size-[29px] rounded-[9px] text-xs",
   34: "size-[34px] rounded-[10px] text-[13px]",
   36: "size-9 rounded-[10px] text-[13px]",
+  44: "size-11 rounded-[13px] text-[15px] shadow-[0_8px_16px_-8px_rgba(13,148,136,0.45)]",
   64: "size-16 rounded-[18px] text-[22px]",
 } as const;
 

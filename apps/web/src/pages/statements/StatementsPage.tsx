@@ -6,8 +6,9 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
+import { IconTile } from "../../components/common/IconTile";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
-import { PageHead } from "../../components/common/PageHead";
+import { PageHeader } from "../../components/common/PageHeader";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
@@ -18,6 +19,7 @@ import {
   TooltipTrigger,
 } from "../../components/ui/Tooltip";
 import { useActiveBuilding } from "../../lib/activeBuilding";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import {
@@ -214,10 +216,17 @@ export const StatementsPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHead
-        eyebrow={t("ui.navigation.groups.costsBilling")}
+      <PageHeader
+        tile={
+          <IconTile
+            icon={domainVisuals.statements.icon}
+            size={44}
+            background={gradients.statements}
+          />
+        }
         title={t("ui.statements.pageTitle")}
         sub={sub}
+        subLoading={!data}
         action={
           canAddStatement ? (
             <Button asChild={true}>

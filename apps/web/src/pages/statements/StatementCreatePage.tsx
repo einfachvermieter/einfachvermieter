@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormPage } from "../../components/common/FormPage";
+import { IconTile } from "../../components/common/IconTile";
 import { Card, CardContent } from "../../components/ui/Card";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { dateToIso } from "../../lib/dateInput";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { Statement } from "../../lib/statements";
 import { tenantsOverviewQueryOptions } from "../../lib/tenants";
@@ -47,7 +49,13 @@ export const StatementCreatePage = () => {
 
   return (
     <FormPage
-      eyebrow={t("ui.navigation.groups.costsBilling")}
+      tile={
+        <IconTile
+          icon={domainVisuals.statements.icon}
+          size={44}
+          background={gradients.statements}
+        />
+      }
       title={t("ui.statements.createTitle")}
       description={t("ui.statements.createDescription")}
     >

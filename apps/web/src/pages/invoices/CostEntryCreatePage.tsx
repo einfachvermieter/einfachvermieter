@@ -5,6 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FormPage } from "../../components/common/FormPage";
+import { IconTile } from "../../components/common/IconTile";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import {
@@ -14,6 +15,7 @@ import {
 import { ApiError, api } from "../../lib/api";
 import { uploadCostEntryAttachment } from "../../lib/attachments";
 import { type CostEntry, costTypesQueryOptions } from "../../lib/costs";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { unitsQueryOptions } from "../../lib/units";
 import { useGoBack } from "../../lib/useGoBack";
@@ -143,7 +145,13 @@ export const CostEntryCreatePage = () => {
 
   return (
     <FormPage
-      eyebrow={t("ui.navigation.groups.costsBilling")}
+      tile={
+        <IconTile
+          icon={domainVisuals.invoices.icon}
+          size={44}
+          background={gradients.invoices}
+        />
+      }
       title={t("ui.invoices.createTitle")}
     >
       <CostEntryForm

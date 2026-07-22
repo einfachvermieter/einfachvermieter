@@ -71,117 +71,125 @@ export const MeterDetailPage = () => {
     );
   }
 
-  if (!meter || !buildings || !units || !costTypes) {
-    return <FormSkeleton rows={4} />;
-  }
-
-  const dash = t("ui.common.emptyValue");
-  const [latest] = [...(readings ?? [])].sort((a, b) =>
-    b.readingDate.localeCompare(a.readingDate),
-  );
-  const unit = meter.unitId
-    ? units.find((entry) => entry.id === meter.unitId)
-    : undefined;
-  const assignedCostTypes = costTypes.filter((costType) =>
-    meter.costTypeIds.includes(costType.id),
-  );
-  const [heatingVersion] = heatingVersions ?? [];
+  const loaded = meter && buildings && units && costTypes;
 
   return (
     <div className="pb-24">
-      <MeterHero meterId={meterId} eyebrow={t("ui.meters.editTitle")} />
+      <MeterHero meterId={meterId} />
 
       <MeterDetailHeader meterId={meterId} active="stammdaten" />
 
-      <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
-        <MeterForm
-          mode="edit"
-          buildings={buildings}
-          units={units}
-          costTypes={costTypes}
-          defaultValues={meterToFormValues(meter)}
-          costAllocationModeLocked={meter.costAllocationModeLocked}
-          currentMeterId={meter.id}
-          savedAt={
-            meter.updatedAt ? formatDate(meter.updatedAt.slice(0, 10)) : ""
-          }
-          onSubmit={async (values) => {
-            await updateMeter.mutateAsync(values);
-          }}
-          onCancel={goBack}
-        />
+      {loaded ? (
+        (() => {
+          const dash = t("ui.common.emptyValue");
+          const [latest] = [...(readings ?? [])].sort((a, b) =>
+            b.readingDate.localeCompare(a.readingDate),
+          );
+          const unit = meter.unitId
+            ? units.find((entry) => entry.id === meter.unitId)
+            : undefined;
+          const assignedCostTypes = costTypes.filter((costType) =>
+            meter.costTypeIds.includes(costType.id),
+          );
+          const [heatingVersion] = heatingVersions ?? [];
 
-        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
-          <InfoCard title={t("ui.common.infoCards.links")}>
-            {unit ? (
-              <ActionLink
-                icon={domainVisuals.units.icon}
-                iconBackground={domainVisuals.units.accent}
-                onClick={() =>
-                  navigate({
-                    to: "/wohnungen/$unitId",
-                    params: { unitId: unit.id },
-                  })
+          return (
+            <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
+              <MeterForm
+                mode="edit"
+                buildings={buildings}
+                units={units}
+                costTypes={costTypes}
+                defaultValues={meterToFormValues(meter)}
+                costAllocationModeLocked={meter.costAllocationModeLocked}
+                currentMeterId={meter.id}
+                savedAt={
+                  meter.updatedAt
+                    ? formatDate(meter.updatedAt.slice(0, 10))
+                    : ""
                 }
-              >
-                {unit.name}
-              </ActionLink>
-            ) : null}
-            {meter.costAllocationMode === "heating_cost_bill"
-              ? heatingVersion && (
-                  <ActionLink
-                    icon={domainVisuals.heating.icon}
-                    iconBackground={domainVisuals.heating.accent}
-                    subtitle={heatingIdentityLabel(heatingVersion)}
-                    onClick={() =>
-                      navigate({
-                        to: "/heizkosten/$id",
-                        params: { id: heatingVersion.id },
-                      })
-                    }
-                  >
-                    {t("ui.meters.detail.heatingConfig")}
-                  </ActionLink>
-                )
-              : assignedCostTypes.map((costType) => (
-                  <ActionLink
-                    key={costType.id}
-                    icon={domainVisuals.costTypes.icon}
-                    iconBackground={domainVisuals.costTypes.accent}
-                    onClick={() =>
-                      navigate({
-                        to: "/kostenarten/$costTypeId",
-                        params: { costTypeId: costType.id },
-                      })
-                    }
-                  >
-                    {costType.name}
-                  </ActionLink>
-                ))}
-          </InfoCard>
+                onSubmit={async (values) => {
+                  await updateMeter.mutateAsync(values);
+                }}
+                onCancel={goBack}
+              />
 
-          <InfoCard
-            title={t("ui.common.infoCards.details")}
-            rows={[
-              {
-                label: t("ui.meters.detail.lastReadingLabel"),
-                value: latest ? formatDate(latest.readingDate) : dash,
-              },
-            ]}
-          />
+              <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+                <InfoCard title={t("ui.common.infoCards.links")}>
+                  {unit ? (
+                    <ActionLink
+                      icon={domainVisuals.units.icon}
+                      iconBackground={domainVisuals.units.accent}
+                      onClick={() =>
+                        navigate({
+                          to: "/wohnungen/$unitId",
+                          params: { unitId: unit.id },
+                        })
+                      }
+                    >
+                      {unit.name}
+                    </ActionLink>
+                  ) : null}
+                  {meter.costAllocationMode === "heating_cost_bill"
+                    ? heatingVersion && (
+                        <ActionLink
+                          icon={domainVisuals.heating.icon}
+                          iconBackground={domainVisuals.heating.accent}
+                          subtitle={heatingIdentityLabel(heatingVersion)}
+                          onClick={() =>
+                            navigate({
+                              to: "/heizkosten/$id",
+                              params: { id: heatingVersion.id },
+                            })
+                          }
+                        >
+                          {t("ui.meters.detail.heatingConfig")}
+                        </ActionLink>
+                      )
+                    : assignedCostTypes.map((costType) => (
+                        <ActionLink
+                          key={costType.id}
+                          icon={domainVisuals.costTypes.icon}
+                          iconBackground={domainVisuals.costTypes.accent}
+                          onClick={() =>
+                            navigate({
+                              to: "/kostenarten/$costTypeId",
+                              params: { costTypeId: costType.id },
+                            })
+                          }
+                        >
+                          {costType.name}
+                        </ActionLink>
+                      ))}
+                </InfoCard>
 
-          <InfoCard title={t("ui.common.infoCards.actions")}>
-            <ActionLink
-              icon={RiDeleteBinLine}
-              iconBackground="var(--color-rose-400)"
-              danger={true}
-              onClick={() => deletion.request(meter)}
-            >
-              {t("ui.meters.detail.deleteAction")}
-            </ActionLink>
-          </InfoCard>
-        </div>
-      </div>
+                <InfoCard
+                  title={t("ui.common.infoCards.details")}
+                  rows={[
+                    {
+                      label: t("ui.meters.detail.lastReadingLabel"),
+                      value: latest ? formatDate(latest.readingDate) : dash,
+                    },
+                  ]}
+                />
+
+                <InfoCard title={t("ui.common.infoCards.actions")}>
+                  <ActionLink
+                    icon={RiDeleteBinLine}
+                    iconBackground="var(--color-rose-400)"
+                    danger={true}
+                    onClick={() => deletion.request(meter)}
+                  >
+                    {t("ui.meters.detail.deleteAction")}
+                  </ActionLink>
+                </InfoCard>
+              </div>
+            </div>
+          );
+        })()
+      ) : (
+        <FormSkeleton rows={4} />
+      )}
 
       {deletion.dialog}
     </div>

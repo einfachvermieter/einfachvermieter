@@ -1,8 +1,12 @@
 import { formatNumber } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
-import { HeroBand } from "../../components/common/HeroBand";
 import { IconTile } from "../../components/common/IconTile";
-import { meterTypeVisual } from "../../lib/domainVisuals";
+import { PageHeader } from "../../components/common/PageHeader";
+import {
+  domainVisuals,
+  gradients,
+  meterTypeVisual,
+} from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   measurementUnitLabel,
@@ -15,18 +19,25 @@ import {
 /**
  * Hero-Band eines Zählers (Stammdaten- und Zählerstände-Tab)
  */
-export const MeterHero = ({
-  meterId,
-  eyebrow,
-}: {
-  meterId: string;
-  eyebrow: string;
-}) => {
+export const MeterHero = ({ meterId }: { meterId: string }) => {
   const { data: meter } = useQuery(meterQueryOptions(meterId));
   const { data: readings } = useQuery(readingsQueryOptions(meterId));
 
   if (!meter) {
-    return null;
+    return (
+      <PageHeader
+        tile={
+          <IconTile
+            icon={domainVisuals.meters.icon}
+            size={44}
+            background={gradients.water}
+          />
+        }
+        title=""
+        loading={true}
+        statsSkeleton={3}
+      />
+    );
   }
 
   const unitLabel = measurementUnitLabel(meter.measurementUnit);
@@ -54,17 +65,16 @@ export const MeterHero = ({
     consumption !== null ? `${formatNumber(consumption)} ${unitLabel}` : dash;
 
   return (
-    <HeroBand
+    <PageHeader
       tile={
         <IconTile
           icon={meterTypeVisual(meter.type).icon}
-          size={64}
+          size={44}
           background={meterTypeVisual(meter.type).gradient}
         />
       }
-      eyebrow={eyebrow}
       title={meter.label}
-      meta={[meterTypeLabel(meter.type), meterRoleLabel(meter.role)].join(
+      sub={[meterTypeLabel(meter.type), meterRoleLabel(meter.role)].join(
         t("ui.common.separators.bullet"),
       )}
       stats={[

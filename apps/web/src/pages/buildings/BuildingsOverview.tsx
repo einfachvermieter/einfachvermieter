@@ -1,18 +1,20 @@
-import { RiAddLine } from "@remixicon/react";
+import { RiAddLine, RiBuilding4Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
+import { IconTile } from "../../components/common/IconTile";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
-import { PageHead } from "../../components/common/PageHead";
+import { PageHeader } from "../../components/common/PageHeader";
 import { Button } from "../../components/ui/Button";
 import {
   type Building,
   type BuildingSortColumn,
   buildingsOverviewQueryOptions,
 } from "../../lib/buildings";
+import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
 import { rowActionsColumn } from "../../lib/tableColumns";
@@ -91,10 +93,17 @@ export const BuildingsOverview = () => {
 
   return (
     <div className="space-y-6">
-      <PageHead
-        eyebrow={t("ui.dashboard.eyebrow")}
+      <PageHeader
+        tile={
+          <IconTile
+            icon={RiBuilding4Line}
+            size={44}
+            background={gradients.buildings}
+          />
+        }
         title={t("ui.buildings.title")}
         sub={sub}
+        subLoading={!data}
         action={
           <Button asChild={true}>
             <Link to="/gebaeude/neu">

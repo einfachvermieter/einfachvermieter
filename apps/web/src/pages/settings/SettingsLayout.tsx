@@ -5,8 +5,10 @@ import {
 } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { PageHead } from "@/components/common/PageHead";
+import { IconTile } from "@/components/common/IconTile";
+import { PageHeader } from "@/components/common/PageHeader";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { domainVisuals, gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import { useAuthMode } from "@/lib/setup";
 
@@ -19,7 +21,7 @@ const TAB_ROUTES: Record<SettingsTab, string> = {
 };
 
 /**
- * Rahmen des Einstellungen-Bereichs: gemeinsamer Eyebrow, Seitentitel und
+ * Rahmen des Einstellungen-Bereichs: gemeinsamer Seitenkopf und
  * Unternavigation
  */
 export const SettingsLayout = ({
@@ -39,8 +41,14 @@ export const SettingsLayout = ({
   return (
     <div className="space-y-6 pb-24">
       <div className="space-y-4">
-        <PageHead
-          eyebrow={t("ui.settings.eyebrow")}
+        <PageHeader
+          tile={
+            <IconTile
+              icon={domainVisuals.configuration.icon}
+              size={44}
+              background={gradients.commercial}
+            />
+          }
           title={title}
           sub={description}
         />

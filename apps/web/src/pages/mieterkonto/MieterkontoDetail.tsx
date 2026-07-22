@@ -220,9 +220,6 @@ export const MieterkontoDetail = () => {
   // 0,00-€-Salden und leere Tabellen auf, bis die Queries eintrudeln.
   const isPending =
     accountQueries.some((query) => query.isPending) || paymentsQuery.isPending;
-  if (isPending) {
-    return <FormSkeleton rows={8} />;
-  }
 
   const mieteDescription = currentRent
     ? t("ui.account.detail.mieteDescription", {
@@ -252,7 +249,6 @@ export const MieterkontoDetail = () => {
     <div className="space-y-6 pb-6">
       <TenantHero
         tenantId={tenantId}
-        eyebrow={t("ui.tenants.tabs.account")}
         balance={
           balance
             ? {
@@ -264,257 +260,268 @@ export const MieterkontoDetail = () => {
       />
       <TenantDetailHeader tenantId={tenantId} active="konto" />
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
-        <Tabs
-          value={tab ?? "miete"}
-          onValueChange={(value) => {
-            navigate({
-              to: "/mieter/$tenantId/konto",
-              params: { tenantId },
-              search: { tab: value as KontoTab },
-            }).catch(() => undefined);
-          }}
-        >
-          <TabsList variant="pills">
-            <TabsTrigger value="miete">{t("ui.account.tabs.rent")}</TabsTrigger>
-            <TabsTrigger value="zahlungen">
-              {t("ui.account.tabs.payments")}
-              {otherPayments.length > 0 ? (
-                <TabCount>{otherPayments.length}</TabCount>
-              ) : null}
-            </TabsTrigger>
-            <TabsTrigger value="abrechnungen">
-              {t("ui.account.tabs.settlements")}
-              {settlementRows && settlementRows.length > 0 ? (
-                <TabCount>{settlementRows.length}</TabCount>
-              ) : null}
-            </TabsTrigger>
-            <TabsTrigger value="kaution">
-              {t("ui.account.tabs.deposit")}
-            </TabsTrigger>
-            <TabsTrigger value="gebuehren">
-              {t("ui.account.tabs.fees")}
-            </TabsTrigger>
-          </TabsList>
+      {isPending ? (
+        <FormSkeleton rows={8} />
+      ) : (
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
+          <Tabs
+            value={tab ?? "miete"}
+            onValueChange={(value) => {
+              navigate({
+                to: "/mieter/$tenantId/konto",
+                params: { tenantId },
+                search: { tab: value as KontoTab },
+              }).catch(() => undefined);
+            }}
+          >
+            <TabsList variant="pills">
+              <TabsTrigger value="miete">
+                {t("ui.account.tabs.rent")}
+              </TabsTrigger>
+              <TabsTrigger value="zahlungen">
+                {t("ui.account.tabs.payments")}
+                {otherPayments.length > 0 ? (
+                  <TabCount>{otherPayments.length}</TabCount>
+                ) : null}
+              </TabsTrigger>
+              <TabsTrigger value="abrechnungen">
+                {t("ui.account.tabs.settlements")}
+                {settlementRows && settlementRows.length > 0 ? (
+                  <TabCount>{settlementRows.length}</TabCount>
+                ) : null}
+              </TabsTrigger>
+              <TabsTrigger value="kaution">
+                {t("ui.account.tabs.deposit")}
+              </TabsTrigger>
+              <TabsTrigger value="gebuehren">
+                {t("ui.account.tabs.fees")}
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="miete">
-            <SectionCard
-              icon={RiMoneyEuroCircleLine}
-              iconBackground={gradients.money}
-              title={t("ui.account.monthsHeading")}
-              description={mieteDescription}
-              action={addLink(t("ui.payments.add"), () =>
-                openPaymentForm(null),
-              )}
-            >
-              {paymentPreset ? (
-                <div className="mb-4">
-                  <PaymentForm
-                    key={paymentPreset.forMonth ?? "new"}
-                    variant="inline"
-                    mode="create"
-                    tenantOptions={[{ value: tenantId, label: tenantName }]}
-                    tenantFieldDisabled={true}
-                    allowedPurposeKinds={["month"]}
-                    lockedPurposeKind="month"
-                    defaultValues={buildPaymentDefaults()}
-                    onSubmit={async (values) => {
-                      await createPayment.mutateAsync(paymentFormToDto(values));
-                    }}
-                    onCancel={() => setPaymentPreset(null)}
-                  />
-                </div>
-              ) : null}
-              <div className="-mx-2">
-                <MonthGridTable
-                  monthRows={monthRows ?? []}
-                  payments={payments}
-                  tenantId={tenantId}
-                  deletion={paymentDeletion}
-                  onRecordPayment={openPaymentForm}
-                />
-              </div>
-            </SectionCard>
-          </TabsContent>
-
-          <TabsContent value="zahlungen">
-            <SectionCard
-              icon={RiBankCard2Line}
-              iconBackground={gradients.bank}
-              title={t("ui.account.otherPaymentsHeading")}
-              description={t("ui.account.detail.paymentsDescription")}
-              action={addLink(t("ui.payments.add"), () =>
-                navigate({ to: "/zahlungen/neu", search: { tenantId } }).catch(
-                  () => undefined,
-                ),
-              )}
-            >
-              {otherPayments.length > 0 ? (
+            <TabsContent value="miete">
+              <SectionCard
+                icon={RiMoneyEuroCircleLine}
+                iconBackground={gradients.money}
+                title={t("ui.account.monthsHeading")}
+                description={mieteDescription}
+                action={addLink(t("ui.payments.add"), () =>
+                  openPaymentForm(null),
+                )}
+              >
+                {paymentPreset ? (
+                  <div className="mb-4">
+                    <PaymentForm
+                      key={paymentPreset.forMonth ?? "new"}
+                      variant="inline"
+                      mode="create"
+                      tenantOptions={[{ value: tenantId, label: tenantName }]}
+                      tenantFieldDisabled={true}
+                      allowedPurposeKinds={["month"]}
+                      lockedPurposeKind="month"
+                      defaultValues={buildPaymentDefaults()}
+                      onSubmit={async (values) => {
+                        await createPayment.mutateAsync(
+                          paymentFormToDto(values),
+                        );
+                      }}
+                      onCancel={() => setPaymentPreset(null)}
+                    />
+                  </div>
+                ) : null}
                 <div className="-mx-2">
-                  <AccountPaymentsTable
-                    rows={otherPayments}
+                  <MonthGridTable
+                    monthRows={monthRows ?? []}
+                    payments={payments}
                     tenantId={tenantId}
                     deletion={paymentDeletion}
+                    onRecordPayment={openPaymentForm}
                   />
                 </div>
-              ) : (
-                <EmptyNote>
-                  <TextWithLink
-                    template={t("ui.account.detail.emptyPayments")}
-                    link={
-                      <Link
-                        to="/mieter/$tenantId/konto"
-                        params={{ tenantId }}
-                        search={{ tab: "miete" }}
-                        className="font-semibold text-foreground underline"
-                      >
-                        {t("ui.account.tabs.rent")}
-                      </Link>
-                    }
-                  />
-                </EmptyNote>
-              )}
-            </SectionCard>
-          </TabsContent>
+              </SectionCard>
+            </TabsContent>
 
-          <TabsContent value="abrechnungen">
-            <SectionCard
-              icon={RiFileList3Line}
-              iconBackground={gradients.statements}
-              title={t("ui.account.settlementsHeading")}
-              description={t("ui.account.detail.settlementsDescription")}
-            >
-              {settlementRows && settlementRows.length > 0 ? (
-                <div className="-mx-2">
-                  <SettlementsTable rows={settlementRows} />
-                </div>
-              ) : (
-                <EmptyNote>{t("ui.account.detail.emptySettlements")}</EmptyNote>
-              )}
-            </SectionCard>
-          </TabsContent>
-
-          <TabsContent value="kaution">
-            <SectionCard
-              icon={RiSafe2Line}
-              iconBackground={gradients.tenants}
-              title={t("ui.account.depositHeading")}
-              description={t("ui.account.detail.depositDescription")}
-              action={addLink(t("ui.account.deposit.record"), () =>
-                navigate({
-                  to: "/zahlungen/neu",
-                  search: { tenantId, purposeKind: "deposit" },
-                }).catch(() => undefined),
-              )}
-            >
-              <DepositSummary row={depositRow ?? null} />
-            </SectionCard>
-          </TabsContent>
-
-          <TabsContent value="gebuehren">
-            <SectionCard
-              icon={RiReceiptLine}
-              iconBackground={gradients.invoices}
-              title={t("ui.account.feesHeading")}
-              description={t("ui.account.detail.feesDescription")}
-              action={addLink(t("ui.account.fee.add"), () =>
-                setFeeFormOpen((open) => !open),
-              )}
-            >
-              {feeFormOpen ? (
-                <div className="mb-4">
-                  <FeeInlineForm
-                    tenantId={tenantId}
-                    onDone={() => setFeeFormOpen(false)}
-                  />
-                </div>
-              ) : null}
-              {feeRows && feeRows.length > 0 ? (
-                <div className="-mx-2">
-                  <FeesTable
-                    rows={feeRows}
-                    tenantId={tenantId}
-                    deletion={feeDeletion}
-                  />
-                </div>
-              ) : (
-                <EmptyNote>{t("ui.account.detail.emptyFees")}</EmptyNote>
-              )}
-            </SectionCard>
-          </TabsContent>
-        </Tabs>
-
-        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
-          <InfoCard title={t("ui.common.infoCards.links")}>
-            <ActionLink
-              icon={domainVisuals.tenants.icon}
-              iconBackground={domainVisuals.tenants.accent}
-              onClick={() =>
-                navigate({
-                  to: "/mieter/$tenantId",
-                  params: { tenantId },
-                }).catch(() => undefined)
-              }
-            >
-              {t("ui.tenants.tabs.master")}
-            </ActionLink>
-            {unit ? (
-              <ActionLink
-                icon={domainVisuals.units.icon}
-                iconBackground={domainVisuals.units.accent}
-                onClick={() =>
+            <TabsContent value="zahlungen">
+              <SectionCard
+                icon={RiBankCard2Line}
+                iconBackground={gradients.bank}
+                title={t("ui.account.otherPaymentsHeading")}
+                description={t("ui.account.detail.paymentsDescription")}
+                action={addLink(t("ui.payments.add"), () =>
                   navigate({
-                    to: "/wohnungen/$unitId",
-                    params: { unitId: unit.id },
-                  }).catch(() => undefined)
-                }
+                    to: "/zahlungen/neu",
+                    search: { tenantId },
+                  }).catch(() => undefined),
+                )}
               >
-                {unit.name}
-              </ActionLink>
-            ) : null}
-          </InfoCard>
+                {otherPayments.length > 0 ? (
+                  <div className="-mx-2">
+                    <AccountPaymentsTable
+                      rows={otherPayments}
+                      tenantId={tenantId}
+                      deletion={paymentDeletion}
+                    />
+                  </div>
+                ) : (
+                  <EmptyNote>
+                    <TextWithLink
+                      template={t("ui.account.detail.emptyPayments")}
+                      link={
+                        <Link
+                          to="/mieter/$tenantId/konto"
+                          params={{ tenantId }}
+                          search={{ tab: "miete" }}
+                          className="font-semibold text-foreground underline"
+                        >
+                          {t("ui.account.tabs.rent")}
+                        </Link>
+                      }
+                    />
+                  </EmptyNote>
+                )}
+              </SectionCard>
+            </TabsContent>
 
-          <InfoCard
-            title={t("ui.common.infoCards.details")}
-            rows={[
-              {
-                label: t("ui.account.detail.sepaLabel"),
-                value: (
-                  <Badge variant={sepaGranted ? "ok" : "slate"}>
-                    {sepaGranted
-                      ? t("ui.account.detail.sepaGranted")
-                      : t("ui.account.detail.sepaMissing")}
-                  </Badge>
-                ),
-              },
-            ]}
-          />
-
-          <InfoCard title={t("ui.common.infoCards.actions")}>
-            <ActionLink
-              icon={RiMoneyEuroCircleLine}
-              iconBackground={domainVisuals.units.accent}
-              onClick={recordPaymentFromAction}
-            >
-              {t("ui.payments.add")}
-            </ActionLink>
-            {latestSettlement ? (
-              <ActionLink
+            <TabsContent value="abrechnungen">
+              <SectionCard
                 icon={RiFileList3Line}
-                iconBackground={domainVisuals.statements.accent}
+                iconBackground={gradients.statements}
+                title={t("ui.account.settlementsHeading")}
+                description={t("ui.account.detail.settlementsDescription")}
+              >
+                {settlementRows && settlementRows.length > 0 ? (
+                  <div className="-mx-2">
+                    <SettlementsTable rows={settlementRows} />
+                  </div>
+                ) : (
+                  <EmptyNote>
+                    {t("ui.account.detail.emptySettlements")}
+                  </EmptyNote>
+                )}
+              </SectionCard>
+            </TabsContent>
+
+            <TabsContent value="kaution">
+              <SectionCard
+                icon={RiSafe2Line}
+                iconBackground={gradients.tenants}
+                title={t("ui.account.depositHeading")}
+                description={t("ui.account.detail.depositDescription")}
+                action={addLink(t("ui.account.deposit.record"), () =>
+                  navigate({
+                    to: "/zahlungen/neu",
+                    search: { tenantId, purposeKind: "deposit" },
+                  }).catch(() => undefined),
+                )}
+              >
+                <DepositSummary row={depositRow ?? null} />
+              </SectionCard>
+            </TabsContent>
+
+            <TabsContent value="gebuehren">
+              <SectionCard
+                icon={RiReceiptLine}
+                iconBackground={gradients.invoices}
+                title={t("ui.account.feesHeading")}
+                description={t("ui.account.detail.feesDescription")}
+                action={addLink(t("ui.account.fee.add"), () =>
+                  setFeeFormOpen((open) => !open),
+                )}
+              >
+                {feeFormOpen ? (
+                  <div className="mb-4">
+                    <FeeInlineForm
+                      tenantId={tenantId}
+                      onDone={() => setFeeFormOpen(false)}
+                    />
+                  </div>
+                ) : null}
+                {feeRows && feeRows.length > 0 ? (
+                  <div className="-mx-2">
+                    <FeesTable
+                      rows={feeRows}
+                      tenantId={tenantId}
+                      deletion={feeDeletion}
+                    />
+                  </div>
+                ) : (
+                  <EmptyNote>{t("ui.account.detail.emptyFees")}</EmptyNote>
+                )}
+              </SectionCard>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+            <InfoCard title={t("ui.common.infoCards.links")}>
+              <ActionLink
+                icon={domainVisuals.tenants.icon}
+                iconBackground={domainVisuals.tenants.accent}
                 onClick={() =>
                   navigate({
-                    to: "/abrechnungen/$statementId",
-                    params: { statementId: latestSettlement.statementId },
+                    to: "/mieter/$tenantId",
+                    params: { tenantId },
                   }).catch(() => undefined)
                 }
               >
-                {t("ui.account.detail.openStatement")}
+                {t("ui.tenants.tabs.master")}
               </ActionLink>
-            ) : null}
-          </InfoCard>
+              {unit ? (
+                <ActionLink
+                  icon={domainVisuals.units.icon}
+                  iconBackground={domainVisuals.units.accent}
+                  onClick={() =>
+                    navigate({
+                      to: "/wohnungen/$unitId",
+                      params: { unitId: unit.id },
+                    }).catch(() => undefined)
+                  }
+                >
+                  {unit.name}
+                </ActionLink>
+              ) : null}
+            </InfoCard>
+
+            <InfoCard
+              title={t("ui.common.infoCards.details")}
+              rows={[
+                {
+                  label: t("ui.account.detail.sepaLabel"),
+                  value: (
+                    <Badge variant={sepaGranted ? "ok" : "slate"}>
+                      {sepaGranted
+                        ? t("ui.account.detail.sepaGranted")
+                        : t("ui.account.detail.sepaMissing")}
+                    </Badge>
+                  ),
+                },
+              ]}
+            />
+
+            <InfoCard title={t("ui.common.infoCards.actions")}>
+              <ActionLink
+                icon={RiMoneyEuroCircleLine}
+                iconBackground={domainVisuals.units.accent}
+                onClick={recordPaymentFromAction}
+              >
+                {t("ui.payments.add")}
+              </ActionLink>
+              {latestSettlement ? (
+                <ActionLink
+                  icon={RiFileList3Line}
+                  iconBackground={domainVisuals.statements.accent}
+                  onClick={() =>
+                    navigate({
+                      to: "/abrechnungen/$statementId",
+                      params: { statementId: latestSettlement.statementId },
+                    }).catch(() => undefined)
+                  }
+                >
+                  {t("ui.account.detail.openStatement")}
+                </ActionLink>
+              ) : null}
+            </InfoCard>
+          </div>
         </div>
-      </div>
+      )}
 
       {feeDeletion.dialog}
       {paymentDeletion.dialog}

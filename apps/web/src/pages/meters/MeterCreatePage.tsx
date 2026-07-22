@@ -2,10 +2,12 @@ import { type MeterCreateDto, todayIso } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { FormPage } from "../../components/common/FormPage";
+import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { costTypesQueryOptions } from "../../lib/costs";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { Meter } from "../../lib/meters";
 import { unitsQueryOptions } from "../../lib/units";
@@ -33,38 +35,49 @@ export const MeterCreatePage = () => {
     onSuccess: goBack,
   });
 
-  if (!buildings || !units || !costTypes) {
-    return <FormSkeleton rows={4} />;
-  }
-
-  const matchingBuilding = buildings.find(
-    (building) => building.id === preselectedBuildingId,
-  );
-  const initialBuildingId = matchingBuilding?.id ?? buildings[0]?.id ?? "";
-  const today = todayIso();
-  const defaultValues = emptyMeterFormValues(
-    initialBuildingId,
-    today,
-    preselectedType,
-  );
-
   return (
     <FormPage
-      eyebrow={t("ui.navigation.groups.masterData")}
+      tile={
+        <IconTile
+          icon={domainVisuals.meters.icon}
+          size={44}
+          background={gradients.water}
+        />
+      }
       title={t("ui.meters.createTitle")}
     >
-      <MeterForm
-        key={defaultValues.buildingId}
-        mode="create"
-        buildings={buildings}
-        units={units}
-        costTypes={costTypes}
-        defaultValues={defaultValues}
-        onSubmit={async (values) => {
-          await createMeter.mutateAsync(values);
-        }}
-        onCancel={goBack}
-      />
+      {buildings && units && costTypes ? (
+        (() => {
+          const matchingBuilding = buildings.find(
+            (building) => building.id === preselectedBuildingId,
+          );
+          const initialBuildingId =
+            matchingBuilding?.id ?? buildings[0]?.id ?? "";
+          const today = todayIso();
+          const defaultValues = emptyMeterFormValues(
+            initialBuildingId,
+            today,
+            preselectedType,
+          );
+
+          return (
+            <MeterForm
+              key={defaultValues.buildingId}
+              mode="create"
+              buildings={buildings}
+              units={units}
+              costTypes={costTypes}
+              defaultValues={defaultValues}
+              onSubmit={async (values) => {
+                await createMeter.mutateAsync(values);
+              }}
+              onCancel={goBack}
+            />
+          );
+        })()
+      ) : (
+        <FormSkeleton rows={4} />
+      )}
     </FormPage>
   );
 };

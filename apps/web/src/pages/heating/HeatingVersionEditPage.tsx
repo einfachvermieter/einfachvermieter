@@ -13,9 +13,9 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { HeroBand } from "../../components/common/HeroBand";
 import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
+import { PageHeader } from "../../components/common/PageHeader";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Badge } from "../../components/ui/Badge";
 import { type Building, buildingsQueryOptions } from "../../lib/buildings";
@@ -38,6 +38,28 @@ import { HeatingForm } from "./HeatingForm";
 const isVersionActive = (version: HeatingSettings, today: string): boolean =>
   version.validFrom <= today &&
   (version.validTo === null || version.validTo >= today);
+
+const buildVersionStats = (version: HeatingSettings) => {
+  const isInternal = version.mode === "internal";
+  const active = isVersionActive(version, todayIso());
+  const dash = t("ui.common.emptyValue");
+  const sharesText = isInternal
+    ? `${version.baseSharePercent} / ${version.consumptionSharePercent}`
+    : dash;
+  const fuelText = isInternal
+    ? t(`ui.heating.fuelTypes.${version.fuelType}`)
+    : dash;
+  return [
+    { label: t("ui.heating.versions.columns.split"), value: sharesText },
+    { label: t("ui.heating.fields.fuelType"), value: fuelText },
+    {
+      label: t("ui.heating.versions.columns.status"),
+      value: active
+        ? t("ui.heating.versions.statusActive")
+        : t("ui.heating.detail.statusInactive"),
+    },
+  ];
+};
 
 export const HeatingVersionEditPage = () => {
   const { id } = useParams({ strict: false }) as { id: string };
@@ -79,11 +101,8 @@ export const HeatingVersionEditPage = () => {
     );
   }
 
-  if (!version || !buildings || !building || !metersResult) {
-    return <FormSkeleton rows={4} />;
-  }
-
-  const hotWaterMeterCandidates = metersResult.items.filter(
+  const loaded = version && buildings && building && metersResult;
+  const hotWaterMeterCandidates = (metersResult?.items ?? []).filter(
     (meter) =>
       meter.type === "heat_meter" &&
       meter.unitId === null &&
@@ -93,13 +112,39 @@ export const HeatingVersionEditPage = () => {
   );
 
   return (
-    <HeatingVersionEditView
-      buildings={buildings}
-      building={building}
-      version={version}
-      hotWaterMeterCandidates={hotWaterMeterCandidates}
-      onDone={onDone}
-    />
+    <div className="pb-24">
+      <PageHeader
+        tile={
+          <IconTile
+            icon={domainVisuals.heating.icon}
+            size={44}
+            background={gradients.heating}
+          />
+        }
+        title={
+          version
+            ? t("ui.heating.heroTitle", {
+                validFrom: formatDate(version.validFrom),
+              })
+            : ""
+        }
+        sub={building?.name}
+        loading={!loaded}
+        statsSkeleton={3}
+        stats={version ? buildVersionStats(version) : undefined}
+      />
+      {loaded ? (
+        <HeatingVersionEditView
+          buildings={buildings}
+          building={building}
+          version={version}
+          hotWaterMeterCandidates={hotWaterMeterCandidates}
+          onDone={onDone}
+        />
+      ) : (
+        <FormSkeleton rows={4} />
+      )}
+    </div>
   );
 };
 
@@ -146,42 +191,10 @@ const HeatingVersionEditView = ({
 
   const isExternal = form.watch("mode") === "external";
   const isInternal = version.mode === "internal";
-  const active = isVersionActive(version, todayIso());
   const dash = t("ui.common.emptyValue");
-  const sharesText = isInternal
-    ? `${version.baseSharePercent} / ${version.consumptionSharePercent}`
-    : dash;
-  const fuelText = isInternal
-    ? t(`ui.heating.fuelTypes.${version.fuelType}`)
-    : dash;
 
   return (
-    <div className="pb-24">
-      <HeroBand
-        tile={
-          <IconTile
-            icon={domainVisuals.heating.icon}
-            size={64}
-            background={gradients.heating}
-          />
-        }
-        eyebrow={t("ui.heating.editTitle")}
-        title={t("ui.heating.heroTitle", {
-          validFrom: formatDate(version.validFrom),
-        })}
-        meta={building.name}
-        stats={[
-          { label: t("ui.heating.versions.columns.split"), value: sharesText },
-          { label: t("ui.heating.fields.fuelType"), value: fuelText },
-          {
-            label: t("ui.heating.versions.columns.status"),
-            value: active
-              ? t("ui.heating.versions.statusActive")
-              : t("ui.heating.detail.statusInactive"),
-          },
-        ]}
-      />
-
+    <>
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
         <div>
           <HeatingForm
@@ -259,6 +272,6 @@ const HeatingVersionEditView = ({
       </div>
 
       {deletion.dialog}
-    </div>
+    </>
   );
 };

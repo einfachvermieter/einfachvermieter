@@ -1,9 +1,12 @@
 import type { UnitCreateDto, UnitFormValues } from "@einfachvermieter/shared";
+import { RiHome4Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { FormPage } from "../../components/common/FormPage";
+import { IconTile } from "../../components/common/IconTile";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
+import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { Unit } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
@@ -37,7 +40,9 @@ export const UnitCreatePage = () => {
 
   return (
     <FormPage
-      eyebrow={t("ui.navigation.groups.masterData")}
+      tile={
+        <IconTile icon={RiHome4Line} size={44} background={gradients.units} />
+      }
       title={t("ui.units.createTitle")}
     >
       <UnitForm

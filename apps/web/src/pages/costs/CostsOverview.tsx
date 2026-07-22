@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
-import { PageHead } from "../../components/common/PageHead";
+import { PageHeader } from "../../components/common/PageHeader";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
@@ -24,7 +24,11 @@ import {
   costTypeCategoryLabel,
   costTypesOverviewQueryOptions,
 } from "../../lib/costs";
-import { costTypeVisual } from "../../lib/domainVisuals";
+import {
+  costTypeVisual,
+  domainVisuals,
+  gradients,
+} from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
@@ -150,10 +154,17 @@ export const CostsOverview = () => {
 
   return (
     <div className="space-y-6">
-      <PageHead
-        eyebrow={t("ui.navigation.groups.costsBilling")}
+      <PageHeader
+        tile={
+          <IconTile
+            icon={domainVisuals.costTypes.icon}
+            size={44}
+            background={gradients.notes}
+          />
+        }
         title={t("ui.costs.title")}
         sub={sub}
+        subLoading={!data}
         action={
           canAddCostType ? (
             <Button asChild={true}>

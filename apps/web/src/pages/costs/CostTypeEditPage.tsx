@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { HeroBand } from "../../components/common/HeroBand";
 import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
+import { PageHeader } from "../../components/common/PageHeader";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
@@ -16,7 +16,11 @@ import {
   costTypeCategoryLabel,
   costTypeQueryOptions,
 } from "../../lib/costs";
-import { costTypeVisual, domainVisuals } from "../../lib/domainVisuals";
+import {
+  costTypeVisual,
+  domainVisuals,
+  gradients,
+} from "../../lib/domainVisuals";
 import {
   heatingIdentityLabel,
   heatingSettingsListQueryOptions,
@@ -97,142 +101,152 @@ export const CostTypeEditPage = () => {
     );
   }
 
-  if (!buildings || !costTypeQuery.data) {
-    return <FormSkeleton rows={4} />;
-  }
-
   const costType = costTypeQuery.data;
-  const { stats } = costType;
-  const visual = costTypeVisual(costType);
-  const isHeating = costType.category === "heating";
+  const visual = costType
+    ? costTypeVisual(costType)
+    : { icon: domainVisuals.costTypes.icon, gradient: gradients.notes };
+  const isHeating = costType?.category === "heating";
   const [heatingVersion] = heatingVersions ?? [];
 
   return (
     <div className="pb-24">
-      <HeroBand
+      <PageHeader
+        loading={!costType}
+        statsSkeleton={3}
         tile={
-          <IconTile icon={visual.icon} size={64} background={visual.gradient} />
+          <IconTile icon={visual.icon} size={44} background={visual.gradient} />
         }
-        eyebrow={t("ui.costs.typeEditTitle")}
-        title={costType.name}
-        meta={costTypeCategoryLabel(costType.category)}
-        stats={[
-          {
-            label: t("ui.costs.detail.statsEntries", { year: stats.year }),
-            value: String(stats.entryCount),
-          },
-          {
-            label: t("ui.costs.detail.statsSum", { year: stats.year }),
-            value: formatEur(stats.totalAmountCents),
-          },
-          {
-            label: t("ui.costs.columns.category"),
-            value: costTypeCategoryLabel(costType.category),
-          },
-        ]}
+        title={costType?.name ?? ""}
+        sub={costType ? costTypeCategoryLabel(costType.category) : undefined}
+        stats={
+          costType
+            ? [
+                {
+                  label: t("ui.costs.detail.statsEntries", {
+                    year: costType.stats.year,
+                  }),
+                  value: String(costType.stats.entryCount),
+                },
+                {
+                  label: t("ui.costs.detail.statsSum", {
+                    year: costType.stats.year,
+                  }),
+                  value: formatEur(costType.stats.totalAmountCents),
+                },
+                {
+                  label: t("ui.costs.columns.category"),
+                  value: costTypeCategoryLabel(costType.category),
+                },
+              ]
+            : undefined
+        }
       />
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
-        <CostTypeForm
-          mode="edit"
-          buildings={buildings}
-          savedAt={
-            costType.updatedAt
-              ? formatDate(costType.updatedAt.slice(0, 10))
-              : undefined
-          }
-          defaultValues={toFormValues(costType)}
-          onSubmit={async (values) => {
-            await updateCostType.mutateAsync(values);
-          }}
-          onCancel={goBack}
-        />
+      {costType && buildings ? (
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
+          <CostTypeForm
+            mode="edit"
+            buildings={buildings}
+            savedAt={
+              costType.updatedAt
+                ? formatDate(costType.updatedAt.slice(0, 10))
+                : undefined
+            }
+            defaultValues={toFormValues(costType)}
+            onSubmit={async (values) => {
+              await updateCostType.mutateAsync(values);
+            }}
+            onCancel={goBack}
+          />
 
-        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
-          <InfoCard title={t("ui.common.infoCards.links")}>
-            <ActionLink
-              icon={RiBillLine}
-              iconBackground={domainVisuals.invoices.accent}
-              onClick={() =>
-                navigate({
-                  to: "/rechnungen/neu",
-                  search: { buildingId: costType.buildingId },
-                })
-              }
-            >
-              {t("ui.costs.addEntry")}
-            </ActionLink>
-            {isHeating ? (
-              heatingVersion && (
-                <ActionLink
-                  icon={domainVisuals.heating.icon}
-                  iconBackground={domainVisuals.heating.accent}
-                  subtitle={heatingIdentityLabel(heatingVersion)}
-                  onClick={() =>
-                    navigate({
-                      to: "/heizkosten/$id",
-                      params: { id: heatingVersion.id },
-                    })
-                  }
-                >
-                  {t("ui.costs.detail.openHeating")}
-                </ActionLink>
-              )
-            ) : (
+          <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+            <InfoCard title={t("ui.common.infoCards.links")}>
               <ActionLink
-                icon={domainVisuals.meters.icon}
-                iconBackground={domainVisuals.meters.accent}
-                subtitle={t("ui.meters.sub.count", {
-                  count: stats.assignedMetersCount,
-                })}
+                icon={RiBillLine}
+                iconBackground={domainVisuals.invoices.accent}
                 onClick={() =>
                   navigate({
-                    to: "/zaehler",
-                    search: {
-                      buildingId: costType.buildingId,
-                      unitId: undefined,
-                      type: undefined,
-                    },
+                    to: "/rechnungen/neu",
+                    search: { buildingId: costType.buildingId },
                   })
                 }
               >
-                {t("ui.costs.detail.openMeters")}
+                {t("ui.costs.addEntry")}
               </ActionLink>
-            )}
-          </InfoCard>
-
-          <InfoCard
-            title={t("ui.common.infoCards.details")}
-            rows={[
-              {
-                label: t("ui.costs.detail.lastEntryLabel"),
-                value: stats.lastEntry ? (
-                  <Link
-                    to="/rechnungen/$costEntryId"
-                    params={{ costEntryId: stats.lastEntry.id }}
-                    className="font-semibold text-sky-700 dark:text-sky-400"
+              {isHeating ? (
+                heatingVersion && (
+                  <ActionLink
+                    icon={domainVisuals.heating.icon}
+                    iconBackground={domainVisuals.heating.accent}
+                    subtitle={heatingIdentityLabel(heatingVersion)}
+                    onClick={() =>
+                      navigate({
+                        to: "/heizkosten/$id",
+                        params: { id: heatingVersion.id },
+                      })
+                    }
                   >
-                    {formatEur(stats.lastEntry.amountCents)}
-                  </Link>
-                ) : (
-                  t("ui.common.emptyValue")
-                ),
-              },
-            ]}
-          />
+                    {t("ui.costs.detail.openHeating")}
+                  </ActionLink>
+                )
+              ) : (
+                <ActionLink
+                  icon={domainVisuals.meters.icon}
+                  iconBackground={domainVisuals.meters.accent}
+                  subtitle={t("ui.meters.sub.count", {
+                    count: costType.stats.assignedMetersCount,
+                  })}
+                  onClick={() =>
+                    navigate({
+                      to: "/zaehler",
+                      search: {
+                        buildingId: costType.buildingId,
+                        unitId: undefined,
+                        type: undefined,
+                      },
+                    })
+                  }
+                >
+                  {t("ui.costs.detail.openMeters")}
+                </ActionLink>
+              )}
+            </InfoCard>
 
-          <InfoCard title={t("ui.common.infoCards.actions")}>
-            <ActionLink
-              icon={RiDeleteBinLine}
-              iconBackground="var(--color-rose-400)"
-              danger={true}
-              onClick={() => deletion.request(costType)}
-            >
-              {t("ui.costs.detail.deleteAction")}
-            </ActionLink>
-          </InfoCard>
+            <InfoCard
+              title={t("ui.common.infoCards.details")}
+              rows={[
+                {
+                  label: t("ui.costs.detail.lastEntryLabel"),
+                  value: costType.stats.lastEntry ? (
+                    <Link
+                      to="/rechnungen/$costEntryId"
+                      params={{ costEntryId: costType.stats.lastEntry.id }}
+                      className="font-semibold text-sky-700 dark:text-sky-400"
+                    >
+                      {formatEur(costType.stats.lastEntry.amountCents)}
+                    </Link>
+                  ) : (
+                    t("ui.common.emptyValue")
+                  ),
+                },
+              ]}
+            />
+
+            <InfoCard title={t("ui.common.infoCards.actions")}>
+              <ActionLink
+                icon={RiDeleteBinLine}
+                iconBackground="var(--color-rose-400)"
+                danger={true}
+                onClick={() => deletion.request(costType)}
+              >
+                {t("ui.costs.detail.deleteAction")}
+              </ActionLink>
+            </InfoCard>
+          </div>
         </div>
-      </div>
+      ) : (
+        <FormSkeleton rows={4} />
+      )}
 
       {deletion.dialog}
     </div>

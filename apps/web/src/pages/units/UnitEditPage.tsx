@@ -9,9 +9,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { HeroBand } from "../../components/common/HeroBand";
 import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
+import { PageHeader } from "../../components/common/PageHeader";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
@@ -83,11 +83,7 @@ export const UnitEditPage = () => {
     );
   }
 
-  if (!buildings) {
-    return <FormSkeleton rows={3} />;
-  }
-
-  const building = buildings.find((entry) => entry.id === unit.buildingId);
+  const building = buildings?.find((entry) => entry.id === unit.buildingId);
   const current = currentTenantOf(tenants?.items, unit.id);
 
   let statusLabel = t("ui.units.status.vacant");
@@ -119,17 +115,16 @@ export const UnitEditPage = () => {
 
   return (
     <div className="pb-24">
-      <HeroBand
+      <PageHeader
         tile={
           <IconTile
             icon={isCommercial ? RiStore2Line : domainVisuals.units.icon}
-            size={64}
+            size={44}
             background={isCommercial ? gradients.commercial : gradients.units}
           />
         }
-        eyebrow={t("ui.units.editEyebrow")}
         title={unit.name}
-        meta={[
+        sub={[
           building?.name,
           unit.unitNumber
             ? t("ui.units.unitNumberMeta", { number: unit.unitNumber })
@@ -150,76 +145,82 @@ export const UnitEditPage = () => {
         ]}
       />
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
-        <UnitForm
-          mode="edit"
-          buildings={buildings}
-          savedAt={
-            unit.updatedAt ? formatDate(unit.updatedAt.slice(0, 10)) : undefined
-          }
-          defaultValues={{
-            buildingId: unit.buildingId,
-            name: unit.name,
-            unitNumber: unit.unitNumber ?? "",
-            areaSqm: String(unit.areaSqm),
-            heatingAreaSqm:
-              unit.heatingAreaSqm === null ? "" : String(unit.heatingAreaSqm),
-          }}
-          onSubmit={async (values) => {
-            await updateUnit.mutateAsync(values);
-          }}
-          onCancel={goBack}
-        />
+      {buildings ? (
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
+          <UnitForm
+            mode="edit"
+            buildings={buildings}
+            savedAt={
+              unit.updatedAt
+                ? formatDate(unit.updatedAt.slice(0, 10))
+                : undefined
+            }
+            defaultValues={{
+              buildingId: unit.buildingId,
+              name: unit.name,
+              unitNumber: unit.unitNumber ?? "",
+              areaSqm: String(unit.areaSqm),
+              heatingAreaSqm:
+                unit.heatingAreaSqm === null ? "" : String(unit.heatingAreaSqm),
+            }}
+            onSubmit={async (values) => {
+              await updateUnit.mutateAsync(values);
+            }}
+            onCancel={goBack}
+          />
 
-        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
-          <InfoCard title={t("ui.common.infoCards.links")}>
-            {current ? (
+          <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+            <InfoCard title={t("ui.common.infoCards.links")}>
+              {current ? (
+                <ActionLink
+                  icon={domainVisuals.tenants.icon}
+                  iconBackground={domainVisuals.tenants.accent}
+                  subtitle={t("ui.units.links.tenantSince", {
+                    date: formatDate(current.startDate),
+                  })}
+                  onClick={() =>
+                    navigate({
+                      to: "/mieter/$tenantId",
+                      params: { tenantId: current.id },
+                    })
+                  }
+                >
+                  {tenantNames}
+                </ActionLink>
+              ) : null}
               <ActionLink
-                icon={domainVisuals.tenants.icon}
-                iconBackground={domainVisuals.tenants.accent}
-                subtitle={t("ui.units.links.tenantSince", {
-                  date: formatDate(current.startDate),
-                })}
+                icon={domainVisuals.meters.icon}
+                iconBackground={domainVisuals.meters.accent}
                 onClick={() =>
                   navigate({
-                    to: "/mieter/$tenantId",
-                    params: { tenantId: current.id },
+                    to: "/zaehler",
+                    search: {
+                      buildingId: unit.buildingId,
+                      unitId: unit.id,
+                      type: undefined,
+                    },
                   })
                 }
               >
-                {tenantNames}
+                {t("ui.units.actions.unitMeters")}
               </ActionLink>
-            ) : null}
-            <ActionLink
-              icon={domainVisuals.meters.icon}
-              iconBackground={domainVisuals.meters.accent}
-              onClick={() =>
-                navigate({
-                  to: "/zaehler",
-                  search: {
-                    buildingId: unit.buildingId,
-                    unitId: unit.id,
-                    type: undefined,
-                  },
-                })
-              }
-            >
-              {t("ui.units.actions.unitMeters")}
-            </ActionLink>
-          </InfoCard>
+            </InfoCard>
 
-          <InfoCard title={t("ui.common.infoCards.actions")}>
-            <ActionLink
-              icon={RiDeleteBinLine}
-              iconBackground="var(--color-rose-400)"
-              danger={true}
-              onClick={() => deletion.request(unit)}
-            >
-              {t("ui.units.actions.delete")}
-            </ActionLink>
-          </InfoCard>
+            <InfoCard title={t("ui.common.infoCards.actions")}>
+              <ActionLink
+                icon={RiDeleteBinLine}
+                iconBackground="var(--color-rose-400)"
+                danger={true}
+                onClick={() => deletion.request(unit)}
+              >
+                {t("ui.units.actions.delete")}
+              </ActionLink>
+            </InfoCard>
+          </div>
         </div>
-      </div>
+      ) : (
+        <FormSkeleton rows={3} />
+      )}
 
       {deletion.dialog}
     </div>

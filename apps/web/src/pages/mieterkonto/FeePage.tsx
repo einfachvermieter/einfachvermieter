@@ -13,9 +13,8 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { EntityNotFound } from "@/components/common/EntityNotFound";
-import { HeroBand } from "@/components/common/HeroBand";
 import { IconTile } from "@/components/common/IconTile";
-import { PageHead } from "@/components/common/PageHead";
+import { PageHeader } from "@/components/common/PageHeader";
 import { FormSkeleton } from "@/components/FormSkeleton";
 import { DateInput } from "@/components/form/DateInput";
 import { Form } from "@/components/form/Form";
@@ -118,10 +117,6 @@ export const FeePage = () => {
     );
   }
 
-  if (isEdit && !fees) {
-    return <FormSkeleton rows={4} />;
-  }
-
   const onSubmit = async (values: FormValues) => {
     const magnitude = parseEurToCents(values.amountInput);
     const amountCents = values.kind === "credit" ? -magnitude : magnitude;
@@ -144,69 +139,68 @@ export const FeePage = () => {
 
   return (
     <div className="space-y-6">
-      {existing ? (
-        <HeroBand
-          tile={
-            <IconTile
-              icon={RiMoneyEuroCircleLine}
-              size={64}
-              background={gradients.money}
-            />
-          }
-          eyebrow={t("ui.account.fee.editTitle")}
-          title={feeIdentityLabel(existing)}
-        />
+      <PageHeader
+        tile={
+          <IconTile
+            icon={RiMoneyEuroCircleLine}
+            size={44}
+            background={gradients.money}
+          />
+        }
+        title={
+          existing ? feeIdentityLabel(existing) : t("ui.account.fee.title")
+        }
+        loading={isEdit && !fees}
+      />
+      {isEdit && !fees ? (
+        <FormSkeleton rows={4} />
       ) : (
-        <PageHead
-          eyebrow={t("ui.navigation.account")}
-          title={t("ui.account.fee.title")}
-        />
+        <Form form={form} onSubmit={onSubmit}>
+          <Card>
+            <CardContent>
+              <FieldGroup className="gap-4">
+                <DateInput
+                  control={form.control}
+                  name="date"
+                  label={t("ui.payments.columns.date")}
+                  startMonth={calendarStart}
+                  endMonth={calendarEnd}
+                />
+                <SelectInput
+                  control={form.control}
+                  name="kind"
+                  label={t("ui.account.fee.kindLabel")}
+                  options={[
+                    { value: "charge", label: t("ui.account.fee.kindCharge") },
+                    { value: "credit", label: t("ui.account.fee.kindCredit") },
+                  ]}
+                />
+                <TextInput
+                  control={form.control}
+                  name="amountInput"
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  label={t("ui.account.fee.amountLabel")}
+                  suffix="€"
+                />
+                <TextareaInput
+                  control={form.control}
+                  name="reason"
+                  label={t("ui.account.fee.reason")}
+                  rows={3}
+                />
+              </FieldGroup>
+            </CardContent>
+          </Card>
+          <FormActions
+            submitting={form.formState.isSubmitting}
+            onCancel={goBack}
+            submitLabel={
+              isEdit ? t("ui.common.action.save") : t("ui.common.action.record")
+            }
+          />
+        </Form>
       )}
-      <Form form={form} onSubmit={onSubmit}>
-        <Card>
-          <CardContent>
-            <FieldGroup className="gap-4">
-              <DateInput
-                control={form.control}
-                name="date"
-                label={t("ui.payments.columns.date")}
-                startMonth={calendarStart}
-                endMonth={calendarEnd}
-              />
-              <SelectInput
-                control={form.control}
-                name="kind"
-                label={t("ui.account.fee.kindLabel")}
-                options={[
-                  { value: "charge", label: t("ui.account.fee.kindCharge") },
-                  { value: "credit", label: t("ui.account.fee.kindCredit") },
-                ]}
-              />
-              <TextInput
-                control={form.control}
-                name="amountInput"
-                inputMode="decimal"
-                placeholder="0,00"
-                label={t("ui.account.fee.amountLabel")}
-                suffix="€"
-              />
-              <TextareaInput
-                control={form.control}
-                name="reason"
-                label={t("ui.account.fee.reason")}
-                rows={3}
-              />
-            </FieldGroup>
-          </CardContent>
-        </Card>
-        <FormActions
-          submitting={form.formState.isSubmitting}
-          onCancel={goBack}
-          submitLabel={
-            isEdit ? t("ui.common.action.save") : t("ui.common.action.record")
-          }
-        />
-      </Form>
     </div>
   );
 };

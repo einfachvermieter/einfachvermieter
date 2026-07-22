@@ -11,8 +11,10 @@ import { getRouteApi } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { FormPage } from "../../components/common/FormPage";
+import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { type Building, buildingsQueryOptions } from "../../lib/buildings";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import {
   createHeatingSettings,
   heatingSettingsListQueryOptions,
@@ -29,23 +31,30 @@ export const HeatingVersionCreatePage = () => {
   const { buildingId: preselected } = routeApi.useSearch();
   const { data: buildings } = useQuery(buildingsQueryOptions);
 
-  if (!buildings) {
-    return <FormSkeleton rows={4} />;
-  }
-
-  if (buildings.length === 0) {
-    return <FormSkeleton rows={4} />;
-  }
-
-  const matching = buildings.find((building) => building.id === preselected);
-  const initialBuildingId = matching?.id ?? buildings[0]?.id ?? "";
+  const matching = buildings?.find((building) => building.id === preselected);
+  const initialBuildingId = matching?.id ?? buildings?.[0]?.id ?? "";
 
   return (
-    <HeatingVersionCreateView
-      key={initialBuildingId}
-      buildings={buildings}
-      initialBuildingId={initialBuildingId}
-    />
+    <FormPage
+      tile={
+        <IconTile
+          icon={domainVisuals.heating.icon}
+          size={44}
+          background={gradients.heating}
+        />
+      }
+      title={t("ui.heating.versions.createTitle")}
+    >
+      {buildings && buildings.length > 0 ? (
+        <HeatingVersionCreateView
+          key={initialBuildingId}
+          buildings={buildings}
+          initialBuildingId={initialBuildingId}
+        />
+      ) : (
+        <FormSkeleton rows={4} />
+      )}
+    </FormPage>
   );
 };
 
@@ -116,11 +125,7 @@ const HeatingVersionCreateView = ({
     onSuccess: goBack,
   });
 
-  if (!metersResult) {
-    return <FormSkeleton rows={4} />;
-  }
-
-  const hotWaterMeterCandidates = metersResult.items.filter(
+  const hotWaterMeterCandidates = (metersResult?.items ?? []).filter(
     (meter) =>
       meter.type === "heat_meter" &&
       meter.unitId === null &&
@@ -129,23 +134,20 @@ const HeatingVersionCreateView = ({
       meter.costAllocationMode === "heating_cost_bill",
   );
 
-  return (
-    <FormPage
-      eyebrow={t("ui.navigation.groups.costsBilling")}
-      title={t("ui.heating.versions.createTitle")}
-    >
-      <HeatingForm
-        form={form}
-        buildings={buildings}
-        hotWaterMeterCandidates={hotWaterMeterCandidates}
-        onSubmit={async (dto) => {
-          await create.mutateAsync({
-            buildingId: form.getValues("buildingId"),
-            dto,
-          });
-        }}
-        onCancel={goBack}
-      />
-    </FormPage>
+  return metersResult ? (
+    <HeatingForm
+      form={form}
+      buildings={buildings}
+      hotWaterMeterCandidates={hotWaterMeterCandidates}
+      onSubmit={async (dto) => {
+        await create.mutateAsync({
+          buildingId: form.getValues("buildingId"),
+          dto,
+        });
+      }}
+      onCancel={goBack}
+    />
+  ) : (
+    <FormSkeleton rows={4} />
   );
 };

@@ -11,7 +11,7 @@ import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
-import { PageHead } from "../../components/common/PageHead";
+import { PageHeader } from "../../components/common/PageHeader";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -215,14 +215,21 @@ export const HeatingOverviewPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHead
-        eyebrow={t("ui.navigation.groups.costsBilling")}
+      <PageHeader
+        tile={
+          <IconTile
+            icon={domainVisuals.heating.icon}
+            size={44}
+            background={gradients.heating}
+          />
+        }
         title={t("ui.heating.title")}
         sub={
           building
             ? t("ui.heating.sub", { building: building.name })
             : undefined
         }
+        subLoading={!building}
         action={
           canAddHeating ? (
             <Button asChild={true}>

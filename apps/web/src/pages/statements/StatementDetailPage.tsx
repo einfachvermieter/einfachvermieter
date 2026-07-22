@@ -21,9 +21,9 @@ import { ActionLink } from "../../components/common/ActionLink";
 import { Description } from "../../components/common/Description";
 import { EmptyNote } from "../../components/common/EmptyNote";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { HeroBand } from "../../components/common/HeroBand";
 import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
+import { PageHeader } from "../../components/common/PageHeader";
 import { DestructiveConfirmDialog } from "../../components/DestructiveConfirmDialog";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
@@ -457,7 +457,23 @@ export const StatementDetailPage = () => {
   }
 
   if (!statement) {
-    return <FormSkeleton rows={8} />;
+    return (
+      <div className="pb-6">
+        <PageHeader
+          tile={
+            <IconTile
+              icon={domainVisuals.statements.icon}
+              size={44}
+              background={gradients.statements}
+            />
+          }
+          title=""
+          loading={true}
+          statsSkeleton={3}
+        />
+        <FormSkeleton rows={8} />
+      </div>
+    );
   }
 
   const result = resolveDisplayResult(statement, preview);
@@ -573,17 +589,16 @@ export const StatementDetailPage = () => {
 
   return (
     <div className="pb-6">
-      <HeroBand
+      <PageHeader
         tile={
           <IconTile
             icon={domainVisuals.statements.icon}
-            size={64}
+            size={44}
             background={gradients.statements}
           />
         }
-        eyebrow={t("ui.navigation.groups.costsBilling")}
         title={identity}
-        meta={
+        sub={
           <span className="flex flex-wrap items-center gap-2">
             <span>
               {[

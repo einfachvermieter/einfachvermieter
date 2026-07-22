@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
-import { PageHead } from "../../components/common/PageHead";
+import { PageHeader } from "../../components/common/PageHeader";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
@@ -182,10 +182,13 @@ export const UnitsOverview = () => {
 
   return (
     <div className="space-y-6">
-      <PageHead
-        eyebrow={t("ui.navigation.groups.masterData")}
+      <PageHeader
+        tile={
+          <IconTile icon={RiHome4Line} size={44} background={gradients.units} />
+        }
         title={t("ui.units.title")}
         sub={sub}
+        subLoading={!data}
         action={
           canAddUnit ? (
             <Button asChild={true}>

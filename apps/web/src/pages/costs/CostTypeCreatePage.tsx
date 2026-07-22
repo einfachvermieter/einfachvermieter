@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { FormPage } from "../../components/common/FormPage";
+import { IconTile } from "../../components/common/IconTile";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import type { CostType } from "../../lib/costs";
+import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useGoBack } from "../../lib/useGoBack";
@@ -44,7 +46,13 @@ export const CostTypeCreatePage = () => {
 
   return (
     <FormPage
-      eyebrow={t("ui.navigation.groups.costsBilling")}
+      tile={
+        <IconTile
+          icon={domainVisuals.costTypes.icon}
+          size={44}
+          background={gradients.notes}
+        />
+      }
       title={t("ui.costs.typeCreateTitle")}
     >
       <CostTypeForm

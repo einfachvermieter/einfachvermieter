@@ -12,8 +12,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { FormPage } from "../../components/common/FormPage";
-import { HeroBand } from "../../components/common/HeroBand";
 import { IconTile } from "../../components/common/IconTile";
+import { PageHeader } from "../../components/common/PageHeader";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
 import { gradients } from "../../lib/domainVisuals";
@@ -47,6 +47,29 @@ const derivePurposeKind = (payment: Payment): PaymentPurposeKind => {
   }
 
   return "fee";
+};
+
+const buildPaymentDefaults = (payment: Payment) => {
+  const purposeKind = derivePurposeKind(payment);
+  const defaults = emptyPaymentFormValues({
+    tenantId: payment.tenantId,
+    paymentDate: payment.paymentDate,
+    purposeKind,
+    forMonth: payment.forMonth ?? "",
+  });
+
+  defaults.reference = payment.reference ?? "";
+  defaults.forStatementId = payment.forStatementId ?? "";
+  defaults.forFeeId = payment.forFeeId ?? "";
+
+  if (purposeKind === "month") {
+    defaults.baseRentInput = centsToEurInput(payment.baseRentCents ?? 0);
+    defaults.advanceInput = centsToEurInput(payment.advanceCents ?? 0);
+  } else {
+    defaults.amountInput = centsToEurInput(payment.amountCents ?? 0);
+  }
+
+  return { purposeKind, defaults };
 };
 
 export const PaymentEditPage = () => {
@@ -87,56 +110,41 @@ export const PaymentEditPage = () => {
     );
   }
 
-  if (!payment) {
-    return <FormSkeleton rows={6} />;
-  }
-
-  const purposeKind = derivePurposeKind(payment);
-  const defaults = emptyPaymentFormValues({
-    tenantId: payment.tenantId,
-    paymentDate: payment.paymentDate,
-    purposeKind,
-    forMonth: payment.forMonth ?? "",
-  });
-  defaults.reference = payment.reference ?? "";
-  defaults.forStatementId = payment.forStatementId ?? "";
-  defaults.forFeeId = payment.forFeeId ?? "";
-  if (purposeKind === "month") {
-    defaults.baseRentInput = centsToEurInput(payment.baseRentCents ?? 0);
-    defaults.advanceInput = centsToEurInput(payment.advanceCents ?? 0);
-  } else {
-    defaults.amountInput = centsToEurInput(payment.amountCents ?? 0);
-  }
+  const editDefaults = payment ? buildPaymentDefaults(payment) : null;
 
   return (
     <FormPage
       head={
-        <HeroBand
+        <PageHeader
           tile={
             <IconTile
               icon={RiMoneyEuroCircleLine}
-              size={64}
+              size={44}
               background={gradients.money}
             />
           }
-          eyebrow={t("ui.payments.editTitle")}
-          title={paymentIdentityLabel(payment)}
+          title={payment ? paymentIdentityLabel(payment) : ""}
+          loading={!payment}
         />
       }
     >
-      <PaymentForm
-        mode="edit"
-        tenantOptions={tenantOptions}
-        tenantFieldDisabled={true}
-        lockedPurposeKind={purposeKind}
-        defaultValues={defaults}
-        onSubmit={async (values) => {
-          const dto = paymentFormToDto(values);
-          const { tenantId: _omit, ...rest } = dto;
-          await updatePayment.mutateAsync(rest);
-        }}
-        onCancel={goBack}
-      />
+      {payment && editDefaults ? (
+        <PaymentForm
+          mode="edit"
+          tenantOptions={tenantOptions}
+          tenantFieldDisabled={true}
+          lockedPurposeKind={editDefaults.purposeKind}
+          defaultValues={editDefaults.defaults}
+          onSubmit={async (values) => {
+            const dto = paymentFormToDto(values);
+            const { tenantId: _omit, ...rest } = dto;
+            await updatePayment.mutateAsync(rest);
+          }}
+          onCancel={goBack}
+        />
+      ) : (
+        <FormSkeleton rows={6} />
+      )}
     </FormPage>
   );
 };

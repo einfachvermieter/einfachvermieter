@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { FormPage } from "../../components/common/FormPage";
+import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Button } from "../../components/ui/Button";
 import {
@@ -20,6 +21,7 @@ import {
   EmptyTitle,
 } from "../../components/ui/Empty";
 import { api } from "../../lib/api";
+import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { Payment } from "../../lib/payments";
 import {
@@ -113,13 +115,9 @@ export const PaymentCreatePage = () => {
     onSuccess: goBack,
   });
 
-  if (tenantsQuery.isPending) {
-    return <FormSkeleton rows={6} />;
-  }
-
   // Ohne Mietvertrag gibt es nichts zu buchen, statt einer leeren Seite
   // ein Hinweis mit Absprung zur Mieter-Anlage.
-  if (tenants.length === 0) {
+  if (!tenantsQuery.isPending && tenants.length === 0) {
     return (
       <Empty>
         <EmptyHeader>
@@ -142,21 +140,31 @@ export const PaymentCreatePage = () => {
 
   return (
     <FormPage
-      eyebrow={t("ui.navigation.account")}
+      tile={
+        <IconTile
+          icon={RiMoneyEuroCircleLine}
+          size={44}
+          background={gradients.money}
+        />
+      }
       title={t("ui.payments.createTitle")}
     >
-      <PaymentForm
-        key={initialTenantId}
-        mode="create"
-        tenantOptions={tenantOptions}
-        allowedPurposeKinds={["month", "statement"]}
-        lockedPurposeKind={searchPurposeKind}
-        defaultValues={defaultValues}
-        onSubmit={async (values) => {
-          await createPayment.mutateAsync(paymentFormToDto(values));
-        }}
-        onCancel={goBack}
-      />
+      {tenantsQuery.isPending ? (
+        <FormSkeleton rows={6} />
+      ) : (
+        <PaymentForm
+          key={initialTenantId}
+          mode="create"
+          tenantOptions={tenantOptions}
+          allowedPurposeKinds={["month", "statement"]}
+          lockedPurposeKind={searchPurposeKind}
+          defaultValues={defaultValues}
+          onSubmit={async (values) => {
+            await createPayment.mutateAsync(paymentFormToDto(values));
+          }}
+          onCancel={goBack}
+        />
+      )}
     </FormPage>
   );
 };
