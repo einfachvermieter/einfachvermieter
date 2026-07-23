@@ -81,7 +81,7 @@ export const ExternalHeatingEntriesSection = ({
 
   const deletion = useDeleteResource<ExternalHeatingEntry>({
     endpoint: (entry) => `/heating/external-entries/${entry.id}`,
-    invalidateKey: ["heating", buildingId, "external-entries"],
+    invalidateKeys: [["heating", buildingId, "external-entries"]],
     title: t("ui.heating.external.confirmDelete"),
     describe: (entry) =>
       t("ui.heating.external.confirmDeleteMessage", {

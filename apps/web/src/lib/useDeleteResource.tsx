@@ -7,7 +7,7 @@ import { t } from "./i18n";
 
 type UseDeleteResourceOptions<T extends { id: string }> = {
   endpoint: (resource: T) => string;
-  invalidateKey: readonly unknown[];
+  invalidateKeys: readonly (readonly unknown[])[];
   title: string;
   describe: (resource: T) => ReactNode;
   confirmLabel?: string;
@@ -24,7 +24,7 @@ export type DeleteResource<T extends { id: string }> = {
 
 export const useDeleteResource = <T extends { id: string }>({
   endpoint,
-  invalidateKey,
+  invalidateKeys,
   title,
   describe,
   confirmLabel = t("ui.common.action.delete"),
@@ -38,10 +38,11 @@ export const useDeleteResource = <T extends { id: string }>({
   const mutation = useMutation({
     mutationFn: (resource: T) => api.delete(endpoint(resource)),
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: invalidateKey }),
-        queryClient.invalidateQueries({ queryKey: ["stats"] }),
-      ]);
+      await Promise.all(
+        [...invalidateKeys, ["stats"]].map((queryKey) =>
+          queryClient.invalidateQueries({ queryKey }),
+        ),
+      );
       setTarget(null);
       toast.success(t("common.deleted"));
       onDeleted?.();

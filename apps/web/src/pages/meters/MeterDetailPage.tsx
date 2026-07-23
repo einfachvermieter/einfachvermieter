@@ -54,7 +54,7 @@ export const MeterDetailPage = () => {
 
   const deletion = useDeleteResource<Meter>({
     endpoint: (target) => `/meters/${target.id}`,
-    invalidateKey: ["meters"],
+    invalidateKeys: [["meters"]],
     title: t("ui.meters.confirmDelete"),
     describe: (target) =>
       t("ui.meters.confirmDeleteMessage", { label: target.label }),

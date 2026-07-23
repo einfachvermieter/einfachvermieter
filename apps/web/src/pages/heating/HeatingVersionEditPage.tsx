@@ -177,7 +177,7 @@ const HeatingVersionEditView = ({
 
   const deletion = useDeleteResource<HeatingSettings>({
     endpoint: () => `/buildings/${building.id}/heating/${version.id}`,
-    invalidateKey: ["heating"],
+    invalidateKeys: [["heating"]],
     title: t("ui.heating.versions.confirmDelete"),
     describe: (target) =>
       t("ui.heating.versions.confirmDeleteMessage", {

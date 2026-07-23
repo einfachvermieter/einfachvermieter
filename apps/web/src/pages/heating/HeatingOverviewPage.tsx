@@ -168,7 +168,7 @@ export const HeatingOverviewPage = () => {
 
   const deletion = useDeleteResource<Row>({
     endpoint: (row) => `/buildings/${row.building.id}/heating/${row.id}`,
-    invalidateKey: ["heating"],
+    invalidateKeys: [["heating"]],
     title: t("ui.heating.versions.confirmDelete"),
     describe: (row) =>
       t("ui.heating.versions.confirmDeleteMessage", {

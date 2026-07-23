@@ -44,7 +44,7 @@ export const BuildingEditPage = () => {
 
   const deletion = useDeleteResource<Building>({
     endpoint: (target) => `/buildings/${target.id}`,
-    invalidateKey: ["buildings"],
+    invalidateKeys: [["buildings"]],
     title: t("ui.buildings.confirmDelete"),
     describe: (target) =>
       t("ui.buildings.confirmDeleteWithUnits", { name: target.name }),

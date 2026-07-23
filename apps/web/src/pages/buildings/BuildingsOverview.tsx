@@ -45,7 +45,7 @@ export const BuildingsOverview = () => {
 
   const deletion = useDeleteResource<Building>({
     endpoint: (building) => `/buildings/${building.id}`,
-    invalidateKey: ["buildings"],
+    invalidateKeys: [["buildings"]],
     title: t("ui.buildings.confirmDelete"),
     describe: (building) =>
       t("ui.buildings.confirmDeleteWithUnits", { name: building.name }),

@@ -117,7 +117,7 @@ export const CostEntryEditPage = () => {
 
   const deletion = useDeleteResource<CostEntryDetail>({
     endpoint: (target) => `/costs/${target.id}`,
-    invalidateKey: ["costs"],
+    invalidateKeys: [["costs"], ["statement-preview"]],
     title: t("ui.invoices.detail.deleteTitle"),
     describe: () => t("ui.invoices.detail.deleteMessage"),
     onDeleted: goBack,

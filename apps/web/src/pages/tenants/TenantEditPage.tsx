@@ -46,7 +46,7 @@ export const TenantEditPage = () => {
 
   const deletion = useDeleteResource<{ id: string }>({
     endpoint: (target) => `/tenants/${target.id}`,
-    invalidateKey: ["tenants"],
+    invalidateKeys: [["tenants"]],
     title: t("ui.tenants.confirmDeleteTenant"),
     describe: () =>
       t("ui.tenants.confirmDeleteTenantMessage", {

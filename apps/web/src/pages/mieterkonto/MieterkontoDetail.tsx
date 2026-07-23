@@ -110,7 +110,9 @@ export const MieterkontoDetail = () => {
 
   const paymentDeletion = useDeleteResource<Payment>({
     endpoint: (payment) => `/payments/${payment.id}`,
-    invalidateKey: ["payments"],
+    // Eine gelöschte Zahlung verändert Saldo und Monatsraster, die beide
+    // unter "accounts" hängen.
+    invalidateKeys: [["payments"], ["accounts"]],
     title: t("ui.payments.confirmDelete"),
     describe: (payment) =>
       t("ui.payments.confirmDeleteMessage", {
@@ -121,7 +123,7 @@ export const MieterkontoDetail = () => {
 
   const feeDeletion = useDeleteResource<FeeDeletionTarget>({
     endpoint: (row) => `/accounts/fees/${row.id}`,
-    invalidateKey: ["accounts"],
+    invalidateKeys: [["accounts"]],
     title: t("ui.account.fee.confirmDelete"),
     describe: (row) =>
       t("ui.account.fee.confirmDeleteMessage", {

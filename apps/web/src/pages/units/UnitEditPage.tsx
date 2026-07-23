@@ -65,7 +65,7 @@ export const UnitEditPage = () => {
 
   const deletion = useDeleteResource<Unit>({
     endpoint: (target) => `/units/${target.id}`,
-    invalidateKey: ["units"],
+    invalidateKeys: [["units"]],
     title: t("ui.units.confirmDelete"),
     describe: (target) =>
       t("ui.units.confirmDeleteMessage", { name: target.name }),

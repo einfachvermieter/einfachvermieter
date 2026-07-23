@@ -81,7 +81,7 @@ export const CostTypeEditPage = () => {
 
   const deletion = useDeleteResource<CostTypeDetail>({
     endpoint: (target) => `/costs/types/${target.id}`,
-    invalidateKey: ["costTypes"],
+    invalidateKeys: [["costTypes"]],
     title: t("ui.costs.confirmDeleteType"),
     describe: (target) =>
       t("ui.costs.confirmDeleteTypeMessage", { name: target.name }),

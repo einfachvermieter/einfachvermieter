@@ -173,7 +173,7 @@ export const MeterReadingsTab = ({
 
   const deletion = useDeleteResource<Reading>({
     endpoint: (reading) => `/meters/readings/${reading.id}`,
-    invalidateKey: ["readings", meterId],
+    invalidateKeys: [["readings", meterId]],
     title: t("ui.reading.confirmDelete"),
     describe: (reading) =>
       t("ui.reading.confirmDeleteMessage", {
