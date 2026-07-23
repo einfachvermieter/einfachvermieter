@@ -15,7 +15,7 @@ import {
   RiLockLine,
 } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation, useNavigate, useParams } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ActionLink } from "../../components/common/ActionLink";
 import { Description } from "../../components/common/Description";
@@ -63,7 +63,9 @@ import {
 import { t } from "../../lib/i18n";
 import {
   type StatementDetail,
+  type StatementTab,
   statementIdentityLabel,
+  statementTabs,
 } from "../../lib/statements";
 import { tenantQueryOptions } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
@@ -74,6 +76,8 @@ import { OperatingCostsCard } from "./components/detail/OperatingCostsCard";
 import { OverviewCard } from "./components/detail/OverviewCard";
 import { PaymentsCard } from "./components/detail/PaymentsCard";
 import { TaxableLaborCard } from "./components/detail/TaxableLaborCard";
+
+const routeApi = getRouteApi("/abrechnungen/$statementId");
 
 /**
  * Anzuzeigendes Ergebnis: bei finalisiert/storniert der Snapshot, bei Draft der
@@ -103,24 +107,6 @@ const resolveDisplayResult = (
       tariffAdjustmentBps: statement.tariffAdjustmentBps,
     },
   };
-};
-
-/**
- * Aktiver Tab aus dem Pfad-Suffix der Detail-Route (Default: Übersicht).
- */
-const tabFromPathname = (pathname: string): string => {
-  const suffixToTab: [string, string][] = [
-    ["/pdf", "pdf"],
-    ["/kosten", "operating"],
-    ["/heizkosten", "heating"],
-    ["/belegung", "occupancy"],
-    ["/steuer", "taxableLabor"],
-    ["/zahlungen", "payments"],
-    ["/vorauszahlung", "advance"],
-  ];
-  return (
-    suffixToTab.find(([suffix]) => pathname.endsWith(suffix))?.[1] ?? "overview"
-  );
 };
 
 /**
@@ -196,47 +182,47 @@ const StatementTabs = ({
   return (
     <Tabs value={activeTab} onValueChange={onTabChange}>
       <TabsList variant="pills">
-        <TabsTrigger value="overview">
+        <TabsTrigger value="uebersicht">
           {t("ui.statements.detail.tabs.overview")}
         </TabsTrigger>
-        <TabsTrigger value="operating">
+        <TabsTrigger value="kosten">
           {t("ui.statements.detail.tabs.operatingCosts")}
         </TabsTrigger>
         {hasPayments ? (
-          <TabsTrigger value="payments">
+          <TabsTrigger value="zahlungen">
             {t("ui.statements.detail.tabs.payments")}
           </TabsTrigger>
         ) : null}
         {occupancyDetail ? (
-          <TabsTrigger value="occupancy">
+          <TabsTrigger value="belegung">
             {t("ui.statements.detail.tabs.occupancy")}
           </TabsTrigger>
         ) : null}
         {hasTaxableLabor ? (
-          <TabsTrigger value="taxableLabor">
+          <TabsTrigger value="steuer">
             {t("ui.statements.detail.tabs.taxableLabor")}
           </TabsTrigger>
         ) : null}
         {heatingDetail ? (
-          <TabsTrigger value="heating">
+          <TabsTrigger value="heizkosten">
             {t("ui.statements.detail.tabs.heating")}
           </TabsTrigger>
         ) : null}
-        <TabsTrigger value="advance">
+        <TabsTrigger value="vorauszahlung">
           {t("ui.statements.detail.tabs.advance")}
         </TabsTrigger>
         <TabsTrigger value="pdf">
           {t("ui.statements.detail.tabs.pdf")}
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="overview">
+      <TabsContent value="uebersicht">
         <OverviewCard result={result} />
       </TabsContent>
-      <TabsContent value="operating">
+      <TabsContent value="kosten">
         <OperatingCostsCard result={result} />
       </TabsContent>
       {hasPayments ? (
-        <TabsContent value="payments">
+        <TabsContent value="zahlungen">
           <PaymentsCard
             payments={payments}
             period={result.period}
@@ -245,7 +231,7 @@ const StatementTabs = ({
         </TabsContent>
       ) : null}
       {occupancyDetail ? (
-        <TabsContent value="occupancy">
+        <TabsContent value="belegung">
           <OccupancyCard
             detail={occupancyDetail}
             targetUnitId={result.unitId}
@@ -253,12 +239,12 @@ const StatementTabs = ({
         </TabsContent>
       ) : null}
       {hasTaxableLabor && taxableLabor ? (
-        <TabsContent value="taxableLabor">
+        <TabsContent value="steuer">
           <TaxableLaborCard detail={taxableLabor} />
         </TabsContent>
       ) : null}
       {heatingDetail ? (
-        <TabsContent value="heating">
+        <TabsContent value="heizkosten">
           <HeatingCard
             detail={heatingDetail}
             tenantPeriod={result.tenantPeriod}
@@ -267,7 +253,7 @@ const StatementTabs = ({
           />
         </TabsContent>
       ) : null}
-      <TabsContent value="advance">
+      <TabsContent value="vorauszahlung">
         <AdvanceAdjustmentCard
           statementId={statementId}
           isDraft={isDraft}
@@ -317,48 +303,18 @@ const StatementTabs = ({
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: große Detailseite, bereits einiges ausgelagert
 export const StatementDetailPage = () => {
   const queryClient = useQueryClient();
-  // strict:false weil dieselbe Component zwei Routen bedient
-  // (/abrechnungen/$statementId und /abrechnungen/$statementId/pdf).
-  const { statementId } = useParams({ strict: false }) as {
-    statementId: string;
-  };
-
-  const location = useLocation();
+  const { statementId } = routeApi.useParams();
+  const { tab } = routeApi.useSearch();
   const navigate = useNavigate();
 
-  // Pathname-Suffix -> Tab-Wert. Default ("/abrechnungen/$statementId" ohne
-  // Suffix) ist die Übersicht. Pfadsegment immer in Sync mit den Routen
-  // halten, sonst stimmt der aktive Tab nicht.
-  const activeTab = tabFromPathname(location.pathname);
+  // Fallback für ein fehlendes oder ungültiges `tab`
+  const activeTab = tab && statementTabs.includes(tab) ? tab : statementTabs[0];
   const handleTabChange = async (value: string) => {
-    const to = (() => {
-      switch (value) {
-        case "operating":
-          return "/abrechnungen/$statementId/kosten";
-
-        case "heating":
-          return "/abrechnungen/$statementId/heizkosten";
-
-        case "occupancy":
-          return "/abrechnungen/$statementId/belegung";
-
-        case "taxableLabor":
-          return "/abrechnungen/$statementId/steuer";
-
-        case "payments":
-          return "/abrechnungen/$statementId/zahlungen";
-
-        case "advance":
-          return "/abrechnungen/$statementId/vorauszahlung";
-
-        case "pdf":
-          return "/abrechnungen/$statementId/pdf";
-
-        default:
-          return "/abrechnungen/$statementId";
-      }
-    })();
-    await navigate({ to, params: { statementId } });
+    await navigate({
+      to: "/abrechnungen/$statementId",
+      params: { statementId },
+      search: { tab: value as StatementTab },
+    });
   };
 
   const statementQuery = useQuery({

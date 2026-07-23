@@ -37,6 +37,8 @@ import {
   TabsTrigger,
 } from "../../components/ui/Tabs";
 import {
+  type KontoTab,
+  kontoTabs,
   tenantBalanceQueryOptions,
   tenantDepositQueryOptions,
   tenantFeesQueryOptions,
@@ -67,13 +69,6 @@ import { SettlementsTable } from "./components/SettlementsTable";
 
 const routeApi = getRouteApi("/mieter/$tenantId/konto");
 
-type KontoTab =
-  | "miete"
-  | "zahlungen"
-  | "abrechnungen"
-  | "kaution"
-  | "gebuehren";
-
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: Konto-Seite mit fünf Registern und eingebettetem Zahlungsformular
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Konto-Seite mit fünf Registern, Infospalte und Inline-Formularen
 export const MieterkontoDetail = () => {
@@ -81,6 +76,10 @@ export const MieterkontoDetail = () => {
   const { tab } = routeApi.useSearch();
   const navigate = useNavigate();
   const today = todayIso();
+
+  // Fallback nicht nur für ein fehlendes `tab`: einen ungültigen Wert filtert
+  // zwar die Route heraus, die Root-Route reicht ihn aber trotzdem durch.
+  const activeTab = tab && kontoTabs.includes(tab) ? tab : kontoTabs[0];
 
   // Der Mieter-Aggregat (für Kopf/H1) lädt der TenantDetailHeader selbst;
   // hier nur die kontospezifischen Töpfe.
@@ -265,7 +264,7 @@ export const MieterkontoDetail = () => {
       ) : (
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
           <Tabs
-            value={tab ?? "miete"}
+            value={activeTab}
             onValueChange={(value) => {
               navigate({
                 to: "/mieter/$tenantId/konto",

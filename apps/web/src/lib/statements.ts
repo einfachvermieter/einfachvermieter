@@ -5,6 +5,23 @@ import { t } from "./i18n";
 import type { TenantAggregate } from "./tenants";
 import type { Unit } from "./units";
 
+/**
+ * Reiter der Detailseite
+ * Erster Eintrag ist der Standard
+ */
+export const statementTabs = [
+  "uebersicht",
+  "kosten",
+  "zahlungen",
+  "belegung",
+  "steuer",
+  "heizkosten",
+  "vorauszahlung",
+  "pdf",
+] as const;
+
+export type StatementTab = (typeof statementTabs)[number];
+
 export type Statement = {
   id: string;
   buildingId: string;

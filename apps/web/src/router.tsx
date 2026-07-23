@@ -25,6 +25,8 @@ import { Button } from "./components/ui/Button";
 import {
   type FeeRow,
   feeIdentityLabel,
+  type KontoTab,
+  kontoTabs,
   tenantFeesQueryOptions,
 } from "./lib/accounts";
 import { ApiError } from "./lib/api";
@@ -59,8 +61,10 @@ import {
 import { setupStatusQueryOptions } from "./lib/setup";
 import {
   type Statement,
+  type StatementTab,
   statementIdentityLabel,
   statementQueryOptions,
+  statementTabs,
 } from "./lib/statements";
 import {
   type TenantAggregate,
@@ -451,14 +455,6 @@ const tenantEditRoute = createRoute({
   },
 });
 
-const kontoTabs = [
-  "miete",
-  "zahlungen",
-  "abrechnungen",
-  "kaution",
-  "gebuehren",
-] as const;
-type KontoTab = (typeof kontoTabs)[number];
 const kontoTabSet: ReadonlySet<KontoTab> = new Set(kontoTabs);
 
 const kontoSearchSchema = (
@@ -1053,11 +1049,11 @@ const statementDetailLoader = async ({
   params,
 }: {
   context: RouterContext;
-  params: Record<string, string>;
+  params: { statementId: string };
 }): Promise<StatementDetailLoaderData | null> => {
   try {
     const statement = await context.queryClient.ensureQueryData(
-      statementQueryOptions(params.statementId ?? ""),
+      statementQueryOptions(params.statementId),
     );
     const [aggregate, units] = await Promise.all([
       context.queryClient.ensureQueryData(
@@ -1082,57 +1078,28 @@ const statementDetailCrumb: Crumb = ({ loaderData }) => {
   ];
 };
 
-/**
- * Gemeinsame Optionen. `path` bleibt pro Route ein Literal, damit TanStack
- * die Pfade als gültige Navigationsziele typt (eine Helper-Funktion mit
- * `path: string` würde diese Ableitung zerstören).
- */
-const statementDetailShared = {
-  beforeLoad: requireAuth,
-  loader: statementDetailLoader,
-  component: StatementDetailPage,
-  staticData: { crumb: statementDetailCrumb },
-} as const;
+const statementTabSet: ReadonlySet<StatementTab> = new Set(statementTabs);
+
+const statementSearchSchema = (
+  search: Record<string, unknown>,
+): { tab?: StatementTab } => {
+  const tab =
+    typeof search.tab === "string" &&
+    statementTabSet.has(search.tab as StatementTab)
+      ? (search.tab as StatementTab)
+      : undefined;
+
+  return tab ? { tab } : {};
+};
 
 const statementDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/abrechnungen/$statementId",
-  ...statementDetailShared,
-});
-const statementDetailOperatingRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/abrechnungen/$statementId/kosten",
-  ...statementDetailShared,
-});
-const statementDetailHeatingRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/abrechnungen/$statementId/heizkosten",
-  ...statementDetailShared,
-});
-const statementDetailOccupancyRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/abrechnungen/$statementId/belegung",
-  ...statementDetailShared,
-});
-const statementDetailTaxableLaborRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/abrechnungen/$statementId/steuer",
-  ...statementDetailShared,
-});
-const statementDetailPaymentsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/abrechnungen/$statementId/zahlungen",
-  ...statementDetailShared,
-});
-const statementDetailAdvanceRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/abrechnungen/$statementId/vorauszahlung",
-  ...statementDetailShared,
-});
-const statementDetailPdfRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/abrechnungen/$statementId/pdf",
-  ...statementDetailShared,
+  beforeLoad: requireAuth,
+  validateSearch: statementSearchSchema,
+  loader: statementDetailLoader,
+  component: StatementDetailPage,
+  staticData: { crumb: statementDetailCrumb },
 });
 
 const profileSettingsRoute = createRoute({
@@ -1209,13 +1176,6 @@ const routeTree = rootRoute.addChildren([
   statementsRoute,
   statementCreateRoute,
   statementDetailRoute,
-  statementDetailOperatingRoute,
-  statementDetailHeatingRoute,
-  statementDetailOccupancyRoute,
-  statementDetailTaxableLaborRoute,
-  statementDetailPaymentsRoute,
-  statementDetailAdvanceRoute,
-  statementDetailPdfRoute,
   profileSettingsRoute,
   senderSettingsRoute,
   passwordSettingsRoute,
