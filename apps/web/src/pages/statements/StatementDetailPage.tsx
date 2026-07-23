@@ -4,7 +4,9 @@ import {
   formatEur,
   formatName,
   groupCalcWarnings,
+  isoDatePlusOneYear,
   isTenantWarning,
+  todayIso,
 } from "@einfachvermieter/shared";
 import {
   RiBuildingLine,
@@ -517,6 +519,12 @@ export const StatementDetailPage = () => {
   const statusBadge = renderStatusBadge(statement);
 
   const isRefund = result ? result.balanceCents <= 0 : false;
+  // 12 Monate nach Periodenende ist Nachforderung ausgeschlossen.
+  // Guthaben schuldet der Vermieter weiter, deshalb nur bei Nachzahlung warnen.
+  const deadlineMissedWithArrears =
+    result !== undefined &&
+    result.balanceCents > 0 &&
+    todayIso() > isoDatePlusOneYear(statement.periodEnd);
   const balanceClass = isRefund
     ? "text-teal-700 dark:text-teal-400"
     : "text-rose-700 dark:text-rose-400";
@@ -754,11 +762,18 @@ export const StatementDetailPage = () => {
         onOpenChange={setConfirmFinalizeOpen}
         title={t("ui.statements.detail.finalizeStatement")}
         description={
-          dataIssueCount > 0
-            ? t("ui.statements.detail.confirmFinalizeWithDataIssues", {
-                count: dataIssueCount,
-              })
-            : t("ui.statements.detail.confirmFinalize")
+          <>
+            {dataIssueCount > 0
+              ? t("ui.statements.detail.confirmFinalizeWithDataIssues", {
+                  count: dataIssueCount,
+                })
+              : t("ui.statements.detail.confirmFinalize")}
+            {deadlineMissedWithArrears ? (
+              <p className="mt-2">
+                {t("ui.statements.detail.finalizeDeadlineWarning")}
+              </p>
+            ) : null}
+          </>
         }
         confirmLabel={t("ui.statements.detail.finalizeStatement")}
         onConfirm={() => {

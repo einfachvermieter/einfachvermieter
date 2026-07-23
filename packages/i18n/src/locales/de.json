@@ -1363,7 +1363,9 @@
       "balanceDraftHint": "Der Saldo wird beim Öffnen der Abrechnung live berechnet.",
       "fields": {
         "documentDate": "Ausstellungsdatum",
-        "documentDateHint": "Datum, das auf der Abrechnung erscheint. Standard ist heute – für vor- oder nachdatierte Dokumente anpassbar."
+        "documentDateHint": "Datum, das auf der Abrechnung erscheint. Standard ist heute – für vor- oder nachdatierte Dokumente anpassbar.",
+        "deadlineWarningTitle": "Abrechnungsfrist abgelaufen",
+        "deadlineWarningDescription": "Der Abrechnungszeitraum endete vor mehr als zwölf Monaten. Nach § 556 Abs. 3 BGB können Sie danach keine Nachzahlung mehr fordern. Ein Guthaben müssen Sie dem Mieter trotzdem auszahlen."
       },
       "validation": {
         "tenantRequired": "Mieter wählen",
@@ -1415,6 +1417,7 @@
         "finalizedAt": "Finalisiert am {date}",
         "calculating": "wird berechnet …",
         "confirmFinalize": "Abrechnung wirklich finalisieren? Danach sind keine Änderungen mehr möglich.",
+        "finalizeDeadlineWarning": "Der Abrechnungszeitraum endete vor mehr als zwölf Monaten. Die Nachzahlung ist nach § 556 Abs. 3 BGB nicht mehr durchsetzbar.",
         "confirmFinalizeWithDataIssues": "Es {count, plural, one {liegt noch ein Hinweis} other {liegen noch # Hinweise}} zur Datenqualität vor (siehe „Hinweise zur Berechnung“). Trotzdem finalisieren? Danach sind keine Änderungen mehr möglich.",
         "finalizing": "Wird finalisiert …",
         "finalizeStatement": "Abrechnung finalisieren",

@@ -1,9 +1,14 @@
-import { formatName } from "@einfachvermieter/shared";
+import {
+  formatName,
+  isoDatePlusOneYear,
+  todayIso,
+} from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useId, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { DateInput } from "@/components/form/DateInput";
 import { MonthInput } from "@/components/form/MonthInput";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import {
   Field,
@@ -55,12 +60,28 @@ export const StatementForm = ({
     [tenants, selectedBuildingId],
   );
 
+  // 12 Monaten ab Periodenende ist Nachforderung ausgeschlossen.
+  // Nur warnen, nicht blockieren. Abrechnung über ein Guthaben bleibt sinnvoll.
+  const periodEnd = form.watch("periodEnd");
+  const deadlineMissed =
+    periodEnd.length > 0 && todayIso() > isoDatePlusOneYear(periodEnd);
+
   return (
     <form
       id={formId}
       onSubmit={form.handleSubmit(onSubmit)}
       className="space-y-6"
     >
+      {deadlineMissed ? (
+        <Alert variant="warning">
+          <AlertTitle>
+            {t("ui.statements.fields.deadlineWarningTitle")}
+          </AlertTitle>
+          <AlertDescription>
+            {t("ui.statements.fields.deadlineWarningDescription")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
       <FieldGroup className="gap-4">
         <Controller
           name="buildingId"
