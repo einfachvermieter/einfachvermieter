@@ -251,6 +251,7 @@
     "hotWaterSourceMissing": "Zentrale Warmwasserbereitung erfasst, aber weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch vorhanden – der Warmwasseranteil konnte nicht ermittelt werden.",
     "hotWaterFlatRateFallback": "Weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch erfasst. Der Warmwasseranteil wurde daher ersatzweise mit der Pauschalformel aus § 9 Abs. 2 Satz 5 HeizkostenV geschätzt (32 kWh je Quadratmeter Wohnfläche und Jahr). Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
     "hotWaterShareCapped": "Die geschätzte Warmwasser-Wärmemenge übersteigt die erfasste Gesamt-Wärmemenge – der Warmwasseranteil wurde auf 100 % begrenzt. Bitte Gesamt-Wärmemenge prüfen.",
+    "hotWaterTotalHeatPeriodMismatch": "Die Gesamt-Wärmemenge aus der Heizkosten-Konfiguration ist ein Jahreswert, die Abrechnungsperiode umfasst aber {periodDays} Tage. Die Warmwasser-Wärmemenge wird über die Periode gemessen, dadurch kann der Warmwasseranteil verzerrt sein. Bitte prüfen Sie, ob die Gesamt-Wärmemenge zur Periode passt.",
     "co2SplitEnabledNoData": "Die CO₂-Kostenaufteilung ist aktiviert, aber keiner Kostenart sind CO₂-Kosten zugeordnet. Die Aufteilung nach CO2KostAufG entfällt.",
     "co2SplitMissingData": "CO₂-Kosten sind erfasst, aber CO₂-Menge oder Wohnfläche fehlt – eine Aufteilung nach CO2KostAufG ist nicht möglich.",
     "consumptionFallbackZeroDelta": "Die Verbrauchsmessungen liefern für die Periode eine Differenz von 0. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
@@ -1226,7 +1227,7 @@
         "hotWaterSupplyTemperature": "Warmwasservorlauftemperatur",
         "hotWaterSupplyTemperatureDescription": "Üblich sind 60 °C. Wird in die Schätzformel und in die Mieter-Information übernommen.",
         "totalHeatEnergyKwh": "Gesamt-Wärmemenge (kWh)",
-        "totalHeatEnergyKwhDescription": "Jahres-Wärmemenge der gesamten Heizungsanlage in kWh – Grundlage, um den Warmwasseranteil nach § 9 Abs. 2 HeizkostenV herauszurechnen. Entnehmen Sie den Wert Ihrer Energieabrechnung (Gas/Fernwärme weisen kWh aus). Liegt ein gebäudezentraler Wärmemengenzähler als Hauptzähler vor, wird ersatzweise dessen Verbrauch herangezogen.",
+        "totalHeatEnergyKwhDescription": "Jahres-Wärmemenge der gesamten Heizungsanlage in kWh – Grundlage, um den Warmwasseranteil nach § 9 Abs. 2 HeizkostenV herauszurechnen. Entnehmen Sie den Wert Ihrer Energieabrechnung (Gas/Fernwärme weisen kWh aus). Rechnen Sie über einen kürzeren Zeitraum ab, tragen Sie den auf diesen Zeitraum entfallenden Anteil ein.",
         "co2CostShareEnabled": "CO₂-Kosten aufteilen (CO2KostAufG)",
         "co2CostShareEnabledDescription": "Aufteilung zwischen Vermieter und Mieter nach Emissionsstufe",
         "co2FuelMismatchWarning": "Für den gewählten Energieträger {fuel} fällt kein CO₂-Preis nach CO2KostAufG an (nur fossile Brennstoffe und Fernwärme). Die CO₂-Kostenaufteilung ist hier in der Regel nicht zutreffend."

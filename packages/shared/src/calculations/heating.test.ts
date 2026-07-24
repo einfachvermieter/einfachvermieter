@@ -1188,6 +1188,45 @@ describe("calculateHeating - Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV)", (
     ).toBe(true);
   });
 
+  it("Jahres-Q_gesamt bei Halbjahresperiode warnt, bei Jahresperiode nicht", () => {
+    const hotWater = {
+      totalHeatEnergyKwh: 10_000,
+      totalHeatEnergyIsAnnual: true,
+      boilerHeatKwh: 2000,
+      hotWaterVolumeM3: null,
+      supplyTemperatureCelsius: 60,
+      unitHotWaterM3: [],
+    };
+
+    const hasWarning = (result: ReturnType<typeof calculateHeating>): boolean =>
+      result.warnings?.some(
+        (w) => w.code === "hotWaterTotalHeatPeriodMismatch",
+      ) === true;
+
+    const halfYearInput = () => {
+      const input = baseInput();
+      return {
+        ...input,
+        units: input.units.map((unit) => ({ ...unit, periodDays: 181 })),
+        periodEnd: "2025-06-30",
+      };
+    };
+
+    const halfYear = calculateHeating({ ...halfYearInput(), hotWater });
+    const fullYear = calculateHeating({ ...baseInput(), hotWater });
+
+    // Ein gemessener Haupt-Wärmemengenzähler deckt die Periode ab, dann
+    // passt der Wert auch bei kurzen Perioden.
+    const halfYearMeasured = calculateHeating({
+      ...halfYearInput(),
+      hotWater: { ...hotWater, totalHeatEnergyIsAnnual: false },
+    });
+
+    expect(hasWarning(halfYear)).toBe(true);
+    expect(hasWarning(fullYear)).toBe(false);
+    expect(hasWarning(halfYearMeasured)).toBe(false);
+  });
+
   it("Q_WW > Q_gesamt wird auf 100 % begrenzt (mit Warnung)", () => {
     const result = calculateHeating({
       ...baseInput(),

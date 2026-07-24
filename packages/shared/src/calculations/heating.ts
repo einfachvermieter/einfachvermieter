@@ -410,6 +410,13 @@ type HeatingCalculationInput = {
 
 export type HotWaterInput = {
   totalHeatEnergyKwh: number | null;
+
+  /**
+   * `true`, wenn Q_gesamt der Jahreswert aus der Heizkosten-Konfiguration ist
+   * (statt über Periode gemessener Haupt-Wärmemengenzähler).
+   * Nur für Warnung bei Perioden, die kein Jahr umfassen.
+   */
+  totalHeatEnergyIsAnnual?: boolean;
   boilerHeatKwh: number | null;
   hotWaterVolumeM3: number | null;
   supplyTemperatureCelsius: number;
@@ -496,6 +503,19 @@ const computeHotWaterSplit = (
   if (totalHeatEnergyKwh === null || totalHeatEnergyKwh <= 0) {
     warnings.push({ code: "hotWaterTotalHeatMissing" });
     return;
+  }
+
+  // Q_WW wird über die Abrechnungsperiode ermittelt, der Jahreswert Q_gesamt
+  // aus der Konfiguration nicht. Bei Perioden, die kein Jahr umfassen, ist der
+  // Anteil damit verzerrt. Nur wanren.
+  if (
+    hotWater.totalHeatEnergyIsAnnual === true &&
+    (periodDays < 350 || periodDays > 380)
+  ) {
+    warnings.push({
+      code: "hotWaterTotalHeatPeriodMismatch",
+      params: { periodDays },
+    });
   }
 
   // Q_WW bestimmen: bevorzugt am Boiler-WMZ gemessen, sonst über die

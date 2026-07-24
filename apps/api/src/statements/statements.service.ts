@@ -1434,6 +1434,7 @@ export class StatementsService {
       deltaBetween(meterId, statementPeriod, label);
 
     let { totalHeatEnergyKwh } = heatingSettings;
+    const totalHeatEnergyIsAnnual = totalHeatEnergyKwh !== null;
     if (totalHeatEnergyKwh === null) {
       const mainHeatMeter = metersRaw.find(
         (m) => m.type === "heat_meter" && m.role === "main",
@@ -1483,6 +1484,7 @@ export class StatementsService {
 
     return {
       totalHeatEnergyKwh,
+      totalHeatEnergyIsAnnual,
       boilerHeatKwh,
       hotWaterVolumeM3: totalHotWaterM3 > 0 ? totalHotWaterM3 : null,
       supplyTemperatureCelsius:
