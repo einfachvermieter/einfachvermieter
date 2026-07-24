@@ -1,4 +1,7 @@
-import { isCo2SplitInapplicableFuel } from "@einfachvermieter/shared";
+import {
+  isCo2SplitInapplicableFuel,
+  isLikelyNonAllocatableCostTypeName,
+} from "@einfachvermieter/shared";
 import { RiFireLine, RiHomeGearLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -65,6 +68,10 @@ export const CostTypeBaseFields = ({
       !isCo2SplitInapplicableFuel(config.fuelType),
   );
 
+  // § 1 Abs. 2 BetrKV: Verwaltungs- und Instandhaltungskosten sind nicht
+  // umlagefähig. Der Name ist Freitext, deshalb nur ein Hinweis.
+  const showBetrkvHint = isLikelyNonAllocatableCostTypeName(form.watch("name"));
+
   const showCo2NoConfigHint =
     isHeating &&
     co2Tracked === true &&
@@ -115,6 +122,14 @@ export const CostTypeBaseFields = ({
           placeholder={t("ui.costs.typeFields.namePlaceholder")}
         />
       </div>
+
+      {showBetrkvHint ? (
+        <Alert variant="warning">
+          <AlertDescription>
+            {t("ui.costs.typeFields.betrkvWarning")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       <ChoiceTilesInput
         control={form.control}

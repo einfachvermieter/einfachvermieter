@@ -991,7 +991,8 @@
         "laborCostCategory": "Steuerlich begünstigt (§ 35a EStG)",
         "laborCostCategoryDescription": "Wenn gesetzt, weisen Sie bei jeder Rechnung dieser Kostenart den Lohnkostenanteil aus. Er wird in der NK-Abrechnung als Bescheinigung für den Mieter ausgewiesen.",
         "co2Tracked": "CO₂-Menge und -Kostenanteil auf den Rechnungen erfassen",
-        "co2TrackedNoConfigWarning": "Derzeit nutzt keine Heizkosten-Konfiguration dieses Gebäudes die CO₂-Kostenaufteilung mit einem CO₂-pflichtigen Brennstoff. Die erfassten CO₂-Werte bleiben ohne Wirkung, bis eine passende Konfiguration besteht."
+        "co2TrackedNoConfigWarning": "Derzeit nutzt keine Heizkosten-Konfiguration dieses Gebäudes die CO₂-Kostenaufteilung mit einem CO₂-pflichtigen Brennstoff. Die erfassten CO₂-Werte bleiben ohne Wirkung, bis eine passende Konfiguration besteht.",
+        "betrkvWarning": "Nach § 1 Abs. 2 BetrKV sind Verwaltungs- und Instandhaltungskosten nicht umlagefähig. Der Name deutet auf solche Kosten hin. Prüfen Sie, ob Sie diese Kostenart wirklich auf die Mieter verteilen dürfen. Speichern können Sie sie trotzdem, es gibt Grenzfälle wie Wartungsverträge."
       },
       "laborCostCategoryOptions": {
         "__none__": "Nicht begünstigt",

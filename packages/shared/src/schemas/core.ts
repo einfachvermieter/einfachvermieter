@@ -8,6 +8,21 @@ import {
   laborCostCategories,
 } from "./common.js";
 
+/**
+ * Namensmuster für Kosten, die § 1 Abs. 2 BetrKV von der Umlage ausnimmt:
+ * Verwaltungskosten und Instandhaltung/Instandsetzung, dazu die üblichen
+ * Vermieter-Eigenkosten (Rücklage, Finanzierung, Leerstand, Makler).
+ */
+const NON_ALLOCATABLE_NAME_PATTERN =
+  /verwaltung|instandhaltung|instandsetzung|reparatur|rücklage|finanzierung|zins|makler|leerstand/iu;
+
+/**
+ * True, wenn der Name einer Kostenart auf nicht umlagefähige Kosten nach
+ * § 1 Abs. 2 BetrKV hindeutet (simpler String check)
+ */
+export const isLikelyNonAllocatableCostTypeName = (name: string): boolean =>
+  NON_ALLOCATABLE_NAME_PATTERN.test(name);
+
 const costTypeFieldsSchema = z.object({
   name: z.string().min(1).max(200),
   category: z.enum(costTypeCategories),
