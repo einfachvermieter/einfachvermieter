@@ -554,6 +554,12 @@ export type HeatingDetail = {
      */
     hotWaterVolumeM3?: number;
     /**
+     * Angewendeter Korrekturfaktor nach § 9 Abs. 2 Satz 5 HeizkostenV
+     * (brennwertbezogenes Erdgas, gewerbliche Wärmelieferung, monovalente
+     * Wärmepumpe). Fehlt, wenn keiner greift oder Q_WW gemessen wurde.
+     */
+    correctionFactor?: number;
+    /**
      * Verbrauchsanteil des WW-Topfes in Basispunkten.
      */
     consumptionShareBps: number;

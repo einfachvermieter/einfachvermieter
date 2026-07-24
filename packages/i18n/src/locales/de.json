@@ -1228,6 +1228,13 @@
         "hotWaterSupplyTemperatureDescription": "Üblich sind 60 °C. Wird in die Schätzformel und in die Mieter-Information übernommen.",
         "totalHeatEnergyKwh": "Gesamt-Wärmemenge (kWh)",
         "totalHeatEnergyKwhDescription": "Jahres-Wärmemenge der gesamten Heizungsanlage in kWh – Grundlage, um den Warmwasseranteil nach § 9 Abs. 2 HeizkostenV herauszurechnen. Entnehmen Sie den Wert Ihrer Energieabrechnung (Gas/Fernwärme weisen kWh aus). Rechnen Sie über einen kürzeren Zeitraum ab, tragen Sie den auf diesen Zeitraum entfallenden Anteil ein.",
+        "mandatorySeventyPercent": "70 % Verbrauchsanteil zwingend",
+        "mandatorySeventyPercentDescription": "Aktivieren, wenn alle drei Punkte zutreffen: Das Gebäude erfüllt das Anforderungsniveau der Wärmeschutzverordnung 1994 nicht, es wird mit einer Öl- oder Gas-Zentralheizung versorgt, und die freiliegenden Wärmeleitungen sind überwiegend gedämmt. Dann schreibt § 7 Abs. 1 Satz 2 HeizkostenV 70 % nach Verbrauch vor.",
+        "gasBillingByCalorificValue": "Erdgas brennwertbezogen abgerechnet",
+        "gasBillingByCalorificValueDescription": "Rechnet Ihr Versorger nach Brennwert ab, wird die Warmwasser-Wärmemenge mit 1,11 multipliziert (§ 9 Abs. 2 HeizkostenV). Steht auf Ihrer Gasrechnung.",
+        "heatPumpMonovalent": "Wärmepumpe monovalent betrieben",
+        "heatPumpMonovalentDescription": "Deckt die Wärmepumpe die Wärme allein, ohne zweiten Wärmeerzeuger, wird die Warmwasser-Wärmemenge mit 0,30 multipliziert (§ 9 Abs. 2 HeizkostenV).",
+        "districtHeatCorrectionNote": "Bei eigenständiger gewerblicher Wärmelieferung wird die Warmwasser-Wärmemenge durch 1,15 geteilt (§ 9 Abs. 2 HeizkostenV). Das ergibt sich aus dem Energieträger Fernwärme und ist automatisch berücksichtigt.",
         "co2CostShareEnabled": "CO₂-Kosten aufteilen (CO2KostAufG)",
         "co2CostShareEnabledDescription": "Aufteilung zwischen Vermieter und Mieter nach Emissionsstufe",
         "co2FuelMismatchWarning": "Für den gewählten Energieträger {fuel} fällt kein CO₂-Preis nach CO2KostAufG an (nur fossile Brennstoffe und Fernwärme). Die CO₂-Kostenaufteilung ist hier in der Regel nicht zutreffend."
@@ -1247,6 +1254,7 @@
         "consumptionShareBandwidth": "Der Verbrauchsanteil muss zwischen 50 % und 70 % liegen (§ 7 Abs. 1 HeizkostenV)",
         "tempRange": "Temperatur zwischen 20 und 95 °C",
         "totalHeatEnergyInvalid": "Bitte geben Sie eine gültige Gesamt-Wärmemenge in kWh an (größer 0)",
+        "seventyPercentMandatory": "Für dieses Gebäude sind 70 % Verbrauchsanteil zwingend (§ 7 Abs. 1 Satz 2 HeizkostenV)",
         "validToBeforeFrom": "Gültig-bis darf nicht vor Gültig-ab liegen"
       },
       "cards": {

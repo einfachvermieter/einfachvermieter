@@ -57,6 +57,9 @@ const defaultSettings = (buildingId: string): HeatingSettings => ({
   hotWaterMeterId: null,
   hotWaterSupplyTemperatureCelsius: 60,
   totalHeatEnergyKwh: null,
+  gasBillingByCalorificValue: false,
+  heatPumpMonovalent: false,
+  mandatorySeventyPercent: false,
   co2CostShareEnabled: true,
   validFrom: "1900-01-01",
   validTo: null,
@@ -291,6 +294,9 @@ export class HeatingService {
         hotWaterMeterId: null,
         hotWaterSupplyTemperatureCelsius: 60,
         totalHeatEnergyKwh: null,
+        gasBillingByCalorificValue: false,
+        heatPumpMonovalent: false,
+        mandatorySeventyPercent: false,
         co2CostShareEnabled: true,
       };
     }
@@ -309,6 +315,9 @@ export class HeatingService {
       hotWaterMeterId: dto.hotWaterMeterId,
       hotWaterSupplyTemperatureCelsius: dto.hotWaterSupplyTemperatureCelsius,
       totalHeatEnergyKwh: dto.totalHeatEnergyKwh,
+      gasBillingByCalorificValue: dto.gasBillingByCalorificValue,
+      heatPumpMonovalent: dto.heatPumpMonovalent,
+      mandatorySeventyPercent: dto.mandatorySeventyPercent,
       co2CostShareEnabled: dto.co2CostShareEnabled,
     };
   }

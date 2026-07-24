@@ -13,6 +13,9 @@ const internalBase = {
   hotWaterMeterId: null,
   hotWaterSupplyTemperatureCelsius: 60,
   totalHeatEnergyKwh: null,
+  gasBillingByCalorificValue: false,
+  heatPumpMonovalent: false,
+  mandatorySeventyPercent: false,
   co2CostShareEnabled: true,
 };
 
@@ -45,5 +48,27 @@ describe("heatingSettingsWriteSchema - Verbrauchsanteil-Bandbreite (§ 7 Heizkos
 
   it("lehnt weiterhin ab, wenn die Summe != 100 ist", () => {
     expect(withShares(60, 30).success).toBe(false);
+  });
+});
+
+describe("heatingSettingsWriteSchema - 70-%-Pflichtfall (§ 7 Abs. 1 Satz 2 HeizkostenV)", () => {
+  const withMandatoryFlag = (consumptionSharePercent: number) =>
+    heatingSettingsWriteSchema.safeParse({
+      ...internalBase,
+      mandatorySeventyPercent: true,
+      consumptionSharePercent,
+      baseSharePercent: 100 - consumptionSharePercent,
+    });
+
+  it("lehnt 60 % ab, wenn 70 % zwingend sind", () => {
+    expect(withMandatoryFlag(60).success).toBe(false);
+  });
+
+  it("akzeptiert 70 %, wenn 70 % zwingend sind", () => {
+    expect(withMandatoryFlag(70).success).toBe(true);
+  });
+
+  it("lässt 60 % ohne den Pflichtfall weiter zu", () => {
+    expect(withShares(60, 40).success).toBe(true);
   });
 });

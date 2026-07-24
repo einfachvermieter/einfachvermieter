@@ -219,6 +219,25 @@ export type HeatingSetting = {
    * (noch) nicht erfasst (dann unterbleibt die Abspaltung mit Warnung).
    */
   totalHeatEnergyKwh: number | null;
+  /**
+   * Brennwertbezogene Abrechnung von Erdgas: die nach den Formeln des
+   * § 9 Abs. 2 HeizkostenV bestimmte Warmwasser-Wärmemenge ist dann mit 1,11
+   * zu multiplizieren. Nur bei `fuelType = "gas"` sinnvoll.
+   */
+  gasBillingByCalorificValue: Opt<boolean>;
+  /**
+   * Monovalent betriebene Wärmepumpe: Faktor 0,30 auf die nach den Formeln
+   * bestimmte Warmwasser-Wärmemenge (§ 9 Abs. 2 HeizkostenV). Nur bei
+   * `fuelType = "heat_pump"` sinnvoll.
+   */
+  heatPumpMonovalent: Opt<boolean>;
+  /**
+   * Gebäude, das nach § 7 Abs. 1 Satz 2 HeizkostenV zwingend 70 % nach
+   * Verbrauch verteilen muss (Anforderungsniveau der WSchV 1994 nicht
+   * erfüllt, Öl-/Gas-Zentralheizung, freiliegende Leitungen überwiegend
+   * gedämmt).
+   */
+  mandatorySeventyPercent: Opt<boolean>;
   co2CostShareEnabled: boolean;
   validFrom: string;
   validTo: string | null;
@@ -272,6 +291,21 @@ export const HeatingSettingSchema = new EntitySchema<HeatingSetting>({
       type: "double",
       fieldName: "total_heat_energy_kwh",
       nullable: true,
+    },
+    gasBillingByCalorificValue: {
+      type: "boolean",
+      fieldName: "gas_billing_by_calorific_value",
+      default: false,
+    },
+    heatPumpMonovalent: {
+      type: "boolean",
+      fieldName: "heat_pump_monovalent",
+      default: false,
+    },
+    mandatorySeventyPercent: {
+      type: "boolean",
+      fieldName: "mandatory_seventy_percent",
+      default: false,
     },
     co2CostShareEnabled: {
       type: "boolean",

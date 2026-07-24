@@ -35,6 +35,7 @@ import {
   groupCalcWarnings,
   type HeatingDetail,
   type HotWaterInput,
+  hotWaterCorrectionFactor,
   inferTariffAdjustmentBpsFromInvoices,
   intersect,
   type MeterInfo,
@@ -1485,6 +1486,7 @@ export class StatementsService {
     return {
       totalHeatEnergyKwh,
       totalHeatEnergyIsAnnual,
+      correctionFactor: hotWaterCorrectionFactor(heatingSettings),
       boilerHeatKwh,
       hotWaterVolumeM3: totalHotWaterM3 > 0 ? totalHotWaterM3 : null,
       supplyTemperatureCelsius:

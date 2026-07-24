@@ -1,4 +1,7 @@
-import type { HeatingProrationMethod } from "../schemas/heating.js";
+import type {
+  HeatingFuelType,
+  HeatingProrationMethod,
+} from "../schemas/heating.js";
 import type {
   HeatingConfig,
   HeatingDetail,
@@ -427,6 +430,47 @@ export type HotWaterInput = {
    * (Vor-/Nachmieter, Leerstand). Fällt als Kostenanteil auf den Vermieter.
    */
   landlordM3?: number;
+
+  /**
+   * Korrekturfaktor nach § 9 Abs. 2 Satz 5 HeizkostenV.
+   * Wirkt nur auf eine über die Formeln bestimmte Wärmemenge,
+   * nicht auf einen gemessenen Boiler-Wert.
+   */
+  correctionFactor?: number;
+};
+
+/**
+ * Korrekturfaktor für die Warmwasser-Wärmemenge nach § 9 Abs. 2 Satz 5
+ * HeizkostenV: brennwertbezogene Erdgas-Abrechnung x 1,11, eigenständige
+ * gewerbliche Wärmelieferung : 1,15, monovalente Wärmepumpe x 0,30.
+ *
+ * Die Verordnung bezieht die Faktoren ausdrücklich auf die *nach den
+ * Zahlenwertgleichungen* (Satz 2 oder 4) bestimmte Wärmemenge. Ein am
+ * Wärmezähler gemessener Wert bleibt unverändert.
+ *
+ * Mehrere Konstellationen können sich überlagern (z. B. gewerbliche
+ * Wärmelieferung aus einer Wärmepumpe), deshalb werden die Faktoren
+ * multipliziert. 1 = kein Faktor
+ */
+export const hotWaterCorrectionFactor = (settings: {
+  fuelType: HeatingFuelType;
+  gasBillingByCalorificValue: boolean;
+  heatPumpMonovalent: boolean;
+}): number => {
+  let factor = 1;
+  if (settings.fuelType === "gas" && settings.gasBillingByCalorificValue) {
+    factor *= 1.11;
+  }
+
+  if (settings.fuelType === "district_heat") {
+    factor /= 1.15;
+  }
+
+  if (settings.fuelType === "heat_pump" && settings.heatPumpMonovalent) {
+    factor *= 0.3;
+  }
+
+  return factor;
 };
 
 /**
@@ -481,6 +525,11 @@ type HotWaterSplitMeta = {
   hotWaterPotCents: number;
   supplyTemperatureCelsius?: number;
   hotWaterVolumeM3?: number;
+  /**
+   * Angewendeter Korrekturfaktor nach § 9 Abs. 2 Satz 5 HeizkostenV. Fehlt,
+   * wenn keiner greift, damit Altbestände weiter passen.
+   */
+  correctionFactor?: number;
 };
 
 /**
@@ -555,6 +604,18 @@ const computeHotWaterSplit = (
     return;
   }
 
+  // § 9 Abs. 2 Satz 5 HeizkostenV: die Faktoren gelten nur für die nach den
+  // Zahlenwertgleichungen bestimmte Wärmemenge, ein gemessener Boiler-Wert
+  // bleibt unverändert.
+  const correctionFactor =
+    core.method === "boiler_meter" ? 1 : (hotWater.correctionFactor ?? 1);
+  if (correctionFactor !== 1) {
+    core = {
+      ...core,
+      hotWaterHeatKwh: core.hotWaterHeatKwh * correctionFactor,
+    };
+  }
+
   // Anteil hart auf [0,1] klemmen, damit eine fehlerhafte Erfassung
   // (Q_WW > Q_gesamt) nicht den ganzen Heiztopf auffrisst.
   const rawShare = core.hotWaterHeatKwh / totalHeatEnergyKwh;
@@ -566,6 +627,7 @@ const computeHotWaterSplit = (
   return {
     ...core,
     totalHeatEnergyKwh,
+    ...(correctionFactor === 1 ? {} : { correctionFactor }),
     hotWaterShareBps: Math.round(share * 10_000),
     hotWaterPotCents: Math.round(distributablePotCents * share),
   };

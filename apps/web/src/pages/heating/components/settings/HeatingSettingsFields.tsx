@@ -296,6 +296,14 @@ export const HeatingSettingsFields = ({
                   })}
                 />
               ) : null}
+              <SwitchInput
+                control={form.control}
+                name="mandatorySeventyPercent"
+                label={t("ui.heating.fields.mandatorySeventyPercent")}
+                description={t(
+                  "ui.heating.fields.mandatorySeventyPercentDescription",
+                )}
+              />
             </>
           )}
           <SelectInput
@@ -402,6 +410,33 @@ export const HeatingSettingsFields = ({
                     suffix="kWh"
                     inputClassName="max-w-xs"
                   />
+                  {fuelType === "gas" ? (
+                    <SwitchInput
+                      control={form.control}
+                      name="gasBillingByCalorificValue"
+                      label={t("ui.heating.fields.gasBillingByCalorificValue")}
+                      description={t(
+                        "ui.heating.fields.gasBillingByCalorificValueDescription",
+                      )}
+                    />
+                  ) : null}
+                  {fuelType === "heat_pump" ? (
+                    <SwitchInput
+                      control={form.control}
+                      name="heatPumpMonovalent"
+                      label={t("ui.heating.fields.heatPumpMonovalent")}
+                      description={t(
+                        "ui.heating.fields.heatPumpMonovalentDescription",
+                      )}
+                    />
+                  ) : null}
+                  {fuelType === "district_heat" ? (
+                    <Alert variant="info">
+                      <AlertDescription>
+                        {t("ui.heating.fields.districtHeatCorrectionNote")}
+                      </AlertDescription>
+                    </Alert>
+                  ) : null}
                 </FieldGroup>
               </Disclose>
             ) : null}

@@ -110,6 +110,11 @@ const internalSchema = z
     hotWaterMeterId: z.guid().nullable(),
     hotWaterSupplyTemperatureCelsius: z.number().int().min(20).max(95),
     totalHeatEnergyKwh: z.number().positive().nullable(),
+    // Mit Default, damit Aufrufer die Sonderfall-Schalter weglassen können.
+    // Der Normalfall ist "trifft nicht zu".
+    gasBillingByCalorificValue: z.boolean().default(false),
+    heatPumpMonovalent: z.boolean().default(false),
+    mandatorySeventyPercent: z.boolean().default(false),
     co2CostShareEnabled: z.boolean(),
   })
   .strict();
@@ -145,6 +150,19 @@ export const heatingSettingsWriteSchema = z
     {
       path: ["consumptionSharePercent"],
       message: messageKey("ui.heating.validation.consumptionShareBandwidth"),
+    },
+  )
+  .refine(
+    // § 7 Abs. 1 Satz 2 HeizkostenV: Gebäude unter dem Anforderungsniveau der
+    // WSchV 1994 mit Öl-/Gas-Zentralheizung und überwiegend gedämmten
+    // freiliegenden Leitungen müssen 70 % nach Verbrauch verteilen.
+    (value) =>
+      value.mode !== "internal" ||
+      !value.mandatorySeventyPercent ||
+      value.consumptionSharePercent === 70,
+    {
+      path: ["consumptionSharePercent"],
+      message: messageKey("ui.heating.validation.seventyPercentMandatory"),
     },
   )
   .refine(
@@ -190,6 +208,20 @@ export type HeatingSettings = {
    * Abspaltung nach § 9 Abs. 2 HeizkostenV. NULL -> keine Abspaltung.
    */
   totalHeatEnergyKwh: number | null;
+  /**
+   * Brennwertbezogene Erdgas-Abrechnung: Faktor 1,11 auf die nach den Formeln
+   * des § 9 Abs. 2 HeizkostenV bestimmte Warmwasser-Wärmemenge.
+   */
+  gasBillingByCalorificValue: boolean;
+  /**
+   * Monovalent betriebene Wärmepumpe: Faktor 0,30 (§ 9 Abs. 2 HeizkostenV).
+   */
+  heatPumpMonovalent: boolean;
+  /**
+   * Gebäude mit zwingenden 70 % Verbrauchsanteil nach
+   * § 7 Abs. 1 Satz 2 HeizkostenV.
+   */
+  mandatorySeventyPercent: boolean;
   co2CostShareEnabled: boolean;
   /**
    * Inklusiver Start-Stichtag (YYYY-MM-DD).
@@ -241,6 +273,9 @@ export type HeatingFormValues = {
    * Gesamt-Wärmemenge in kWh (Q_gesamt), als String im Formular.
    */
   totalHeatEnergyKwh: string;
+  gasBillingByCalorificValue: boolean;
+  heatPumpMonovalent: boolean;
+  mandatorySeventyPercent: boolean;
   co2CostShareEnabled: boolean;
 };
 
@@ -306,6 +341,9 @@ export const heatingFormSchema = z
     hotWaterMeterId: z.string().min(1),
     hotWaterSupplyTemperatureCelsius: z.string(),
     totalHeatEnergyKwh: z.string(),
+    gasBillingByCalorificValue: z.boolean(),
+    heatPumpMonovalent: z.boolean(),
+    mandatorySeventyPercent: z.boolean(),
     co2CostShareEnabled: z.boolean(),
   })
   .superRefine((value, ctx) => {
@@ -440,6 +478,9 @@ export const heatingFormToDto = (
         : values.hotWaterMeterId,
     hotWaterSupplyTemperatureCelsius: temp,
     totalHeatEnergyKwh,
+    gasBillingByCalorificValue: values.gasBillingByCalorificValue,
+    heatPumpMonovalent: values.heatPumpMonovalent,
+    mandatorySeventyPercent: values.mandatorySeventyPercent,
     co2CostShareEnabled: values.co2CostShareEnabled,
   };
 };
@@ -465,6 +506,9 @@ export const emptyHeatingFormValues = (
   hotWaterMeterId: HOT_WATER_METER_NONE,
   hotWaterSupplyTemperatureCelsius: "60",
   totalHeatEnergyKwh: "",
+  gasBillingByCalorificValue: false,
+  heatPumpMonovalent: false,
+  mandatorySeventyPercent: false,
   co2CostShareEnabled: true,
 });
 
@@ -489,6 +533,9 @@ export const heatingSettingsToFormValues = (
     settings.totalHeatEnergyKwh === null
       ? ""
       : String(settings.totalHeatEnergyKwh),
+  gasBillingByCalorificValue: settings.gasBillingByCalorificValue,
+  heatPumpMonovalent: settings.heatPumpMonovalent,
+  mandatorySeventyPercent: settings.mandatorySeventyPercent,
   co2CostShareEnabled: settings.co2CostShareEnabled,
 });
 

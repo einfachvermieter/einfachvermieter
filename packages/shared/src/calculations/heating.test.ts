@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { HeatingFuelType } from "../schemas/heating.js";
 import type { MeterInfo, ReadingPoint, UnitInfo } from "../types/index.js";
 import {
   aggregateHeatingCosts,
@@ -7,6 +8,7 @@ import {
   calculateHeating,
   co2LandlordSharePercent,
   co2Tier,
+  hotWaterCorrectionFactor,
 } from "./heating.js";
 
 const unitEg: UnitInfo = {
@@ -1225,6 +1227,85 @@ describe("calculateHeating - Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV)", (
     expect(hasWarning(halfYear)).toBe(true);
     expect(hasWarning(fullYear)).toBe(false);
     expect(hasWarning(halfYearMeasured)).toBe(false);
+  });
+
+  it("Korrekturfaktoren nach § 9 Abs. 2 greifen nur auf die Formel-Wärmemenge", () => {
+    // Schätzformel: 2,5 x 40 m3 x (60 - 10) °C = 5.000 kWh von Q_gesamt
+    // 20.000 kWh = 25%. Die Faktoren verschieben genau diesen Anteil.
+    const estimated = (correctionFactor?: number) =>
+      calculateHeating({
+        ...baseInput(),
+        hotWater: {
+          totalHeatEnergyKwh: 20_000,
+          boilerHeatKwh: null,
+          hotWaterVolumeM3: 40,
+          supplyTemperatureCelsius: 60,
+          unitHotWaterM3: [],
+          ...(correctionFactor === undefined ? {} : { correctionFactor }),
+        },
+      });
+
+    expect(estimated().hotWaterDetail?.hotWaterHeatKwh).toBe(5000);
+    expect(estimated().hotWaterDetail?.correctionFactor).toBeUndefined();
+
+    // Erdgas brennwertbezogen: x 1,11
+    expect(estimated(1.11).hotWaterDetail?.hotWaterHeatKwh).toBeCloseTo(
+      5550,
+      6,
+    );
+    expect(estimated(1.11).hotWaterDetail?.hotWaterShareBps).toBe(2775);
+    expect(estimated(1.11).hotWaterDetail?.correctionFactor).toBe(1.11);
+
+    // Gewerbliche Wärmelieferung: : 1,15
+    expect(estimated(1 / 1.15).hotWaterDetail?.hotWaterHeatKwh).toBeCloseTo(
+      5000 / 1.15,
+      6,
+    );
+
+    // Monovalente Wärmepumpe: x 0,30
+    expect(estimated(0.3).hotWaterDetail?.hotWaterHeatKwh).toBeCloseTo(1500, 6);
+
+    // Am Wärmezähler gemessen: die Verordnung nennt nur die Formel-Werte,
+    // der gemessene Wert bleibt unverändert.
+    const measured = calculateHeating({
+      ...baseInput(),
+      hotWater: {
+        totalHeatEnergyKwh: 20_000,
+        boilerHeatKwh: 5000,
+        hotWaterVolumeM3: null,
+        supplyTemperatureCelsius: 60,
+        unitHotWaterM3: [],
+        correctionFactor: 1.11,
+      },
+    });
+    expect(measured.hotWaterDetail?.method).toBe("boiler_meter");
+    expect(measured.hotWaterDetail?.hotWaterHeatKwh).toBe(5000);
+    expect(measured.hotWaterDetail?.correctionFactor).toBeUndefined();
+  });
+
+  it("hotWaterCorrectionFactor bildet die Konstellationen aus § 9 Abs. 2 ab", () => {
+    const factor = (
+      fuelType: HeatingFuelType,
+      flags?: Partial<{
+        gasBillingByCalorificValue: boolean;
+        heatPumpMonovalent: boolean;
+      }>,
+    ) =>
+      hotWaterCorrectionFactor({
+        fuelType,
+        gasBillingByCalorificValue: false,
+        heatPumpMonovalent: false,
+        ...flags,
+      });
+
+    expect(factor("oil")).toBe(1);
+    expect(factor("gas")).toBe(1);
+    expect(factor("gas", { gasBillingByCalorificValue: true })).toBe(1.11);
+    expect(factor("district_heat")).toBeCloseTo(1 / 1.15, 12);
+    expect(factor("heat_pump")).toBe(1);
+    expect(factor("heat_pump", { heatPumpMonovalent: true })).toBe(0.3);
+    // Flags ohne passenden Energieträger bleiben wirkungslos.
+    expect(factor("oil", { gasBillingByCalorificValue: true })).toBe(1);
   });
 
   it("Q_WW > Q_gesamt wird auf 100 % begrenzt (mit Warnung)", () => {

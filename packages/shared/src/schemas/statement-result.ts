@@ -199,6 +199,8 @@ export const heatingDetailSchema = z.object({
       hotWaterPotCents: z.number().int(),
       supplyTemperatureCelsius: z.number().optional(),
       hotWaterVolumeM3: z.number().optional(),
+      // Optional, damit finalisierte Snapshots ohne Faktor weiter parsen.
+      correctionFactor: z.number().optional(),
       consumptionShareBps: z.number().int().min(0).max(10_000),
       consumptionPortionCents: z.number().int(),
       basicPortionCents: z.number().int(),
