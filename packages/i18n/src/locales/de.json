@@ -1697,6 +1697,7 @@
         "end": "Vertragsende",
         "deposit": "Kaution",
         "depositHint": "Vereinbarte Kaution. 0 = keine Kaution.",
+        "interimReadingHint": "Mietbeginn oder Mietende liegt mitten im Jahr. Nach § 9b Abs. 1 HeizkostenV sind die Verbrauchszähler zum Ein- bzw. Auszug abzulesen. Erfassen Sie diese Zwischenablesung, sonst rechnet die Abrechnung den Stand aus den umliegenden Ablesungen hoch und weist ihn als rechnerisch ermittelt aus.",
         "residents": "Bewohner",
         "coldRent": "Kaltmiete",
         "coldRentEuros": "Kaltmiete",
@@ -2135,6 +2136,7 @@
         "perMeterKTotal": "KGesamt",
         "perMeterWeighted": "Verbrauchs-\neinheiten",
         "perMeterEmpty": "Keine Verbrauchsmessungen vorhanden.",
+        "perMeterDerivedNote": "Rechnerisch ermittelt: Zum Stichtag lag keine eigene Ablesung vor, der Stand wurde aus den umliegenden Ablesungen berechnet.",
         "valuationPointsNote": "Bewertungspunkte = Verbrauchseinheiten ÷ 1.000. Die Skalierung erleichtert das Lesen großer Verbrauchssummen und beeinflusst die Kostenverteilung nicht."
       },
       "water": {

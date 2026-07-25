@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { CalcWarning, ReadingPoint } from "../types/index.js";
 import { sumDegreeDays } from "./heating.js";
-import { consumptionBetween, interpolateReading } from "./meters.js";
+import {
+  consumptionBetween,
+  interpolateReading,
+  isDerivedConsumption,
+} from "./meters.js";
 
 const degreeDayWeight = (fromDate: string, toDate: string): number =>
   sumDegreeDays({ start: fromDate, end: toDate });
@@ -277,5 +281,41 @@ describe("readingNonMonotonic-Warnung", () => {
     expect(
       warnings.filter((warning) => warning.code === "readingNonMonotonic"),
     ).toEqual([]);
+  });
+});
+
+describe("isDerivedConsumption", () => {
+  const readings = [
+    reading("2025-01-01", 1000),
+    reading("2025-06-30", 1050),
+    reading("2025-12-31", 1100),
+  ];
+
+  it("false, wenn beide Stichtage echte Ablesungen haben", () => {
+    expect(isDerivedConsumption(readings, "2025-01-01", "2025-12-31")).toBe(
+      false,
+    );
+    expect(isDerivedConsumption(readings, "2025-01-01", "2025-06-30")).toBe(
+      false,
+    );
+  });
+
+  it("true, wenn zu einem Stichtag keine Ablesung vorliegt", () => {
+    expect(isDerivedConsumption(readings, "2025-01-01", "2025-07-31")).toBe(
+      true,
+    );
+    expect(isDerivedConsumption(readings, "2025-03-15", "2025-12-31")).toBe(
+      true,
+    );
+  });
+
+  it("true, wenn die Ablesung am Stichtag geschätzt ist", () => {
+    const withEstimate = [
+      reading("2025-01-01", 1000),
+      estimated("2025-12-31", 1100),
+    ];
+    expect(isDerivedConsumption(withEstimate, "2025-01-01", "2025-12-31")).toBe(
+      true,
+    );
   });
 });

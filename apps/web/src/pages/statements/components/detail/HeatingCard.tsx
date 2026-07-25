@@ -170,6 +170,9 @@ export const HeatingCard = ({
   const perMeter = detail.perMeter ?? [];
   const { consumptionRawDigits, kTotalDigits, consumptionWeightedDigits } =
     perMeterDisplayDigits(perMeter);
+  const hasDerivedMeter = perMeter.some(
+    (row) => row.consumptionIsDerived === true,
+  );
 
   const hasBreakdown = detail.costBreakdown && detail.costBreakdown.length > 0;
 
@@ -517,6 +520,9 @@ export const HeatingCard = ({
                             row.consumptionRaw,
                             consumptionRawDigits,
                           )}
+                          {row.consumptionIsDerived === true
+                            ? columnMarkers([1])
+                            : null}
                           {isHkv ? (
                             <span className="ml-1 text-muted-foreground">
                               {t("statements.pdf.costTable.operatorMultiply")}
@@ -544,6 +550,12 @@ export const HeatingCard = ({
                   </tbody>
                 </table>
               </div>
+              {hasDerivedMeter ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {columnMarkers([1])}{" "}
+                  {t("statements.pdf.heating.perMeterDerivedNote")}
+                </p>
+              ) : null}
             </Disclose>
           </div>
         )}

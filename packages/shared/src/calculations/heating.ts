@@ -11,7 +11,7 @@ import type {
   UnitInfo,
 } from "../types/index.js";
 import { CalculationError, type CalcWarning } from "./diagnostics.js";
-import { consumptionBetween } from "./meters.js";
+import { consumptionBetween, isDerivedConsumption } from "./meters.js";
 import { bpsToFactor, distributeCents } from "./money.js";
 import { daysBetween, intersect } from "./period.js";
 
@@ -923,6 +923,14 @@ const measureUnitConsumption = (params: {
     unitConsumption.set(meter.unitId, unitSum + weighted);
     const unitForMeter = units.find((u) => u.id === meter.unitId);
 
+    // Mindestens ein Stichtagsstand nicht direkt abgelesen -> der Verbrauch
+    // ist rechnerisch ermittelt und wird so ausgewiesen.
+    const consumptionIsDerived = isDerivedConsumption(
+      readings,
+      meterStart,
+      meterEnd,
+    );
+
     perMeter.push({
       meterId: meter.id,
       meterLabel: meter.label,
@@ -932,6 +940,7 @@ const measureUnitConsumption = (params: {
       consumptionRaw: delta,
       kTotal,
       consumptionWeighted: weighted,
+      ...(consumptionIsDerived ? { consumptionIsDerived } : {}),
     });
   }
 

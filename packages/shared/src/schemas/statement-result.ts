@@ -116,6 +116,8 @@ export const heatingDetailSchema = z.object({
         consumptionRaw: z.number(),
         kTotal: z.number().nullable().optional(),
         consumptionWeighted: z.number(),
+        // Optional, damit finalisierte Snapshots ohne das Flag weiter parsen.
+        consumptionIsDerived: z.boolean().optional(),
       }),
     )
     .optional(),

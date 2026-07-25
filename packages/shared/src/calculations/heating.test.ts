@@ -327,6 +327,34 @@ describe("calculateHeating", () => {
     expect(egMeter?.unitName).toBe("EG");
   });
 
+  it("markiert Zähler ohne Ablesung am Stichtag als rechnerisch ermittelt", () => {
+    const result = calculateHeating({
+      totalHeatingCostsCents: 10_000,
+      config: { consumptionShareBps: 7000 },
+      units: [unitEg, unitOg],
+      consumptionMethod: "heat_meter",
+      consumptionMeters: [
+        {
+          // Ablesungen genau auf beiden Stichtagen -> echter Verbrauch.
+          meter: heatMeter("wmz-eg", "unit-eg"),
+          readings: [reading("2025-01-01", 0), reading("2025-12-31", 100)],
+        },
+        {
+          // Keine Ablesung zum Periodenende -> Stand wird hochgerechnet.
+          meter: heatMeter("wmz-og", "unit-og"),
+          readings: [reading("2025-01-01", 0), reading("2025-11-30", 300)],
+        },
+      ],
+      periodStart: "2025-01-01",
+      periodEnd: "2025-12-31",
+    });
+
+    const eg = result.perMeter?.find((m) => m.meterId === "wmz-eg");
+    const og = result.perMeter?.find((m) => m.meterId === "wmz-og");
+    expect(eg?.consumptionIsDerived).toBeUndefined();
+    expect(og?.consumptionIsDerived).toBe(true);
+  });
+
   it("wirft bei Type-Mismatch zwischen consumptionMethod und Zähler", () => {
     expect(() =>
       calculateHeating({

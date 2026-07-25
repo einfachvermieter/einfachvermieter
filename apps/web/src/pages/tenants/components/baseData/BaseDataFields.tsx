@@ -5,11 +5,22 @@ import { SectionCard } from "@/components/common/SectionCard";
 import { DateInput } from "@/components/form/DateInput";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
+import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
 import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import { selectableTenantKindValues } from "../../../../lib/tenants";
 import type { Unit } from "../../../../lib/units";
+
+/**
+ * Mietbeginn oder Mieteende mitten im Abrechnungsjahr verlangt nach
+ * HeizkostenV eine Zwischenablesung der Verbrauchszähler. Als Näherung
+ * für "mitten im Jahr" dient das Kalenderjahr. Ohne Zwischenablesung
+ * rechnet die Abrechnung den Stichtagsstand nur hoch.
+ */
+const isMidYear = (startDate: string, endDate: string): boolean =>
+  (startDate.length === 10 && !startDate.endsWith("-01-01")) ||
+  (endDate.length === 10 && !endDate.endsWith("-12-31"));
 
 const today = new Date();
 const calendarStart = new Date(today.getFullYear() - 20, 0, 1);
@@ -32,6 +43,10 @@ export const BaseDataFields = ({
     value,
     label: t(`tenants.kinds.${value}`),
   }));
+  const showInterimReadingHint = isMidYear(
+    form.watch("startDate") ?? "",
+    form.watch("endDate") ?? "",
+  );
 
   return (
     <SectionCard
@@ -79,6 +94,13 @@ export const BaseDataFields = ({
           suffix="€"
         />
       </FieldGroup>
+      {showInterimReadingHint ? (
+        <Alert variant="info">
+          <AlertDescription>
+            {t("ui.tenant.fields.interimReadingHint")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
     </SectionCard>
   );
 };

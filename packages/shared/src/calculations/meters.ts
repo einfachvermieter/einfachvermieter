@@ -78,6 +78,32 @@ const warnEstimated = (
 };
 
 /**
+ * True, wenn der Stand zum Stichtag nicht direkt abgelesen wurde: es gibt
+ * keine Ablesung an diesem Tag (der Wert wird also interpoliert, extrapoliert
+ * oder auf den letzten Stand gesetzt) oder die Ablesung ist selbst geschätzt.
+ */
+export const isDerivedAtDate = (
+  readings: ReadingPoint[],
+  date: string,
+): boolean => {
+  const exact = readings.find((reading) => reading.date === date);
+
+  return exact === undefined || exact.isEstimated;
+};
+
+/**
+ * True, wenn einer der beiden Stichtagsstände rechnerisch ermittelt ist, der
+ * Verbrauch der Periode also nicht auf zwei echten Ablesungen beruht.
+ */
+export const isDerivedConsumption = (
+  readings: ReadingPoint[],
+  periodStart: string,
+  periodEnd: string,
+): boolean =>
+  isDerivedAtDate(readings, periodStart) ||
+  isDerivedAtDate(readings, periodEnd);
+
+/**
  * Interpoliert einen Zählerstand für ein Datum (nur für kumulative Zähler)
  */
 export const interpolateReading = (

@@ -346,6 +346,9 @@ export const HeatingAppendix = ({
 
   const { consumptionRawDigits, kTotalDigits, consumptionWeightedDigits } =
     perMeterDisplayDigits(perMeter);
+  const hasDerivedMeter = perMeter.some(
+    (row) => row.consumptionIsDerived === true,
+  );
 
   // CO2KostAufG-Aufteilung (Wohngebäude). Nur gesetzt, wenn die Aufteilung
   // aktiv ist und CO2-Kosten + -Menge im Topf erfasst sind (siehe
@@ -739,6 +742,9 @@ export const HeatingAppendix = ({
               >
                 <Text>
                   {`${formatNumber(row.consumptionRaw, consumptionRawDigits)}${isHkv ? " " : ""}`}
+                  {row.consumptionIsDerived === true
+                    ? footnoteMarkers([1])
+                    : null}
                   {isHkv ? (
                     <Text style={styles.operator}>
                       {t("statements.pdf.costTable.operatorMultiply")}
@@ -774,6 +780,11 @@ export const HeatingAppendix = ({
           ))}
         </View>
       )}
+      {hasDerivedMeter ? (
+        <Text style={styles.footnote}>
+          {`${toSuperscript(1)} ${t("statements.pdf.heating.perMeterDerivedNote")}`}
+        </Text>
+      ) : null}
 
       {/* Verteilung pro Wohnung, Heading + Header + Zeilen zusammen,
           damit react-pdf den Block nicht zwischen Heading und Tabelle

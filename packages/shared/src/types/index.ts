@@ -441,6 +441,10 @@ export type HeatingDetail = {
      * Verteilter Wert: WMZ = consumptionRaw, HKV = consumptionRaw x kTotal.
      */
     consumptionWeighted: number;
+    /**
+     * Mindestens einer der beiden Stichtagsstände wurde nicht direkt abgelesen.
+     */
+    consumptionIsDerived?: boolean;
   }>;
   perUnit: Array<{
     unitId: string;
