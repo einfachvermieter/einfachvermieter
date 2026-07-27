@@ -1,4 +1,5 @@
 import {
+  co2TenantShareCents,
   co2TierLabel,
   degreeDaysMonthlyBreakdown,
   formatEur,
@@ -6,6 +7,7 @@ import {
   HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
   heatingColumnFootnotes,
   hotWaterColumnFootnotes,
+  hotWaterFactRows,
   landlordShareRow,
   type Period,
   perMeterDisplayDigits,
@@ -137,6 +139,11 @@ export const HeatingCard = ({
   // Summenzeile Heizung + Warmwasser der abgerechneten Wohnung
   const ownHeatingUnit = detail.perUnit.find((u) => u.unitId === targetUnitId);
   const ownHotWaterUnit = hw?.perUnit.find((u) => u.unitId === targetUnitId);
+  // Auf den Mieter entfallender CO2-Kostenanteil (§ 7 Abs. 3 CO2KostAufG)
+  const tenantCo2Cents = co2TenantShareCents(
+    detail,
+    (ownHeatingUnit?.totalCents ?? 0) + (ownHotWaterUnit?.totalCents ?? 0),
+  );
   const heatingIntro =
     hw && ownHeatingUnit && ownHotWaterUnit
       ? t("statements.pdf.heating.heatingIntroOverview", {
@@ -282,6 +289,34 @@ export const HeatingCard = ({
                           scope="row"
                           className="py-2.5 text-left font-medium text-muted-foreground"
                         >
+                          {t("statements.pdf.heating.co2.amount")}
+                        </th>
+                        <td className="py-2.5 text-right tabular-nums">
+                          {t("statements.pdf.heating.co2.amountValue", {
+                            value: formatNumber(co2.totalAmountGrams / 1000, 0),
+                          })}
+                        </td>
+                      </tr>
+                      {co2.livingAreaSqm === undefined ? null : (
+                        <tr className="border-b border-border">
+                          <th
+                            scope="row"
+                            className="py-2.5 text-left font-medium text-muted-foreground"
+                          >
+                            {t("statements.pdf.heating.co2.areaBasis")}
+                          </th>
+                          <td className="py-2.5 text-right tabular-nums">
+                            {t("statements.pdf.heating.co2.areaBasisValue", {
+                              value: formatNumber(co2.livingAreaSqm, 0),
+                            })}
+                          </td>
+                        </tr>
+                      )}
+                      <tr className="border-b border-border">
+                        <th
+                          scope="row"
+                          className="py-2.5 text-left font-medium text-muted-foreground"
+                        >
                           {t("statements.pdf.heating.co2.tier")}
                         </th>
                         <td className="py-2.5 text-right tabular-nums">
@@ -310,6 +345,19 @@ export const HeatingCard = ({
                           {formatEur(co2.landlordDeductionCents)}
                         </td>
                       </tr>
+                      {tenantCo2Cents === null ? null : (
+                        <tr className="border-b border-border">
+                          <th
+                            scope="row"
+                            className="py-2.5 text-left font-medium text-muted-foreground"
+                          >
+                            {t("statements.pdf.heating.co2.tenantShare")}
+                          </th>
+                          <td className="py-2.5 text-right tabular-nums">
+                            {formatEur(tenantCo2Cents)}
+                          </td>
+                        </tr>
+                      )}
                     </>
                   ) : null}
                 </tbody>
@@ -567,6 +615,25 @@ export const HeatingCard = ({
           iconBackground={gradients.water}
           title={t("statements.pdf.heating.hotWater.title")}
         >
+          <div className="mb-4 overflow-x-auto">
+            <table className="w-full text-sm">
+              <tbody>
+                {hotWaterFactRows(hw).map((factRow) => (
+                  <tr key={factRow.key} className="border-b border-border">
+                    <th
+                      scope="row"
+                      className="py-2.5 text-left font-medium text-muted-foreground"
+                    >
+                      {t(factRow.label.key, factRow.label.params)}
+                    </th>
+                    <td className="py-2.5 text-right tabular-nums">
+                      {t(factRow.value.key, factRow.value.params)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

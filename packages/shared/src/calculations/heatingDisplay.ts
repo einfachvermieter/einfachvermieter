@@ -282,6 +282,80 @@ export const hotWaterColumnFootnotes = (
 };
 
 /**
+ * Auf den Mieter entfallender CO2-Kostenanteil in Cent (§ 7 Abs. 3
+ * CO2KostAufG verlangt ihn in der Abrechnung)
+ */
+export const co2TenantShareCents = (
+  detail: HeatingDetail,
+  ownTotalCents: number,
+): number | null => {
+  const co2 = detail.co2Detail;
+  if (!co2 || detail.totalHeatingCostsCents <= 0) {
+    return null;
+  }
+
+  const tenantSideCo2Cents = co2.totalCostCents - co2.landlordDeductionCents;
+
+  return Math.round(
+    tenantSideCo2Cents * (ownTotalCents / detail.totalHeatingCostsCents),
+  );
+};
+
+export type HotWaterFactRow = {
+  key: "method" | "totalHeatEnergy" | "hotWaterHeat" | "correctionFactor";
+  label: HeatingLabelDescriptor;
+  value: HeatingLabelDescriptor;
+};
+
+/**
+ * Nachvollziehbarkeit der Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV):
+ * Ermittlungsweg, Gesamt-Wärmemenge Q_gesamt, Warmwasser-Wärmemenge Q_WW und
+ * ggf. Korrekturfaktor nach Satz 5. Gemeinsame Quelle.
+ */
+export const hotWaterFactRows = (
+  hotWater: NonNullable<HeatingDetail["hotWaterDetail"]>,
+): HotWaterFactRow[] => {
+  const rows: HotWaterFactRow[] = [
+    {
+      key: "method",
+      label: { key: "statements.pdf.heating.hotWater.methodLabel" },
+      value: {
+        key: `statements.pdf.heating.hotWater.method.${hotWater.method}`,
+      },
+    },
+    {
+      key: "totalHeatEnergy",
+      label: { key: "statements.pdf.heating.hotWater.totalHeatEnergyLabel" },
+      value: {
+        key: "statements.pdf.heating.hotWater.kwhValue",
+        params: { value: formatNumber(hotWater.totalHeatEnergyKwh, 0) },
+      },
+    },
+    {
+      key: "hotWaterHeat",
+      label: { key: "statements.pdf.heating.hotWater.hotWaterHeatLabel" },
+      value: {
+        key: "statements.pdf.heating.hotWater.kwhValue",
+        params: { value: formatNumber(hotWater.hotWaterHeatKwh, 0) },
+      },
+    },
+  ];
+
+  if (hotWater.correctionFactor !== undefined) {
+    rows.push({
+      key: "correctionFactor",
+      label: { key: "statements.pdf.heating.hotWater.correctionFactorLabel" },
+      value: {
+        key: "statements.pdf.heating.hotWater.correctionFactorValue",
+        params: { value: formatNumber(hotWater.correctionFactor, 2) },
+      },
+    });
+  }
+
+  return rows;
+};
+
+/**
  * CO2KostAufG-Einstufungs-Label: Stufe des Gebäude-Ausstoßes als eine der drei
  * Bereichsformen (unterste/mittlere/oberste Stufe).
  */

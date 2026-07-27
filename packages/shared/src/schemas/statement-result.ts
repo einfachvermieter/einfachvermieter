@@ -185,6 +185,8 @@ export const heatingDetailSchema = z.object({
       emissionsKgPerSqmYear: z.number(),
       landlordSharePercent: z.number().int().min(0).max(100),
       landlordDeductionCents: z.number().int(),
+      // Optional, damit finalisierte Snapshots ohne den Wert weiter parsen.
+      livingAreaSqm: z.number().optional(),
     })
     .optional(),
   /**

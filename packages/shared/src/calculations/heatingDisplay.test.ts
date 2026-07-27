@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { formatNumber } from "../format.js";
 import type { HeatingDetail } from "../types/index.js";
 import {
+  co2TenantShareCents,
   co2TierLabel,
+  hotWaterFactRows,
   perMeterDisplayDigits,
   prepareHeatingDisplay,
 } from "./heatingDisplay.js";
@@ -184,5 +186,66 @@ describe("co2TierLabel", () => {
       key: "statements.pdf.heating.co2.tierAbove",
       params: { min: formatNumber(52, 0) },
     });
+  });
+});
+
+describe("co2TenantShareCents (§ 7 Abs. 3 CO2KostAufG)", () => {
+  const withCo2 = baseDetail({
+    co2Detail: {
+      totalCostCents: 20_000,
+      totalAmountGrams: 4_000_000,
+      emissionsKgPerSqmYear: 25,
+      landlordSharePercent: 30,
+      landlordDeductionCents: 6000,
+      livingAreaSqm: 80,
+    },
+  });
+
+  it("rechnet den Mieteranteil aus seinem Anteil am Topf hoch", () => {
+    // Mieterseitige CO2-Kosten 20.000 - 6.000 = 14.000 Cent; die Wohnung
+    // trägt 55.000 von 100.000 Cent des Topfes -> 7.700 Cents
+    expect(co2TenantShareCents(withCo2, 55_000)).toBe(7700);
+  });
+
+  it("null ohne CO2-Detail", () => {
+    expect(co2TenantShareCents(baseDetail(), 55_000)).toBeNull();
+  });
+
+  it("null bei leerem Topf", () => {
+    const emptyPot = baseDetail({
+      totalHeatingCostsCents: 0,
+      co2Detail: withCo2.co2Detail,
+    });
+    expect(co2TenantShareCents(emptyPot, 0)).toBeNull();
+  });
+});
+
+describe("hotWaterFactRows", () => {
+  const hotWater = {
+    method: "estimated" as const,
+    totalHeatEnergyKwh: 20_000,
+    hotWaterHeatKwh: 5000,
+    hotWaterShareBps: 2500,
+    hotWaterPotCents: 25_000,
+    consumptionShareBps: 7000,
+    consumptionPortionCents: 17_500,
+    basicPortionCents: 7500,
+    perUnit: [],
+    landlordBasicCostCents: 0,
+    landlordConsumptionCostCents: 0,
+  };
+
+  it("weist Ermittlungsweg, Q_gesamt und Q_WW aus", () => {
+    const keys = hotWaterFactRows(hotWater).map((row) => row.key);
+    expect(keys).toEqual(["method", "totalHeatEnergy", "hotWaterHeat"]);
+  });
+
+  it("nennt den Korrekturfaktor nur, wenn einer greift", () => {
+    const withFactor = hotWaterFactRows({
+      ...hotWater,
+      correctionFactor: 1.11,
+    });
+    expect(withFactor.map((row) => row.key)).toContain("correctionFactor");
+    expect(withFactor.at(-1)?.value.params?.value).toBe("1,11");
   });
 });

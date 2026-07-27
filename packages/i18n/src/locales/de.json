@@ -2097,7 +2097,12 @@
           "tierRange": "{min} bis < {max} kg/m²a",
           "tierAbove": "≥ {min} kg/m²a",
           "sharePair": "Anteil Mieter/Vermieter",
-          "landlordDeduction": "Abzug Vermieter"
+          "landlordDeduction": "Abzug Vermieter",
+          "amount": "CO₂-Menge",
+          "amountValue": "{value} kg",
+          "areaBasis": "Bezugsfläche des Ausstoßes",
+          "areaBasisValue": "{value} m²",
+          "tenantShare": "Ihr Anteil an den CO₂-Kosten"
         },
         "energySource": "Energieträger",
         "distributionPerUnit": "Verteilung pro Wohnung",
@@ -2119,7 +2124,19 @@
         "hotWater": {
           "title": "Warmwasser",
           "consumptionM3": "Warmwasser (m³)",
-          "consumptionFallbackArea": "Mangels Warmwasserzählern wurde auch der Verbrauchsanteil des Warmwassers nach Wohnfläche verteilt."
+          "consumptionFallbackArea": "Mangels Warmwasserzählern wurde auch der Verbrauchsanteil des Warmwassers nach Wohnfläche verteilt.",
+          "splitTitle": "Ermittlung des Warmwasseranteils",
+          "methodLabel": "Ermittlung der Warmwasser-Wärmemenge",
+          "method": {
+            "boiler_meter": "Am Wärmemengenzähler des Warmwasserboilers gemessen",
+            "estimated": "Nach der Formel des § 9 Abs. 2 HeizkostenV aus Warmwassermenge und Vorlauftemperatur",
+            "flat_rate_fallback": "Nach der Pauschalformel des § 9 Abs. 2 HeizkostenV (32 kWh je m² und Jahr)"
+          },
+          "totalHeatEnergyLabel": "Gesamt-Wärmemenge der Anlage",
+          "hotWaterHeatLabel": "davon für Warmwasser",
+          "kwhValue": "{value} kWh",
+          "correctionFactorLabel": "Korrekturfaktor nach § 9 Abs. 2 HeizkostenV",
+          "correctionFactorValue": "x {value}"
         },
         "totalShareNote": "Insgesamt {percent} % der Heizkosten",
         "consumptionDistributionHeatingArea": "Verbrauchsanteil ersatzweise nach Heizfläche verteilt (keine bzw. Differenz von 0 bei den Verbrauchsmessern).",

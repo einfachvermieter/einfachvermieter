@@ -308,6 +308,11 @@ export type Co2SplitResult = {
   emissionsKgPerSqmYear: number;
   landlordSharePercent: number;
   landlordDeductionCents: number;
+  /**
+   * Fläche, auf die der spezifische Ausstoß bezogen ist. Wird ausgewiesen,
+   * damit die kg/qm-Basis nachvollziehbar ist.
+   */
+  livingAreaSqm: number;
 };
 
 /**
@@ -336,6 +341,7 @@ export const calculateCo2Split = (input: Co2SplitInput): Co2SplitResult => {
     emissionsKgPerSqmYear,
     landlordSharePercent,
     landlordDeductionCents,
+    livingAreaSqm: input.livingAreaSqm,
   };
 };
 

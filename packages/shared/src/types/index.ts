@@ -518,6 +518,11 @@ export type HeatingDetail = {
      * Vom Brutto-Topf abgezogener Vermieter-CO2-Anteil (Cent).
      */
     landlordDeductionCents: number;
+    /**
+     * Fläche, auf die `emissionsKgPerSqmYear` bezogen ist. Optional, damit
+     * finalisierte Snapshots ohne den Wert weiter parsen.
+     */
+    livingAreaSqm?: number;
   };
   /**
    * Warmwasser-Abspaltung nach § 9 Abs. 2 HeizkostenV. Gesetzt bei zentraler

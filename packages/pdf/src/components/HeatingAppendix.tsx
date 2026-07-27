@@ -1,4 +1,5 @@
 import {
+  co2TenantShareCents,
   co2TierLabel,
   degreeDaysMonthlyBreakdown,
   formatEur,
@@ -8,6 +9,7 @@ import {
   HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
   heatingColumnFootnotes,
   hotWaterColumnFootnotes,
+  hotWaterFactRows,
   isTenantWarning,
   landlordShareRow,
   type Period,
@@ -199,9 +201,15 @@ const distributionConsumptionHeader = (
 const EnergyAndCo2Table = ({
   fuelType,
   co2,
+  tenantCo2Cents,
 }: {
   fuelType: HeatingDetail["fuelType"];
   co2: HeatingDetail["co2Detail"];
+  /**
+   * Auf den Mieter entfallender CO2-Kostenanteil (§ 7 Abs. 3 CO2KostAufG),
+   * `null` wenn nicht ermittelbar.
+   */
+  tenantCo2Cents: number | null;
 }) => {
   // Einstufungs-Label (Stufe, in die der Gebäude-Ausstoß fällt).
   const co2TierText = co2
@@ -257,6 +265,38 @@ const EnergyAndCo2Table = ({
             </View>
             <View style={[styles.row, styles.rowDivider]}>
               <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+                <Text>{t("statements.pdf.heating.co2.amount")}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
+              >
+                <Text>
+                  {t("statements.pdf.heating.co2.amountValue", {
+                    value: formatNumber(co2.totalAmountGrams / 1000, 0),
+                  })}
+                </Text>
+              </View>
+            </View>
+            {co2.livingAreaSqm === undefined ? null : (
+              <View style={[styles.row, styles.rowDivider]}>
+                <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+                  <Text>{t("statements.pdf.heating.co2.areaBasis")}</Text>
+                </View>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
+                >
+                  <Text>
+                    {renderSuperscripts(
+                      t("statements.pdf.heating.co2.areaBasisValue", {
+                        value: formatNumber(co2.livingAreaSqm, 0),
+                      }),
+                    )}
+                  </Text>
+                </View>
+              </View>
+            )}
+            <View style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
                 <Text>{t("statements.pdf.heating.co2.tier")}</Text>
               </View>
               <View
@@ -285,6 +325,18 @@ const EnergyAndCo2Table = ({
                 <Text>{formatEur(co2.landlordDeductionCents)}</Text>
               </View>
             </View>
+            {tenantCo2Cents === null ? null : (
+              <View style={[styles.row, styles.rowDivider]}>
+                <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+                  <Text>{t("statements.pdf.heating.co2.tenantShare")}</Text>
+                </View>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
+                >
+                  <Text>{formatEur(tenantCo2Cents)}</Text>
+                </View>
+              </View>
+            )}
           </>
         ) : null}
       </View>
@@ -378,6 +430,12 @@ export const HeatingAppendix = ({
   // Wohnung zusammengefasst. Nur wenn Warmwasser abgespalten ist
   const ownHeatingUnit = detail.perUnit.find((u) => u.unitId === targetUnitId);
   const ownHotWaterUnit = hw?.perUnit.find((u) => u.unitId === targetUnitId);
+  // § 7 Abs. 3 CO2KostAufG: der auf den Mieter entfallende CO2-Kostenanteil
+  // gehört ausdrücklich in die Abrechnung.
+  const tenantCo2Cents = co2TenantShareCents(
+    detail,
+    (ownHeatingUnit?.totalCents ?? 0) + (ownHotWaterUnit?.totalCents ?? 0),
+  );
   const yourHeatingIntro =
     hw && ownHeatingUnit && ownHotWaterUnit
       ? t("statements.pdf.heating.yourHeatingIntro", {
@@ -466,7 +524,11 @@ export const HeatingAppendix = ({
   // CO2-Aufteilungstabelle (Header-Zellen in der linken Spalte).
   const infoSection =
     co2 || detail.fuelType ? (
-      <EnergyAndCo2Table fuelType={detail.fuelType} co2={co2} />
+      <EnergyAndCo2Table
+        fuelType={detail.fuelType}
+        co2={co2}
+        tenantCo2Cents={tenantCo2Cents}
+      />
     ) : null;
 
   // Warmwasser-Sektion (§ 9 Abs. 2 HeizkostenV): Zerlegung Q_WW/Q_gesamt plus
@@ -477,6 +539,21 @@ export const HeatingAppendix = ({
       <Text style={styles.sectionHeading}>
         {t("statements.pdf.heating.hotWater.title")}
       </Text>
+      <View style={styles.table}>
+        {hotWaterFactRows(hw).map((row, index) => (
+          <View
+            key={row.key}
+            style={index === 0 ? styles.row : [styles.row, styles.rowDivider]}
+          >
+            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+              <Text>{t(row.label.key, row.label.params)}</Text>
+            </View>
+            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
+              <Text>{t(row.value.key, row.value.params)}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
       <View style={styles.table}>
         <View style={styles.rowHeader}>
           <View style={[styles.cellLeft, wwUnitCol]}>
