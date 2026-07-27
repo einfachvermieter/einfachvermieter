@@ -46,7 +46,7 @@ export const SettingsLayout = ({
             <IconTile
               icon={domainVisuals.configuration.icon}
               size={44}
-              background={gradients.commercial}
+              background={gradients.slate}
             />
           }
           title={title}

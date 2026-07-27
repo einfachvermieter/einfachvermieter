@@ -75,7 +75,7 @@ export type TenantAddressInput = z.infer<typeof tenantAddressInputSchema>;
  */
 const tenantSaveObject = z.object({
   unitId: z.guid(),
-  kind: z.enum(["private", "commercial", "owner"]).default("private"),
+  kind: z.enum(["private", "owner"]).default("private"),
   startDate: isoDate(),
   endDate: isoDate().optional().nullable(),
   /**

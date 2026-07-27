@@ -68,7 +68,7 @@ export const gradients = {
   money:
     "linear-gradient(135deg, var(--color-green-500), var(--color-green-600))",
   bank: "linear-gradient(135deg, var(--color-sky-600), var(--color-sky-700))",
-  commercial:
+  slate:
     "linear-gradient(135deg, var(--color-slate-400), var(--color-slate-600))",
   address:
     "linear-gradient(135deg, var(--color-violet-500), var(--color-violet-700))",

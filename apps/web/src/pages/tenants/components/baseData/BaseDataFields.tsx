@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
 import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
-import { selectableTenantKindValues } from "../../../../lib/tenants";
+import { tenantKindValues } from "../../../../lib/tenants";
 import type { Unit } from "../../../../lib/units";
 
 /**
@@ -39,7 +39,7 @@ export const BaseDataFields = ({
     value: unit.id,
     label: unit.name,
   }));
-  const kindOptions = selectableTenantKindValues.map((value) => ({
+  const kindOptions = tenantKindValues.map((value) => ({
     value,
     label: t(`tenants.kinds.${value}`),
   }));

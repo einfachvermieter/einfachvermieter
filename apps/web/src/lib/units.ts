@@ -16,7 +16,6 @@ export type UnitOccupancy = {
   vacantFrom: string | null;
   tenantId: string | null;
   tenantNames: string[];
-  commercial: boolean;
 };
 
 export type UnitOverviewRow = Unit & { occupancy: UnitOccupancy };

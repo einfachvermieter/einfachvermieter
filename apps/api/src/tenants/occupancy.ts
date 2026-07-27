@@ -49,10 +49,6 @@ export type UnitOccupancy = {
    * Vertragspartner des aktuellen Vertrags ("Vorname Nachname")
    */
   tenantNames: string[];
-  /**
-   * kind === "commercial" des aktuellen Vertrags (Icon-Wahl)
-   */
-  commercial: boolean;
 };
 
 /**
@@ -79,7 +75,6 @@ export const deriveUnitOccupancy = (
       vacantFrom: null,
       tenantId: null,
       tenantNames: [],
-      commercial: false,
     };
   }
 
@@ -125,6 +120,5 @@ export const deriveUnitOccupancy = (
     vacantFrom,
     tenantId: current.id,
     tenantNames,
-    commercial: current.kind === "commercial",
   };
 };

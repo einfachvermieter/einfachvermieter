@@ -1,5 +1,5 @@
 import { formatNumber, pad2 } from "@einfachvermieter/shared";
-import { RiAddLine, RiHome4Line, RiStore2Line } from "@remixicon/react";
+import { RiAddLine, RiHome4Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -104,18 +104,7 @@ export const UnitsOverview = () => {
         header: t("ui.units.fields.name"),
         cell: ({ row }) => (
           <EntityCell
-            tile={
-              <IconTile
-                icon={
-                  row.original.occupancy.commercial ? RiStore2Line : RiHome4Line
-                }
-                background={
-                  row.original.occupancy.commercial
-                    ? gradients.commercial
-                    : gradients.units
-                }
-              />
-            }
+            tile={<IconTile icon={RiHome4Line} background={gradients.units} />}
             name={
               <Link
                 to="/wohnungen/$unitId"

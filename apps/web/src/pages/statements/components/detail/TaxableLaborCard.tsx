@@ -28,7 +28,7 @@ export const TaxableLaborCard = ({ detail }: { detail: TaxableLaborCosts }) => {
   return (
     <SectionCard
       icon={RiGovernmentLine}
-      iconBackground={gradients.commercial}
+      iconBackground={gradients.slate}
       title={t("statements.pdf.taxableLabor.title")}
       description={t("statements.pdf.taxableLabor.intro")}
     >

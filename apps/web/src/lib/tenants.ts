@@ -5,20 +5,9 @@ import { api } from "./api";
 import { t } from "./i18n";
 import type { Unit } from "./units";
 
-export type TenantKind = "private" | "commercial" | "owner";
+export type TenantKind = "private" | "owner";
 
-export const tenantKindValues: readonly TenantKind[] = [
-  "private",
-  "commercial",
-  "owner",
-];
-
-/**
- * Im Formular auswählbare Vertragsarten; `commercial` fehlt, solange es keine
- * Gewerbe-Sonderlogik gibt.
- */
-export const selectableTenantKindValues: readonly TenantKind[] =
-  tenantKindValues.filter((kind) => kind !== "commercial");
+export const tenantKindValues: readonly TenantKind[] = ["private", "owner"];
 
 export const tenantKindLabel = (kind: TenantKind): string =>
   t(`tenants.kinds.${kind}`);

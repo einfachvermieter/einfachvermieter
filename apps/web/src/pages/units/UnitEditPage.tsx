@@ -4,7 +4,7 @@ import {
   formatNumber,
   type UnitCreateDto,
 } from "@einfachvermieter/shared";
-import { RiDeleteBinLine, RiStore2Line } from "@remixicon/react";
+import { RiDeleteBinLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
@@ -111,16 +111,14 @@ export const UnitEditPage = () => {
         .join(t("ui.common.separators.comma"))
     : undefined;
 
-  const isCommercial = current?.kind === "commercial";
-
   return (
     <div className="pb-24">
       <PageHeader
         tile={
           <IconTile
-            icon={isCommercial ? RiStore2Line : domainVisuals.units.icon}
+            icon={domainVisuals.units.icon}
             size={44}
-            background={isCommercial ? gradients.commercial : gradients.units}
+            background={gradients.units}
           />
         }
         title={unit.name}

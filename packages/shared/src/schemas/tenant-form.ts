@@ -91,7 +91,7 @@ const bankAccountRowSchema = z
 
 export const tenantFormSchema = z.object({
   unitId: z.string().min(1, messageKey("ui.form.unitRequired")),
-  kind: z.enum(["private", "commercial", "owner"]),
+  kind: z.enum(["private", "owner"]),
   startDate: z
     .string()
     .min(1, messageKey("ui.tenant.validation.startDateRequired")),
@@ -512,7 +512,7 @@ export const emptyTenantFormValues = (startDate: string): TenantFormValues => ({
 export type TenantAggregateForForm = {
   tenant: {
     unitId: string;
-    kind: "private" | "commercial" | "owner";
+    kind: "private" | "owner";
     startDate: string;
     endDate: string | null;
     depositCents: number;

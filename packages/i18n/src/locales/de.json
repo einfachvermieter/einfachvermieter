@@ -1937,7 +1937,6 @@
   "tenants": {
     "kinds": {
       "private": "Privater Mieter",
-      "commercial": "Gewerblicher Mieter",
       "owner": "Selbstnutzung"
     }
   },

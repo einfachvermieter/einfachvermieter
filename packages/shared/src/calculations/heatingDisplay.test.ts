@@ -230,6 +230,7 @@ describe("hotWaterFactRows", () => {
     consumptionShareBps: 7000,
     consumptionPortionCents: 17_500,
     basicPortionCents: 7500,
+    consumptionDistributionMethod: "consumption" as const,
     perUnit: [],
     landlordBasicCostCents: 0,
     landlordConsumptionCostCents: 0,

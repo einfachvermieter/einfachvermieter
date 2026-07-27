@@ -8,7 +8,7 @@
  *                     Kaltwasser mit virtuellem Differenzzähler, Mieterwechsel.
  *   B "Gartenstadt" - interne Zentralheizung MIT Warmwasser, Öl, Verbrauch
  *                     über Wärmemengenzähler, lineare Abgrenzung,
- *                     Gewerbeeinheit.
+ *                     drei Wohnungen.
  *   C "Seeblick"    - externe Wärmelieferung (Fernwärme), App rechnet die
  *                     Heizkosten nicht selbst, sondern übernimmt
  *                     external_heating_entries.
@@ -788,7 +788,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
 
   // ════════════════════════════════════════════════════════════════════════
   // Gebäude B - "Gartenstadt 12", Bochum
-  // Interne Zentralheizung mit Warmwasser, Öl, Wärmemengenzähler, Gewerbe.
+  // Interne Zentralheizung mit Warmwasser, Öl, Wärmemengenzähler.
   // ════════════════════════════════════════════════════════════════════════
   const bBuilding = nid();
   insert(schema.buildings, {
@@ -801,7 +801,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
 
   const bUnitEg = nid();
   const bUnitOg = nid();
-  const bUnitGewerbe = nid();
+  const bUnitDg = nid();
   insert(schema.units, [
     {
       id: bUnitEg,
@@ -820,10 +820,10 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       heatingAreaSqm: 62.0,
     },
     {
-      id: bUnitGewerbe,
+      id: bUnitDg,
       buildingId: bBuilding,
-      name: "Ladenlokal EG",
-      unitNumber: "E1",
+      name: "DG Wohnung",
+      unitNumber: "3",
       areaSqm: 48.0,
       heatingAreaSqm: 46.0,
     },
@@ -886,11 +886,11 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const bMeterHeatHotWater = nid();
   const bMeterHeatEg = nid();
   const bMeterHeatOg = nid();
-  const bMeterHeatGewerbe = nid();
+  const bMeterHeatDg = nid();
   const bMeterWaterMain = nid();
   const bMeterWaterEg = nid();
   const bMeterWaterOg = nid();
-  const bMeterWaterGewerbe = nid();
+  const bMeterWaterDg = nid();
   insert(schema.meters, [
     {
       id: bMeterHeatHotWater,
@@ -932,13 +932,13 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       isActive: true,
     },
     {
-      id: bMeterHeatGewerbe,
+      id: bMeterHeatDg,
       buildingId: bBuilding,
-      unitId: bUnitGewerbe,
+      unitId: bUnitDg,
       type: "heat_meter",
       role: "unit",
-      label: "Wärmemengenzähler Ladenlokal",
-      serialNumber: "DEMO-B-WMZ-LAD",
+      label: "Wärmemengenzähler DG",
+      serialNumber: "DEMO-B-WMZ-DG",
       measurementUnit: "kwh",
       costAllocationMode: "heating_cost_bill",
       validFrom: "2025-01-01",
@@ -984,13 +984,13 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       isActive: true,
     },
     {
-      id: bMeterWaterGewerbe,
+      id: bMeterWaterDg,
       buildingId: bBuilding,
-      unitId: bUnitGewerbe,
+      unitId: bUnitDg,
       type: "water_cold",
       role: "unit",
-      label: "Kaltwasser Ladenlokal",
-      serialNumber: "DEMO-B-KW-LAD",
+      label: "Kaltwasser DG",
+      serialNumber: "DEMO-B-KW-DG",
       measurementUnit: "m3",
       costAllocationMode: "cost_types",
       validFrom: "2025-01-01",
@@ -1022,8 +1022,8 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     { meterId: bMeterWaterEg, costTypeId: bCtWasteWater },
     { meterId: bMeterWaterOg, costTypeId: bCtFreshWater },
     { meterId: bMeterWaterOg, costTypeId: bCtWasteWater },
-    { meterId: bMeterWaterGewerbe, costTypeId: bCtFreshWater },
-    { meterId: bMeterWaterGewerbe, costTypeId: bCtWasteWater },
+    { meterId: bMeterWaterDg, costTypeId: bCtFreshWater },
+    { meterId: bMeterWaterDg, costTypeId: bCtWasteWater },
   ]);
 
   insert(schema.meterReadings, [
@@ -1058,14 +1058,14 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     },
     {
       id: nid(),
-      meterId: bMeterHeatGewerbe,
+      meterId: bMeterHeatDg,
       readingDate: "2025-01-01",
       value: 0,
       readBy: "metering_service",
     },
     {
       id: nid(),
-      meterId: bMeterHeatGewerbe,
+      meterId: bMeterHeatDg,
       readingDate: "2025-12-31",
       value: 6500,
       readBy: "metering_service",
@@ -1129,14 +1129,14 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     },
     {
       id: nid(),
-      meterId: bMeterWaterGewerbe,
+      meterId: bMeterWaterDg,
       readingDate: "2025-01-01",
       value: 0,
       readBy: "landlord",
     },
     {
       id: nid(),
-      meterId: bMeterWaterGewerbe,
+      meterId: bMeterWaterDg,
       readingDate: "2025-12-31",
       value: 25,
       readBy: "landlord",
@@ -1145,11 +1145,11 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
 
   const bResBecker = nid();
   const bResHoffmann = nid();
-  const bResLaden = nid();
+  const bResDg = nid();
   insert(schema.residents, [
     { id: bResBecker, firstName: "Andrea", lastName: "Becker" },
     { id: bResHoffmann, firstName: "Jürgen", lastName: "Hoffmann" },
-    { id: bResLaden, firstName: "Claudia", lastName: "Wolf" },
+    { id: bResDg, firstName: "Claudia", lastName: "Wolf" },
   ]);
 
   const bTenantEg = nid();
@@ -1192,24 +1192,24 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     monthlyAdvanceCents: 19_000,
   });
 
-  // Gewerbeeinheit (kind = commercial)
-  const bTenantGewerbe = nid();
+  // Dritte Wohnung
+  const bTenantDg = nid();
   insert(schema.tenants, {
-    id: bTenantGewerbe,
-    unitId: bUnitGewerbe,
-    kind: "commercial",
+    id: bTenantDg,
+    unitId: bUnitDg,
+    kind: "private",
     startDate: "2022-01-01",
     depositCents: 300_000,
-    notes: "Friseursalon, Gewerbemietvertrag.",
+    notes: "Dachgeschosswohnung, unbefristeter Mietvertrag.",
   });
   insert(schema.tenantResidents, {
     id: nid(),
-    tenantId: bTenantGewerbe,
-    residentId: bResLaden,
+    tenantId: bTenantDg,
+    residentId: bResDg,
   });
   insert(schema.tenantRents, {
     id: nid(),
-    tenantId: bTenantGewerbe,
+    tenantId: bTenantDg,
     monthlyBaseRentCents: 95_000,
     monthlyAdvanceCents: 22_000,
   });
@@ -1581,13 +1581,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   insert(schema.payments, [
     ...monthlyRentPayments(bTenantEg, "2023-04", "2026-05", 60_000, 19_000),
     ...monthlyRentPayments(bTenantOg, "2020-10", "2026-05", 61_000, 19_000),
-    ...monthlyRentPayments(
-      bTenantGewerbe,
-      "2022-01",
-      "2026-05",
-      95_000,
-      22_000,
-    ),
+    ...monthlyRentPayments(bTenantDg, "2022-01", "2026-05", 95_000, 22_000),
     ...monthlyRentPayments(cTenantEg, "2024-06", "2026-05", 99_000, 28_000),
     ...monthlyRentPayments(cTenantOg, "2019-03", "2026-05", 99_000, 30_000),
     {

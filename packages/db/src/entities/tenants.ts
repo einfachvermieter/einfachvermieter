@@ -2,7 +2,7 @@ import { EntitySchema, type Opt } from "@mikro-orm/core";
 import { fk } from "./_relations.js";
 import { UnitSchema } from "./properties.js";
 
-export type TenantKind = "private" | "commercial" | "owner";
+export type TenantKind = "private" | "owner";
 export type UserRole = "admin" | "resident";
 
 /**
