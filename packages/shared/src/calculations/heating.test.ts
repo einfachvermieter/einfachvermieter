@@ -442,7 +442,7 @@ describe("calculateHeating", () => {
     // EG-Mieter zieht zum 30.06. aus, es gibt KEINE Zwischenablesung - der
     // EG-Zähler hat nur Stände am 01.01. und 31.12. Der Verbrauch der Mietzeit
     // muss geschätzt werden. Linear ~= halbes Jahr; degree_days gewichtet nach
-    // HKVO-Gradtagen (§ 9b HeizkostenV) -> der Winter-Mieter trägt mehr.
+    // Gradtagszahlen (§ 9b Abs. 2 HeizkostenV) -> der Winter-Mieter trägt mehr.
     const baseInput = {
       totalHeatingCostsCents: 1_000_000,
       config: { consumptionShareBps: 7000 },

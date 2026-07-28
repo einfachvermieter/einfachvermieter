@@ -1,7 +1,7 @@
 import {
+  DEGREE_DAYS_PROMILLE_PER_MONTH,
   formatNumber,
   type HeatingProrationMethod,
-  HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
 } from "@einfachvermieter/shared";
 import { t } from "../../../../lib/i18n";
 
@@ -20,7 +20,7 @@ const MONTH_KEYS = [
   "dec",
 ] as const;
 
-const maxPromille = Math.max(...HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH);
+const maxPromille = Math.max(...DEGREE_DAYS_PROMILLE_PER_MONTH);
 /**
  * Summe Promille = 1.000 (HeizkostenV-Anlage), lineare Vergleichslinie = Jahr/12
  */
@@ -62,7 +62,7 @@ export const HeatingProrationChart = ({
 
       <div className="pt-6">
         <div className="relative grid h-29.5 grid-cols-12 items-end gap-1.5">
-          {HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH.map((promille, index) => (
+          {DEGREE_DAYS_PROMILLE_PER_MONTH.map((promille, index) => (
             <div
               key={MONTH_KEYS[index]}
               className={`relative min-h-1.25 rounded-t-sm ${barClass}`}

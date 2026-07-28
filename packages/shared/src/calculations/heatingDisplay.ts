@@ -9,8 +9,8 @@ import { formatNumber } from "../format.js";
 import type { HeatingDetail, Period } from "../types/index.js";
 import {
   co2Tier,
+  DEGREE_DAYS_PROMILLE_PER_MONTH,
   degreeDaysMonthlyBreakdown,
-  HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
 } from "./heating.js";
 
 export type LandlordShareRow = {
@@ -322,9 +322,9 @@ const MONTH_KEYS = [
 ] as const;
 
 /**
- * Liste der bewohnten Monate mit ihrem festen HKVO-Monatsanteil (Anlage zu
- * § 9 Abs. 3 HeizkostenV), z. B. „Jan 170 ‰, Feb 150 ‰". Nur Monate, in die
- * die Mietzeit (teilweise) fällt.
+ * Liste der bewohnten Monate mit ihrem festen Gradtagszahlen-Anteil,
+ * z. B. „Jan 170 ‰, Feb 150 ‰". Nur Monate, in die die Mietzeit
+ * (teilweise) fällt.
  */
 const residentMonthsPromille = (
   period: Period,
@@ -335,7 +335,7 @@ const residentMonthsPromille = (
     .map(
       (row) =>
         `${translate(`common.monthsShort.${MONTH_KEYS[row.monthIndex]}`)} ${formatNumber(
-          HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH[row.monthIndex] ?? 0,
+          DEGREE_DAYS_PROMILLE_PER_MONTH[row.monthIndex] ?? 0,
           0,
         )} ‰`,
     )

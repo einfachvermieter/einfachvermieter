@@ -13,10 +13,10 @@ export type HeatingBaseMethod = (typeof heatingBaseMethods)[number];
  * Aufteilungsmethode für Heizkostenpositionen, deren Rechnungsperiode
  * mit der Mietzeit nur teilweise überlappt:
  * - "linear":       tagesproportional (ignoriert Saisonalität).
- * - "degree_days":  gewichtet nach der Gradtagstabelle aus der Anlage zu
- *                   § 9 Abs. 3 HeizkostenV (Summe = 1.000 ‰). Wintertage
- *                   haben deutlich höheres Gewicht. Rechtlich verbindliche
- *                   Verteilung für tagesgenaue Mieter-Abgrenzung.
+ * - "degree_days":  gewichtet nach Gradtagszahlen (Summe = 1.000 ‰).
+ *                   Wintertage haben deutlich höheres Gewicht. § 9b Abs. 2
+ *                   HeizkostenV lässt diese Verteilung bei Mieterwechsel
+ *                   ausdrücklich zu.
  */
 export const heatingProrationMethods = ["linear", "degree_days"] as const;
 export type HeatingProrationMethod = (typeof heatingProrationMethods)[number];

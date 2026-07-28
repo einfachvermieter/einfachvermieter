@@ -283,7 +283,7 @@ describe("prorationNote", () => {
     expect(note).toBe("statements.pdf.heating.prorationNoteLinearAll");
   });
 
-  it("degree_days: listet die bewohnten Monate mit ihrer HKVO-Promille", () => {
+  it("degree_days: listet die bewohnten Monate mit ihrer Gradtagszahlen-Promille", () => {
     const note = prorationNote(
       baseDetail({ prorationMethod: "degree_days" }),
       tenantPeriod,

@@ -16,19 +16,19 @@ import { bpsToFactor, distributeCents } from "./money.js";
 import { daysBetween, intersect } from "./period.js";
 
 /**
- * Gradtagstabelle aus der **Anlage zu § 9 Abs. 3 HeizkostenV**.
- * Diese Werte sind die rechtlich verbindliche Verteilung für eine
- * tagesgenaue Abgrenzung bei Mieterwechsel innerhalb der Abrechnungs-
- * periode - und werden von Gerichten und Branche (z. B. ista, Techem,
- * Mieterschutzbünden) entsprechend akzeptiert.
+ * Monatliche Gradtagszahlen als Promille des Jahresbedarfs (Summe 1.000 ‰).
+ * § 9b Abs. 2 HeizkostenV lässt die Verteilung bei Mieterwechsel nach
+ * Gradtagszahlen zu, nennt aber keine Werte: die Tabelle selbst stammt aus
+ * den anerkannten Regeln der Technik (VDI 2077) und ist in der Branche
+ * (ista, Techem) und vor Gericht die übliche Grundlage.
  *
- * Juni/Juli/August führt die HeizkostenV-Anlage zusammen mit 40 ‰.
+ * Juni/Juli/August führt die Tabelle zusammen mit 40 ‰.
  * Tagesgewichtet verteilt (92 Sommer-Tage -> 0,4348 ‰/Tag):
  *   Juni  30 Tage x 0,4348 ~= 13 ‰
  *   Juli  31 Tage x 0,4348 ~= 14 ‰
  *   August 31 Tage x 0,4348 ~= 13 ‰
  */
-export const HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH = [
+export const DEGREE_DAYS_PROMILLE_PER_MONTH = [
   170, 150, 130, 80, 40, 13, 14, 13, 30, 80, 120, 160,
 ] as const;
 
@@ -41,7 +41,7 @@ const daysInMonth = (year: number, month: number): number =>
   new Date(year, month, 0).getDate();
 
 /**
- * Summe der Heizgradtagstabellen-Promille (HeizkostenV-Anlage) über eine
+ * Summe der Gradtagszahlen-Promille über eine
  * Periode (inklusive Endpunkte). Tagweise gewichtet mit der Monats-Promille
  * pro Tag des jeweiligen Monats.
  */
@@ -58,7 +58,7 @@ export const sumDegreeDays = (period: Period): number => {
 
     for (let month = fromMonth; month <= toMonth; month++) {
       const dim = daysInMonth(year, month);
-      const monthPromille = HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH[month - 1] ?? 0;
+      const monthPromille = DEGREE_DAYS_PROMILLE_PER_MONTH[month - 1] ?? 0;
       const promillePerDay = monthPromille / dim;
       const firstDay =
         year === startYear && month === startMonth ? startDay : 1;
@@ -84,7 +84,7 @@ export type DegreeDaysMonthRow = {
 /**
  * Monatliche Aufschlüsselung der Gradtage über eine Periode (Mietzeit).
  * Liefert für jeden Kalendermonat die Anzahl Tage in der Periode
- * und die anteiligen Gradtage-Promille der HKVO-Anlage. Monate ohne
+ * und die anteiligen Gradtage-Promille der Tabelle. Monate ohne
  * Überlappung tragen 0.
  *
  * Bei jahresübergreifenden Perioden werden gleichnamige Monate addiert
@@ -110,7 +110,7 @@ export const degreeDaysMonthlyBreakdown = (
 
     for (let month = fromMonth; month <= toMonth; month++) {
       const dim = daysInMonth(year, month);
-      const monthPromille = HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH[month - 1] ?? 0;
+      const monthPromille = DEGREE_DAYS_PROMILLE_PER_MONTH[month - 1] ?? 0;
       const firstDay =
         year === startYear && month === startMonth ? startDay : 1;
       const lastDay = year === endYear && month === endMonth ? endDay : dim;
@@ -498,7 +498,7 @@ export const hotWaterCorrectionFactor = (settings: {
  *      **ungekürzt** (Jahres-Topf).
  *    - Verteilung nach Flächentagen über alle Wohnungen (qm x belegte
  *      Tage). Bei `prorationMethod = "degree_days"` werden die Tage mit
- *      der HKVO-Gradtagstabelle gewichtet (Flächen-Gradtage statt
+ *      den Gradtagszahlen gewichtet (Flächen-Gradtage statt
  *      Flächentage). Leerstand fällt jeweils auf den Vermieter.
  *
  * Der Wärmemengenzähler misst kWh direkt; bei Heizkostenverteilern werden

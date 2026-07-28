@@ -28,7 +28,7 @@ export type UnitInfo = {
    */
   occupiedDays: number;
   /**
-   * Summe HKVO-Gradtag-Promille über belegte Tage. Nur bei `prorationMethod = "degree_days"`.
+   * Summe Gradtag-Promille über belegte Tage. Nur bei `prorationMethod = "degree_days"`.
    */
   occupiedDegreeDayPromille?: number;
   /**
@@ -412,7 +412,7 @@ export type HeatingDetail = {
   /**
    * Aufteilung teil-überlappender Positionen.
    * - "linear":      tagesproportional
-   * - "degree_days": nach Gradtagstabelle der HeizkostenV
+   * - "degree_days": nach Gradtagszahlen (§ 9b Abs. 2 HeizkostenV)
    * Nur intern gesetzt.
    */
   prorationMethod?: "linear" | "degree_days";
