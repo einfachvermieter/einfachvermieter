@@ -4,9 +4,14 @@
  * abgeleiteten Anzeigewerte, nur das Markup bleibt getrennt).
  */
 
+import type { TranslateFn } from "@einfachvermieter/i18n";
 import { formatNumber } from "../format.js";
 import type { HeatingDetail, Period } from "../types/index.js";
-import { co2Tier } from "./heating.js";
+import {
+  co2Tier,
+  degreeDaysMonthlyBreakdown,
+  HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
+} from "./heating.js";
 
 export type LandlordShareRow = {
   consumptionCostCents: number;
@@ -299,6 +304,94 @@ export const co2TenantShareCents = (
   return Math.round(
     tenantSideCo2Cents * (ownTotalCents / detail.totalHeatingCostsCents),
   );
+};
+
+const MONTH_KEYS = [
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "may",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "oct",
+  "nov",
+  "dec",
+] as const;
+
+/**
+ * Liste der bewohnten Monate mit ihrem festen HKVO-Monatsanteil (Anlage zu
+ * § 9 Abs. 3 HeizkostenV), z. B. „Jan 170 ‰, Feb 150 ‰". Nur Monate, in die
+ * die Mietzeit (teilweise) fällt.
+ */
+const residentMonthsPromille = (
+  period: Period,
+  translate: TranslateFn,
+): string =>
+  degreeDaysMonthlyBreakdown(period)
+    .filter((row) => row.calendarDays > 0)
+    .map(
+      (row) =>
+        `${translate(`common.monthsShort.${MONTH_KEYS[row.monthIndex]}`)} ${formatNumber(
+          HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH[row.monthIndex] ?? 0,
+          0,
+        )} ‰`,
+    )
+    .join(", ");
+
+/**
+ * Hinweis zur zeitanteiligen Verteilung bei unterjähriger Nutzung, gemeinsame
+ * Quelle für Web-Karte und PDF-Anlage. Die Vorlage hängt an zwei Achsen:
+ *
+ * - Liegt eine Zwischenablesung vor, ist der Verbrauch über die Zählerstände
+ *   exakt abgegrenzt und nur die Grundkosten werden zeitanteilig verteilt.
+ *   Ohne erfassten Verbrauch (`heating_area`) betrifft es die gesamten
+ *   Heizkosten.
+ * - `degree_days` gewichtet nach Gradtagszahlen (mit Auflistung der bewohnten
+ *   Monatsanteile), `linear` nach Nutzungstagen.
+ */
+export const prorationNote = (
+  detail: HeatingDetail,
+  tenantPeriod: Period,
+  translate: TranslateFn,
+): string => {
+  const distributesAll =
+    (detail.consumptionDistributionMethod ?? "consumption") === "heating_area";
+
+  if (detail.prorationMethod === "degree_days") {
+    const months = residentMonthsPromille(tenantPeriod, translate);
+    return distributesAll
+      ? translate("statements.pdf.heating.prorationNoteDegreeDaysAll", {
+          months,
+        })
+      : translate("statements.pdf.heating.prorationNoteDegreeDaysBase", {
+          months,
+        });
+  }
+
+  return distributesAll
+    ? translate("statements.pdf.heating.prorationNoteLinearAll")
+    : translate("statements.pdf.heating.prorationNoteLinearBase");
+};
+
+/**
+ * Spaltenkopf der Verbrauchsspalte: kWh bei Wärmemengenzählern, bei
+ * Heizkostenverteilern Anzeigewerte bzw. Bewertungspunkte.
+ */
+export const consumptionUnitLabel = (
+  method: HeatingDetail["consumptionMethod"],
+  useValuationPoints: boolean,
+): HeatingLabelDescriptor => {
+  if (method !== "heat_cost_allocator") {
+    return { key: "statements.pdf.heating.consumptionKwh" };
+  }
+  return {
+    key: useValuationPoints
+      ? "statements.pdf.heating.consumptionUnits"
+      : "statements.pdf.heating.consumptionUnitsRaw",
+  };
 };
 
 export type HotWaterFactRow = {

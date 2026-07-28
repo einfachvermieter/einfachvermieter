@@ -1,10 +1,9 @@
 import {
   co2TenantShareCents,
   co2TierLabel,
-  degreeDaysMonthlyBreakdown,
+  consumptionUnitLabel,
   formatEur,
   formatNumber,
-  HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
   heatingColumnFootnotes,
   hotWaterColumnFootnotes,
   hotWaterFactRows,
@@ -12,6 +11,7 @@ import {
   type Period,
   perMeterDisplayDigits,
   prepareHeatingDisplay,
+  prorationNote,
   type StatementResult,
 } from "@einfachvermieter/shared";
 import { RiDropLine, RiFireLine, RiPieChart2Line } from "@remixicon/react";
@@ -25,33 +25,6 @@ import {
 } from "../../../../components/common/tableStyles";
 import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
-
-const MONTH_LABELS_DE = [
-  "Jan",
-  "Feb",
-  "Mär",
-  "Apr",
-  "Mai",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Okt",
-  "Nov",
-  "Dez",
-];
-
-const consumptionUnitHeader = (
-  method: NonNullable<StatementResult["heatingDetail"]>["consumptionMethod"],
-  useValuationPoints: boolean,
-): string => {
-  if (method !== "heat_cost_allocator") {
-    return t("statements.pdf.heating.consumptionKwh");
-  }
-  return useValuationPoints
-    ? t("statements.pdf.heating.consumptionUnits")
-    : t("statements.pdf.heating.consumptionUnitsRaw");
-};
 
 /**
  * Wert-Zellen der Verteilungstabellen. Im Flächen-Fallback  (keine Zähler) eine
@@ -393,9 +366,11 @@ export const HeatingCard = ({
                   {columnMarkers(heatingIndices("heatingArea"))}
                 </th>
                 <th className="whitespace-pre-line py-1.5 text-right">
-                  {consumptionUnitHeader(
-                    detail.consumptionMethod,
-                    useValuationPoints,
+                  {t(
+                    consumptionUnitLabel(
+                      detail.consumptionMethod,
+                      useValuationPoints,
+                    ).key,
                   )}
                   {columnMarkers(heatingIndices("consumption"))}
                 </th>
@@ -510,7 +485,7 @@ export const HeatingCard = ({
             Abgrenzung statt, der Hinweis entfällt. */}
         {detail.prorationMethod !== undefined && isPartialPeriod ? (
           <p className="mt-2 text-xs text-muted-foreground">
-            {prorationNote(detail, tenantPeriod)}
+            {prorationNote(detail, tenantPeriod, t)}
           </p>
         ) : null}
 
@@ -753,47 +728,4 @@ export const HeatingCard = ({
       ) : null}
     </>
   );
-};
-
-/**
- * Liste der bewohnten Monate mit ihrem festen HKVO-Monatsanteil (Anlage zu
- * § 9 Abs. 3 HeizkostenV), z. B. "Jan 170 ‰, Feb 150 ‰". Nur Monate, in die
- * die Mietzeit (teilweise) fällt. Dient als {months}-Platzhalter im
- * Gradtagszahlen-Hinweis.
- */
-const residentMonthsPromille = (period: Period): string =>
-  degreeDaysMonthlyBreakdown(period)
-    .filter((row) => row.calendarDays > 0)
-    .map(
-      (row) =>
-        `${MONTH_LABELS_DE[row.monthIndex]} ${formatNumber(
-          HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH[row.monthIndex] ?? 0,
-          0,
-        )} ‰`,
-    )
-    .join(", ");
-
-/**
- * Hinweis zur zeitanteiligen Verteilung bei unterjähriger Nutzung. Spiegelt
- * `prorationNote` aus packages/pdf/src/components/HeatingAppendix.tsx: wählt
- * nach Zwischenablesung (nur Grundkosten vs. gesamte Heizkosten) und
- * Aufteilungsmethode (Gradtagszahlen vs. Nutzungstage).
- */
-const prorationNote = (
-  detail: NonNullable<StatementResult["heatingDetail"]>,
-  tenantPeriod: Period,
-): string => {
-  const distributesAll =
-    (detail.consumptionDistributionMethod ?? "consumption") === "heating_area";
-
-  if (detail.prorationMethod === "degree_days") {
-    const months = residentMonthsPromille(tenantPeriod);
-    return distributesAll
-      ? t("statements.pdf.heating.prorationNoteDegreeDaysAll", { months })
-      : t("statements.pdf.heating.prorationNoteDegreeDaysBase", { months });
-  }
-
-  return distributesAll
-    ? t("statements.pdf.heating.prorationNoteLinearAll")
-    : t("statements.pdf.heating.prorationNoteLinearBase");
 };

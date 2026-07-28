@@ -4,9 +4,11 @@ import type { HeatingDetail } from "../types/index.js";
 import {
   co2TenantShareCents,
   co2TierLabel,
+  consumptionUnitLabel,
   hotWaterFactRows,
   perMeterDisplayDigits,
   prepareHeatingDisplay,
+  prorationNote,
 } from "./heatingDisplay.js";
 
 const period = (start: string, end: string) => ({ start, end });
@@ -248,5 +250,69 @@ describe("hotWaterFactRows", () => {
     });
     expect(withFactor.map((row) => row.key)).toContain("correctionFactor");
     expect(withFactor.at(-1)?.value.params?.value).toBe("1,11");
+  });
+});
+
+describe("prorationNote", () => {
+  /**
+   * Statt echter Übersetzungen den Key mit Parametern zurückgeben, damit der
+   * Test die Auswahl der Vorlage prüft und nicht den deutschen Text
+   */
+  const echo = (key: string, params?: Record<string, unknown>): string =>
+    params ? `${key}|${JSON.stringify(params)}` : key;
+  const tenantPeriod = period("2025-01-01", "2025-03-31");
+
+  it("linear: nur Grundkosten, wenn der Verbrauch gemessen ist", () => {
+    const note = prorationNote(
+      baseDetail({ prorationMethod: "linear" }),
+      tenantPeriod,
+      echo,
+    );
+    expect(note).toBe("statements.pdf.heating.prorationNoteLinearBase");
+  });
+
+  it("linear: gesamte Heizkosten im Flächen-Fallback", () => {
+    const note = prorationNote(
+      baseDetail({
+        prorationMethod: "linear",
+        consumptionDistributionMethod: "heating_area",
+      }),
+      tenantPeriod,
+      echo,
+    );
+    expect(note).toBe("statements.pdf.heating.prorationNoteLinearAll");
+  });
+
+  it("degree_days: listet die bewohnten Monate mit ihrer HKVO-Promille", () => {
+    const note = prorationNote(
+      baseDetail({ prorationMethod: "degree_days" }),
+      tenantPeriod,
+      echo,
+    );
+    expect(note).toContain(
+      "statements.pdf.heating.prorationNoteDegreeDaysBase",
+    );
+    // Jan 170 ‰, Feb 150 ‰, Mär 130 ‰ - die Monatsnamen kommen aus i18n,
+    // hier also die Keys.
+    expect(note).toContain("common.monthsShort.jan 170");
+    expect(note).toContain("common.monthsShort.mar 130");
+    expect(note).not.toContain("common.monthsShort.apr");
+  });
+});
+
+describe("consumptionUnitLabel", () => {
+  it("kWh bei Wärmemengenzählern", () => {
+    expect(consumptionUnitLabel("heat_meter", false).key).toBe(
+      "statements.pdf.heating.consumptionKwh",
+    );
+  });
+
+  it("Anzeigewerte bzw. Bewertungspunkte bei Heizkostenverteilern", () => {
+    expect(consumptionUnitLabel("heat_cost_allocator", false).key).toBe(
+      "statements.pdf.heating.consumptionUnitsRaw",
+    );
+    expect(consumptionUnitLabel("heat_cost_allocator", true).key).toBe(
+      "statements.pdf.heating.consumptionUnits",
+    );
   });
 });

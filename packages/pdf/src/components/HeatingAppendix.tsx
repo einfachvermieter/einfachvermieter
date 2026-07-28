@@ -1,12 +1,11 @@
 import {
   co2TenantShareCents,
   co2TierLabel,
-  degreeDaysMonthlyBreakdown,
+  consumptionUnitLabel,
   formatEur,
   formatNumber,
   groupCalcWarnings,
   type HeatingDetail,
-  HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH,
   heatingColumnFootnotes,
   hotWaterColumnFootnotes,
   hotWaterFactRows,
@@ -15,6 +14,7 @@ import {
   type Period,
   perMeterDisplayDigits,
   prepareHeatingDisplay,
+  prorationNote,
 } from "@einfachvermieter/shared";
 import { Text, View } from "@react-pdf/renderer";
 import { calcWarningKey, formatCalcWarning } from "../calcWarnings.js";
@@ -42,21 +42,6 @@ type Props = {
    */
   targetUnitId: string;
 };
-
-const MONTH_KEYS = [
-  "jan",
-  "feb",
-  "mar",
-  "apr",
-  "may",
-  "jun",
-  "jul",
-  "aug",
-  "sep",
-  "oct",
-  "nov",
-  "dec",
-];
 
 // Layout-Werte für die Tabellen in diesem Anhang.
 const BREAKDOWN_COL_LABEL = { flex: 3 };
@@ -136,62 +121,6 @@ const footnoteMarkers = (indices: number[]) =>
   indices.length > 0 ? (
     <Text style={styles.superscript}>{indices.join(", ")}</Text>
   ) : null;
-
-/**
- * Liste der bewohnten Monate mit ihrem festen HKVO-Monatsanteil (Anlage zu
- * § 9 Abs. 3 HeizkostenV), z. B. "Jan 170 ‰, Feb 150 ‰". Nur Monate, in die
- * die Mietzeit (teilweise) fällt, werden aufgeführt. Dient als {months}-
- * Platzhalter im Gradtagszahlen-Hinweis.
- */
-const residentMonthsPromille = (period: Period): string =>
-  degreeDaysMonthlyBreakdown(period)
-    .filter((row) => row.calendarDays > 0)
-    .map(
-      (row) =>
-        `${t(`common.monthsShort.${MONTH_KEYS[row.monthIndex]}`)} ${formatNumber(
-          HKVO_DEGREE_DAYS_PROMILLE_PER_MONTH[row.monthIndex] ?? 0,
-          0,
-        )} ‰`,
-    )
-    .join(", ");
-
-/**
- * Zeitanteiligen Verteilung bei unterjähriger Nutzung. Wählt die passende
- * i18n-Vorlage nach zwei Achsen:
- * - Zwischenablesung (Verbrauch exakt über Zählerstände) -> nur Grundkosten
- *   werden zeitanteilig verteilt; ohne erfassten Verbrauch (`heating_area`)
- *   werden die gesamten Heizkosten zeitanteilig verteilt.
- * - Aufteilungsmethode `degree_days` (Gradtagszahlen) vs. `linear`
- *   (Nutzungstage). Bei `degree_days` werden die bewohnten Monatsanteile
- *   eingesetzt.
- */
-const prorationNote = (detail: HeatingDetail, tenantPeriod: Period): string => {
-  const distributesAll =
-    (detail.consumptionDistributionMethod ?? "consumption") === "heating_area";
-
-  if (detail.prorationMethod === "degree_days") {
-    const months = residentMonthsPromille(tenantPeriod);
-    return distributesAll
-      ? t("statements.pdf.heating.prorationNoteDegreeDaysAll", { months })
-      : t("statements.pdf.heating.prorationNoteDegreeDaysBase", { months });
-  }
-
-  return distributesAll
-    ? t("statements.pdf.heating.prorationNoteLinearAll")
-    : t("statements.pdf.heating.prorationNoteLinearBase");
-};
-
-const distributionConsumptionHeader = (
-  method: HeatingDetail["consumptionMethod"],
-  useValuationPoints: boolean,
-): string => {
-  if (method !== "heat_cost_allocator") {
-    return t("statements.pdf.heating.consumptionKwh");
-  }
-  return useValuationPoints
-    ? t("statements.pdf.heating.consumptionUnits")
-    : t("statements.pdf.heating.consumptionUnitsRaw");
-};
 
 /**
  * Rechte Info-Tabelle des Heizkosten-Anhangs: Energieträger als erste Zeile,
@@ -884,9 +813,11 @@ export const HeatingAppendix = ({
             </View>
             <View style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}>
               <Text>
-                {distributionConsumptionHeader(
-                  detail.consumptionMethod,
-                  useValuationPoints,
+                {t(
+                  consumptionUnitLabel(
+                    detail.consumptionMethod,
+                    useValuationPoints,
+                  ).key,
                 )}
                 {footnoteMarkers(heatingIndices("consumption"))}
               </Text>
@@ -1117,7 +1048,7 @@ export const HeatingAppendix = ({
             Nutzung findet keine Abgrenzung statt. Dann entfällt der Hinweis. */}
         {detail.prorationMethod !== undefined && isPartialPeriod ? (
           <Text style={styles.footnote}>
-            {prorationNote(detail, tenantPeriod)}
+            {prorationNote(detail, tenantPeriod, t)}
           </Text>
         ) : null}
         {/* Hinweise aus der Berechnung, v. a. die rechtlich gebotene
