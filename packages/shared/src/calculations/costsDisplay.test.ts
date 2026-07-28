@@ -21,6 +21,7 @@ describe("formatBemessung", () => {
     expect(formatBemessung(3, "person", translate)).toBe(
       "3 costs.units.person#3",
     );
+    expect(formatBemessung(1, "unit", translate)).toBe("1 costs.units.unit#1");
   });
 
   it("gibt ohne Einheit nur die Zahl aus", () => {

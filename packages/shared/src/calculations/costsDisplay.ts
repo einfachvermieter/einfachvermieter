@@ -11,7 +11,7 @@ import { formatNumber } from "../format.js";
 export const bemessungDigits = (unit: string | null | undefined): number =>
   unit === "m²" || unit === "m³" ? 2 : 0;
 
-const PLURAL_BEMESSUNG_UNITS = new Set(["person"]);
+const PLURAL_BEMESSUNG_UNITS = new Set(["person", "unit"]);
 
 /**
  * "Personentage" als Label ist zu lang

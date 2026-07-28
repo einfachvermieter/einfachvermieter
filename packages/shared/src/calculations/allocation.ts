@@ -264,11 +264,9 @@ const allocatePerUnit = ({
     baseUnit: "Wohnungstage",
     landlordAmountCents,
     landlordShareBps,
-    tenantBaseExplain: `1 Wohnung × ${tenantBase} Tage`,
-    totalBaseExplain: `${units.length} Wohnungen × ${periodDays} Tage`,
     bemessungTotal: units.length,
     bemessungTenant: 1,
-    bemessungUnit: units.length === 1 ? "Wohnung" : "Wohnungen",
+    bemessungUnit: "unit",
     daysTotal: periodDays,
     daysTenant: tenantBase,
   };

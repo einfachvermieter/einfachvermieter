@@ -1962,7 +1962,8 @@
       "fixed": "fix"
     },
     "units": {
-      "person": "{count, plural, one {Person} other {Personen}}"
+      "person": "{count, plural, one {Person} other {Personen}}",
+      "unit": "{count, plural, one {Wohnung} other {Wohnungen}}"
     },
     "allocationGroups": {
       "byShare": "Nach Anteil",
