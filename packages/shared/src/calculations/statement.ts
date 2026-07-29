@@ -259,7 +259,7 @@ const buildOperatingLines = (
  * 1. Wasserverbrauch berechnen (nötig für per_consumption_m3)
  * 2. Heizkosten-Zeile aus vorab berechnetem HeatingDetail bauen
  * 3. Alle übrigen Kostenarten pro Tenant umlegen
- * 4. Schmutzwasser-Sonderfall: an Frischwasseranteil gekoppelt
+ * 4. Verbrauchsumlagen ohne gemessenen Verbrauch anwarnen
  * 5. Summen und Saldo berechnen
  */
 export const calculateStatement = (
@@ -304,7 +304,25 @@ export const calculateStatement = (
     }),
   ];
 
-  // 3. Summen
+  // 4. Verbrauchsumlage ohne gemessenen Verbrauch: alle Gewichte sind 0, der
+  // Betrag verteilt sich auf niemanden und fiele sonst kommentarlos aus der
+  // Abrechnung.
+  const unmeasuredLines = lines.filter(
+    (line) =>
+      line.allocationKey === "per_consumption_m3" && line.totalBase <= 0,
+  );
+
+  if (unmeasuredLines.length > 0) {
+    waterDetail.warnings = [
+      ...(waterDetail.warnings ?? []),
+      ...unmeasuredLines.map((line) => ({
+        code: "waterNoConsumption",
+        params: { label: line.costTypeName },
+      })),
+    ];
+  }
+
+  // 5. Summen
   const totalCostsCents = lines.reduce(
     (acc, line) => acc + line.tenantAmountCents,
     0,

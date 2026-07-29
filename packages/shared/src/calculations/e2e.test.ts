@@ -844,4 +844,33 @@ describe("End-to-End Abrechnung 2025", () => {
     const tvFull = tvLine(buildFixedInput("t-mieter1", undefined));
     expect(tvFull?.tenantAmountCents).toBe(18_000);
   });
+
+  it("warnt, wenn eine Verbrauchsumlage ohne gemessenen Verbrauch dasteht", () => {
+    // Alle Wasserzähler ohne Bewegung: die Gewichte sind 0, Frisch- und
+    // Schmutzwasser verteilen sich auf niemanden.
+    const input = buildInput("u-eg", "t-mieter1");
+    const result = calculateStatement({
+      ...input,
+      waterMeters: input.waterMeters.map((bundle) => ({
+        ...bundle,
+        readings: bundle.readings.map((point) => ({ ...point, value: 0 })),
+      })),
+    });
+
+    const waterLine = result.lines.find(
+      (line) => line.costTypeName === "Frischwasser",
+    );
+    expect(waterLine?.totalBase).toBe(0);
+    expect(waterLine?.tenantAmountCents).toBe(0);
+
+    const codes = (result.waterDetail?.warnings ?? []).map(
+      (warning) => warning.code,
+    );
+    expect(codes.filter((code) => code === "waterNoConsumption")).toHaveLength(
+      2,
+    );
+    expect(
+      result.waterDetail?.warnings?.map((warning) => warning.params?.label),
+    ).toContain("Frischwasser");
+  });
 });
