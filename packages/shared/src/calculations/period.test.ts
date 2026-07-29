@@ -1,5 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { daysBetween, intersect, prorationFactor } from "./period.js";
+import {
+  daysBetween,
+  daysInYear,
+  intersect,
+  prorationFactor,
+} from "./period.js";
+
+describe("daysInYear", () => {
+  it("liefert 366 im Schaltjahr und sonst 365", () => {
+    expect(daysInYear("2024-07-15")).toBe(366);
+    expect(daysInYear("2025-07-15")).toBe(365);
+    // 2100 ist kein Schaltjahr (durch 100, nicht durch 400 teilbar).
+    expect(daysInYear("2100-03-01")).toBe(365);
+  });
+});
 
 describe("daysBetween", () => {
   it("berechnet ganzes Jahr korrekt (inklusiv)", () => {

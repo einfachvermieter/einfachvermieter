@@ -211,8 +211,14 @@ export const AdvanceAdjustmentCard = ({
         linesByCostTypeId,
         detail?.tenantBilledDays ?? 0,
         autoTariffs,
+        detail?.daysInBaseYear,
       ),
-    [linesByCostTypeId, detail?.tenantBilledDays, autoTariffs],
+    [
+      linesByCostTypeId,
+      detail?.tenantBilledDays,
+      detail?.daysInBaseYear,
+      autoTariffs,
+    ],
   );
 
   // Tarif-Vorschlag wird nur gezeigt, wenn er sich vom reinen

@@ -198,6 +198,11 @@ export type AdvanceAdjustmentDetail = {
    */
   tenantBilledDays: number;
   /**
+   * Tage des Abrechnungsjahres (365 / 366). Zähler der Hochrechnung,
+   * damit die Live-Vorschau im Browser dasselbe rechnet wie der Server.
+   */
+  daysInBaseYear?: number;
+  /**
    * Vom Vermieter festgelegte neue Vorauszahlung (Cent). `null` = keine Anpassung.
    */
   adjustedMonthlyAdvanceCents: number | null;

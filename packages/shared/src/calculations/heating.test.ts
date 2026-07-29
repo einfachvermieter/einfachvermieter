@@ -894,6 +894,38 @@ describe("co2LandlordSharePercent (CO2KostAufG Stufenmodell, Wohngebäude)", () 
   });
 });
 
+describe("calculateHeating - Bezugsjahr des CO2-Splits", () => {
+  it("leitet die Jahreslänge aus dem Periodenstart ab", () => {
+    const result = calculateHeating({
+      totalHeatingCostsCents: 100_000,
+      config: { consumptionShareBps: 7000 },
+      units: [unitEg, unitOg],
+      consumptionMethod: "heat_meter",
+      consumptionMeters: [
+        {
+          meter: heatMeter("wmz-eg", "unit-eg"),
+          readings: [reading("2024-01-01", 0), reading("2024-12-31", 100)],
+        },
+        {
+          meter: heatMeter("wmz-og", "unit-og"),
+          readings: [reading("2024-01-01", 0), reading("2024-12-31", 300)],
+        },
+      ],
+      periodStart: "2024-01-01",
+      periodEnd: "2024-12-31",
+      co2: {
+        enabled: true,
+        totalCostCents: 10_000,
+        totalAmountGrams: 16.96 * 200 * 1000,
+        livingAreaSqm: 200,
+        periodDays: 366,
+      },
+    });
+
+    expect(result.co2Detail?.emissionsKgPerSqmYear).toBe(17);
+  });
+});
+
 describe("calculateCo2Split", () => {
   it("rechnet Ausstoß, Stufe und Abzug für ein volles Jahr (Beispiel 17,5 -> 20 %)", () => {
     const split = calculateCo2Split({
@@ -919,6 +951,25 @@ describe("calculateCo2Split", () => {
     // (1750/200) x (365/182) ~= 17,55 -> gerundet 17,5 -> Stufe 17..<22 -> 20 %.
     expect(split.emissionsKgPerSqmYear).toBeCloseTo(17.5, 5);
     expect(split.landlordSharePercent).toBe(20);
+  });
+
+  it("nimmt im Schaltjahr 366 Tage als Bezugsjahr", () => {
+    // 16,96 kg/qm über die volle Schaltjahres-Periode: mit 366 Bezugstagen
+    // bleibt die Intensität unverändert und wird auf 17,0 gerundet (Stufe
+    // 17..<22 -> 20 %). Mit fest 365 Tagen wären es 16,9 und nur 10 %.
+    const leapYearInput = {
+      totalCostCents: 10_000,
+      totalAmountGrams: 16.96 * 200 * 1000,
+      livingAreaSqm: 200,
+      periodDays: 366,
+    };
+
+    const split = calculateCo2Split({ ...leapYearInput, daysInYear: 366 });
+    expect(split.emissionsKgPerSqmYear).toBe(17);
+    expect(split.landlordSharePercent).toBe(20);
+
+    const withoutLeapDay = calculateCo2Split(leapYearInput);
+    expect(withoutLeapDay.emissionsKgPerSqmYear).toBe(16.9);
   });
 
   it("rundet den Ausstoß auf eine Nachkommastelle, bevor eingestuft wird", () => {

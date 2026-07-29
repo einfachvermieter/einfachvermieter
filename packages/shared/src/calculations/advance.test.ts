@@ -2,8 +2,19 @@ import { describe, expect, it } from "vitest";
 import {
   inferTariffAdjustmentBpsFromInvoices,
   STATEMENT_HEATING_COST_TYPE_ID,
+  suggestNextMonthlyAdvanceCents,
   type TariffInferenceItem,
 } from "./advance.js";
+
+describe("suggestNextMonthlyAdvanceCents", () => {
+  it("lässt eine volle Schaltjahres-Periode unverändert", () => {
+    // 1.446 € über 366 Tage = 120,50 €/Monat -> aufgerundet 121 €.
+    // Mit fest 365 Bezugstagen schrumpft der Vorschlag auf 120,17 € und
+    // damit auf 120 €.
+    expect(suggestNextMonthlyAdvanceCents(144_600, 366, 366)).toBe(12_100);
+    expect(suggestNextMonthlyAdvanceCents(144_600, 366)).toBe(12_000);
+  });
+});
 
 const HEATING_PSEUDO_ID = STATEMENT_HEATING_COST_TYPE_ID;
 const period2025 = { start: "2025-01-01", end: "2025-12-31" };

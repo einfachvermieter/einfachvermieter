@@ -30,6 +30,7 @@ import {
   consumptionBetween,
   type DifferenceConfigInput,
   daysBetween,
+  daysInYear,
   type ExternalHeatingEntry,
   formatWarningParams,
   groupCalcWarnings,
@@ -1158,9 +1159,11 @@ export class StatementsService {
       effectivePeriod.end,
     );
 
+    const daysInBaseYear = daysInYear(effectivePeriod.start);
     const suggestedMonthlyAdvanceCents = suggestNextMonthlyAdvanceCents(
       result.totalCostsCents,
       tenantBilledDays,
+      daysInBaseYear,
     );
 
     const linesByCostTypeId: Record<string, number> = {};
@@ -1175,6 +1178,7 @@ export class StatementsService {
         linesByCostTypeId,
         tenantBilledDays,
         null,
+        daysInBaseYear,
       );
 
     const autoTariffAdjustmentBps = await this.computeAutoTariffAdjustmentBps(
@@ -1188,6 +1192,7 @@ export class StatementsService {
       suggestedMonthlyAdvanceCents,
       suggestedMonthlyAdvanceWithTariffsCents,
       tenantBilledDays,
+      daysInBaseYear,
       adjustedMonthlyAdvanceCents: null,
       adjustedAdvanceValidFrom: null,
       tariffAdjustmentBps: null,
@@ -1722,6 +1727,7 @@ export class StatementsService {
         linesByCostTypeId,
         tenantBilledDays,
         tariffAdjustmentBps,
+        daysInYear(effectiveStart),
       );
 
     return {

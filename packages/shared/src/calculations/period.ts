@@ -34,6 +34,18 @@ export const daysBetween = (start: string, end: string): number => {
 };
 
 /**
+ * Länge des Kalenderjahres, in dem ein ISO-Datum liegt: 366 im Schaltjahr,
+ * sonst 365. Bezugsgröße überall dort, wo ein Perioden-Wert auf ein Jahr
+ * hochgerechnet wird. Eine volle Schaltjahres-Periode ergibt so den
+ * Faktor 1. Perioden über den Jahreswechsel folgen ihrem Startjahr.
+ */
+export const daysInYear = (iso: string): number => {
+  const year = Number(iso.slice(0, 4));
+
+  return daysBetween(`${year}-01-01`, `${year}-12-31`);
+};
+
+/**
  * Schnittmenge zweier Perioden.
  *
  * @returns null, wenn kein Overlap.

@@ -241,6 +241,7 @@ const advanceAdjustmentSchema = z.object({
   suggestedMonthlyAdvanceCents: z.number().int().nonnegative(),
   suggestedMonthlyAdvanceWithTariffsCents: z.number().int().nonnegative(),
   tenantBilledDays: z.number().int().positive(),
+  daysInBaseYear: z.number().int().positive().optional(),
   adjustedMonthlyAdvanceCents: z.number().int().positive().nullable(),
   adjustedAdvanceValidFrom: isoDate().nullable(),
   tariffAdjustmentBps: z.record(z.string(), z.number().int()).nullable(),

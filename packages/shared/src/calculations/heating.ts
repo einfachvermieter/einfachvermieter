@@ -13,7 +13,7 @@ import type {
 import { CalculationError, type CalcWarning } from "./diagnostics.js";
 import { consumptionBetween, isDerivedConsumption } from "./meters.js";
 import { bpsToFactor, distributeCents } from "./money.js";
-import { daysBetween, intersect } from "./period.js";
+import { daysBetween, daysInYear, intersect } from "./period.js";
 
 /**
  * Monatliche Gradtagszahlen als Promille des Jahresbedarfs (Summe 1.000 ‰).
@@ -300,6 +300,10 @@ export type Co2SplitInput = {
   totalAmountGrams: number;
   livingAreaSqm: number;
   periodDays: number;
+  /**
+   * Tage des Bezugsjahres (366 im Schaltjahr). Ohne Angabe 365.
+   */
+  daysInYear?: number;
 };
 
 export type Co2SplitResult = {
@@ -326,7 +330,7 @@ export const calculateCo2Split = (input: Co2SplitInput): Co2SplitResult => {
   const emissionsKgPerSqmYear =
     Math.round(
       (input.totalAmountGrams / 1000 / input.livingAreaSqm) *
-        (365 / input.periodDays) *
+        ((input.daysInYear ?? 365) / input.periodDays) *
         10,
     ) / 10;
 
@@ -548,6 +552,7 @@ const computeHotWaterSplit = (
   distributablePotCents: number,
   totalLivingAreaSqm: number,
   periodDays: number,
+  daysInBaseYear: number,
   warnings: CalcWarning[],
 ): HotWaterSplitMeta | undefined => {
   if (!hotWater) {
@@ -602,7 +607,7 @@ const computeHotWaterSplit = (
       hotWaterHeatKwh:
         HOT_WATER_FLAT_RATE_KWH_PER_SQM_YEAR *
         totalLivingAreaSqm *
-        (periodDays / 365),
+        (periodDays / daysInBaseYear),
     };
     warnings.push({ code: "hotWaterFlatRateFallback" });
   } else {
@@ -754,6 +759,7 @@ const heatingAreaFor = (unit: UnitInfo): number =>
  */
 const computeCo2Deduction = (
   co2: HeatingCalculationInput["co2"],
+  daysInBaseYear: number,
   warnings: CalcWarning[],
 ): {
   co2Detail: Co2SplitResult | undefined;
@@ -769,7 +775,7 @@ const computeCo2Deduction = (
   }
 
   if (co2.totalAmountGrams > 0 && co2.livingAreaSqm > 0 && co2.periodDays > 0) {
-    const co2Detail = calculateCo2Split(co2);
+    const co2Detail = calculateCo2Split({ ...co2, daysInYear: daysInBaseYear });
     return {
       co2Detail,
       landlordCo2DeductionCents: co2Detail.landlordDeductionCents,
@@ -1149,8 +1155,10 @@ export const calculateHeating = (
   const warnings: CalcWarning[] = [];
 
   // CO2KostAufG-Vermieteranteil vorab abziehen; verteilt wird der Netto-Topf.
+  const yearDays = daysInYear(periodStart);
   const { co2Detail, landlordCo2DeductionCents } = computeCo2Deduction(
     input.co2,
+    yearDays,
     warnings,
   );
 
@@ -1164,6 +1172,7 @@ export const calculateHeating = (
     distributablePotCents,
     units.reduce((acc, u) => acc + u.areaSqm, 0),
     units[0]?.periodDays ?? 0,
+    yearDays,
     warnings,
   );
 

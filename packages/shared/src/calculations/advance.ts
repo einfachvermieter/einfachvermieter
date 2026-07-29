@@ -4,7 +4,7 @@
  */
 
 import type { Period } from "../types/index.js";
-import { addDaysIso, daysBetween, intersect } from "./period.js";
+import { addDaysIso, daysBetween, daysInYear, intersect } from "./period.js";
 
 /**
  * Pseudo-Kostenart-ID für die zusammengefasste Heizkosten-Zeile im
@@ -35,19 +35,21 @@ const roundToFullEuroCents = (cents: number): number => {
 /**
  * Vorschlag für die monatliche NK-Vorauszahlung in Cent.
  *
- * Gesamtkosten der Abrechnungsperiode auf ein volles Jahr (365 Tage)
- * hochrechnen, durch 12 teilen, kaufmännisch auf volle Euro runden.
- * Mindestens 1 €.
+ * Gesamtkosten der Abrechnungsperiode auf ein volles Jahr hochrechnen,
+ * durch 12 teilen, kaufmännisch auf volle Euro runden. Mindestens 1 €.
+ * `daysInBaseYear` ist im Schaltjahr 366, damit eine volle Periode
+ * unverändert bleibt.
  */
 export const suggestNextMonthlyAdvanceCents = (
   totalCostsCents: number,
   periodDays: number,
+  daysInBaseYear = 365,
 ): number => {
   if (periodDays <= 0) {
     return 100;
   }
 
-  const annualizedCents = (totalCostsCents * 365) / periodDays;
+  const annualizedCents = (totalCostsCents * daysInBaseYear) / periodDays;
   const monthlyCents = annualizedCents / 12;
 
   return roundToFullEuroCents(monthlyCents);
@@ -214,20 +216,26 @@ const unionPeriodDays = (items: TariffInferenceItem[]): number => {
 
 /**
  * Aufs Jahr gerechnete Pauschal-Items eines Buckets:
- * `Summe amountCents x 365 / |Vereinigung der Item-Tage|`. Items mit
+ * `Summe amountCents x Jahrestage / |Vereinigung der Item-Tage|`. Items mit
  * derselben Periode summieren ihre Beträge, ohne dass die Tage
- * doppelt gezählt werden.
+ * doppelt gezählt werden. Bezugsjahr ist das des frühesten Items.
  */
 const annualizeBucketCents = (items: TariffInferenceItem[]): number => {
   if (items.length === 0) {
     return 0;
   }
   let totalAmountCents = 0;
+  let earliestStart = items[0]?.periodStart ?? "";
   for (const item of items) {
     totalAmountCents += item.amountCents;
+    if (item.periodStart < earliestStart) {
+      earliestStart = item.periodStart;
+    }
   }
   const coveredDays = unionPeriodDays(items);
-  return coveredDays > 0 ? (totalAmountCents * 365) / coveredDays : 0;
+  return coveredDays > 0
+    ? (totalAmountCents * daysInYear(earliestStart)) / coveredDays
+    : 0;
 };
 
 /**
@@ -439,6 +447,7 @@ export const suggestNextMonthlyAdvanceCentsWithTariffs = (
   linesByCostTypeId: Record<string, number>,
   periodDays: number,
   tariffAdjustmentBps: Record<string, number> | null,
+  daysInBaseYear = 365,
 ): number => {
   if (periodDays <= 0) {
     return 100;
@@ -452,7 +461,7 @@ export const suggestNextMonthlyAdvanceCentsWithTariffs = (
     adjustedTotalCents += amountCents * (1 + bps / 10_000);
   }
 
-  const annualizedCents = (adjustedTotalCents * 365) / periodDays;
+  const annualizedCents = (adjustedTotalCents * daysInBaseYear) / periodDays;
   const monthlyCents = annualizedCents / 12;
 
   return roundToFullEuroCents(monthlyCents);
