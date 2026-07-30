@@ -1,4 +1,4 @@
-import { messageKey } from "@einfachvermieter/i18n";
+import { messageKey, type TranslateFn } from "@einfachvermieter/i18n";
 import { z } from "zod";
 import type { MeasurementUnit } from "./common.js";
 import { ISO_DATE_REGEX, isoDate, measurementUnits } from "./common.js";
@@ -512,62 +512,55 @@ export const meterFormSchema = z
   );
 
 /**
- * Auto-generiert ein Label aus Medium, Rolle und Raum/Bereich. Wird
- * serverseitig ebenfalls angewendet (Single source of truth), hier aber
- * auch in Formular-Defaults nutzbar.
+ * Auto-generiert ein Label aus Medium, Rolle und Raum/Bereich.
+ * Wird serverseitig ebenfalls angewendet, hier aber auch in
+ * Formular-Defaults nutzbar.
  */
-const meterTypeLabel: Record<MeterType, string> = {
-  // biome-ignore-start lint/style/useNamingConvention: domain bedingte keys
-  electricity: "Strom",
-  water_cold: "Kaltwasser",
-  water_hot: "Warmwasser",
-  gas: "Gas",
-  heat_meter: "Wärmemengenzähler",
-  heat_cost_allocator: "Heizkostenverteiler",
-  // biome-ignore-end lint/style/useNamingConvention: domain bedingte keys
-};
-
-const meterRoleLabel: Record<MeterRole, string> = {
-  main: "Hauptzähler",
-  unit: "Wohnungszähler",
-  sub: "Unterzähler",
-  common: "Allgemeinzähler",
-  // biome-ignore lint/style/useNamingConvention: domain bedingter key
-  virtual_difference: "Differenzzähler",
-};
-
-export const buildMeterLabel = (input: {
-  type: MeterType;
-  role: MeterRole;
-  room: string | null;
-  radiator?: string | null;
-}): string => {
+export const buildMeterLabel = (
+  input: {
+    type: MeterType;
+    role: MeterRole;
+    room: string | null;
+    radiator?: string | null;
+  },
+  translate: TranslateFn,
+): string => {
   const parts: string[] = [];
+
   if (input.type === "heat_meter") {
-    parts.push(meterTypeLabel.heat_meter);
+    parts.push(translate("meters.types.heat_meter"));
   } else if (input.type === "heat_cost_allocator") {
-    parts.push(meterTypeLabel.heat_cost_allocator);
+    parts.push(translate("meters.types.heat_cost_allocator"));
     if (input.radiator) {
       parts.push(input.radiator);
     }
   } else {
-    parts.push(meterTypeLabel[input.type]);
-    parts.push(meterRoleLabel[input.role]);
+    parts.push(translate(`meters.types.${input.type}`));
+    parts.push(translate(`meters.roles.${input.role}`));
   }
+
   if (input.room) {
     parts.push(input.room);
   }
+
   return parts.join(" ");
 };
 
-export const meterFormToDto = (values: MeterFormValues): MeterCreateDto => {
+export const meterFormToDto = (
+  values: MeterFormValues,
+  translate: TranslateFn,
+): MeterCreateDto => {
   const isHkv = values.type === "heat_cost_allocator";
-  const label = buildMeterLabel({
-    type: values.type,
-    role: values.role,
-    room: values.room === "" ? null : values.room,
-    radiator: isHkv && values.radiator !== "" ? values.radiator : null,
-  });
+  const label = buildMeterLabel(
+    {
+      type: values.type,
+      role: values.role,
+      room: values.room === "" ? null : values.room,
+      radiator: isHkv && values.radiator !== "" ? values.radiator : null,
+    },
+    translate,
+  );
+
   const isGas = values.type === "gas";
   const blank = (s: string) => (s === "" ? null : s);
   const meterValidUntil = blank(values.validUntil);

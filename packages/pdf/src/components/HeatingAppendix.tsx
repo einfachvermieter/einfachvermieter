@@ -187,7 +187,7 @@ const EnergyAndCo2Table = ({
               >
                 <Text>
                   {renderSuperscripts(
-                    `${formatNumber(co2.emissionsKgPerSqmYear, 1)} kg/m²a`,
+                    `${formatNumber(co2.emissionsKgPerSqmYear, 1)}\u00A0kg/m²a`,
                   )}
                 </Text>
               </View>
@@ -241,7 +241,7 @@ const EnergyAndCo2Table = ({
               <View
                 style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
               >
-                <Text>{`${formatNumber(100 - co2.landlordSharePercent, 0)} % / ${formatNumber(co2.landlordSharePercent, 0)} %`}</Text>
+                <Text>{`${formatNumber(100 - co2.landlordSharePercent, 0)}\u00A0% / ${formatNumber(co2.landlordSharePercent, 0)}\u00A0%`}</Text>
               </View>
             </View>
             <View style={[styles.row, styles.rowDivider]}>
@@ -592,7 +592,7 @@ export const HeatingAppendix = ({
                 >
                   <Text>
                     {renderSuperscripts(
-                      `${formatNumber(row.hotWaterM3, 2)} m³`,
+                      `${formatNumber(row.hotWaterM3, 2)}\u00A0m³`,
                     )}
                   </Text>
                 </View>
@@ -654,7 +654,7 @@ export const HeatingAppendix = ({
                   `${formatNumber(
                     hw.perUnit.reduce((acc, u) => acc + u.hotWaterM3, 0),
                     2,
-                  )} m³`,
+                  )}\u00A0m³`,
                 )}
               </Text>
             </View>
@@ -942,7 +942,9 @@ export const HeatingAppendix = ({
                   style={[styles.cellRight, styles.cellDivider, DIST_COL_AREA]}
                 >
                   <Text>
-                    {renderSuperscripts(`${formatNumber(row.areaSqm, 2)} m²`)}
+                    {renderSuperscripts(
+                      `${formatNumber(row.areaSqm, 2)}\u00A0m²`,
+                    )}
                   </Text>
                 </View>
                 <View
@@ -1009,7 +1011,7 @@ export const HeatingAppendix = ({
               ]}
             >
               <Text>
-                {renderSuperscripts(`${formatNumber(totalArea, 2)} m²`)}
+                {renderSuperscripts(`${formatNumber(totalArea, 2)}\u00A0m²`)}
               </Text>
             </View>
             <View

@@ -1,3 +1,4 @@
+import type { TranslateFn } from "@einfachvermieter/i18n";
 import {
   type CostEntry,
   type CostLineResult,
@@ -39,6 +40,11 @@ export type StatementCalculationInput = {
   }>;
   waterMeters: WaterMeterBundle[];
   /**
+   * Übersetzt Anzeige-Strings, die im Snapshot landen (Umlagebasis-
+   * Einheiten und Bemessungs-Erklärungen).
+   */
+  translate: TranslateFn;
+  /**
    * Vorab berechnetes Heizkosten-Detail.
    * Interner Modus: via calculateHeating() aus Wärmemengenzähler-Daten.
    * Externer Modus: via calculateExternalHeating() aus manuell erfassten
@@ -54,8 +60,6 @@ export type StatementCalculationInput = {
  *
  * @param hasSplit false falls extern abgerechneter Fall (kein Grund-/Verbrauchs-Split).
  * @returns null, wenn der Topf leer ist
- *
- * @todo i18n
  */
 const buildHeatingTypeLine = (args: {
   costTypeId: string;
@@ -65,6 +69,7 @@ const buildHeatingTypeLine = (args: {
   landlordAmountCents: number;
   consumptionShareBps: number;
   hasSplit: boolean;
+  translate: TranslateFn;
 }): CostLineResult | null => {
   if (args.potCents === 0) {
     return null;
@@ -72,10 +77,11 @@ const buildHeatingTypeLine = (args: {
 
   const basicShareBps = 10_000 - args.consumptionShareBps;
   const baseUnit = args.hasSplit
-    ? `${args.consumptionShareBps / 100} % Verbrauch / ${
-        basicShareBps / 100
-      } % Fläche`
-    : "Extern abgerechnet";
+    ? args.translate("costs.heatingLines.splitShares", {
+        consumption: args.consumptionShareBps / 100,
+        basic: basicShareBps / 100,
+      })
+    : args.translate("costs.heatingLines.external");
 
   return {
     costTypeId: args.costTypeId,
@@ -97,8 +103,8 @@ const buildHeatingTypeLine = (args: {
       (args.landlordAmountCents / args.potCents) * 10_000,
     ),
     notes: args.hasSplit
-      ? "Berechnung gemäß Heizkostenverordnung, Details im Anhang"
-      : "Extern abgerechnete Heizkosten, Details im Anhang",
+      ? args.translate("costs.heatingLines.noteOrdinance")
+      : args.translate("costs.heatingLines.noteExternal"),
   };
 };
 
@@ -110,6 +116,7 @@ const buildHeatingTypeLine = (args: {
 const buildHeatingLines = (
   heatingDetail: HeatingDetail,
   targetUnitId: string,
+  translate: TranslateFn,
 ): CostLineResult[] => {
   const tenantHeatingShare = heatingDetail.perUnit.find(
     (p) => p.unitId === targetUnitId,
@@ -143,12 +150,13 @@ const buildHeatingLines = (
     push(
       buildHeatingTypeLine({
         costTypeId: STATEMENT_HEATING_COST_TYPE_ID,
-        costTypeName: "Heizkosten",
+        costTypeName: translate("costs.heatingLines.combined"),
         potCents: totalHeatingCostsCents,
         tenantAmountCents: tenantHeatingShare.totalCents,
         landlordAmountCents: landlordHeatingCents,
         consumptionShareBps,
         hasSplit,
+        translate,
       }),
     );
 
@@ -165,12 +173,13 @@ const buildHeatingLines = (
   push(
     buildHeatingTypeLine({
       costTypeId: STATEMENT_HEATING_COST_TYPE_ID,
-      costTypeName: "Heizung",
+      costTypeName: translate("costs.heatingLines.heating"),
       potCents: heatingPotCents,
       tenantAmountCents: tenantHeatingShare.totalCents,
       landlordAmountCents: landlordHeatingCents,
       consumptionShareBps,
       hasSplit,
+      translate,
     }),
   );
 
@@ -181,7 +190,7 @@ const buildHeatingLines = (
   push(
     buildHeatingTypeLine({
       costTypeId: STATEMENT_HOT_WATER_COST_TYPE_ID,
-      costTypeName: "Warmwasser",
+      costTypeName: translate("costs.heatingLines.hotWater"),
       potCents: hotWaterDetail.hotWaterPotCents,
       tenantAmountCents: tenantHotWaterShare?.totalCents ?? 0,
       landlordAmountCents:
@@ -189,6 +198,7 @@ const buildHeatingLines = (
         hotWaterDetail.landlordConsumptionCostCents,
       consumptionShareBps: hotWaterDetail.consumptionShareBps,
       hasSplit: true,
+      translate,
     }),
   );
 
@@ -208,6 +218,7 @@ const buildOperatingLines = (
     targetUnitId: string;
     waterDetail: WaterDetail;
     tenantPeriod: Period;
+    translate: TranslateFn;
   },
 ): CostLineResult[] => {
   const lines: CostLineResult[] = [];
@@ -243,6 +254,7 @@ const buildOperatingLines = (
         units: ctx.units,
         targetUnitId: ctx.targetUnitId,
         waterDetail: ctx.waterDetail,
+        translate: ctx.translate,
       },
     );
 
@@ -275,6 +287,7 @@ export const calculateStatement = (
     waterMeters,
     heatingDetail,
     totalAdvancesCents,
+    translate,
   } = input;
   const consumptionPeriod = tenantPeriod ?? period;
 
@@ -295,12 +308,13 @@ export const calculateStatement = (
 
   // 2. Kostenzeilen: Heizkosten (aus HeatingDetail) + umgelegte Betriebskosten.
   const lines: CostLineResult[] = [
-    ...buildHeatingLines(heatingDetail, targetUnitId),
+    ...buildHeatingLines(heatingDetail, targetUnitId, translate),
     ...buildOperatingLines(costTypes, period, {
       units,
       targetUnitId,
       waterDetail,
       tenantPeriod: consumptionPeriod,
+      translate,
     }),
   ];
 

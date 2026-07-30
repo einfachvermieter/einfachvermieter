@@ -294,8 +294,8 @@ describe("prorationNote", () => {
     );
     // Jan 170 ‰, Feb 150 ‰, Mär 130 ‰ - die Monatsnamen kommen aus i18n,
     // hier also die Keys.
-    expect(note).toContain("common.monthsShort.jan 170");
-    expect(note).toContain("common.monthsShort.mar 130");
+    expect(note).toContain("common.monthsShort.jan\u00A0170");
+    expect(note).toContain("common.monthsShort.mar\u00A0130");
     expect(note).not.toContain("common.monthsShort.apr");
   });
 });

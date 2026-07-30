@@ -1,3 +1,4 @@
+import type { TranslateFn } from "@einfachvermieter/i18n";
 import { formatNumberLoose } from "../format.js";
 import type {
   CostEntry,
@@ -41,16 +42,18 @@ export const aggregateCostsForPeriod = (
 /**
  * Formatiert eine Personentage-Aufschlüsselung als "N Person(en) x M Tage".
  * Singular/Plural anhand der Personenanzahl.
- *
- * @todo i18n
  */
-const formatPersonProduct = (count: number, days: number): string =>
-  `${count} ${count === 1 ? "Person" : "Personen"} x ${days} Tage`;
+const formatPersonProduct = (
+  count: number,
+  days: number,
+  translate: TranslateFn,
+): string => translate("costs.baseExplain.personTimesDays", { count, days });
 
 type AllocationContext = {
   units: UnitInfo[];
   targetUnitId: string;
   waterDetail?: WaterDetail;
+  translate: TranslateFn;
 };
 
 type ResolvedAllocation = {
@@ -60,6 +63,7 @@ type ResolvedAllocation = {
   targetUnitId: string;
   targetUnit: UnitInfo;
   waterDetail?: WaterDetail;
+  translate: TranslateFn;
 };
 
 /**
@@ -73,6 +77,7 @@ const allocatePerLivingArea = ({
   units,
   targetUnitId,
   targetUnit,
+  translate,
 }: ResolvedAllocation): AllocatedLine => {
   const idx = units.findIndex((u) => u.id === targetUnitId);
   const tenantWeights = units.map((u) => u.areaSqm * u.occupiedDays);
@@ -99,11 +104,17 @@ const allocatePerLivingArea = ({
     tenantBase,
     shareBps,
     tenantAmountCents,
-    baseUnit: "m²·Tage",
+    baseUnit: translate("costs.baseUnits.areaDays"),
     landlordAmountCents,
     landlordShareBps,
-    tenantBaseExplain: `${formatNumberLoose(targetUnit.areaSqm)} m² × ${targetUnit.occupiedDays} Tage`,
-    totalBaseExplain: `${formatNumberLoose(totalAreaSqm)} m² × ${periodDays} Tage`,
+    tenantBaseExplain: translate("costs.baseExplain.areaTimesDays", {
+      area: formatNumberLoose(targetUnit.areaSqm),
+      days: targetUnit.occupiedDays,
+    }),
+    totalBaseExplain: translate("costs.baseExplain.areaTimesDays", {
+      area: formatNumberLoose(totalAreaSqm),
+      days: periodDays,
+    }),
     bemessungTotal: totalAreaSqm,
     bemessungTenant: targetUnit.areaSqm,
     bemessungUnit: "m²",
@@ -123,6 +134,7 @@ const allocatePerHeatingArea = ({
   units,
   targetUnitId,
   targetUnit,
+  translate,
 }: ResolvedAllocation): AllocatedLine => {
   const heatingArea = (u: UnitInfo) => u.heatingAreaSqm ?? u.areaSqm;
   const idx = units.findIndex((u) => u.id === targetUnitId);
@@ -150,11 +162,17 @@ const allocatePerHeatingArea = ({
     tenantBase,
     shareBps,
     tenantAmountCents,
-    baseUnit: "m²·Tage",
+    baseUnit: translate("costs.baseUnits.areaDays"),
     landlordAmountCents,
     landlordShareBps,
-    tenantBaseExplain: `${formatNumberLoose(heatingArea(targetUnit))} m² × ${targetUnit.occupiedDays} Tage`,
-    totalBaseExplain: `${formatNumberLoose(totalHeatingAreaSqm)} m² × ${periodDays} Tage`,
+    tenantBaseExplain: translate("costs.baseExplain.areaTimesDays", {
+      area: formatNumberLoose(heatingArea(targetUnit)),
+      days: targetUnit.occupiedDays,
+    }),
+    totalBaseExplain: translate("costs.baseExplain.areaTimesDays", {
+      area: formatNumberLoose(totalHeatingAreaSqm),
+      days: periodDays,
+    }),
     bemessungTotal: totalHeatingAreaSqm,
     bemessungTenant: heatingArea(targetUnit),
     bemessungUnit: "m²",
@@ -174,6 +192,7 @@ const allocatePerPerson = ({
   units,
   targetUnitId,
   targetUnit,
+  translate,
 }: ResolvedAllocation): AllocatedLine => {
   const tenantPersonDays = units.reduce((acc, u) => acc + u.personDays, 0);
   const { periodDays } = targetUnit;
@@ -203,7 +222,11 @@ const allocatePerPerson = ({
       targetUnit.occupantCount * targetUnit.occupiedDays;
 
   const tenantBaseExplain = tenantUniform
-    ? formatPersonProduct(targetUnit.occupantCount, targetUnit.occupiedDays)
+    ? formatPersonProduct(
+        targetUnit.occupantCount,
+        targetUnit.occupiedDays,
+        translate,
+      )
     : undefined;
 
   return {
@@ -214,7 +237,7 @@ const allocatePerPerson = ({
     tenantBase: targetUnit.personDays,
     shareBps,
     tenantAmountCents,
-    baseUnit: "Personentage",
+    baseUnit: translate("costs.baseUnits.personDays"),
     landlordAmountCents,
     landlordShareBps,
     tenantBaseExplain,
@@ -236,6 +259,7 @@ const allocatePerUnit = ({
   units,
   targetUnitId,
   targetUnit,
+  translate,
 }: ResolvedAllocation): AllocatedLine => {
   const idx = units.findIndex((u) => u.id === targetUnitId);
   const tenantWeights = units.map((u) => u.occupiedDays);
@@ -261,7 +285,7 @@ const allocatePerUnit = ({
     tenantBase,
     shareBps,
     tenantAmountCents,
-    baseUnit: "Wohnungstage",
+    baseUnit: translate("costs.baseUnits.unitDays"),
     landlordAmountCents,
     landlordShareBps,
     bemessungTotal: units.length,
@@ -285,6 +309,7 @@ const allocatePerConsumptionM3 = ({
   units,
   targetUnitId,
   waterDetail,
+  translate,
 }: ResolvedAllocation): AllocatedLine => {
   if (!waterDetail) {
     throw new Error(
@@ -329,7 +354,7 @@ const allocatePerConsumptionM3 = ({
     tenantBase,
     shareBps,
     tenantAmountCents,
-    baseUnit: "m³",
+    baseUnit: translate("costs.baseUnits.consumptionM3"),
     landlordAmountCents,
     landlordShareBps,
     bemessungTotal: totalBase,
@@ -346,6 +371,7 @@ const allocatePerConsumptionM3 = ({
 const allocateFixed = ({
   costTypeName,
   totalAmountCents,
+  translate,
 }: ResolvedAllocation): AllocatedLine => ({
   costTypeName,
   allocationKey: "fixed",
@@ -354,7 +380,7 @@ const allocateFixed = ({
   tenantBase: 1,
   shareBps: 10_000,
   tenantAmountCents: totalAmountCents,
-  baseUnit: "Pauschale",
+  baseUnit: translate("costs.baseUnits.flatRate"),
   landlordAmountCents: 0,
   landlordShareBps: 0,
   bemessungTotal: null,
@@ -374,7 +400,7 @@ export const allocateCost = (
   totalAmountCents: number,
   ctx: AllocationContext,
 ): AllocatedLine => {
-  const { units, targetUnitId, waterDetail } = ctx;
+  const { units, targetUnitId, waterDetail, translate } = ctx;
 
   const targetUnit = units.find((u) => u.id === targetUnitId);
   if (!targetUnit) {
@@ -388,6 +414,7 @@ export const allocateCost = (
     targetUnitId,
     targetUnit,
     waterDetail,
+    translate,
   };
 
   switch (allocationKey) {

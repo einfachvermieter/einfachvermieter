@@ -334,10 +334,10 @@ const residentMonthsPromille = (
     .filter((row) => row.calendarDays > 0)
     .map(
       (row) =>
-        `${translate(`common.monthsShort.${MONTH_KEYS[row.monthIndex]}`)} ${formatNumber(
+        `${translate(`common.monthsShort.${MONTH_KEYS[row.monthIndex]}`)}\u00A0${formatNumber(
           DEGREE_DAYS_PROMILLE_PER_MONTH[row.monthIndex] ?? 0,
           0,
-        )} ‰`,
+        )}\u00A0‰`,
     )
     .join(", ");
 

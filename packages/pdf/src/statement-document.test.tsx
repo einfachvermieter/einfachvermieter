@@ -13,6 +13,7 @@ import {
   geistTnumNormalPath,
   geistTnumSemiboldPath,
 } from "./fontPaths.js";
+import { t } from "./i18n.js";
 import {
   StatementDocument,
   type StatementDocumentProps,
@@ -132,6 +133,7 @@ const result = calculateStatement({
   ],
   heatingDetail,
   totalAdvancesCents: 150_000,
+  translate: t,
 });
 
 const meta: StatementDocumentProps["meta"] = {

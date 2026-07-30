@@ -254,7 +254,7 @@ export const HeatingCard = ({
                           {t("statements.pdf.heating.co2.emissions")}
                         </th>
                         <td className="py-2.5 text-right tabular-nums">
-                          {`${formatNumber(co2.emissionsKgPerSqmYear, 1)} kg/m²a`}
+                          {`${formatNumber(co2.emissionsKgPerSqmYear, 1)}\u00A0kg/m²a`}
                         </td>
                       </tr>
                       <tr className="border-b border-border">
@@ -304,7 +304,7 @@ export const HeatingCard = ({
                           {t("statements.pdf.heating.co2.sharePair")}
                         </th>
                         <td className="py-2.5 text-right tabular-nums">
-                          {`${formatNumber(100 - co2.landlordSharePercent, 0)} % / ${formatNumber(co2.landlordSharePercent, 0)} %`}
+                          {`${formatNumber(100 - co2.landlordSharePercent, 0)}\u00A0% / ${formatNumber(co2.landlordSharePercent, 0)}\u00A0%`}
                         </td>
                       </tr>
                       <tr className="border-b border-border">
@@ -414,7 +414,7 @@ export const HeatingCard = ({
                       {unit.unitName}
                     </td>
                     <td className="py-2.5 text-right tabular-nums">
-                      {`${formatNumber(unit.areaSqm, 2)} m²`}
+                      {`${formatNumber(unit.areaSqm, 2)}\u00A0m²`}
                     </td>
                     <td className="py-2.5 text-right tabular-nums">
                       {formatAggregatedConsumption(unit.consumptionKwh)}
@@ -457,7 +457,7 @@ export const HeatingCard = ({
                   {t("statements.pdf.heating.totalHouse")}
                 </td>
                 <td className="py-2.5 text-right tabular-nums">
-                  {`${formatNumber(totalArea, 2)} m²`}
+                  {`${formatNumber(totalArea, 2)}\u00A0m²`}
                 </td>
                 <td className="py-2.5 text-right tabular-nums">
                   {formatAggregatedConsumption(totalConsumption)}
@@ -660,7 +660,7 @@ export const HeatingCard = ({
                       </td>
                       {showHotWaterM3 ? (
                         <td className="py-2.5 text-right tabular-nums">
-                          {`${formatNumber(unit.hotWaterM3, 2)} m³`}
+                          {`${formatNumber(unit.hotWaterM3, 2)}\u00A0m³`}
                         </td>
                       ) : null}
                       {distributionValueCells(
@@ -701,7 +701,7 @@ export const HeatingCard = ({
                       {`${formatNumber(
                         hw.perUnit.reduce((acc, u) => acc + u.hotWaterM3, 0),
                         2,
-                      )} m³`}
+                      )}\u00A0m³`}
                     </td>
                   ) : null}
                   {distributionValueCells(

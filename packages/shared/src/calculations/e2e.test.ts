@@ -1,3 +1,4 @@
+import { createI18nSync, createTranslate } from "@einfachvermieter/i18n";
 import { describe, expect, it } from "vitest";
 import type {
   CostEntry,
@@ -8,6 +9,8 @@ import type {
 import { aggregateCostsForPeriod } from "./allocation.js";
 import { calculateHeating } from "./heating.js";
 import { calculateStatement, type StatementCalculationInput } from "./index.js";
+
+const translate = createTranslate(createI18nSync());
 
 /**
  * End-to-End-Szenario:
@@ -297,6 +300,7 @@ describe("End-to-End Abrechnung 2025", () => {
       waterMeters,
       heatingDetail,
       totalAdvancesCents: 0,
+      translate,
     };
   };
 
@@ -526,6 +530,7 @@ describe("End-to-End Abrechnung 2025", () => {
       waterMeters,
       heatingDetail,
       totalAdvancesCents: 0,
+      translate,
     };
     const result = calculateStatement(input);
 
@@ -645,6 +650,7 @@ describe("End-to-End Abrechnung 2025", () => {
       waterMeters: waterMetersPartial,
       heatingDetail,
       totalAdvancesCents: 0,
+      translate,
     };
 
     expect(() => calculateStatement(input)).not.toThrow();
@@ -719,6 +725,7 @@ describe("End-to-End Abrechnung 2025", () => {
       waterMeters: waterMetersLinear,
       heatingDetail: emptyHeating,
       totalAdvancesCents: 0,
+      translate,
     });
 
     // Mieter A: EG 01.01.-30.06. Sein Verbrauch (~36,1 m3) ist ~25 % des
@@ -811,6 +818,7 @@ describe("End-to-End Abrechnung 2025", () => {
       waterMeters,
       heatingDetail: emptyHeating,
       totalAdvancesCents: 0,
+      translate,
     });
 
     const tvLine = (input: StatementCalculationInput) =>

@@ -37,5 +37,5 @@ export const formatBemessung = (
   const unitText = PLURAL_BEMESSUNG_UNITS.has(unit)
     ? translate(`costs.units.${unit}`, { count: value })
     : shortBemessungUnit(unit);
-  return `${formatNumber(value, digits)} ${unitText}`;
+  return `${formatNumber(value, digits)}\u00A0${unitText}`;
 };

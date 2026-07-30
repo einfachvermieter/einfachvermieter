@@ -16,6 +16,7 @@ import {
   UnitSchema,
   UserSchema,
 } from "@einfachvermieter/db";
+import { createTranslate } from "@einfachvermieter/i18n";
 import {
   type AdvanceAdjustmentDetail,
   addDaysIso,
@@ -762,6 +763,7 @@ export class StatementsService {
         waterMeters,
         heatingDetail,
         totalAdvancesCents,
+        translate: createTranslate(getI18n()),
       });
     } catch (err) {
       throw this.toCalcHttpError(err);

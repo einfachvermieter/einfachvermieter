@@ -77,7 +77,7 @@ export const BuildingEditPage = () => {
           { label: t("ui.navigation.units"), value: building.unitsCount },
           {
             label: t("ui.units.fields.area"),
-            value: `${formatNumber(totalArea, 2)} m²`,
+            value: `${formatNumber(totalArea, 2)}\u00A0m²`,
           },
           {
             label: t("ui.navigation.tenants"),

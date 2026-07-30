@@ -93,7 +93,9 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
   const consumptionNote =
     contributions.length >= 2
       ? `${t("statements.pdf.water.calculationNote")} ${contributions
-          .map((c) => `${c.label} (${formatNumber(c.consumptionM3, 2)} m³)`)
+          .map(
+            (c) => `${c.label} (${formatNumber(c.consumptionM3, 2)}\u00A0m³)`,
+          )
           .join(", ")}`
       : undefined;
   const hasWasteWater = operatingLines.some(

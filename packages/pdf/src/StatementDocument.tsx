@@ -427,7 +427,7 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
               ? `${t("statements.pdf.water.calculationNote")} ${contributions
                   .map(
                     (c) =>
-                      `${c.label} (${formatNumber(c.consumptionM3, 2)} m³)`,
+                      `${c.label} (${formatNumber(c.consumptionM3, 2)}\u00A0m³)`,
                   )
                   .join(", ")}`
               : undefined;

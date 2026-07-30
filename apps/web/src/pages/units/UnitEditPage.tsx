@@ -133,7 +133,7 @@ export const UnitEditPage = () => {
         stats={[
           {
             label: t("ui.units.fields.area"),
-            value: `${formatNumber(unit.areaSqm, 2)} m²`,
+            value: `${formatNumber(unit.areaSqm, 2)}\u00A0m²`,
           },
           { label: t("ui.units.status.label"), value: statusLabel },
           {

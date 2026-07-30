@@ -126,7 +126,7 @@ export const UnitsOverview = () => {
       {
         accessorKey: "areaSqm",
         header: t("ui.units.fields.area"),
-        cell: ({ row }) => `${formatNumber(row.original.areaSqm, 2)} m²`,
+        cell: ({ row }) => `${formatNumber(row.original.areaSqm, 2)}\u00A0m²`,
         meta: {
           cellClassName: "text-right tabular-nums",
           headerClassName: "text-right",

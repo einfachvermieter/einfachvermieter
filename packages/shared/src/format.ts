@@ -83,14 +83,14 @@ export const formatNumberLoose = (value: number, maxDigits = 2): string =>
   });
 
 /**
- * Formatiert eine IBAN in 4er-Blöcken, getrennt durch ein
- * schmales Leerzeichen. Nur für die Anzeige.
+ * Formatiert eine IBAN in 4er-Blöcken, getrennt durch geschützte
+ * Leerzeichen (U+00A0), damit sie nie umbricht. Nur für die Anzeige.
  */
 export const formatIban = (iban: string): string =>
   iban
     .replace(/\s+/gu, "")
     .match(/.{1,4}/gu)
-    ?.join(" ") ?? "";
+    ?.join("\u00A0") ?? "";
 
 /**
  * Bytes in lesbarer Größe (B / KB / MB).

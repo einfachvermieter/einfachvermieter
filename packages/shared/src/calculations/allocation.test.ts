@@ -1,6 +1,9 @@
+import { createI18nSync, createTranslate } from "@einfachvermieter/i18n";
 import { describe, expect, it } from "vitest";
 import type { CostEntry, UnitInfo, WaterDetail } from "../types/index.js";
 import { aggregateCostsForPeriod, allocateCost } from "./allocation.js";
+
+const translate = createTranslate(createI18nSync());
 
 /**
  * Test-Periode: 365 Tage. Beide Wohnungen ganzjährig vermietet - d. h.
@@ -88,6 +91,7 @@ describe("allocateCost per_living_area", () => {
   it("verteilt nach Flächentagen (alle ganzjährig -> kein Vermieter-Anteil)", () => {
     const result = allocateCost("Gebäudereinigung", "per_living_area", 10_000, {
       units,
+      translate,
       targetUnitId: "unit-eg",
     });
     // EG: 80/200 = 40 %, 10000 x 0,4 = 4000
@@ -109,6 +113,7 @@ describe("allocateCost per_living_area", () => {
     const partialUnits = [unitEgPartial, unitOg];
     const result = allocateCost("Gebäudereinigung", "per_living_area", 10_000, {
       units: partialUnits,
+      translate,
       targetUnitId: "unit-eg",
     });
     // maxBase = (80+120) x 365 = 73000
@@ -130,6 +135,7 @@ describe("allocateCost per_heating_area", () => {
   it("fällt ohne heatingAreaSqm auf Wohnfläche zurück", () => {
     const result = allocateCost("Wartung Heizung", "per_heating_area", 10_000, {
       units,
+      translate,
       targetUnitId: "unit-eg",
     });
     // Ohne heatingAreaSqm -> fallback auf areaSqm: 80/200 = 40 %
@@ -147,6 +153,7 @@ describe("allocateCost per_heating_area", () => {
     ];
     const result = allocateCost("Wartung Heizung", "per_heating_area", 10_000, {
       units: unitsWithHeating,
+      translate,
       targetUnitId: "unit-eg",
     });
     // EG: 60/150 = 40 %
@@ -164,6 +171,7 @@ describe("allocateCost per_heating_area", () => {
     ];
     const result = allocateCost("Wartung Heizung", "per_heating_area", 10_000, {
       units: unitsPartial,
+      translate,
       targetUnitId: "unit-eg",
     });
     // maxBase = 150 x 365 = 54750
@@ -183,6 +191,7 @@ describe("allocateCost per_person", () => {
   it("verteilt nach Personentagen (alle ganzjährig -> 1/3)", () => {
     const result = allocateCost("Müll", "per_person", 3000, {
       units,
+      translate,
       targetUnitId: "unit-eg",
     });
     // EG: 365 / (365+730) = 1/3 -> 1000
@@ -200,6 +209,7 @@ describe("allocateCost per_person", () => {
     };
     const result = allocateCost("Müll", "per_person", 1000, {
       units: [unitEgFull, unitOgPartial],
+      translate,
       targetUnitId: "unit-eg",
     });
     // 365 / 597 x 1000 = 611 (gerundet). Beide Wohnungen sind voll
@@ -213,6 +223,7 @@ describe("allocateCost per_unit", () => {
   it("verteilt pro Wohnungstag (alle ganzjährig -> 50/50)", () => {
     const result = allocateCost("Schornsteinfeger", "per_unit", 10_000, {
       units,
+      translate,
       targetUnitId: "unit-eg",
     });
     expect(result.tenantAmountCents).toBe(5000);
@@ -245,6 +256,7 @@ describe("allocateCost per_consumption_m3", () => {
     };
     const result = allocateCost("Wasser", "per_consumption_m3", 10_000, {
       units,
+      translate,
       targetUnitId: "unit-eg",
       waterDetail,
     });
@@ -279,6 +291,7 @@ describe("allocateCost per_consumption_m3", () => {
     };
     const result = allocateCost("Wasser", "per_consumption_m3", 100_000, {
       units,
+      translate,
       targetUnitId: "unit-eg",
       waterDetail,
     });
@@ -292,6 +305,7 @@ describe("allocateCost per_consumption_m3", () => {
     expect(() =>
       allocateCost("Wasser", "per_consumption_m3", 10_000, {
         units,
+        translate,
         targetUnitId: "unit-eg",
       }),
     ).toThrow(/waterDetail/u);
@@ -303,6 +317,7 @@ describe("allocateCost per_consumption_kwh", () => {
     expect(() =>
       allocateCost("Allgemeinstrom", "per_consumption_kwh", 10_000, {
         units,
+        translate,
         targetUnitId: "unit-eg",
       }),
     ).toThrow(/allocationKwhNotImplemented/u);
@@ -313,6 +328,7 @@ describe("allocateCost fixed", () => {
   it("gibt vollen Betrag an Target-Tenant", () => {
     const result = allocateCost("TV/Internet", "fixed", 18_000, {
       units,
+      translate,
       targetUnitId: "unit-eg",
     });
     expect(result.tenantAmountCents).toBe(18_000);

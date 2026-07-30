@@ -83,7 +83,10 @@ export const MeterForm = ({
   };
 
   return (
-    <Form form={form} onSubmit={(values) => onSubmit(meterFormToDto(values))}>
+    <Form
+      form={form}
+      onSubmit={(values) => onSubmit(meterFormToDto(values, t))}
+    >
       <fieldset disabled={submitting} className="contents">
         <div className="space-y-5">
           <MeterBaseFields
