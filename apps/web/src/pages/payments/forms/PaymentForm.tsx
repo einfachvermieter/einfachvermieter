@@ -27,6 +27,7 @@ import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 import { Card, CardContent } from "@/components/ui/Card";
 import { FieldGroup } from "@/components/ui/Field";
+import { formatForMonth } from "@/lib/dateInput";
 import {
   tenantMonthGridQueryOptions,
   tenantSettlementsQueryOptions,
@@ -110,7 +111,7 @@ export const PaymentForm = ({
 
     const options = sorted.map((row) => ({
       value: row.forMonth,
-      label: `${formatMonthLabel(row.forMonth)} – ${t(
+      label: `${formatForMonth(row.forMonth)} – ${t(
         `ui.account.status.${monthOverallStatus(row)}`,
       )}`,
     }));
@@ -123,7 +124,7 @@ export const PaymentForm = ({
     ) {
       options.unshift({
         value: forMonth,
-        label: formatMonthLabel(forMonth),
+        label: formatForMonth(forMonth),
       });
     }
     return options;
@@ -443,11 +444,6 @@ export const PaymentForm = ({
   );
 };
 
-const formatMonthLabel = (forMonth: string): string => {
-  const [year, month] = forMonth.split("-");
-  return `${month}.${year}`;
-};
-
 const monthOverallStatus = (row: MonthGridRow): PotState["status"] => {
   const statuses: PotState["status"][] = [
     row.baseRent.status,
@@ -484,7 +480,7 @@ const ContractInfo = ({
     <Alert variant={alertVariantForStatus(status)}>
       <AlertTitle>
         {t("ui.payments.contract.headingWithStatus", {
-          month: formatMonthLabel(row.forMonth),
+          month: formatForMonth(row.forMonth),
           status: t(`ui.account.status.${status}`),
         })}
       </AlertTitle>

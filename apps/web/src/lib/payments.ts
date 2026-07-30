@@ -1,6 +1,7 @@
 import { formatDate } from "@einfachvermieter/shared";
 import { queryOptions } from "@tanstack/react-query";
 import { api } from "./api";
+import { formatForMonth } from "./dateInput";
 import { t } from "./i18n";
 
 export type {
@@ -116,7 +117,9 @@ export const paymentIdentityLabel = (
  */
 export const paymentPurposeLabel = (payment: Payment): string => {
   if (payment.forMonth) {
-    return t("ui.payments.purposeSummaryMonth", { month: payment.forMonth });
+    return t("ui.payments.purposeSummaryMonth", {
+      month: formatForMonth(payment.forMonth),
+    });
   }
   if (payment.forStatementId) {
     return t("ui.payments.purposeKinds.statement");

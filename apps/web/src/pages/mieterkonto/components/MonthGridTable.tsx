@@ -23,14 +23,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
+import { formatForMonth } from "@/lib/dateInput";
 import { t } from "@/lib/i18n";
 import type { Payment } from "@/lib/payments";
 import type { useDeleteResource } from "@/lib/useDeleteResource";
-
-const monthLabel = (forMonth: string): string => {
-  const [year, month] = forMonth.split("-");
-  return `${month}/${year}`;
-};
 
 /**
  * Jahres-Summe je Kategorie: netto über alle Monate addiert (eine Überzahlung
@@ -322,7 +318,7 @@ export const MonthGridTable = ({
                           )}
                         </TableCell>
                         <TableCell className="px-4 py-3 align-top font-medium tabular-nums">
-                          {monthLabel(row.forMonth)}
+                          {formatForMonth(row.forMonth)}
                         </TableCell>
                         <PotIstSollCell pot={row.baseRent} />
                         <PotIstSollCell pot={row.advance} />

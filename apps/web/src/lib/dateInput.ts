@@ -55,6 +55,12 @@ export const formatIsoMonthForDisplay = (iso: string): string => {
   return isValid(parsed) ? format(parsed, DE_MONTH_DISPLAY_FORMAT) : "";
 };
 
+/**
+ * Mietmonat einer Zahlung („YYYY-MM") als „MM.JJJJ"
+ */
+export const formatForMonth = (forMonth: string): string =>
+  formatIsoMonthForDisplay(`${forMonth}-01`);
+
 export const parseDisplayDateToIso = (input: string): string | null => {
   const trimmed = input.trim();
   if (!trimmed) {
