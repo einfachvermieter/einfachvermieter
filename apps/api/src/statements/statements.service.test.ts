@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { prorateExternalHeatingEntry } from "./statements.service.js";
+import {
+  nextStatementNumber,
+  prorateExternalHeatingEntry,
+} from "./statements.service.js";
 
 const entryBase = {
   unitId: "unit-1",
@@ -59,5 +62,34 @@ describe("prorateExternalHeatingEntry", () => {
     expect(result.baseCostCents).toBeNull();
     expect(result.consumptionCostCents).toBeNull();
     expect(result.totalCents).toBe(49_589);
+  });
+});
+
+describe("nextStatementNumber", () => {
+  it("gibt einer eigenständigen Abrechnung die nächste freie Jahresnummer", () => {
+    expect(nextStatementNumber(3, null)).toEqual({
+      sequenceNumber: 4,
+      revisionNumber: 1,
+    });
+  });
+
+  it("behält bei einer Korrektur die Nummer und zählt die Revision hoch", () => {
+    expect(
+      nextStatementNumber(7, { sequenceNumber: 3, revisionNumber: 1 }),
+    ).toEqual({ sequenceNumber: 3, revisionNumber: 2 });
+  });
+
+  it("zählt die Revision auch in einer Kette weiter", () => {
+    const zweite = nextStatementNumber(7, {
+      sequenceNumber: 3,
+      revisionNumber: 2,
+    });
+
+    expect(zweite).toEqual({ sequenceNumber: 3, revisionNumber: 3 });
+  });
+
+  it("füllt Lücken nicht auf, damit keine Nummer zweimal vergeben wird", () => {
+    // Nummer 2 gehört einer stornierten Abrechnung und bleibt belegt.
+    expect(nextStatementNumber(4, null).sequenceNumber).toBe(5);
   });
 });

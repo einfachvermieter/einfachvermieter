@@ -232,6 +232,37 @@ const heatingTenantShareOf = (
 };
 
 /**
+ * Laufende Nummer und Revision einer zu finalisierenden Abrechnung.
+ *
+ * Eine Korrektur ist dasselbe Dokument in neuer Fassung: sie behält die
+ * Nummer der ersetzten Abrechnung und zählt nur die Revision hoch
+ * (NK-2025-0001-01 -> NK-2025-0001-02).
+ * Weitere Abrechnungen bekommen eigene Nummern, stornierte Nummern
+ * werden nicht mehr neu vergeben.
+ *
+ * @param superseded Die ersetzte, finalisierte Abrechnung; null bei einer
+ *   eigenständigen Abrechnung.
+ */
+export const nextStatementNumber = (
+  maxSequenceNumber: number,
+  superseded: {
+    sequenceNumber: number | null;
+    revisionNumber: number | null;
+  } | null,
+): { sequenceNumber: number; revisionNumber: number } => {
+  const nextFree = maxSequenceNumber + 1;
+
+  if (!superseded) {
+    return { sequenceNumber: nextFree, revisionNumber: 1 };
+  }
+
+  return {
+    sequenceNumber: superseded.sequenceNumber ?? nextFree,
+    revisionNumber: (superseded.revisionNumber ?? 1) + 1,
+  };
+};
+
+/**
  * Kürzt eine externe Heizkosten-Position auf die Abrechnungsperiode. Bei
  * `prorationMethod === "degree_days"` folgt der Verbrauchskostenanteil
  * (§ 9b HeizkostenV) der Gradtagstabelle, Grundkosten und unklassifizierter
@@ -1928,11 +1959,13 @@ export class StatementsService {
         (acc, seqRow) => Math.max(acc, seqRow.sequenceNumber ?? 0),
         0,
       );
-      const sequenceNumber = maxSeq + 1;
 
-      // Korrekturkette: ersetzt diese Abrechnung eine frühere, wird die alte
-      // auf `superseded` gesetzt und die Revisionsnummer hochgezählt.
-      let revisionNumber = 1;
+      // Korrekturkette: die ersetzte Abrechnung wechselt auf `superseded`,
+      // ihre Nummer erbt die Korrektur (siehe `nextStatementNumber`).
+      let replaced: {
+        sequenceNumber: number | null;
+        revisionNumber: number | null;
+      } | null = null;
       if (row.supersedesStatementId) {
         const superseded = await em.findOne(OperatingCostStatementSchema, {
           id: row.supersedesStatementId,
@@ -1942,9 +1975,17 @@ export class StatementsService {
             status: "superseded",
             updatedAt: new Date().toISOString(),
           });
-          revisionNumber = (superseded.revisionNumber ?? 1) + 1;
+          replaced = {
+            sequenceNumber: superseded.sequenceNumber,
+            revisionNumber: superseded.revisionNumber,
+          };
         }
       }
+
+      const { sequenceNumber, revisionNumber } = nextStatementNumber(
+        maxSeq,
+        replaced,
+      );
 
       em.assign(row, {
         status: "finalized",
