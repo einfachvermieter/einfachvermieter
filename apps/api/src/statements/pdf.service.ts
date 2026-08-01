@@ -82,26 +82,30 @@ export class PdfService {
   }
 
   /**
-   * Liefert das StatementResult für die PDF: bei finalisierten Abrechnungen
-   * aus dem persistierten Snapshot (strikt geparst), sonst live berechnet.
+   * Liefert das StatementResult für die PDF: nur Entwürfe werden live
+   * berechnet. Sobald eine Abrechnung finalisiert war, kommen die Zahlen aus
+   * dem persistierten Snapshot (strikt geparst) - auch nach Storno oder
+   * Ersetzung durch eine Korrektur. Diese Dokumente sind beim Mieter und
+   * dürfen sich nicht mehr ändern, wenn später Zahlungen oder Rechnungen
+   * nachgetragen werden.
    */
   private async resolveResult(
     statement: StatementRow,
   ): Promise<StatementResult> {
-    if (statement.status === "finalized") {
-      if (!statement.snapshotData) {
-        throw new NotFoundException(
-          `Finalized statement ${statement.id} has no snapshot`,
-        );
-      }
-
-      // `safeParse` würde stille Defaults zulassen. Wir wollen einen Fehler,
-      // wenn der Snapshot strukturell nicht stimmt, damit der Endpoint einen
-      // 500 zurückgibt statt ein kaputtes PDF zu rendern.
-      return statementResultSchema.parse(statement.snapshotData);
+    if (statement.status === "draft") {
+      return await this.statementsService.calculateForStatement(statement);
     }
 
-    return await this.statementsService.calculateForStatement(statement);
+    if (!statement.snapshotData) {
+      throw new NotFoundException(
+        `Statement ${statement.id} (${statement.status}) has no snapshot`,
+      );
+    }
+
+    // `safeParse` würde stille Defaults zulassen. Wir wollen einen Fehler,
+    // wenn der Snapshot strukturell nicht stimmt, damit der Endpoint einen
+    // 500 zurückgibt statt ein kaputtes PDF zu rendern.
+    return statementResultSchema.parse(statement.snapshotData);
   }
 
   /**
