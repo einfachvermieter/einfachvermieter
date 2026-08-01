@@ -16,9 +16,10 @@ import { OccupancyAppendix } from "./components/OccupancyAppendix.js";
 import { PaymentsAppendix } from "./components/PaymentsAppendix.js";
 import { StatementMetaTable } from "./components/StatementMetaTable.js";
 import { SummaryBlock } from "./components/SummaryBlock.js";
+
 import { TaxableLaborAppendix } from "./components/TaxableLaborAppendix.js";
 import { t } from "./i18n.js";
-import { styles } from "./styles.js";
+import { HEADING_PRESENCE_AHEAD, styles } from "./styles.js";
 
 export type StatementDocumentProps = {
   result: StatementResult;
@@ -465,8 +466,11 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
         })()}
 
         {payments && payments.length > 0 ? (
-          <View wrap={false}>
-            <Text style={styles.appendixSubheading}>
+          <>
+            <Text
+              style={styles.appendixSubheading}
+              minPresenceAhead={HEADING_PRESENCE_AHEAD}
+            >
               {t("statements.pdf.appendixPayments")}
             </Text>
             <PaymentsAppendix
@@ -474,30 +478,36 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
               period={period}
               tenantPeriod={tenantPeriod}
             />
-          </View>
+          </>
         ) : null}
 
         {result.occupancyDetail &&
         lines.some((l) => l.allocationKey === "per_person") ? (
-          <View wrap={false}>
-            <Text style={styles.appendixSubheading}>
+          <>
+            <Text
+              style={styles.appendixSubheading}
+              minPresenceAhead={HEADING_PRESENCE_AHEAD}
+            >
               {t("statements.pdf.appendixOccupancy")}
             </Text>
             <OccupancyAppendix
               detail={result.occupancyDetail}
               targetUnitId={result.unitId}
             />
-          </View>
+          </>
         ) : null}
 
         {result.taxableLaborCosts &&
         result.taxableLaborCosts.byCategory.length > 0 ? (
-          <View wrap={false}>
-            <Text style={styles.appendixSubheading}>
+          <>
+            <Text
+              style={styles.appendixSubheading}
+              minPresenceAhead={HEADING_PRESENCE_AHEAD}
+            >
               {t("statements.pdf.appendixTaxableLabor")}
             </Text>
             <TaxableLaborAppendix detail={result.taxableLaborCosts} />
-          </View>
+          </>
         ) : null}
 
         <PageFooter statementReference={statementReference} />

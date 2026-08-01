@@ -2,6 +2,7 @@ import { formatEur, type TaxableLaborCosts } from "@einfachvermieter/shared";
 import { Text, View } from "@react-pdf/renderer";
 import { t } from "../i18n.js";
 import { styles } from "../styles.js";
+import { Table } from "./Table.js";
 
 type Props = {
   detail: TaxableLaborCosts;
@@ -35,51 +36,46 @@ export const TaxableLaborAppendix = ({ detail }: Props) => {
         {t("statements.pdf.taxableLabor.intro")}
       </Text>
       {detail.byCategory.map((group) => (
-        <View key={group.category} wrap={false}>
-          <Text style={styles.sectionHeading}>
-            {categoryTitle(group.category)}
-          </Text>
-          <View style={styles.table}>
-            <View style={styles.rowHeader}>
+        <Table
+          key={group.category}
+          heading={categoryTitle(group.category)}
+          head={
+            <>
               <View style={[styles.cellLeft, COL_POSITION]}>
                 <Text>{t("statements.pdf.taxableLabor.position")}</Text>
               </View>
               <View style={[styles.cellRight, styles.cellDivider, COL_AMOUNT]}>
                 <Text>{t("statements.pdf.taxableLabor.tenantAmount")}</Text>
               </View>
+            </>
+          }
+        >
+          {group.lines.map((line) => (
+            <View key={line.costTypeId} style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeft, COL_POSITION]}>
+                <Text>{line.costTypeName}</Text>
+              </View>
+              <View style={[styles.cellRight, styles.cellDivider, COL_AMOUNT]}>
+                <Text>{formatEur(line.tenantAmountCents)}</Text>
+              </View>
             </View>
-            {group.lines.map((line) => (
-              <View
-                key={line.costTypeId}
-                style={[styles.row, styles.rowDivider]}
-              >
-                <View style={[styles.cellLeft, COL_POSITION]}>
-                  <Text>{line.costTypeName}</Text>
-                </View>
-                <View
-                  style={[styles.cellRight, styles.cellDivider, COL_AMOUNT]}
-                >
-                  <Text>{formatEur(line.tenantAmountCents)}</Text>
-                </View>
-              </View>
-            ))}
-            <View style={[styles.row, styles.rowDividerStrong]}>
-              <View style={[styles.cellLeft, styles.bold, COL_POSITION]}>
-                <Text>{t("statements.pdf.taxableLabor.subtotal")}</Text>
-              </View>
-              <View
-                style={[
-                  styles.cellRight,
-                  styles.cellDivider,
-                  styles.bold,
-                  COL_AMOUNT,
-                ]}
-              >
-                <Text>{formatEur(group.tenantTotalCents)}</Text>
-              </View>
+          ))}
+          <View style={[styles.row, styles.rowDividerStrong]}>
+            <View style={[styles.cellLeft, styles.bold, COL_POSITION]}>
+              <Text>{t("statements.pdf.taxableLabor.subtotal")}</Text>
+            </View>
+            <View
+              style={[
+                styles.cellRight,
+                styles.cellDivider,
+                styles.bold,
+                COL_AMOUNT,
+              ]}
+            >
+              <Text>{formatEur(group.tenantTotalCents)}</Text>
             </View>
           </View>
-        </View>
+        </Table>
       ))}
       <Text style={styles.footnote}>
         {t("statements.pdf.taxableLabor.disclaimer")}

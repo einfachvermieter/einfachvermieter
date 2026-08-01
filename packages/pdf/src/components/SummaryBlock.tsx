@@ -2,6 +2,7 @@ import { type CostLineResult, formatEur } from "@einfachvermieter/shared";
 import { Text, View } from "@react-pdf/renderer";
 import { t } from "../i18n.js";
 import { styles } from "../styles.js";
+import { Table } from "./Table.js";
 
 type Props = {
   lines: CostLineResult[];
@@ -76,7 +77,7 @@ export const SummaryBlock = ({
   ];
 
   return (
-    <View style={styles.tablePlain}>
+    <Table plain={true}>
       {rows.map((row, idx) => {
         const hasDivider = row.isTotal && idx > 0;
         return (
@@ -108,6 +109,6 @@ export const SummaryBlock = ({
           </View>
         );
       })}
-    </View>
+    </Table>
   );
 };

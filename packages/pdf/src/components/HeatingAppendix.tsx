@@ -21,6 +21,7 @@ import { calcWarningKey, formatCalcWarning } from "../calcWarnings.js";
 import { t } from "../i18n.js";
 import { styles } from "../styles.js";
 import { renderSuperscripts, toSuperscript } from "../superscript.js";
+import { Table } from "./Table.js";
 
 type Props = {
   detail: HeatingDetail;
@@ -149,127 +150,114 @@ const EnergyAndCo2Table = ({
     : "";
 
   return (
-    <View>
-      <Text style={styles.sectionHeading}>
-        {co2
+    <Table
+      heading={
+        co2
           ? t("statements.pdf.heating.co2.title")
-          : t("statements.pdf.heating.energySource")}
-      </Text>
-      <View style={styles.table}>
-        {fuelType ? (
-          <View style={styles.row}>
+          : t("statements.pdf.heating.energySource")
+      }
+    >
+      {fuelType ? (
+        <View style={styles.row}>
+          <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+            <Text>{t("statements.pdf.heating.energySource")}</Text>
+          </View>
+          <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
+            <Text>{t(`ui.heating.fuelTypes.${fuelType}`)}</Text>
+          </View>
+        </View>
+      ) : null}
+      {co2 ? (
+        <>
+          <View style={[styles.row, styles.rowDivider]}>
             <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-              <Text>{t("statements.pdf.heating.energySource")}</Text>
+              <Text>{t("statements.pdf.heating.co2.totalCost")}</Text>
             </View>
             <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-              <Text>{t(`ui.heating.fuelTypes.${fuelType}`)}</Text>
+              <Text>{formatEur(co2.totalCostCents)}</Text>
             </View>
           </View>
-        ) : null}
-        {co2 ? (
-          <>
-            <View style={[styles.row, styles.rowDivider]}>
-              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-                <Text>{t("statements.pdf.heating.co2.totalCost")}</Text>
-              </View>
-              <View
-                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
-              >
-                <Text>{formatEur(co2.totalCostCents)}</Text>
-              </View>
+          <View style={[styles.row, styles.rowDivider]}>
+            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+              <Text>{t("statements.pdf.heating.co2.emissions")}</Text>
             </View>
+            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
+              <Text>
+                {renderSuperscripts(
+                  `${formatNumber(co2.emissionsKgPerSqmYear, 1)}\u00A0kg/m²a`,
+                )}
+              </Text>
+            </View>
+          </View>
+          <View style={[styles.row, styles.rowDivider]}>
+            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+              <Text>{t("statements.pdf.heating.co2.amount")}</Text>
+            </View>
+            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
+              <Text>
+                {t("statements.pdf.heating.co2.amountValue", {
+                  value: formatNumber(co2.totalAmountGrams / 1000, 0),
+                })}
+              </Text>
+            </View>
+          </View>
+          {co2.livingAreaSqm === undefined ? null : (
             <View style={[styles.row, styles.rowDivider]}>
               <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-                <Text>{t("statements.pdf.heating.co2.emissions")}</Text>
+                <Text>{t("statements.pdf.heating.co2.areaBasis")}</Text>
               </View>
               <View
                 style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
               >
                 <Text>
                   {renderSuperscripts(
-                    `${formatNumber(co2.emissionsKgPerSqmYear, 1)}\u00A0kg/m²a`,
+                    t("statements.pdf.heating.co2.areaBasisValue", {
+                      value: formatNumber(co2.livingAreaSqm, 0),
+                    }),
                   )}
                 </Text>
               </View>
             </View>
+          )}
+          <View style={[styles.row, styles.rowDivider]}>
+            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+              <Text>{t("statements.pdf.heating.co2.tier")}</Text>
+            </View>
+            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
+              <Text>{renderSuperscripts(co2TierText)}</Text>
+            </View>
+          </View>
+          <View style={[styles.row, styles.rowDivider]}>
+            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+              <Text>{t("statements.pdf.heating.co2.sharePair")}</Text>
+            </View>
+            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
+              <Text>{`${formatNumber(100 - co2.landlordSharePercent, 0)}\u00A0% / ${formatNumber(co2.landlordSharePercent, 0)}\u00A0%`}</Text>
+            </View>
+          </View>
+          <View style={[styles.row, styles.rowDivider]}>
+            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+              <Text>{t("statements.pdf.heating.co2.landlordDeduction")}</Text>
+            </View>
+            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
+              <Text>{formatEur(co2.landlordDeductionCents)}</Text>
+            </View>
+          </View>
+          {tenantCo2Cents === null ? null : (
             <View style={[styles.row, styles.rowDivider]}>
               <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-                <Text>{t("statements.pdf.heating.co2.amount")}</Text>
+                <Text>{t("statements.pdf.heating.co2.tenantShare")}</Text>
               </View>
               <View
                 style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
               >
-                <Text>
-                  {t("statements.pdf.heating.co2.amountValue", {
-                    value: formatNumber(co2.totalAmountGrams / 1000, 0),
-                  })}
-                </Text>
+                <Text>{formatEur(tenantCo2Cents)}</Text>
               </View>
             </View>
-            {co2.livingAreaSqm === undefined ? null : (
-              <View style={[styles.row, styles.rowDivider]}>
-                <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-                  <Text>{t("statements.pdf.heating.co2.areaBasis")}</Text>
-                </View>
-                <View
-                  style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
-                >
-                  <Text>
-                    {renderSuperscripts(
-                      t("statements.pdf.heating.co2.areaBasisValue", {
-                        value: formatNumber(co2.livingAreaSqm, 0),
-                      }),
-                    )}
-                  </Text>
-                </View>
-              </View>
-            )}
-            <View style={[styles.row, styles.rowDivider]}>
-              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-                <Text>{t("statements.pdf.heating.co2.tier")}</Text>
-              </View>
-              <View
-                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
-              >
-                <Text>{renderSuperscripts(co2TierText)}</Text>
-              </View>
-            </View>
-            <View style={[styles.row, styles.rowDivider]}>
-              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-                <Text>{t("statements.pdf.heating.co2.sharePair")}</Text>
-              </View>
-              <View
-                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
-              >
-                <Text>{`${formatNumber(100 - co2.landlordSharePercent, 0)}\u00A0% / ${formatNumber(co2.landlordSharePercent, 0)}\u00A0%`}</Text>
-              </View>
-            </View>
-            <View style={[styles.row, styles.rowDivider]}>
-              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-                <Text>{t("statements.pdf.heating.co2.landlordDeduction")}</Text>
-              </View>
-              <View
-                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
-              >
-                <Text>{formatEur(co2.landlordDeductionCents)}</Text>
-              </View>
-            </View>
-            {tenantCo2Cents === null ? null : (
-              <View style={[styles.row, styles.rowDivider]}>
-                <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-                  <Text>{t("statements.pdf.heating.co2.tenantShare")}</Text>
-                </View>
-                <View
-                  style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
-                >
-                  <Text>{formatEur(tenantCo2Cents)}</Text>
-                </View>
-              </View>
-            )}
-          </>
-        ) : null}
-      </View>
-    </View>
+          )}
+        </>
+      ) : null}
+    </Table>
   );
 };
 
@@ -385,12 +373,10 @@ export const HeatingAppendix = ({
   // die Abzugszeile schließt die Lücke zum verteilten Netto-Topf (= Summe).
   const breakdownTable =
     detail.costBreakdown && detail.costBreakdown.length > 0 ? (
-      <View>
-        <Text style={styles.sectionHeading}>
-          {t("statements.pdf.heating.breakdown.title")}
-        </Text>
-        <View style={styles.table}>
-          <View style={styles.rowHeader}>
+      <Table
+        heading={t("statements.pdf.heating.breakdown.title")}
+        head={
+          <>
             <View style={[styles.cellLeft, BREAKDOWN_COL_LABEL]}>
               <Text>{t("statements.pdf.heating.breakdown.position")}</Text>
             </View>
@@ -403,51 +389,52 @@ export const HeatingAppendix = ({
             >
               <Text>{t("statements.pdf.heating.breakdown.amount")}</Text>
             </View>
+          </>
+        }
+      >
+        {detail.costBreakdown.map((row) => (
+          <View key={row.label} style={[styles.row, styles.rowDivider]}>
+            <View style={[styles.cellLeft, BREAKDOWN_COL_LABEL]}>
+              <Text>{row.label}</Text>
+            </View>
+            <View
+              style={[
+                styles.cellRight,
+                styles.cellDivider,
+                BREAKDOWN_COL_AMOUNT,
+              ]}
+            >
+              <Text>{formatEur(row.amountCents)}</Text>
+            </View>
           </View>
-          {detail.costBreakdown.map((row) => (
-            <View key={row.label} style={[styles.row, styles.rowDivider]}>
-              <View style={[styles.cellLeft, BREAKDOWN_COL_LABEL]}>
-                <Text>{row.label}</Text>
-              </View>
-              <View
-                style={[
-                  styles.cellRight,
-                  styles.cellDivider,
-                  BREAKDOWN_COL_AMOUNT,
-                ]}
-              >
-                <Text>{formatEur(row.amountCents)}</Text>
-              </View>
+        ))}
+        {co2 ? (
+          <View style={[styles.row, styles.rowDivider]}>
+            <View style={[styles.cellLeft, BREAKDOWN_COL_LABEL]}>
+              <Text>
+                {t("statements.pdf.heating.breakdown.co2LandlordShare")}
+              </Text>
             </View>
-          ))}
-          {co2 ? (
-            <View style={[styles.row, styles.rowDivider]}>
-              <View style={[styles.cellLeft, BREAKDOWN_COL_LABEL]}>
-                <Text>
-                  {t("statements.pdf.heating.breakdown.co2LandlordShare")}
-                </Text>
-              </View>
-              <View
-                style={[
-                  styles.cellRight,
-                  styles.cellDivider,
-                  BREAKDOWN_COL_AMOUNT,
-                ]}
-              >
-                <Text>{formatEur(-co2.landlordDeductionCents)}</Text>
-              </View>
+            <View
+              style={[
+                styles.cellRight,
+                styles.cellDivider,
+                BREAKDOWN_COL_AMOUNT,
+              ]}
+            >
+              <Text>{formatEur(-co2.landlordDeductionCents)}</Text>
             </View>
-          ) : null}
-          <View style={[styles.row, styles.rowDividerStrong]}>
-            <View style={[styles.cellLeft, styles.bold, BREAKDOWN_COL_LABEL]}>
-              <Text>{t("statements.pdf.heating.breakdown.total")}</Text>
-            </View>
-            <View style={[styles.cellRight, styles.bold, BREAKDOWN_COL_AMOUNT]}>
-              <Text>{formatEur(detail.totalHeatingCostsCents)}</Text>
-            </View>
+          </View>
+        ) : null}
+        <View style={[styles.row, styles.rowDividerStrong]}>
+          <View style={[styles.cellLeft, styles.bold, BREAKDOWN_COL_LABEL]}>
+            <Text>{t("statements.pdf.heating.breakdown.total")}</Text>
+          </View>
+          <View style={[styles.cellRight, styles.bold, BREAKDOWN_COL_AMOUNT]}>
+            <Text>{formatEur(detail.totalHeatingCostsCents)}</Text>
           </View>
         </View>
-      </View>
+      </Table>
     ) : null;
 
   // CO2-Aufteilungstabelle (Header-Zellen in der linken Spalte).
@@ -465,10 +452,7 @@ export const HeatingAppendix = ({
   // Wohnung detailliert, übrige aggregiert.
   const hotWaterSection = hw ? (
     <View>
-      <Text style={styles.sectionHeading}>
-        {t("statements.pdf.heating.hotWater.title")}
-      </Text>
-      <View style={styles.table}>
+      <Table heading={t("statements.pdf.heating.hotWater.title")}>
         {hotWaterFactRows(hw).map((row, index) => (
           <View
             key={row.key}
@@ -482,57 +466,67 @@ export const HeatingAppendix = ({
             </View>
           </View>
         ))}
-      </View>
-      <View style={styles.table}>
-        <View style={styles.rowHeader}>
-          <View style={[styles.cellLeft, wwUnitCol]}>
-            <Text>{t("statements.pdf.heating.unit")}</Text>
-          </View>
-          {showHotWaterM3 ? (
-            <View style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}>
-              <Text>{t("statements.pdf.heating.hotWater.consumptionM3")}</Text>
+      </Table>
+      <Table
+        head={
+          <>
+            <View style={[styles.cellLeft, wwUnitCol]}>
+              <Text>{t("statements.pdf.heating.unit")}</Text>
             </View>
-          ) : null}
-          {wwMerged ? (
-            <View style={[styles.cellRight, styles.cellDivider, DIST_COL_HALF]}>
-              <Text>
-                {t("statements.pdf.heating.mergedAreaHeader")}
-                {footnoteMarkers(wwIndices)}
-              </Text>
-            </View>
-          ) : (
-            <>
+            {showHotWaterM3 ? (
               <View
                 style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
               >
                 <Text>
-                  {t("statements.pdf.heating.consumptionShareHeader", {
-                    percent: formatNumber(hotWaterConsumptionPct, 0),
-                  })}
+                  {t("statements.pdf.heating.hotWater.consumptionM3")}
                 </Text>
               </View>
+            ) : null}
+            {wwMerged ? (
               <View
-                style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+                style={[styles.cellRight, styles.cellDivider, DIST_COL_HALF]}
               >
                 <Text>
-                  {t("statements.pdf.heating.basicShareHeader", {
-                    percent: formatNumber(hotWaterBasicPct, 0),
-                  })}
-                </Text>
-              </View>
-              <View
-                style={[styles.cellRight, styles.cellDivider, DIST_COL_TOTAL]}
-              >
-                <Text>
-                  {t("statements.pdf.heating.total")}
+                  {t("statements.pdf.heating.mergedAreaHeader")}
                   {footnoteMarkers(wwIndices)}
                 </Text>
               </View>
-            </>
-          )}
-        </View>
+            ) : (
+              <>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+                >
+                  <Text>
+                    {t("statements.pdf.heating.consumptionShareHeader", {
+                      percent: formatNumber(hotWaterConsumptionPct, 0),
+                    })}
+                  </Text>
+                </View>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+                >
+                  <Text>
+                    {t("statements.pdf.heating.basicShareHeader", {
+                      percent: formatNumber(hotWaterBasicPct, 0),
+                    })}
+                  </Text>
+                </View>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, DIST_COL_TOTAL]}
+                >
+                  <Text>
+                    {t("statements.pdf.heating.total")}
+                    {footnoteMarkers(wwIndices)}
+                  </Text>
+                </View>
+              </>
+            )}
+          </>
+        }
+      >
         {(() => {
           const target = hw.perUnit.find((u) => u.unitId === targetUnitId);
+
           const others = hw.perUnit.filter((u) => u.unitId !== targetUnitId);
           type HwRow = {
             key: string;
@@ -667,7 +661,7 @@ export const HeatingAppendix = ({
             { boldAll: true, mergedCol: DIST_COL_HALF },
           )}
         </View>
-      </View>
+      </Table>
       {wwFootnotes.map((footnote) => (
         <Text key={footnote.key} style={styles.footnote}>
           {renderSuperscripts(
@@ -677,6 +671,10 @@ export const HeatingAppendix = ({
       ))}
     </View>
   ) : null;
+
+  const perMeterHeading = isHkv
+    ? t("statements.pdf.heating.perMeterHeadingHkv")
+    : t("statements.pdf.heating.perMeterHeading");
 
   return (
     <View>
@@ -695,38 +693,46 @@ export const HeatingAppendix = ({
         </View>
       )}
 
-      <Text style={styles.sectionHeading}>
-        {isHkv
-          ? t("statements.pdf.heating.perMeterHeadingHkv")
-          : t("statements.pdf.heating.perMeterHeading")}
-      </Text>
       {perMeter.length === 0 ? (
-        <Text style={styles.paragraph}>
-          {t("statements.pdf.heating.perMeterEmpty")}
-        </Text>
+        <View wrap={false}>
+          <Text style={styles.sectionHeading}>{perMeterHeading}</Text>
+          <Text style={styles.paragraph}>
+            {t("statements.pdf.heating.perMeterEmpty")}
+          </Text>
+        </View>
       ) : (
-        <View style={styles.table}>
-          <View style={styles.rowHeader}>
-            <View style={[styles.cellLeft, METER_COL_NAME]}>
-              <Text>{t("statements.pdf.heating.perMeterMeter")}</Text>
-            </View>
-            <View style={[styles.cellLeft, styles.cellDivider, METER_COL_UNIT]}>
-              <Text>{t("statements.pdf.heating.perMeterSerial")}</Text>
-            </View>
-            <View style={[styles.cellRight, styles.cellDivider, METER_COL_NUM]}>
-              <Text>{t("statements.pdf.heating.perMeterDelta")}</Text>
-            </View>
-            {isHkv ? (
+        <Table
+          heading={perMeterHeading}
+          head={
+            <>
+              <View style={[styles.cellLeft, METER_COL_NAME]}>
+                <Text>{t("statements.pdf.heating.perMeterMeter")}</Text>
+              </View>
+              <View
+                style={[styles.cellLeft, styles.cellDivider, METER_COL_UNIT]}
+              >
+                <Text>{t("statements.pdf.heating.perMeterSerial")}</Text>
+              </View>
               <View
                 style={[styles.cellRight, styles.cellDivider, METER_COL_NUM]}
               >
-                <Text>{t("statements.pdf.heating.perMeterKTotal")}</Text>
+                <Text>{t("statements.pdf.heating.perMeterDelta")}</Text>
               </View>
-            ) : null}
-            <View style={[styles.cellRight, styles.cellDivider, METER_COL_NUM]}>
-              <Text>{t("statements.pdf.heating.perMeterWeighted")}</Text>
-            </View>
-          </View>
+              {isHkv ? (
+                <View
+                  style={[styles.cellRight, styles.cellDivider, METER_COL_NUM]}
+                >
+                  <Text>{t("statements.pdf.heating.perMeterKTotal")}</Text>
+                </View>
+              ) : null}
+              <View
+                style={[styles.cellRight, styles.cellDivider, METER_COL_NUM]}
+              >
+                <Text>{t("statements.pdf.heating.perMeterWeighted")}</Text>
+              </View>
+            </>
+          }
+        >
           {perMeter.map((row) => (
             <View key={row.meterId} style={[styles.row, styles.rowDivider]}>
               <View style={[styles.cellLeft, METER_COL_NAME]}>
@@ -784,7 +790,7 @@ export const HeatingAppendix = ({
               </View>
             </View>
           ))}
-        </View>
+        </Table>
       )}
       {hasDerivedMeter ? (
         <Text style={styles.footnote}>
@@ -792,16 +798,10 @@ export const HeatingAppendix = ({
         </Text>
       ) : null}
 
-      {/* Verteilung pro Wohnung, Heading + Header + Zeilen zusammen,
-          damit react-pdf den Block nicht zwischen Heading und Tabelle
-          umbricht. Bei üblicher Wohnungsanzahl (2-10) passt das auf eine
-          Seite. */}
-      <View wrap={false}>
-        <Text style={styles.sectionHeading}>
-          {t("statements.pdf.heating.distributionPerUnit")}
-        </Text>
-        <View style={styles.table}>
-          <View style={styles.rowHeader}>
+      <Table
+        heading={t("statements.pdf.heating.distributionPerUnit")}
+        head={
+          <>
             <View style={[styles.cellLeft, DIST_COL_UNIT]}>
               <Text>{t("statements.pdf.heating.unit")}</Text>
             </View>
@@ -861,210 +861,210 @@ export const HeatingAppendix = ({
                 </View>
               </>
             )}
-          </View>
-          {(() => {
-            // Hybrid-Ansicht: Mieter-eigene Wohnung detailliert, alle
-            // anderen anonym aggregiert (Datenschutz)
-            const target = detail.perUnit.find(
-              (u) => u.unitId === targetUnitId,
-            );
+          </>
+        }
+      >
+        {(() => {
+          // Hybrid-Ansicht: Mieter-eigene Wohnung detailliert, alle
 
-            const others = detail.perUnit.filter(
-              (u) => u.unitId !== targetUnitId,
-            );
+          // anderen anonym aggregiert (Datenschutz)
+          const target = detail.perUnit.find((u) => u.unitId === targetUnitId);
 
-            type DistRow = {
-              key: string;
-              label: string;
-              isTarget: boolean;
-              areaSqm: number;
-              consumptionKwh: number;
-              consumptionCostCents: number;
-              basicCostCents: number;
-              totalCents: number;
-            };
+          const others = detail.perUnit.filter(
+            (u) => u.unitId !== targetUnitId,
+          );
 
-            const rows: DistRow[] = [];
+          type DistRow = {
+            key: string;
+            label: string;
+            isTarget: boolean;
+            areaSqm: number;
+            consumptionKwh: number;
+            consumptionCostCents: number;
+            basicCostCents: number;
+            totalCents: number;
+          };
 
-            if (target) {
-              rows.push({
-                key: target.unitId,
-                label: t("statements.pdf.heating.targetUnitLabel", {
-                  unit: target.unitName,
-                }),
-                isTarget: true,
-                areaSqm: target.areaSqm,
-                consumptionKwh: target.consumptionKwh,
-                consumptionCostCents: target.consumptionCostCents,
-                basicCostCents: target.basicCostCents,
-                totalCents: target.totalCents,
-              });
-            }
+          const rows: DistRow[] = [];
 
-            if (others.length > 0) {
-              // Bei genau einer anderen Wohnung wird deren Name gezeigt.
-              // DSGVO ist hier wirkungslos, weil der Mieter ohnehin weiß, wer
-              // nebenan wohnt; Ab zwei weiteren Wohnungen wird anonym
-              // aggregiert.
-              rows.push({
-                key: "other-units",
-                isTarget: false,
-                label:
-                  others.length === 1 && others[0]
-                    ? others[0].unitName
-                    : t("statements.pdf.heating.otherUnitsPlural", {
-                        count: others.length,
-                      }),
-                areaSqm: others.reduce((acc, u) => acc + u.areaSqm, 0),
-                consumptionKwh: others.reduce(
-                  (acc, u) => acc + u.consumptionKwh,
-                  0,
-                ),
-                consumptionCostCents: others.reduce(
-                  (acc, u) => acc + u.consumptionCostCents,
-                  0,
-                ),
-                basicCostCents: others.reduce(
-                  (acc, u) => acc + u.basicCostCents,
-                  0,
-                ),
-                totalCents: others.reduce((acc, u) => acc + u.totalCents, 0),
-              });
-            }
-            return rows.map((row) => (
-              <View key={row.key} style={[styles.row, styles.rowDivider]}>
-                <View style={[styles.cellLeft, DIST_COL_UNIT]}>
-                  <Text style={row.isTarget ? styles.bold : undefined}>
-                    {row.label}
-                  </Text>
-                </View>
-                <View
-                  style={[styles.cellRight, styles.cellDivider, DIST_COL_AREA]}
-                >
-                  <Text>
-                    {renderSuperscripts(
-                      `${formatNumber(row.areaSqm, 2)}\u00A0m²`,
-                    )}
-                  </Text>
-                </View>
-                <View
-                  style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
-                >
-                  <Text>{formatAggregatedConsumption(row.consumptionKwh)}</Text>
-                </View>
-                {distributionValueCells(
-                  row.consumptionCostCents,
-                  row.basicCostCents,
-                  row.totalCents,
-                  heatingMerged,
-                  { boldTotal: row.isTarget },
-                )}
+          if (target) {
+            rows.push({
+              key: target.unitId,
+              label: t("statements.pdf.heating.targetUnitLabel", {
+                unit: target.unitName,
+              }),
+              isTarget: true,
+              areaSqm: target.areaSqm,
+              consumptionKwh: target.consumptionKwh,
+              consumptionCostCents: target.consumptionCostCents,
+              basicCostCents: target.basicCostCents,
+              totalCents: target.totalCents,
+            });
+          }
+
+          if (others.length > 0) {
+            // Bei genau einer anderen Wohnung wird deren Name gezeigt.
+            // DSGVO ist hier wirkungslos, weil der Mieter ohnehin weiß, wer
+            // nebenan wohnt; Ab zwei weiteren Wohnungen wird anonym
+            // aggregiert.
+            rows.push({
+              key: "other-units",
+              isTarget: false,
+              label:
+                others.length === 1 && others[0]
+                  ? others[0].unitName
+                  : t("statements.pdf.heating.otherUnitsPlural", {
+                      count: others.length,
+                    }),
+              areaSqm: others.reduce((acc, u) => acc + u.areaSqm, 0),
+              consumptionKwh: others.reduce(
+                (acc, u) => acc + u.consumptionKwh,
+                0,
+              ),
+              consumptionCostCents: others.reduce(
+                (acc, u) => acc + u.consumptionCostCents,
+                0,
+              ),
+              basicCostCents: others.reduce(
+                (acc, u) => acc + u.basicCostCents,
+                0,
+              ),
+              totalCents: others.reduce((acc, u) => acc + u.totalCents, 0),
+            });
+          }
+          return rows.map((row) => (
+            <View key={row.key} style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeft, DIST_COL_UNIT]}>
+                <Text style={row.isTarget ? styles.bold : undefined}>
+                  {row.label}
+                </Text>
               </View>
-            ));
-          })()}
-          {(() => {
-            // Vermieteranteil (Leerstand/Mieterwechsel), damit die Zeilen
-            // sichtbar auf "Haus gesamt" aufsummieren.
-            const landlord = landlordShareRow(detail);
-            if (!landlord) {
-              return null;
-            }
-            return (
-              <View style={[styles.row, styles.rowDivider]}>
-                <View style={[styles.cellLeft, DIST_COL_UNIT]}>
-                  <Text>{t("statements.pdf.heating.landlordShare")}</Text>
-                </View>
-                <View
-                  style={[styles.cellRight, styles.cellDivider, DIST_COL_AREA]}
-                >
-                  <Text>{t("ui.common.emptyValue")}</Text>
-                </View>
-                <View
-                  style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
-                >
-                  <Text>{t("ui.common.emptyValue")}</Text>
-                </View>
-                {distributionValueCells(
-                  landlord.consumptionCostCents,
-                  landlord.basicCostCents,
-                  landlord.totalCents,
-                  heatingMerged,
-                  {},
-                )}
+              <View
+                style={[styles.cellRight, styles.cellDivider, DIST_COL_AREA]}
+              >
+                <Text>
+                  {renderSuperscripts(
+                    `${formatNumber(row.areaSqm, 2)}\u00A0m²`,
+                  )}
+                </Text>
               </View>
-            );
-          })()}
-          {/* "Haus gesamt": Summenzeile der Verteilungstabelle (vormals
+              <View
+                style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+              >
+                <Text>{formatAggregatedConsumption(row.consumptionKwh)}</Text>
+              </View>
+              {distributionValueCells(
+                row.consumptionCostCents,
+                row.basicCostCents,
+                row.totalCents,
+                heatingMerged,
+                { boldTotal: row.isTarget },
+              )}
+            </View>
+          ));
+        })()}
+        {(() => {
+          // Vermieteranteil (Leerstand/Mieterwechsel), damit die Zeilen
+          // sichtbar auf "Haus gesamt" aufsummieren.
+          const landlord = landlordShareRow(detail);
+          if (!landlord) {
+            return null;
+          }
+          return (
+            <View style={[styles.row, styles.rowDivider]}>
+              <View style={[styles.cellLeft, DIST_COL_UNIT]}>
+                <Text>{t("statements.pdf.heating.landlordShare")}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, DIST_COL_AREA]}
+              >
+                <Text>{t("ui.common.emptyValue")}</Text>
+              </View>
+              <View
+                style={[styles.cellRight, styles.cellDivider, DIST_COL_NUM]}
+              >
+                <Text>{t("ui.common.emptyValue")}</Text>
+              </View>
+              {distributionValueCells(
+                landlord.consumptionCostCents,
+                landlord.basicCostCents,
+                landlord.totalCents,
+                heatingMerged,
+                {},
+              )}
+            </View>
+          );
+        })()}
+        {/* "Haus gesamt": Summenzeile der Verteilungstabelle (vormals
               die separate Übersichtstabelle). EUR-Werte aus den maßgeblichen
               Gesamtsummen, nicht aus den gerundeten Zeilenwerten
               aufsummiert. */}
-          <View style={[styles.row, styles.rowDividerStrong]}>
-            <View style={[styles.cellLeft, styles.bold, DIST_COL_UNIT]}>
-              <Text>{t("statements.pdf.heating.totalHouse")}</Text>
-            </View>
-            <View
-              style={[
-                styles.cellRight,
-                styles.bold,
-                styles.cellDivider,
-                DIST_COL_AREA,
-              ]}
-            >
-              <Text>
-                {renderSuperscripts(`${formatNumber(totalArea, 2)}\u00A0m²`)}
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.cellRight,
-                styles.bold,
-                styles.cellDivider,
-                DIST_COL_NUM,
-              ]}
-            >
-              <Text>{formatAggregatedConsumption(totalConsumption)}</Text>
-            </View>
-            {distributionValueCells(
-              detail.consumptionPortionCents,
-              detail.basicPortionCents,
-              heatingPotForDisplay,
-              heatingMerged,
-              { boldAll: true },
-            )}
+        <View style={[styles.row, styles.rowDividerStrong]}>
+          <View style={[styles.cellLeft, styles.bold, DIST_COL_UNIT]}>
+            <Text>{t("statements.pdf.heating.totalHouse")}</Text>
           </View>
+          <View
+            style={[
+              styles.cellRight,
+              styles.bold,
+              styles.cellDivider,
+              DIST_COL_AREA,
+            ]}
+          >
+            <Text>
+              {renderSuperscripts(`${formatNumber(totalArea, 2)}\u00A0m²`)}
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.cellRight,
+              styles.bold,
+              styles.cellDivider,
+              DIST_COL_NUM,
+            ]}
+          >
+            <Text>{formatAggregatedConsumption(totalConsumption)}</Text>
+          </View>
+          {distributionValueCells(
+            detail.consumptionPortionCents,
+            detail.basicPortionCents,
+            heatingPotForDisplay,
+            heatingMerged,
+            { boldAll: true },
+          )}
         </View>
-        {/* Nummerierte Spalten-Fußnoten in Spalten-Reihenfolge (Heizfläche,
+      </Table>
+      {/* Nummerierte Spalten-Fußnoten in Spalten-Reihenfolge (Heizfläche,
             Bewertungspunkte, Summen-Anteil, Flächen-Fallback). Danach folgen
             freischwebende Hinweise ohne Spalten-Marker. */}
-        {columnFootnotes.map((footnote) => (
-          <Text key={footnote.key} style={styles.footnote}>
-            {renderSuperscripts(
-              `${toSuperscript(footnote.index)} ${t(footnote.label.key, footnote.label.params)}`,
-            )}
-          </Text>
-        ))}
-        {/* Hinweis zur zeitanteiligen Verteilung, nur bei unterjähriger
+      {columnFootnotes.map((footnote) => (
+        <Text key={footnote.key} style={styles.footnote}>
+          {renderSuperscripts(
+            `${toSuperscript(footnote.index)} ${t(footnote.label.key, footnote.label.params)}`,
+          )}
+        </Text>
+      ))}
+      {/* Hinweis zur zeitanteiligen Verteilung, nur bei unterjähriger
             Nutzung (Mietzeit != Abrechnungsperiode) und nur bei interner
             Berechnung (im external-Modus ist `prorationMethod` undefiniert,
             dort hat der Dienstleister die Verteilung übernommen). Bei voller
             Nutzung findet keine Abgrenzung statt. Dann entfällt der Hinweis. */}
-        {detail.prorationMethod !== undefined && isPartialPeriod ? (
-          <Text style={styles.footnote}>
-            {prorationNote(detail, tenantPeriod, t)}
-          </Text>
-        ) : null}
-        {/* Hinweise aus der Berechnung, v. a. die rechtlich gebotene
+      {detail.prorationMethod !== undefined && isPartialPeriod ? (
+        <Text style={styles.footnote}>
+          {prorationNote(detail, tenantPeriod, t)}
+        </Text>
+      ) : null}
+      {/* Hinweise aus der Berechnung, v. a. die rechtlich gebotene
             Kennzeichnung geschätzter Werte und der Ersatzverfahren.
             Datenqualitäts-Hinweise an den Vermieter bleiben in der
             Web-Oberfläche. */}
-        {groupCalcWarnings((detail.warnings ?? []).filter(isTenantWarning)).map(
-          (group) => (
-            <Text key={calcWarningKey(group)} style={styles.footnote}>
-              {formatCalcWarning(group)}
-            </Text>
-          ),
-        )}
-      </View>
+      {groupCalcWarnings((detail.warnings ?? []).filter(isTenantWarning)).map(
+        (group) => (
+          <Text key={calcWarningKey(group)} style={styles.footnote}>
+            {formatCalcWarning(group)}
+          </Text>
+        ),
+      )}
 
       {hotWaterSection}
     </View>

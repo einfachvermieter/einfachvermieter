@@ -7,6 +7,7 @@ import {
 import { Text, View } from "@react-pdf/renderer";
 import { t } from "../i18n.js";
 import { styles } from "../styles.js";
+import { Table } from "./Table.js";
 
 type Props = {
   payments: PaymentSummary[];
@@ -211,7 +212,7 @@ export const PaymentsAppendix = ({ payments, period, tenantPeriod }: Props) => {
           <Text style={styles.paragraph}>
             {t("statements.pdf.payments.intro")}
           </Text>
-          <View style={styles.table}>
+          <Table>
             <MonthRowGroup
               buckets={firstRow}
               useShortNames={useShortNames}
@@ -234,7 +235,7 @@ export const PaymentsAppendix = ({ payments, period, tenantPeriod }: Props) => {
                 <Text>{formatEur(totalAdvanceCents)}</Text>
               </View>
             </View>
-          </View>
+          </Table>
         </>
       )}
     </View>

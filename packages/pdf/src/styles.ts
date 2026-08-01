@@ -31,12 +31,20 @@ const LINE_STRONG = `1.5pt solid ${BLACK}`;
 const CELL_PAD_X = 4;
 
 /**
+ * Freier Platz, der unter einer Überschrift noch auf die Seite passen
+ * muss (etwa drei Tabellenzeilen). Reicht er nicht, wandert die
+ * Überschrift zusammen mit dem Tabellenanfang auf die nächste Seite.
+ */
+export const HEADING_PRESENCE_AHEAD = 60;
+
+/**
  * Vertikales Zell-Padding bewusst asymmetrisch: Geist Font wirkt bei
  * vertikal zentrierter Ausrichtung leider optisch nicht mittig.
  * -> Deshalb entsprechend unterschiedliche Paddings oben und unten.
  */
 const CELL_PAD_TOP = 5.4;
 const CELL_PAD_BOTTOM = 4.6;
+
 /**
  * Gleiche Geist-Problematik für die rahmenlosen Zellen (erste Seite)
  */

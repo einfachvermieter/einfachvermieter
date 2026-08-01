@@ -8,6 +8,7 @@ import { Text, View } from "@react-pdf/renderer";
 import { t } from "../i18n.js";
 import { styles } from "../styles.js";
 import { renderSuperscripts } from "../superscript.js";
+import { Table } from "./Table.js";
 
 type Props = {
   /**
@@ -101,7 +102,7 @@ export const StatementMetaTable = ({
   });
 
   return (
-    <View style={styles.table}>
+    <Table>
       {rows.map((row, idx) => (
         <View
           key={row.key}
@@ -115,6 +116,6 @@ export const StatementMetaTable = ({
           </View>
         </View>
       ))}
-    </View>
+    </Table>
   );
 };

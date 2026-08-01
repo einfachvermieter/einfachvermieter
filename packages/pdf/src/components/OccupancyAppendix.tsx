@@ -7,6 +7,7 @@ import { Text, View } from "@react-pdf/renderer";
 import { t } from "../i18n.js";
 import { styles } from "../styles.js";
 import { renderSuperscripts, toSuperscript } from "../superscript.js";
+import { Table } from "./Table.js";
 
 type Props = {
   detail: OccupancyDetail;
@@ -158,21 +159,26 @@ export const OccupancyAppendix = ({ detail, targetUnitId }: Props) => {
         {t("statements.pdf.occupancy.intro")}
       </Text>
 
-      <View style={styles.table}>
-        <View style={styles.rowHeader}>
-          <View style={[styles.cellLeft, COL_LABEL]}>
-            <Text>{t("statements.pdf.occupancy.unit")}</Text>
-          </View>
-          <View style={[styles.cellLeft, styles.cellDivider, COL_RESIDENT]}>
-            <Text>{t("statements.pdf.occupancy.resident")}</Text>
-          </View>
-          <View style={[styles.cellLeft, styles.cellDivider, COL_SPAN]}>
-            <Text>{t("statements.pdf.occupancy.span")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, COL_PERSON_DAYS]}>
-            <Text>{t("statements.pdf.occupancy.personDays")}</Text>
-          </View>
-        </View>
+      <Table
+        head={
+          <>
+            <View style={[styles.cellLeft, COL_LABEL]}>
+              <Text>{t("statements.pdf.occupancy.unit")}</Text>
+            </View>
+            <View style={[styles.cellLeft, styles.cellDivider, COL_RESIDENT]}>
+              <Text>{t("statements.pdf.occupancy.resident")}</Text>
+            </View>
+            <View style={[styles.cellLeft, styles.cellDivider, COL_SPAN]}>
+              <Text>{t("statements.pdf.occupancy.span")}</Text>
+            </View>
+            <View
+              style={[styles.cellRight, styles.cellDivider, COL_PERSON_DAYS]}
+            >
+              <Text>{t("statements.pdf.occupancy.personDays")}</Text>
+            </View>
+          </>
+        }
+      >
         {rows.map((row) => (
           <View
             key={row.key}
@@ -226,7 +232,7 @@ export const OccupancyAppendix = ({ detail, targetUnitId }: Props) => {
             </View>
           </View>
         ))}
-      </View>
+      </Table>
       {hasLandlordShare ? (
         <Text style={styles.footnote}>
           {renderSuperscripts(

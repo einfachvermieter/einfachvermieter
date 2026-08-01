@@ -7,6 +7,7 @@ import { Text, View } from "@react-pdf/renderer";
 import { t } from "../i18n.js";
 import { styles } from "../styles.js";
 import { renderSuperscripts, toSuperscript } from "../superscript.js";
+import { Table } from "./Table.js";
 
 type Props = {
   lines: CostLineResult[];
@@ -119,25 +120,29 @@ export const CostsTable = ({
 
   return (
     <View>
-      <View style={styles.table}>
-        <View style={styles.rowHeader}>
-          <View style={[styles.cellLeft, COL_LABEL]}>
-            <Text>{t("statements.pdf.costTable.costTypeAllocation")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, COL_TOTAL_COSTS]}>
-            <Text>{t("statements.pdf.costTable.totalCosts")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, COL_BEMESSUNG]}>
-            <Text>{t("statements.pdf.costTable.bemessung")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, COL_TAGE]}>
-            <Text>{t("statements.pdf.costTable.tage")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, COL_AMOUNT]}>
-            <Text>{t("statements.pdf.costTable.yourCosts")}</Text>
-          </View>
-        </View>
-
+      <Table
+        head={
+          <>
+            <View style={[styles.cellLeft, COL_LABEL]}>
+              <Text>{t("statements.pdf.costTable.costTypeAllocation")}</Text>
+            </View>
+            <View
+              style={[styles.cellRight, styles.cellDivider, COL_TOTAL_COSTS]}
+            >
+              <Text>{t("statements.pdf.costTable.totalCosts")}</Text>
+            </View>
+            <View style={[styles.cellRight, styles.cellDivider, COL_BEMESSUNG]}>
+              <Text>{t("statements.pdf.costTable.bemessung")}</Text>
+            </View>
+            <View style={[styles.cellRight, styles.cellDivider, COL_TAGE]}>
+              <Text>{t("statements.pdf.costTable.tage")}</Text>
+            </View>
+            <View style={[styles.cellRight, styles.cellDivider, COL_AMOUNT]}>
+              <Text>{t("statements.pdf.costTable.yourCosts")}</Text>
+            </View>
+          </>
+        }
+      >
         {lines.map((line) => {
           const isHeating = line.allocationKey === "heating_ordinance";
           const isFixed = line.allocationKey === "fixed";
@@ -266,7 +271,7 @@ export const CostsTable = ({
             <Text>{formatEur(totalCostsCents)}</Text>
           </View>
         </View>
-      </View>
+      </Table>
       {footnotes.map((fn) => (
         <Text key={fn.marker} style={styles.footnote}>
           {renderSuperscripts(`${fn.marker} ${fn.text}`)}
