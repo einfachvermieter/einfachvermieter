@@ -35,9 +35,11 @@ export const useCrudMutation = <TData, TVariables>({
         }
       }
 
+      // `refetchType: "all"` da Detail-Queries an Router-Loader hängt.
+      // Würden sonst nicht neu geladen und veraltete Daten im Formular anzeigen.
       await Promise.all(
         invalidateKeys.map((queryKey) =>
-          queryClient.invalidateQueries({ queryKey }),
+          queryClient.invalidateQueries({ queryKey, refetchType: "all" }),
         ),
       );
 
