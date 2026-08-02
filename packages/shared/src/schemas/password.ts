@@ -62,7 +62,7 @@ export const passwordSchema = (policy: PasswordPolicy) =>
     if (value.length < policy.minLength) {
       ctx.addIssue({
         code: "custom",
-        message: messageKey("ui.password.policy.minLength", {
+        message: messageKey("ui.password.validation.minLength", {
           min: policy.minLength,
         }),
       });
@@ -76,25 +76,25 @@ export const passwordSchema = (policy: PasswordPolicy) =>
     if (policy.requireUppercase && !HAS_UPPERCASE.test(value)) {
       ctx.addIssue({
         code: "custom",
-        message: messageKey("ui.password.policy.uppercase"),
+        message: messageKey("ui.password.validation.uppercase"),
       });
     }
     if (policy.requireLowercase && !HAS_LOWERCASE.test(value)) {
       ctx.addIssue({
         code: "custom",
-        message: messageKey("ui.password.policy.lowercase"),
+        message: messageKey("ui.password.validation.lowercase"),
       });
     }
     if (policy.requireDigit && !HAS_DIGIT.test(value)) {
       ctx.addIssue({
         code: "custom",
-        message: messageKey("ui.password.policy.digit"),
+        message: messageKey("ui.password.validation.digit"),
       });
     }
     if (policy.requireSpecial && !HAS_SPECIAL.test(value)) {
       ctx.addIssue({
         code: "custom",
-        message: messageKey("ui.password.policy.special"),
+        message: messageKey("ui.password.validation.special"),
       });
     }
   });

@@ -1545,6 +1545,13 @@
         "lowercase": "Mindestens ein Kleinbuchstabe",
         "digit": "Mindestens eine Ziffer",
         "special": "Mindestens ein Sonderzeichen"
+      },
+      "validation": {
+        "minLength": "Das Passwort ist zu kurz ({min} Zeichen nötig).",
+        "uppercase": "Es fehlt ein Großbuchstabe.",
+        "lowercase": "Es fehlt ein Kleinbuchstabe.",
+        "digit": "Es fehlt eine Ziffer.",
+        "special": "Es fehlt ein Sonderzeichen."
       }
     },
     "setup": {
