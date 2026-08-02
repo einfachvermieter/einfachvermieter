@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { DestructiveConfirmDialog } from "@/components/DestructiveConfirmDialog";
 import { ApiError, api } from "./api";
 import { t } from "./i18n";
+import { AGGREGATE_QUERY_KEYS } from "./useCrudMutation";
 
 type UseDeleteResourceOptions<T extends { id: string }> = {
   endpoint: (resource: T) => string;
@@ -38,11 +39,16 @@ export const useDeleteResource = <T extends { id: string }>({
   const mutation = useMutation({
     mutationFn: (resource: T) => api.delete(endpoint(resource)),
     onSuccess: async () => {
-      await Promise.all(
-        [...invalidateKeys, ["stats"]].map((queryKey) =>
-          queryClient.invalidateQueries({ queryKey }),
+      // Die eigene Domäne sofort neu laden,
+      // die Sammel-Sichten nur als veraltet markieren.
+      await Promise.all([
+        ...invalidateKeys.map((queryKey) =>
+          queryClient.invalidateQueries({ queryKey, refetchType: "all" }),
         ),
-      );
+        ...AGGREGATE_QUERY_KEYS.map((queryKey) =>
+          queryClient.invalidateQueries({ queryKey, refetchType: "none" }),
+        ),
+      ]);
       setTarget(null);
       toast.success(t("common.deleted"));
       onDeleted?.();

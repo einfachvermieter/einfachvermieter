@@ -7,6 +7,19 @@ type SetQueryDataEntry<TData> = {
   updater: (data: TData) => unknown;
 };
 
+/**
+ * Sammel-Sichten, die von fast jeder Änderung abhängen: Abrechnungsvorschau,
+ * Mieterkonto, Abrechnungsliste und Kennzahlen. Eine geänderte Miete, ein
+ * neuer Zählerstand oder eine andere Wohnfläche wirken dort hinein, ohne dass
+ * die Aufrufstelle das jedes Mal aufzählen müsste.
+ */
+export const AGGREGATE_QUERY_KEYS = [
+  ["statement-preview"],
+  ["statements"],
+  ["accounts"],
+  ["stats"],
+] as const;
+
 export const useCrudMutation = <TData, TVariables>({
   mutationFn,
   invalidateKeys,
@@ -35,13 +48,17 @@ export const useCrudMutation = <TData, TVariables>({
         }
       }
 
-      // `refetchType: "all"` da Detail-Queries an Router-Loader hängt.
-      // Würden sonst nicht neu geladen und veraltete Daten im Formular anzeigen.
-      await Promise.all(
-        invalidateKeys.map((queryKey) =>
+      await Promise.all([
+        // `refetchType: "all"` da Detail-Queries an Router-Loader hängt.
+        // Würden sonst nicht neu geladen und veraltete Daten im Formular anzeigen.
+        ...invalidateKeys.map((queryKey) =>
           queryClient.invalidateQueries({ queryKey, refetchType: "all" }),
         ),
-      );
+        // Sammelansichten nur als veraltet markieren.
+        ...AGGREGATE_QUERY_KEYS.map((queryKey) =>
+          queryClient.invalidateQueries({ queryKey, refetchType: "none" }),
+        ),
+      ]);
 
       if (successMessage !== null) {
         toast.success(successMessage ?? t("common.saved"));
