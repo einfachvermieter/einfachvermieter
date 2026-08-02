@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { CheckboxGroupInput } from "@/components/form/CheckboxGroupInput";
 import { SelectInput } from "@/components/form/SelectInput";
+import { HelpHint } from "@/components/help/HelpHint";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { FieldGroup } from "@/components/ui/Field";
 import { t } from "../../../../lib/i18n";
@@ -83,7 +84,10 @@ export const DifferenceConfigCard = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("ui.meters.differenceConfig.title")}</CardTitle>
+        <CardTitle>
+          {t("ui.meters.differenceConfig.title")}
+          <HelpHint>{t("ui.meters.hints.differenceMeterHelp")}</HelpHint>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <FieldGroup>

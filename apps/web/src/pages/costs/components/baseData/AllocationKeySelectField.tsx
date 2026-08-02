@@ -5,6 +5,7 @@ import {
   type FieldValues,
   type Path,
 } from "react-hook-form";
+import { HelpHint } from "@/components/help/HelpHint";
 import {
   Field,
   FieldDescription,
@@ -42,6 +43,7 @@ export const AllocationKeySelectField = <T extends FieldValues>({
         <Field data-invalid={fieldState.invalid}>
           <FieldLabel htmlFor={fieldId}>
             {t("ui.common.columns.allocation")}
+            <HelpHint>{t("ui.costs.typeFields.allocationKeyHelp")}</HelpHint>
           </FieldLabel>
           <Select
             name={field.name}

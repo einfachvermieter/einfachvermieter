@@ -448,6 +448,7 @@ export const HeatingSettingsFields = ({
                 description={t(
                   "ui.heating.fields.co2CostShareEnabledDescription",
                 )}
+                labelHelp={t("ui.heating.fields.co2CostShareEnabledHelp")}
               />
             </div>
             {co2FuelMismatch ? (

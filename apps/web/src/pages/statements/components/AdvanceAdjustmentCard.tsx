@@ -358,6 +358,7 @@ export const AdvanceAdjustmentCard = ({
               control={form.control}
               name="amountInput"
               label={t("ui.statements.advanceAdjustment.amountLabel")}
+              labelHelp={t("ui.statements.advanceAdjustment.amountHelp")}
               suffix="€"
               inputMode="decimal"
             />

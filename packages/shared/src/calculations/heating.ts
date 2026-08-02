@@ -214,14 +214,16 @@ export const aggregateHeatingCosts = (
 };
 
 /**
- * 10-Stufen-Modell des CO2-Kostenaufteilungsgesetzes (CO2KostAufG § 7
- * Abs. 1) für **Wohngebäude**: je höher der spezifische CO2-Ausstoß des
- * Gebäudes (kg CO2 je qm Wohnfläche und Jahr), desto größer der Anteil der
- * CO2-Kosten, den der Vermieter trägt. Schlecht gedämmte Gebäude entlasten
- * so den Mieter. Die Schwellen sind ausdrücklich auf kg CO2/qm x **Jahr**
- * bezogen; Teil-Abrechnungszeiträume werden zuvor auf ein Jahr hochgerechnet
- * (siehe `calculateCo2Split`). Nichtwohngebäude (50/50-Pauschale) sind hier
- * bewusst nicht abgebildet.
+ * 10-Stufen-Modell des CO2-Kostenaufteilungsgesetzes für **Wohngebäude**.
+ * Die Tabelle steht in der Anlage zum CO2KostAufG, § 5 Abs. 2 ordnet den
+ * Gebäude-Ausstoß dort ein; § 7 regelt nur die Abrechnung.
+ *
+ * Je höher der spezifische CO2-Ausstoß des Gebäudes (kg CO2 je qm Wohnfläche
+ * und Jahr), desto größer der Anteil der CO2-Kosten, den der Vermieter trägt.
+ * Schlecht gedämmte Gebäude entlasten so den Mieter. Die Schwellen sind
+ * ausdrücklich auf kg CO2/qm x **Jahr** bezogen; Teil-Abrechnungszeiträume
+ * werden zuvor auf ein Jahr hochgerechnet (siehe `calculateCo2Split`).
+ * Nichtwohngebäude (50/50-Pauschale) sind hier bewusst nicht abgebildet.
  */
 const CO2_LANDLORD_SHARE_TIERS: ReadonlyArray<{
   maxExclusive: number;

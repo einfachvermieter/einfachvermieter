@@ -1,10 +1,11 @@
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 import {
   type Control,
   Controller,
   type FieldPath,
   type FieldValues,
 } from "react-hook-form";
+import { HelpHint } from "@/components/help/HelpHint";
 import { Field, FieldLabel } from "@/components/ui/Field";
 import { Switch } from "@/components/ui/Switch";
 
@@ -14,6 +15,8 @@ type SwitchInputProps<T extends FieldValues> = {
   label: string;
   /** Erklärtext unter dem Label */
   description?: string;
+  /** Ausführlichere Hilfe hinter einem Fragezeichen neben dem Label */
+  labelHelp?: ReactNode;
   disabled?: boolean;
   fieldClassName?: string;
 };
@@ -25,6 +28,7 @@ export const SwitchInput = <T extends FieldValues>({
   name,
   label,
   description,
+  labelHelp,
   disabled = false,
   fieldClassName,
 }: SwitchInputProps<T>) => {
@@ -42,7 +46,10 @@ export const SwitchInput = <T extends FieldValues>({
             disabled={disabled}
           />
           <div className="min-w-0">
-            <FieldLabel htmlFor={id}>{label}</FieldLabel>
+            <FieldLabel htmlFor={id}>
+              {label}
+              {labelHelp ? <HelpHint>{labelHelp}</HelpHint> : null}
+            </FieldLabel>
             {description ? (
               <p className="mt-0.5 text-xs text-slate-400">{description}</p>
             ) : null}

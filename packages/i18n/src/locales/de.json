@@ -560,6 +560,7 @@
       "hints": {
         "virtualNoReadings": "Für diesen Zähler werden keine Zählerstände erfasst – der Wert wird aus dem Basiszähler abzüglich der ausgewählten Zähler berechnet.",
         "differenceConfig": "Wählen Sie den Basiszähler und einen oder mehrere Zähler, die davon abgezogen werden. Es können nur Zähler derselben Art und desselben Gebäudes ausgewählt werden.",
+        "differenceMeterHelp": "Ein Differenzzähler misst nicht selbst, sondern rechnet: Basiszähler minus die ausgewählten Zähler. So erfassen Sie eine Wohnung ohne eigenen Zähler als Rest.\n\nDer Basiszähler muss die abgezogenen Zähler wirklich mitmessen, und zu jedem Ablesetermin müssen alle Stände vorliegen. Fehlt ein Stand, fällt der Rest zu groß aus und der Mieter zahlt zu viel.",
         "validUntil": "Nur ausfüllen, wenn der Zähler nicht mehr gültig ist (z. B. ausgebaut oder ersetzt). Abrechnungen berücksichtigen den Zähler nur bei Überschneidung mit dem Gültigkeitszeitraum."
       },
       "validation": {
@@ -990,6 +991,7 @@
         },
         "allocationKeyPlaceholder": "Umlageschlüssel wählen",
         "allocationKeyDescription": "Bestimmt, wie die Rechnungen dieser Kostenart auf die Mieter verteilt werden.",
+        "allocationKeyHelp": "Der Schlüssel muss zu Ihrem Mietvertrag passen. Ist dort keiner vereinbart, wird nach Wohnfläche verteilt (§ 556a Abs. 1 BGB).\n\nKosten, die von einem erfassten Verbrauch abhängen, müssen nach einem Maßstab verteilt werden, der den Verbrauch berücksichtigt. Für Heizung und Warmwasser gilt zusätzlich die HeizkostenV; diese Kostenarten stellen Sie unter Heizkosten ein.",
         "laborCostCategory": "Steuerlich begünstigt (§ 35a EStG)",
         "laborCostCategoryDescription": "Wenn gesetzt, weisen Sie bei jeder Rechnung dieser Kostenart den Lohnkostenanteil aus. Er wird in der NK-Abrechnung als Bescheinigung für den Mieter ausgewiesen.",
         "co2Tracked": "CO₂-Menge und -Kostenanteil auf den Rechnungen erfassen",
@@ -1240,6 +1242,7 @@
         "districtHeatCorrectionNote": "Bei eigenständiger gewerblicher Wärmelieferung wird die Warmwasser-Wärmemenge durch 1,15 geteilt (§ 9 Abs. 2 HeizkostenV). Das ergibt sich aus dem Energieträger Fernwärme und ist automatisch berücksichtigt.",
         "co2CostShareEnabled": "CO₂-Kosten aufteilen (CO2KostAufG)",
         "co2CostShareEnabledDescription": "Aufteilung zwischen Vermieter und Mieter nach Emissionsstufe",
+        "co2CostShareEnabledHelp": "Bei Brennstoffen mit CO₂-Preis trägt der Vermieter einen Teil der CO₂-Kosten. Wie groß der Anteil ist, hängt vom Ausstoß des Gebäudes ab: Kilogramm CO₂ je Quadratmeter Wohnfläche und Jahr, eingeordnet in die zehn Stufen der Anlage zum CO2KostAufG (§ 5).\n\nJe schlechter die Dämmung, desto größer der Vermieteranteil. Er wird vor der Aufteilung in Grund- und Verbrauchskosten aus den Heizkosten herausgerechnet und auf der Abrechnung ausgewiesen.",
         "co2FuelMismatchWarning": "Für den gewählten Energieträger {fuel} fällt kein CO₂-Preis nach CO2KostAufG an (nur fossile Brennstoffe und Fernwärme). Die CO₂-Kostenaufteilung ist hier in der Regel nicht zutreffend."
       },
       "tabs": {
@@ -1395,6 +1398,7 @@
         "adjustedLabel": "Neue Vorauszahlung ab {date}",
         "noAdjustment": "Keine Anpassung festgelegt – die Vorauszahlung bleibt unverändert.",
         "amountLabel": "Neue monatliche Vorauszahlung",
+        "amountHelp": "Nach einer Abrechnung darf die Vorauszahlung auf eine angemessene Höhe angepasst werden (§ 560 Abs. 4 BGB). Angemessen heißt: am Ergebnis der letzten Abrechnung orientiert.\n\nEin pauschaler Sicherheitszuschlag darauf ist nicht zulässig. Erwartete Preissteigerungen dürfen Sie einrechnen, wenn Sie sie belegen können. Erfassen Sie dazu die neue Rechnung, dann berücksichtigt der Vorschlag sie.",
         "amountBelowSuggestedWarning": "Der gewählte Betrag liegt unter dem Vorjahres-Vorschlag ({suggested}). Eine Senkung ist möglich, in der Regel wird die Vorauszahlung jedoch mindestens auf das auf 12 Monate hochgerechnete Vorjahres-Ist angepasst.",
         "amountCustomInfo": "Der Betrag weicht von den Standard-Vorschlägen ab (aktuell, Vorjahres-Ist auf 12 Monate hochgerechnet, mit Tarif-Erwartungen). Er muss auf konkret belegbaren Werten beruhen (Bescheid, Vertrag, Versorger-Mitteilung) – pauschale Sicherheitszuschläge sind nach BGH-Rechtsprechung unzulässig.",
         "applyCurrent": "Vertraglich beibehalten ({amount})",
