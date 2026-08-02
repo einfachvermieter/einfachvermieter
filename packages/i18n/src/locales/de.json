@@ -182,6 +182,7 @@
     "tenantHasStatements": "Mietvertrag hat Abrechnungen und kann nicht gelöscht werden",
     "residentHasTenant": "Bewohner ist noch einem Mietvertrag zugeordnet und kann nicht gelöscht werden",
     "meterVirtualReadonly": "Differenzzähler sind virtuell. Stände werden aus anderen Zählern berechnet und dürfen nicht direkt erfasst werden.",
+    "costTypeHasEntries": "Kostenart mit erfassten Rechnungen kann nicht gelöscht werden",
     "meterHasReadings": "Zähler mit erfassten Ständen kann nicht gelöscht werden",
     "meterUsedInDifference": "Zähler wird von einem Differenzzähler als Quelle verwendet und kann nicht gelöscht werden",
     "meterSerialTaken": "Die Seriennummer „{serial}“ ist bereits vergeben",

@@ -34,7 +34,6 @@ export const useDeleteResource = <T extends { id: string }>({
 }: UseDeleteResourceOptions<T>): DeleteResource<T> => {
   const queryClient = useQueryClient();
   const [target, setTarget] = useState<T | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: (resource: T) => api.delete(endpoint(resource)),
@@ -54,14 +53,16 @@ export const useDeleteResource = <T extends { id: string }>({
       onDeleted?.();
     },
     onError: (err: unknown) => {
-      setError(err instanceof ApiError ? err.message : defaultErrorMessage);
+      // Der Bestätigungsdialog schließt beim Klick auf "Löschen" (Radix
+      // AlertDialogAction), die Meldung braucht also ein eigenes Ziel -
+      // dieselbe Stelle, an der auch der Erfolg quittiert wird.
+      toast.error(err instanceof ApiError ? err.message : defaultErrorMessage);
     },
   });
 
   const deletingId = mutation.isPending ? mutation.variables?.id : undefined;
 
   const request = useCallback((resource: T) => {
-    setError(null);
     setTarget(resource);
   }, []);
 
@@ -79,23 +80,10 @@ export const useDeleteResource = <T extends { id: string }>({
       onOpenChange={(open) => {
         if (!open) {
           setTarget(null);
-          setError(null);
         }
       }}
       title={title}
-      description={
-        target ? (
-          <>
-            {describe(target)}
-            {error ? (
-              <>
-                {" "}
-                <span className="text-destructive">{error}</span>
-              </>
-            ) : null}
-          </>
-        ) : undefined
-      }
+      description={target ? describe(target) : undefined}
       confirmLabel={confirmLabel}
       onConfirm={() => {
         if (target) {

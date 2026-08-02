@@ -22,7 +22,11 @@ import {
   type FilterQuery,
   type QueryOrderMap,
 } from "@mikro-orm/core";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { assertBuildingExists } from "../common/assert-exists.js";
 import { FieldValidationException } from "../common/field-validation.exception.js";
 import { likeContains } from "../common/like-search.js";
@@ -282,6 +286,11 @@ export class CostsService {
     const costType = await this.em.findOne(CostTypeSchema, { id });
     if (!costType) {
       throw new NotFoundException(notFoundMessage("costType", id));
+    }
+
+    const item = await this.em.findOne(CostEntryItemSchema, { costTypeId: id });
+    if (item) {
+      throw new BadRequestException(getI18n().t("errors.costTypeHasEntries"));
     }
 
     this.em.remove(costType);
