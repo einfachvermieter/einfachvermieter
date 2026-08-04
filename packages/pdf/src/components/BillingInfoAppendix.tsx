@@ -1,7 +1,9 @@
 import {
+  averageUserComparison,
   billingInfoCostRows,
   billingInfoRows,
   type HeatingDetail,
+  type Period,
 } from "@einfachvermieter/shared";
 import { Text, View } from "@react-pdf/renderer";
 import { t } from "../i18n.js";
@@ -15,13 +17,30 @@ const INFO_COL_VALUE = { flex: 1 };
  * Anhang „Abrechnungsinformationen nach § 6a HeizkostenV": Energieträger
  * (bei Fernwärme mit Treibhausgasemissionen und Primärenergiefaktor des
  * Netzes), enthaltene Steuern/Abgaben und Erfassungs-/Abrechnungsentgelte
- * (soweit erfasst), Informations- und Beratungsstellen sowie der Hinweis
- * zur Streitbeilegung. Die beiden Textblöcke verlangt § 6a Abs. 5 auch
+ * (soweit erfasst), der Vergleich mit dem Durchschnittsnutzer,
+ * Informations- und Beratungsstellen sowie der Hinweis zur
+ * Streitbeilegung. Die beiden Textblöcke verlangt § 6a Abs. 5 auch
  * für nicht verbrauchsbasierte Abrechnungen.
  */
-export const BillingInfoAppendix = ({ detail }: { detail: HeatingDetail }) => {
+export const BillingInfoAppendix = ({
+  detail,
+  targetUnitId,
+  tenantPeriod,
+  statementPeriod,
+}: {
+  detail: HeatingDetail;
+  targetUnitId: string;
+  tenantPeriod: Period;
+  statementPeriod: Period;
+}) => {
   const rows = billingInfoRows(detail);
   const costRows = billingInfoCostRows(detail);
+  const comparison = averageUserComparison(
+    detail,
+    targetUnitId,
+    tenantPeriod,
+    statementPeriod,
+  );
 
   return (
     <View>
@@ -69,6 +88,39 @@ export const BillingInfoAppendix = ({ detail }: { detail: HeatingDetail }) => {
             </View>
           ))}
         </Table>
+      ) : null}
+
+      {comparison?.rows ? (
+        <>
+          <Table heading={t("statements.pdf.billingInfo.comparisonTitle")}>
+            {comparison.rows.map((row, index) => (
+              <View
+                key={row.key}
+                style={
+                  index === 0 ? styles.row : [styles.row, styles.rowDivider]
+                }
+              >
+                <View style={[styles.cellLeftHeader, INFO_COL_LABEL]}>
+                  <Text>{t(row.label.key, row.label.params)}</Text>
+                </View>
+                <View
+                  style={[styles.cellRight, styles.cellDivider, INFO_COL_VALUE]}
+                >
+                  <Text>{t(row.value.key, row.value.params)}</Text>
+                </View>
+              </View>
+            ))}
+          </Table>
+          <Text style={styles.paragraph}>
+            {t("statements.pdf.billingInfo.comparisonNote")}
+          </Text>
+        </>
+      ) : null}
+
+      {comparison?.note ? (
+        <Text style={styles.paragraph}>
+          {t(comparison.note.key, comparison.note.params)}
+        </Text>
       ) : null}
 
       <Text style={styles.appendixSubheading}>

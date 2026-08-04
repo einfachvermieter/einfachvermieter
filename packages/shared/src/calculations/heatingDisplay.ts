@@ -596,6 +596,104 @@ export const billingInfoCostRows = (
   return rows;
 };
 
+export type AverageUserComparisonRow = {
+  key: "ownConsumption" | "averageConsumption";
+  label: HeatingLabelDescriptor;
+  value: HeatingLabelDescriptor;
+};
+
+/**
+ * Vergleich mit dem Durchschnittsnutzer (§ 6a Abs. 3 Nr. 4 HeizkostenV):
+ * eigener Heizverbrauch je m2 neben dem Gebäudedurchschnitt derselben
+ * Abrechnungsperiode. Alle Werte stammen aus dem eingefrorenen
+ * `perUnit`-Snapshot, die Ableitung ist damit reproduzierbar.
+ *
+ * - `rows`: die beiden Vergleichszeilen (kWh bzw. HKV-Einheiten je m2).
+ * - `note`: Hinweis statt Vergleich, wenn der Nutzungszeitraum kürzer als
+ *   der Abrechnungszeitraum ist. Der eigene Verbrauch deckt dann nur die
+ *   Mietzeit ab und wäre gegen den Ganzjahres-Durchschnitt irreführend.
+ * - `null`: kein Vergleich möglich (externer Modus, Flächen-Fallback ohne
+ *   gemessenen Verbrauch, fehlende Flächen)
+ */
+export const averageUserComparison = (
+  detail: Pick<
+    HeatingDetail,
+    "mode" | "consumptionMethod" | "consumptionDistributionMethod" | "perUnit"
+  >,
+  targetUnitId: string,
+  tenantPeriod: Period,
+  statementPeriod: Period,
+):
+  | { rows: AverageUserComparisonRow[]; note?: undefined }
+  | { rows?: undefined; note: HeatingLabelDescriptor }
+  | null => {
+  if (
+    detail.mode === "external" ||
+    (detail.consumptionDistributionMethod ?? "consumption") === "heating_area"
+  ) {
+    return null;
+  }
+
+  const ownRow = detail.perUnit.find((row) => row.unitId === targetUnitId);
+  const totalConsumption = detail.perUnit.reduce(
+    (acc, row) => acc + row.consumptionKwh,
+    0,
+  );
+  const totalArea = detail.perUnit.reduce((acc, row) => acc + row.areaSqm, 0);
+
+  if (!ownRow || ownRow.areaSqm <= 0 || totalArea <= 0) {
+    return null;
+  }
+
+  if (
+    tenantPeriod.start !== statementPeriod.start ||
+    tenantPeriod.end !== statementPeriod.end
+  ) {
+    return {
+      note: { key: "statements.pdf.billingInfo.comparisonPartialPeriodNote" },
+    };
+  }
+
+  const isHkv = detail.consumptionMethod === "heat_cost_allocator";
+  const useValuationPoints =
+    isHkv && totalConsumption >= HEATING_VALUATION_POINTS_THRESHOLD;
+
+  let valueKey = "statements.pdf.billingInfo.comparisonValueKwh";
+  if (isHkv) {
+    valueKey = useValuationPoints
+      ? "statements.pdf.billingInfo.comparisonValuePoints"
+      : "statements.pdf.billingInfo.comparisonValueUnits";
+  }
+
+  const perSqm = (
+    consumption: number,
+    areaSqm: number,
+  ): HeatingLabelDescriptor => {
+    const raw = consumption / areaSqm;
+    return {
+      key: valueKey,
+      params: {
+        value: formatNumber(useValuationPoints ? raw / 1000 : raw, 1),
+      },
+    };
+  };
+
+  return {
+    rows: [
+      {
+        key: "ownConsumption",
+        label: { key: "statements.pdf.billingInfo.comparisonOwnLabel" },
+        value: perSqm(ownRow.consumptionKwh, ownRow.areaSqm),
+      },
+      {
+        key: "averageConsumption",
+        label: { key: "statements.pdf.billingInfo.comparisonAverageLabel" },
+        value: perSqm(totalConsumption, totalArea),
+      },
+    ],
+  };
+};
+
 /**
  * CO2KostAufG-Einstufungs-Label: Stufe des Gebäude-Ausstoßes als eine der drei
  * Bereichsformen (unterste/mittlere/oberste Stufe).

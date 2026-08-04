@@ -268,7 +268,12 @@ const StatementTabs = ({
               />
             ) : null}
             {showBillingInfo ? (
-              <BillingInfoCard detail={heatingDetail} />
+              <BillingInfoCard
+                detail={heatingDetail}
+                targetUnitId={result.unitId}
+                tenantPeriod={result.tenantPeriod}
+                statementPeriod={result.period}
+              />
             ) : null}
           </div>
         </TabsContent>

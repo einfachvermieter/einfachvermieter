@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { formatNumber } from "../format.js";
 import type { HeatingDetail } from "../types/index.js";
 import {
+  averageUserComparison,
   billingInfoCostRows,
   billingInfoRows,
   co2TenantShareCents,
@@ -356,6 +357,93 @@ describe("billingInfoCostRows", () => {
   it("zeigt jede der beiden Zeilen auch einzeln", () => {
     const rows = billingInfoCostRows({ meteringServiceCostCents: 5000 });
     expect(rows.map((row) => row.key)).toEqual(["meteringService"]);
+  });
+});
+
+describe("averageUserComparison (§ 6a Abs. 3 Nr. 4 HeizkostenV)", () => {
+  const fullPeriod = period("2025-01-01", "2025-12-31");
+
+  it("stellt eigenen Verbrauch je m² dem Gebäudedurchschnitt gegenüber", () => {
+    const result = averageUserComparison(
+      baseDetail(),
+      "a",
+      fullPeriod,
+      fullPeriod,
+    );
+    expect(result?.rows?.map((row) => row.key)).toEqual([
+      "ownConsumption",
+      "averageConsumption",
+    ]);
+    // 1000 kWh / 50 m2 = 20,0; (1000 + 800) / (50 + 30) = 22,5
+    expect(result?.rows?.[0]?.value.params?.value).toBe("20,0");
+    expect(result?.rows?.[1]?.value.params?.value).toBe("22,5");
+    expect(result?.rows?.[0]?.value.key).toBe(
+      "statements.pdf.billingInfo.comparisonValueKwh",
+    );
+  });
+
+  it("nutzt bei Heizkostenverteilern Verbrauchseinheiten je m²", () => {
+    const result = averageUserComparison(
+      baseDetail({ consumptionMethod: "heat_cost_allocator" }),
+      "a",
+      fullPeriod,
+      fullPeriod,
+    );
+    expect(result?.rows?.[0]?.value.key).toBe(
+      "statements.pdf.billingInfo.comparisonValueUnits",
+    );
+  });
+
+  it("skaliert oberhalb der Bewertungspunkte-Schwelle auf Punkte je m²", () => {
+    const detail = baseDetail({ consumptionMethod: "heat_cost_allocator" });
+    detail.perUnit = detail.perUnit.map((row, idx) => ({
+      ...row,
+      consumptionKwh: idx === 0 ? 8_000_000 : 4_000_000,
+    }));
+    const result = averageUserComparison(detail, "a", fullPeriod, fullPeriod);
+    expect(result?.rows?.[0]?.value.key).toBe(
+      "statements.pdf.billingInfo.comparisonValuePoints",
+    );
+    // 8.000.000 / 50 m² / 1000 = 160,0
+    expect(result?.rows?.[0]?.value.params?.value).toBe("160,0");
+  });
+
+  it("zeigt bei unterjähriger Nutzung einen Hinweis statt Vergleich", () => {
+    const result = averageUserComparison(
+      baseDetail(),
+      "a",
+      period("2025-01-01", "2025-06-30"),
+      fullPeriod,
+    );
+    expect(result?.rows).toBeUndefined();
+    expect(result?.note?.key).toBe(
+      "statements.pdf.billingInfo.comparisonPartialPeriodNote",
+    );
+  });
+
+  it("entfällt im externen Modus und im Flächen-Fallback", () => {
+    expect(
+      averageUserComparison(
+        baseDetail({ mode: "external" }),
+        "a",
+        fullPeriod,
+        fullPeriod,
+      ),
+    ).toBeNull();
+    expect(
+      averageUserComparison(
+        baseDetail({ consumptionDistributionMethod: "heating_area" }),
+        "a",
+        fullPeriod,
+        fullPeriod,
+      ),
+    ).toBeNull();
+  });
+
+  it("entfällt ohne eigene Wohnungszeile", () => {
+    expect(
+      averageUserComparison(baseDetail(), "unbekannt", fullPeriod, fullPeriod),
+    ).toBeNull();
   });
 });
 

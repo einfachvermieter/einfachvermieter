@@ -1,7 +1,9 @@
 import {
+  averageUserComparison,
   billingInfoCostRows,
   billingInfoRows,
   type HeatingDetail,
+  type Period,
 } from "@einfachvermieter/shared";
 import { RiInformationLine } from "@remixicon/react";
 import { SectionCard } from "../../../../components/common/SectionCard";
@@ -11,9 +13,25 @@ import { t } from "../../../../lib/i18n";
 /**
  * Web-Version des PDF-Anhangs „Abrechnungsinformationen nach § 6a HeizkostenV"
  */
-export const BillingInfoCard = ({ detail }: { detail: HeatingDetail }) => {
+export const BillingInfoCard = ({
+  detail,
+  targetUnitId,
+  tenantPeriod,
+  statementPeriod,
+}: {
+  detail: HeatingDetail;
+  targetUnitId: string;
+  tenantPeriod: Period;
+  statementPeriod: Period;
+}) => {
   const rows = billingInfoRows(detail);
   const costRows = billingInfoCostRows(detail);
+  const comparison = averageUserComparison(
+    detail,
+    targetUnitId,
+    tenantPeriod,
+    statementPeriod,
+  );
 
   return (
     <SectionCard
@@ -72,6 +90,37 @@ export const BillingInfoCard = ({ detail }: { detail: HeatingDetail }) => {
               </table>
             </div>
           </section>
+        ) : null}
+        {comparison?.rows ? (
+          <section>
+            <h3 className="mb-2.5 font-semibold text-foreground">
+              {t("statements.pdf.billingInfo.comparisonTitle")}
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <tbody>
+                  {comparison.rows.map((row) => (
+                    <tr key={row.key} className="border-b border-border">
+                      <td className="py-2.5 font-semibold text-foreground">
+                        {t(row.label.key, row.label.params)}
+                      </td>
+                      <td className="py-2.5 text-right tabular-nums">
+                        {t(row.value.key, row.value.params)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-2 text-muted-foreground">
+              {t("statements.pdf.billingInfo.comparisonNote")}
+            </p>
+          </section>
+        ) : null}
+        {comparison?.note ? (
+          <p className="text-muted-foreground">
+            {t(comparison.note.key, comparison.note.params)}
+          </p>
         ) : null}
         <section>
           <h3 className="mb-2.5 font-semibold text-foreground">

@@ -561,7 +561,12 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
           <Text style={styles.appendixHeading}>
             {t("statements.pdf.appendixBillingInfo")}
           </Text>
-          <BillingInfoAppendix detail={result.heatingDetail} />
+          <BillingInfoAppendix
+            detail={result.heatingDetail}
+            targetUnitId={result.unitId}
+            tenantPeriod={result.tenantPeriod}
+            statementPeriod={result.period}
+          />
           <PageFooter statementReference={statementReference} />
           {meta.isDraft ? <DraftWatermark /> : null}
         </Page>
