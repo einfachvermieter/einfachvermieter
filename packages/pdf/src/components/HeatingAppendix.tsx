@@ -201,24 +201,20 @@ const EnergyAndCo2Table = ({
               </Text>
             </View>
           </View>
-          {co2.livingAreaSqm === undefined ? null : (
-            <View style={[styles.row, styles.rowDivider]}>
-              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-                <Text>{t("statements.pdf.heating.co2.areaBasis")}</Text>
-              </View>
-              <View
-                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
-              >
-                <Text>
-                  {renderSuperscripts(
-                    t("statements.pdf.heating.co2.areaBasisValue", {
-                      value: formatNumber(co2.livingAreaSqm, 0),
-                    }),
-                  )}
-                </Text>
-              </View>
+          <View style={[styles.row, styles.rowDivider]}>
+            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+              <Text>{t("statements.pdf.heating.co2.areaBasis")}</Text>
             </View>
-          )}
+            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
+              <Text>
+                {renderSuperscripts(
+                  t("statements.pdf.heating.co2.areaBasisValue", {
+                    value: formatNumber(co2.livingAreaSqm, 0),
+                  }),
+                )}
+              </Text>
+            </View>
+          </View>
           <View style={[styles.row, styles.rowDivider]}>
             <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
               <Text>{t("statements.pdf.heating.co2.tier")}</Text>

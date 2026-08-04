@@ -5,7 +5,7 @@
  */
 
 import type { TranslateFn } from "@einfachvermieter/i18n";
-import { formatNumber } from "../format.js";
+import { formatEur, formatNumber } from "../format.js";
 import type { HeatingDetail, Period } from "../types/index.js";
 import {
   co2Tier,
@@ -545,6 +545,52 @@ export const billingInfoRows = (
               },
       },
     );
+  }
+
+  return rows;
+};
+
+export type BillingInfoCostRow = {
+  key: "containedTaxes" | "meteringService";
+  label: HeatingLabelDescriptor;
+  value: HeatingLabelDescriptor;
+};
+
+/**
+ * Zeilen des Blocks "Steuern, Abgaben und Entgelte" der Abrechnungs-
+ * informationen nach § 6a Abs. 3 Nr. 1b/1c HeizkostenV: in den Heizkosten
+ * enthaltene Steuern/Abgaben (soweit auf den Rechnungspositionen erfasst)
+ * und die Summe der als Erfassungs-/Abrechnungsentgelt gekennzeichneten
+ * Positionen. Leer, wenn nichts erfasst ist.
+ */
+export const billingInfoCostRows = (
+  detail: Pick<
+    HeatingDetail,
+    "containedTaxesCents" | "meteringServiceCostCents"
+  >,
+): BillingInfoCostRow[] => {
+  const rows: BillingInfoCostRow[] = [];
+
+  if (detail.containedTaxesCents !== undefined) {
+    rows.push({
+      key: "containedTaxes",
+      label: { key: "statements.pdf.billingInfo.containedTaxesLabel" },
+      value: {
+        key: "statements.pdf.billingInfo.containedTaxesValue",
+        params: { value: formatEur(detail.containedTaxesCents) },
+      },
+    });
+  }
+
+  if (detail.meteringServiceCostCents !== undefined) {
+    rows.push({
+      key: "meteringService",
+      label: { key: "statements.pdf.billingInfo.meteringServiceLabel" },
+      value: {
+        key: "statements.pdf.billingInfo.meteringServiceValue",
+        params: { value: formatEur(detail.meteringServiceCostCents) },
+      },
+    });
   }
 
   return rows;

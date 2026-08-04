@@ -56,6 +56,7 @@ const toFormValues = (costType: CostType): CostTypeFormValues => {
       : ALLOCATION_KEY_NONE,
     laborCostCategory: costType.laborCostCategory ?? LABOR_CATEGORY_NONE,
     co2Tracked: costType.co2Tracked,
+    isMeteringServiceCost: costType.isMeteringServiceCost,
   };
 };
 

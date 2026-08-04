@@ -33,6 +33,7 @@ export const CostTypeCreatePage = () => {
     defaultAllocationKey: ALLOCATION_KEY_NONE,
     laborCostCategory: LABOR_CATEGORY_NONE,
     co2Tracked: false,
+    isMeteringServiceCost: false,
   };
 
   const goBack = useGoBack("/kostenarten");

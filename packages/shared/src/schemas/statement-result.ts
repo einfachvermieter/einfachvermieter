@@ -116,7 +116,8 @@ export const heatingDetailSchema = z.object({
         consumptionRaw: z.number(),
         kTotal: z.number().nullable().optional(),
         consumptionWeighted: z.number(),
-        // Optional, damit finalisierte Snapshots ohne das Flag weiter parsen.
+        // Nur gesetzt, wenn mindestens ein Stichtagsstand nicht direkt
+        // abgelesen, sondern abgeleitet wurde.
         consumptionIsDerived: z.boolean().optional(),
       }),
     )
@@ -157,6 +158,18 @@ export const heatingDetailSchema = z.object({
       }),
     )
     .optional(),
+  /**
+   * In den Heizkosten enthaltene Steuern, Abgaben und Zölle, periodenanteilig.
+   * Fehlt, wenn keine Heiz-Position den Wert erfasst hat.
+   */
+  containedTaxesCents: z.number().int().optional(),
+  /**
+   * Entgelte für Gebrauchsüberlassung/Eichung der Erfassungsgeräte sowie
+   * Ablesung und Abrechnung (§ 6a Abs. 3 Nr. 1c HeizkostenV),
+   * periodenanteilige Summe der gekennzeichneten Heiz-Positionen.
+   * Fehlt ohne gekennzeichnete Kostenart.
+   */
+  meteringServiceCostCents: z.number().int().optional(),
   /**
    * Eingesetzter Energieträger (§ 6a HeizkostenV Pflichtangabe). Optional -
    * fehlt im externen Heizkosten-Modus, in dem kein Energieträger erfasst wird.
@@ -204,8 +217,7 @@ export const heatingDetailSchema = z.object({
       emissionsKgPerSqmYear: z.number(),
       landlordSharePercent: z.number().int().min(0).max(100),
       landlordDeductionCents: z.number().int(),
-      // Optional, damit finalisierte Snapshots ohne den Wert weiter parsen.
-      livingAreaSqm: z.number().optional(),
+      livingAreaSqm: z.number(),
     })
     .optional(),
   /**
@@ -222,7 +234,8 @@ export const heatingDetailSchema = z.object({
       hotWaterPotCents: z.number().int(),
       supplyTemperatureCelsius: z.number().optional(),
       hotWaterVolumeM3: z.number().optional(),
-      // Optional, damit finalisierte Snapshots ohne Faktor weiter parsen.
+      // Fehlt, wenn kein Korrekturfaktor nach § 9 Abs. 2 Satz 5 greift
+      // oder Q_WW gemessen wurde.
       correctionFactor: z.number().optional(),
       consumptionShareBps: z.number().int().min(0).max(10_000),
       consumptionPortionCents: z.number().int(),

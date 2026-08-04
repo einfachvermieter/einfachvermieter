@@ -174,6 +174,12 @@ export type CostEntryItemFormValues = {
    * Sichtbarkeitsregel wie `co2AmountInput`.
    */
   co2CostInput: string;
+  /**
+   * Im Gesamtbetrag enthaltene Steuern, Abgaben und Zölle als €-String
+   * (§ 6a Abs. 3 Nr. 1b HeizkostenV). Wird nur bei Heiz-Kostenarten
+   * eingeblendet; leer = nicht erfasst.
+   */
+  containedTaxesInput: string;
   periodStart: string;
   periodEnd: string;
 };
@@ -224,6 +230,12 @@ const itemSchema = z
       .refine(
         (value) => value === "" || amountRegex.test(value),
         messageKey("ui.costs.validation.co2CostFormat"),
+      ),
+    containedTaxesInput: z
+      .string()
+      .refine(
+        (value) => value === "" || amountRegex.test(value),
+        messageKey("ui.costs.validation.containedTaxesFormat"),
       ),
     periodStart: z
       .string()
@@ -286,6 +298,22 @@ const itemSchema = z
       message: messageKey("ui.costs.validation.co2CostExceedsAmount"),
       path: ["co2CostInput"],
     },
+  )
+  .refine(
+    (d) => {
+      if (d.containedTaxesInput.trim() === "") {
+        return true;
+      }
+
+      const taxes = parseEurToCents(d.containedTaxesInput);
+      const amount = parseEurToCents(d.amountInput);
+
+      return taxes <= amount;
+    },
+    {
+      message: messageKey("ui.costs.validation.containedTaxesExceedAmount"),
+      path: ["containedTaxesInput"],
+    },
   );
 
 export const costEntryFormSchema = z.object({
@@ -305,6 +333,7 @@ export type CostEntryItemSubmitValues = {
   laborCostsCents: number | null;
   co2AmountGrams: number | null;
   co2CostCents: number | null;
+  containedTaxesCents: number | null;
   periodStart: string;
   periodEnd: string;
 };
@@ -349,6 +378,10 @@ export const costEntryFormToDto = (
         item.co2CostInput.trim() === ""
           ? null
           : parseEurToCents(item.co2CostInput),
+      containedTaxesCents:
+        item.containedTaxesInput.trim() === ""
+          ? null
+          : parseEurToCents(item.containedTaxesInput),
       periodStart: item.periodStart,
       periodEnd: item.periodEnd,
     };
@@ -363,6 +396,7 @@ type CostEntryItemSource = {
   laborCostsCents?: number | null;
   co2AmountGrams?: number | null;
   co2CostCents?: number | null;
+  containedTaxesCents?: number | null;
   periodStart: string;
   periodEnd: string;
 };
@@ -405,6 +439,11 @@ export const costEntryToFormValues = (
         item.co2CostCents === null || item.co2CostCents === undefined
           ? ""
           : centsToEurInput(item.co2CostCents),
+      containedTaxesInput:
+        item.containedTaxesCents === null ||
+        item.containedTaxesCents === undefined
+          ? ""
+          : centsToEurInput(item.containedTaxesCents),
       periodStart: item.periodStart,
       periodEnd: item.periodEnd,
     };
@@ -420,6 +459,7 @@ export const emptyItem = (defaultCostTypeId = ""): CostEntryItemFormValues => ({
   laborCostsInput: "",
   co2AmountInput: "",
   co2CostInput: "",
+  containedTaxesInput: "",
   periodStart: "",
   periodEnd: "",
 });

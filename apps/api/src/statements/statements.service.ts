@@ -116,6 +116,8 @@ export type StatementListResult = {
 type HeatingPotEntry = CostEntry & {
   co2CostCents: number | null;
   co2AmountGrams: number | null;
+  containedTaxesCents: number | null;
+  isMeteringServiceCost: boolean;
 };
 
 /**
@@ -179,6 +181,8 @@ const heatingEntriesFromCostType = (
     amountCents: c.amountCents,
     co2CostCents: ct.co2Tracked ? c.co2CostCents : null,
     co2AmountGrams: ct.co2Tracked ? c.co2AmountGrams : null,
+    containedTaxesCents: c.containedTaxesCents,
+    isMeteringServiceCost: ct.isMeteringServiceCost,
     periodStart: c.periodStart,
     periodEnd: c.periodEnd,
   }));
@@ -1633,11 +1637,18 @@ export class StatementsService {
     const totalHeatingCostsCents = heatingAggregation.totalCents;
     const breakdownMap = new Map<string, number>();
 
+    // § 6a Abs. 3 Nr. 1c HeizkostenV: Summe der als Erfassungs-/
+    // Abrechnungsentgelt gekennzeichneten Positionen, periodenanteilig.
+    let meteringServiceCostCents = 0;
+
     heatingCostEntries.forEach((entry, idx) => {
       const attributedCents =
         heatingAggregation.perItemAttributedCents[idx] ?? 0;
       if (attributedCents === 0) {
         return;
+      }
+      if (entry.isMeteringServiceCost) {
+        meteringServiceCostCents += attributedCents;
       }
       breakdownMap.set(
         entry.name,
@@ -1727,6 +1738,13 @@ export class StatementsService {
         },
       });
       heatingDetail.costBreakdown = costBreakdown;
+      if (heatingAggregation.totalContainedTaxesCents > 0) {
+        heatingDetail.containedTaxesCents =
+          heatingAggregation.totalContainedTaxesCents;
+      }
+      if (meteringServiceCostCents > 0) {
+        heatingDetail.meteringServiceCostCents = meteringServiceCostCents;
+      }
       heatingDetail.fuelType = heatingSettings.fuelType;
       if (!heatingDetail.warnings) {
         heatingDetail.warnings = [];

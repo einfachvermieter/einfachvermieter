@@ -41,6 +41,11 @@ const costTypeFieldsSchema = z.object({
    * "heating"` zulässig.
    */
   co2Tracked: z.boolean().optional().default(false),
+  /**
+   * Erfassungs-/Abrechnungsentgelt (Gerätemiete, Eichung, Ablesedienst,
+   * Abrechnungsservice). Nur bei `category = "heating"` zulässig.
+   */
+  isMeteringServiceCost: z.boolean().optional().default(false),
   description: z.string().max(1000).optional().nullable(),
 });
 
@@ -65,7 +70,14 @@ export const costTypeCreateSchema = costTypeFieldsSchema
   .refine((data) => data.category === "heating" || !data.co2Tracked, {
     message: messageKey("ui.costs.validation.co2TrackedHeatingOnly"),
     path: ["co2Tracked"],
-  });
+  })
+  .refine(
+    (data) => data.category === "heating" || !data.isMeteringServiceCost,
+    {
+      message: messageKey("ui.costs.validation.meteringServiceHeatingOnly"),
+      path: ["isMeteringServiceCost"],
+    },
+  );
 export type CostTypeCreateDto = z.infer<typeof costTypeCreateSchema>;
 
 export const costTypeUpdateSchema = costTypeFieldsSchema
@@ -88,7 +100,14 @@ export const costTypeUpdateSchema = costTypeFieldsSchema
   .refine((data) => data.category === "heating" || !data.co2Tracked, {
     message: messageKey("ui.costs.validation.co2TrackedHeatingOnly"),
     path: ["co2Tracked"],
-  });
+  })
+  .refine(
+    (data) => data.category === "heating" || !data.isMeteringServiceCost,
+    {
+      message: messageKey("ui.costs.validation.meteringServiceHeatingOnly"),
+      path: ["isMeteringServiceCost"],
+    },
+  );
 export type CostTypeUpdateDto = z.infer<typeof costTypeUpdateSchema>;
 
 export const costEntryItemSchema = z
@@ -118,6 +137,11 @@ export const costEntryItemSchema = z
      * Betrag). Muss zwischen 0 und `amountCents` liegen.
      */
     co2CostCents: z.number().int().nonnegative().optional().nullable(),
+    /**
+     * Im `amountCents` enthaltene Steuern, Abgaben und Zölle in Cent.
+     * Muss zwischen 0 und `amountCents` liegen.
+     */
+    containedTaxesCents: z.number().int().nonnegative().optional().nullable(),
     periodStart: isoDate(),
     periodEnd: isoDate(),
   })
@@ -143,6 +167,16 @@ export const costEntryItemSchema = z
     {
       message: messageKey("ui.costs.validation.co2CostExceedsAmount"),
       path: ["co2CostCents"],
+    },
+  )
+  .refine(
+    (d) =>
+      d.containedTaxesCents === null ||
+      d.containedTaxesCents === undefined ||
+      d.containedTaxesCents <= d.amountCents,
+    {
+      message: messageKey("ui.costs.validation.containedTaxesExceedAmount"),
+      path: ["containedTaxesCents"],
     },
   );
 export type CostEntryItemDto = z.infer<typeof costEntryItemSchema>;

@@ -270,21 +270,19 @@ export const HeatingCard = ({
                           })}
                         </td>
                       </tr>
-                      {co2.livingAreaSqm === undefined ? null : (
-                        <tr className="border-b border-border">
-                          <th
-                            scope="row"
-                            className="py-2.5 text-left font-medium text-muted-foreground"
-                          >
-                            {t("statements.pdf.heating.co2.areaBasis")}
-                          </th>
-                          <td className="py-2.5 text-right tabular-nums">
-                            {t("statements.pdf.heating.co2.areaBasisValue", {
-                              value: formatNumber(co2.livingAreaSqm, 0),
-                            })}
-                          </td>
-                        </tr>
-                      )}
+                      <tr className="border-b border-border">
+                        <th
+                          scope="row"
+                          className="py-2.5 text-left font-medium text-muted-foreground"
+                        >
+                          {t("statements.pdf.heating.co2.areaBasis")}
+                        </th>
+                        <td className="py-2.5 text-right tabular-nums">
+                          {t("statements.pdf.heating.co2.areaBasisValue", {
+                            value: formatNumber(co2.livingAreaSqm, 0),
+                          })}
+                        </td>
+                      </tr>
                       <tr className="border-b border-border">
                         <th
                           scope="row"

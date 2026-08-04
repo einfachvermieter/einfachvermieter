@@ -117,6 +117,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
 
   // Kostenarten A
   const aCtGas = nid();
+  const aCtMeterService = nid();
   const aCtFreshWater = nid();
   const aCtWasteWater = nid();
   const aCtLandTax = nid();
@@ -133,6 +134,14 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       category: "heating",
       defaultAllocationKey: null,
       co2Tracked: true,
+    },
+    {
+      id: aCtMeterService,
+      buildingId: aBuilding,
+      name: "Ablesung & Abrechnung (Messdienst)",
+      category: "heating",
+      defaultAllocationKey: null,
+      isMeteringServiceCost: true,
     },
     {
       id: aCtFreshWater,
@@ -618,6 +627,25 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     amountCents: 218_100,
     co2AmountGrams: 3_654_000,
     co2CostCents: 20_100,
+    containedTaxesCents: 71_400,
+    periodStart: "2025-01-01",
+    periodEnd: "2025-12-31",
+    position: 0,
+  });
+
+  const aMeterServiceEntry = nid();
+  insert(schema.costEntries, {
+    id: aMeterServiceEntry,
+    invoiceDate: "2026-01-15",
+    invoiceNumber: "MD-2026-0815",
+    vendor: "Messdienst Musterstadt",
+  });
+  insert(schema.costEntryItems, {
+    id: nid(),
+    costEntryId: aMeterServiceEntry,
+    costTypeId: aCtMeterService,
+    amountCents: 19_000,
+    containedTaxesCents: 3034,
     periodStart: "2025-01-01",
     periodEnd: "2025-12-31",
     position: 0,
@@ -1229,6 +1257,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     amountCents: 312_000,
     co2AmountGrams: 7_900_000,
     co2CostCents: 43_500,
+    containedTaxesCents: 116_000,
     periodStart: "2025-01-01",
     periodEnd: "2025-12-31",
     position: 0,

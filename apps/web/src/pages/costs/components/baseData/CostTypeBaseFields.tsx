@@ -85,10 +85,15 @@ export const CostTypeBaseFields = ({
     ) {
       form.setValue("defaultAllocationKey", ALLOCATION_KEY_NONE);
     }
-    // CO2-Erfassung gibt es nur für Heizkosten, bei Wechsel auf
-    // Betriebskosten das Flag zurücksetzen
+
+    // CO2-Erfassung und Erfassungsentgelt-Kennzeichen gibt es nur für
+    // Heizkosten, bei Wechsel auf Betriebskosten die Flags zurücksetzen
     if (!isHeating && form.getValues("co2Tracked")) {
       form.setValue("co2Tracked", false);
+    }
+
+    if (!isHeating && form.getValues("isMeteringServiceCost")) {
+      form.setValue("isMeteringServiceCost", false);
     }
   }, [isHeating, form]);
 
@@ -176,6 +181,16 @@ export const CostTypeBaseFields = ({
           control={form.control}
           name="co2Tracked"
           label={t("ui.costs.typeFields.co2Tracked")}
+        />
+      ) : null}
+      {isHeating ? (
+        <SwitchInput
+          control={form.control}
+          name="isMeteringServiceCost"
+          label={t("ui.costs.typeFields.isMeteringServiceCost")}
+          description={t(
+            "ui.costs.typeFields.isMeteringServiceCostDescription",
+          )}
         />
       ) : null}
       {showCo2NoConfigHint ? (

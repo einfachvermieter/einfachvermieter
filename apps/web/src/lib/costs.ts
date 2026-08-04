@@ -33,6 +33,12 @@ export type CostType = {
    */
   co2Tracked: boolean;
 
+  /**
+   * Erfassungs-/Abrechnungsentgelt nach § 6a Abs. 3 Nr. 1c HeizkostenV
+   * (nur bei category "heating").
+   */
+  isMeteringServiceCost: boolean;
+
   updatedAt?: string;
 };
 
@@ -72,6 +78,10 @@ export type CostEntryItem = {
    * Im amountCents enthaltener CO2-Kostenanteil in Cent.
    */
   co2CostCents: number | null;
+  /**
+   * Enthaltene Steuern, Abgaben und Zölle in Cent
+   */
+  containedTaxesCents: number | null;
 };
 
 export type CostEntryDetail = CostEntry & {

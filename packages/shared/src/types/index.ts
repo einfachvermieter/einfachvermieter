@@ -486,6 +486,19 @@ export type HeatingDetail = {
     amountCents: number;
   }>;
   /**
+   * In den Heizkosten enthaltene Steuern, Abgaben und Zölle (§ 6a Abs. 3
+   * Nr. 1b HeizkostenV), periodenanteilig. Nur gesetzt, wenn mindestens
+   * eine Heiz-Position den Wert erfasst hat. Nur intern gesetzt.
+   */
+  containedTaxesCents?: number;
+  /**
+   * Entgelte für Gebrauchsüberlassung/Eichung der Erfassungsgeräte sowie
+   * Ablesung und Abrechnung (§ 6a Abs. 3 Nr. 1c HeizkostenV):
+   * periodenanteilige Summe der als Erfassungs-/Abrechnungsentgelt
+   * gekennzeichneten Heiz-Positionen. Nur intern gesetzt.
+   */
+  meteringServiceCostCents?: number;
+  /**
    * Energieträger (§ 6a HeizkostenV Pflichtangabe). Nur intern gesetzt.
    */
   fuelType?:
@@ -541,10 +554,9 @@ export type HeatingDetail = {
      */
     landlordDeductionCents: number;
     /**
-     * Fläche, auf die `emissionsKgPerSqmYear` bezogen ist. Optional, damit
-     * finalisierte Snapshots ohne den Wert weiter parsen.
+     * Fläche, auf die `emissionsKgPerSqmYear` bezogen ist.
      */
-    livingAreaSqm?: number;
+    livingAreaSqm: number;
   };
   /**
    * Warmwasser-Abspaltung nach § 9 Abs. 2 HeizkostenV. Gesetzt bei zentraler

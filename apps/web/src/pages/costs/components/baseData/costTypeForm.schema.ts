@@ -42,6 +42,7 @@ export const costTypeFormSchema = z
       "household_service",
     ]),
     co2Tracked: z.boolean(),
+    isMeteringServiceCost: z.boolean(),
   })
   .refine(
     (data) =>
@@ -62,6 +63,7 @@ export type CostTypeSubmitValues = {
   defaultAllocationKey: CostTypeAllocationKey | null;
   laborCostCategory: LaborCostCategory | null;
   co2Tracked: boolean;
+  isMeteringServiceCost: boolean;
   description: string | null;
 };
 
@@ -80,8 +82,11 @@ export const costTypeFormToDto = (
     values.laborCostCategory === LABOR_CATEGORY_NONE
       ? null
       : values.laborCostCategory,
-  // CO2-Erfassung gibt es nur für Heizkostenarten; bei anderen Kategorien
-  // wird das Flag verworfen, selbst wenn es im Formular noch gesetzt war.
+  // CO2-Erfassung und Erfassungsentgelt-Kennzeichen gibt es nur für
+  // Heizkostenarten; bei anderen Kategorien werden die Flags verworfen,
+  // selbst wenn sie im Formular noch gesetzt waren.
   co2Tracked: values.category === "heating" ? values.co2Tracked : false,
+  isMeteringServiceCost:
+    values.category === "heating" ? values.isMeteringServiceCost : false,
   description: null,
 });

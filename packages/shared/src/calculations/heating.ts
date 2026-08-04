@@ -135,6 +135,7 @@ type HeatingCostItem = {
   periodEnd: string;
   co2CostCents?: number | null;
   co2AmountGrams?: number | null;
+  containedTaxesCents?: number | null;
 };
 
 export type AggregatedHeatingCosts = {
@@ -142,6 +143,7 @@ export type AggregatedHeatingCosts = {
   perItemAttributedCents: number[];
   totalCo2CostCents: number;
   totalCo2AmountGrams: number;
+  totalContainedTaxesCents: number;
 };
 
 /**
@@ -164,6 +166,7 @@ export const aggregateHeatingCosts = (
   let total = 0;
   let totalCo2CostCents = 0;
   let totalCo2AmountGrams = 0;
+  let totalContainedTaxesCents = 0;
 
   for (const item of items) {
     const itemPeriod: Period = {
@@ -203,6 +206,9 @@ export const aggregateHeatingCosts = (
     total += rounded;
     totalCo2CostCents += Math.round((item.co2CostCents ?? 0) * factor);
     totalCo2AmountGrams += Math.round((item.co2AmountGrams ?? 0) * factor);
+    totalContainedTaxesCents += Math.round(
+      (item.containedTaxesCents ?? 0) * factor,
+    );
   }
 
   return {
@@ -210,6 +216,7 @@ export const aggregateHeatingCosts = (
     perItemAttributedCents,
     totalCo2CostCents,
     totalCo2AmountGrams,
+    totalContainedTaxesCents,
   };
 };
 

@@ -861,6 +861,30 @@ describe("aggregateHeatingCosts", () => {
     expect(result.totalCo2CostCents).toBe(Math.round(10_000 * factor));
     expect(result.totalCo2AmountGrams).toBe(Math.round(2_000_000 * factor));
   });
+
+  it("rechnet enthaltene Steuern/Abgaben mit demselben Periodenfaktor anteilig zu", () => {
+    const result = aggregateHeatingCosts(
+      [
+        {
+          amountCents: 100_000,
+          containedTaxesCents: 25_000,
+          periodStart: "2024-01-01",
+          periodEnd: "2024-12-31",
+        },
+        {
+          // Position ohne erfasste Steuern zählt nicht in die Summe
+          amountCents: 50_000,
+          periodStart: "2024-01-01",
+          periodEnd: "2024-12-31",
+        },
+      ],
+      { start: "2024-01-01", end: "2024-06-30" }, // 182 Tage
+      "linear",
+    );
+
+    const factor = 182 / 366;
+    expect(result.totalContainedTaxesCents).toBe(Math.round(25_000 * factor));
+  });
 });
 
 describe("co2LandlordSharePercent (CO2KostAufG Stufenmodell, Wohngebäude)", () => {

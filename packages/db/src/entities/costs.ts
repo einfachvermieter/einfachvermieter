@@ -43,6 +43,11 @@ export type CostType = {
   defaultAllocationKey: AllocationKey | null;
   laborCostCategory: LaborCostCategory | null;
   co2Tracked: boolean;
+  /**
+   * Erfassungs-/Abrechnungsentgelt (Gerätemiete, Eichung, Ablesedienst,
+   * Abrechnungsservice).
+   */
+  isMeteringServiceCost: boolean;
   description: string | null;
   createdAt: Opt<string>;
   updatedAt: Opt<string>;
@@ -67,6 +72,11 @@ export const CostTypeSchema = new EntitySchema<CostType>({
       nullable: true,
     },
     co2Tracked: { type: "boolean", fieldName: "co2_tracked", default: false },
+    isMeteringServiceCost: {
+      type: "boolean",
+      fieldName: "is_metering_service_cost",
+      default: false,
+    },
     description: { type: "text", nullable: true },
     createdAt: {
       type: "string",
@@ -138,6 +148,12 @@ export type CostEntryItem = {
   laborCostsCents: number | null;
   co2AmountGrams: number | null;
   co2CostCents: number | null;
+  /**
+   * Im `amountCents` enthaltene Steuern, Abgaben und Zölle in Cent (Summe
+   * aus USt, Energiesteuer, CO2-Preis laut Brennstoffrechnung);
+   * nur bei Heiz-Positionen erfasst.
+   */
+  containedTaxesCents: number | null;
   periodStart: string;
   periodEnd: string;
   position: number;
@@ -172,6 +188,11 @@ export const CostEntryItemSchema = new EntitySchema<CostEntryItem>({
     co2CostCents: {
       type: "integer",
       fieldName: "co2_cost_cents",
+      nullable: true,
+    },
+    containedTaxesCents: {
+      type: "integer",
+      fieldName: "contained_taxes_cents",
       nullable: true,
     },
     periodStart: { type: "string", fieldName: "period_start" },

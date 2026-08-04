@@ -123,27 +123,37 @@ const CostEntryItemFields = ({
     allocationKey,
   );
   const unitSuffix = displayConfig?.suffix ?? null;
+
   // Bei Pauschal-Kostenarten (`fixed`) ohne sinnvolle Einheit wird die
   // Preisart-Auswahl ausgeblendet und der Modus auf "fixed" gepinnt.
   const showPriceModeToggle = unitSuffix !== null;
+
   useEffect(() => {
     if (!showPriceModeToggle && priceMode !== "fixed") {
       form.setValue(`items.${index}.priceMode`, "fixed", { shouldDirty: true });
     }
   }, [showPriceModeToggle, priceMode, form, index]);
+
   const showUnitPriceInput =
     showPriceModeToggle && priceMode === "per_unit" && unitSuffix !== null;
   const showLaborCostsInput = Boolean(selectedCostType?.laborCostCategory);
   const showCo2Inputs = selectedCostType?.co2Tracked === true;
+
+  // Enthaltene Steuern/Abgaben (§ 6a Abs. 3 Nr. 1b HeizkostenV) gibt es
+  // nur bei Heiz-Positionen.
+  const showContainedTaxesInput = selectedCostType?.category === "heating";
+
   // Pauschal-Kostenarten (`fixed`) werden einer einzelnen Wohnung direkt
   // berechnet. Die Wohnung ist dann Pflichtfeld. Auswahl auf die Wohnungen
   // des Gebäudes der Kostenart beschränken.
   const isFixed = allocationKey === "fixed";
+
   const unitOptions = selectedCostType
     ? units
         .filter((unit) => unit.buildingId === selectedCostType.buildingId)
         .map((unit) => ({ value: unit.id, label: unit.name }))
     : [];
+
   // Wechselt die Position auf eine nicht-pauschale Kostenart, die
   // Wohnungs-Zuordnung verwerfen. Sonst landet ein unsichtbarer Wert im
   // Submit (Server lehnt unitId bei nicht-fixed ab).
@@ -152,6 +162,7 @@ const CostEntryItemFields = ({
       form.setValue(`items.${index}.unitId`, "", { shouldDirty: true });
     }
   }, [isFixed, form, index]);
+
   // Wenn die Kostenart auf "nicht begünstigt" gewechselt wird, etwaige
   // bereits eingegebene Lohnkosten zurücksetzen. Sonst landet ein
   // unsichtbarer Wert im Submit.
@@ -162,6 +173,7 @@ const CostEntryItemFields = ({
       });
     }
   }, [showLaborCostsInput, form, index]);
+
   // Wechselt die Position auf eine Kostenart ohne CO2-Erfassung, die
   // CO2-Eingaben verwerfen. Sonst landet ein unsichtbarer Wert im Submit.
   useEffect(() => {
@@ -170,6 +182,16 @@ const CostEntryItemFields = ({
       form.setValue(`items.${index}.co2CostInput`, "", { shouldDirty: true });
     }
   }, [showCo2Inputs, form, index]);
+
+  // Wechselt die Position auf eine Nicht-Heiz-Kostenart, die Steuern-/
+  // Abgaben-Eingabe verwerfen. Sonst landet ein unsichtbarer Wert im Submit.
+  useEffect(() => {
+    if (!showContainedTaxesInput) {
+      form.setValue(`items.${index}.containedTaxesInput`, "", {
+        shouldDirty: true,
+      });
+    }
+  }, [showContainedTaxesInput, form, index]);
 
   return (
     <div className="rounded-md border border-border p-3 sm:p-4">
@@ -321,6 +343,21 @@ const CostEntryItemFields = ({
               inputClassName="max-w-xs"
             />
           </>
+        ) : null}
+        {showContainedTaxesInput ? (
+          <div className="sm:col-span-2">
+            <TextInput
+              control={form.control}
+              name={`items.${index}.containedTaxesInput`}
+              label={t("ui.costs.entryFields.containedTaxes")}
+              description={t("ui.costs.entryFields.containedTaxesDescription")}
+              optional={true}
+              inputMode="decimal"
+              placeholder="0,00"
+              suffix="€"
+              inputClassName="max-w-xs"
+            />
+          </div>
         ) : null}
       </FieldGroup>
     </div>

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { formatNumber } from "../format.js";
 import type { HeatingDetail } from "../types/index.js";
 import {
+  billingInfoCostRows,
   billingInfoRows,
   co2TenantShareCents,
   co2TierLabel,
@@ -331,6 +332,30 @@ describe("billingInfoRows", () => {
     });
     expect(rows[2]?.value.key).toBe("ui.common.emptyValue");
     expect(rows[3]?.value.key).toBe("ui.common.emptyValue");
+  });
+});
+
+describe("billingInfoCostRows", () => {
+  it("liefert ohne erfasste Werte keine Zeilen", () => {
+    expect(billingInfoCostRows({})).toEqual([]);
+  });
+
+  it("weist erfasste Steuern/Abgaben und Erfassungsentgelte als Euro-Beträge aus", () => {
+    const rows = billingInfoCostRows({
+      containedTaxesCents: 71_400,
+      meteringServiceCostCents: 19_000,
+    });
+    expect(rows.map((row) => row.key)).toEqual([
+      "containedTaxes",
+      "meteringService",
+    ]);
+    expect(rows[0]?.value.params?.value).toBe("714,00 €");
+    expect(rows[1]?.value.params?.value).toBe("190,00 €");
+  });
+
+  it("zeigt jede der beiden Zeilen auch einzeln", () => {
+    const rows = billingInfoCostRows({ meteringServiceCostCents: 5000 });
+    expect(rows.map((row) => row.key)).toEqual(["meteringService"]);
   });
 });
 

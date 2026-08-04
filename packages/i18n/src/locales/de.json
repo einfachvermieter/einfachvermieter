@@ -996,6 +996,8 @@
         "laborCostCategory": "Steuerlich begünstigt (§ 35a EStG)",
         "laborCostCategoryDescription": "Wenn gesetzt, weisen Sie bei jeder Rechnung dieser Kostenart den Lohnkostenanteil aus. Er wird in der NK-Abrechnung als Bescheinigung für den Mieter ausgewiesen.",
         "co2Tracked": "CO₂-Menge und -Kostenanteil auf den Rechnungen erfassen",
+        "isMeteringServiceCost": "Erfassungs- oder Abrechnungsentgelt",
+        "isMeteringServiceCostDescription": "Gerätemiete, Eichung, Ablesedienst oder Abrechnungsservice. Die Abrechnung weist diese Beträge nach § 6a HeizkostenV gesondert aus.",
         "co2TrackedNoConfigWarning": "Derzeit nutzt keine Heizkosten-Konfiguration dieses Gebäudes die CO₂-Kostenaufteilung mit einem CO₂-pflichtigen Brennstoff. Die erfassten CO₂-Werte bleiben ohne Wirkung, bis eine passende Konfiguration besteht.",
         "betrkvWarning": "Nach § 1 Abs. 2 BetrKV sind Verwaltungs- und Instandhaltungskosten nicht umlagefähig. Der Name deutet auf solche Kosten hin. Prüfen Sie, ob Sie diese Kostenart wirklich auf die Mieter verteilen dürfen. Speichern können Sie sie trotzdem, es gibt Grenzfälle wie Wartungsverträge."
       },
@@ -1028,7 +1030,9 @@
         "co2Amount": "CO₂-Menge",
         "co2AmountDescription": "Auf der Brennstoffrechnung ausgewiesene CO₂-Menge in Kilogramm.",
         "co2Cost": "Enthaltener CO₂-Kostenanteil",
-        "co2CostDescription": "Der bereits im Bruttobetrag enthaltene CO₂-Preisanteil – kein zusätzlicher Betrag."
+        "co2CostDescription": "Der bereits im Bruttobetrag enthaltene CO₂-Preisanteil – kein zusätzlicher Betrag.",
+        "containedTaxes": "Enthaltene Steuern und Abgaben",
+        "containedTaxesDescription": "Die bereits im Bruttobetrag enthaltene Summe aus Steuern, Abgaben und Zöllen laut Rechnung (z. B. Umsatzsteuer, Energiesteuer, CO₂-Preis) – kein zusätzlicher Betrag. Wird in der Abrechnung nach § 6a HeizkostenV ausgewiesen."
       },
       "validation": {
         "amountRequired": "Betrag erforderlich",
@@ -1044,6 +1048,9 @@
         "co2AmountFormat": "Bitte eine Menge in kg eintragen (z. B. 2371 oder 2371,5).",
         "co2CostFormat": "Bitte einen Geldbetrag eintragen (z. B. 130,44).",
         "co2CostExceedsAmount": "Der CO₂-Kostenanteil darf den Rechnungsbetrag nicht übersteigen.",
+        "meteringServiceHeatingOnly": "Das Erfassungsentgelt-Kennzeichen ist nur bei Heizkostenarten möglich.",
+        "containedTaxesFormat": "Bitte einen Geldbetrag eintragen (z. B. 130,44).",
+        "containedTaxesExceedAmount": "Die enthaltenen Steuern und Abgaben dürfen den Rechnungsbetrag nicht übersteigen.",
         "itemsMin": "Mindestens eine Position erforderlich",
         "unitPriceFormat": "Bitte einen Geldbetrag eintragen (z. B. 4,93 oder 0,0123).",
         "unitPriceRequired": "Bei Verbrauchspreis bitte den Einheitspreis angeben.",
@@ -2057,6 +2064,11 @@
         "districtHeatEmissionsValue": "{value} kg",
         "districtHeatFactorLabel": "Primärenergiefaktor des Fernwärmenetzes",
         "districtHeatFactorValue": "{value}",
+        "costsTitle": "Steuern, Abgaben und Entgelte",
+        "containedTaxesLabel": "In den Heizkosten enthaltene Steuern und Abgaben",
+        "containedTaxesValue": "{value} (soweit erfasst)",
+        "meteringServiceLabel": "Entgelte für Erfassung, Ablesung und Abrechnung",
+        "meteringServiceValue": "{value}",
         "externalReference": "Die Angaben nach § 6a Abs. 3 HeizkostenV (Energieträger, Emissionen, Verbrauchsvergleiche) entnehmen Sie der beigefügten Heizkostenabrechnung Ihres Wärmedienstleisters.",
         "contactsTitle": "Informations- und Beratungsstellen",
         "contactsIntro": "Informationen über Maßnahmen zur Verbesserung der Energieeffizienz, Vergleichsprofile und technische Angaben zu energiebetriebenen Geräten erhalten Sie unter anderem hier:",
