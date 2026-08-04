@@ -238,6 +238,23 @@ export type HeatingSetting = {
    * gedämmt).
    */
   mandatorySeventyPercent: Opt<boolean>;
+  /**
+   * Jährliche Treibhausgasemissionen des Fernwärmenetzes in kg. Pflicht-
+   * angabe der Abrechnungsinformationen nach § 6a Abs. 3 HeizkostenV.
+   * Nur bei `fuelType = "district_heat"` relevant; Wert steht auf der
+   * Rechnung des Wärmelieferanten.
+   */
+  districtHeatEmissionsKgPerYear: number | null;
+  /**
+   * Primärenergiefaktor des Fernwärmenetzes (§ 6a Abs. 3 HeizkostenV).
+   * Nur bei `fuelType = "district_heat"` relevant.
+   */
+  districtHeatPrimaryEnergyFactor: number | null;
+  /**
+   * Ob die Seite „Abrechnungsinformationen nach § 6a HeizkostenV" mit der
+   * Abrechnung gedruckt wird. Nur im externen Modus abwählbar.
+   */
+  includeBillingInfo: Opt<boolean>;
   co2CostShareEnabled: boolean;
   validFrom: string;
   validTo: string | null;
@@ -306,6 +323,21 @@ export const HeatingSettingSchema = new EntitySchema<HeatingSetting>({
       type: "boolean",
       fieldName: "mandatory_seventy_percent",
       default: false,
+    },
+    districtHeatEmissionsKgPerYear: {
+      type: "double",
+      fieldName: "district_heat_emissions_kg_per_year",
+      nullable: true,
+    },
+    districtHeatPrimaryEnergyFactor: {
+      type: "double",
+      fieldName: "district_heat_primary_energy_factor",
+      nullable: true,
+    },
+    includeBillingInfo: {
+      type: "boolean",
+      fieldName: "include_billing_info",
+      default: true,
     },
     co2CostShareEnabled: {
       type: "boolean",

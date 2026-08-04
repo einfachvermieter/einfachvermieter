@@ -174,6 +174,25 @@ export const heatingDetailSchema = z.object({
     ])
     .optional(),
   /**
+   * Fernwärme-Kennwerte für die Abrechnungsinformationen nach § 6a Abs. 3
+   * HeizkostenV. Optional - fehlt bei anderen Energieträgern und in
+   * Snapshots vor Einführung des Info-Anhangs.
+   */
+  districtHeatInfo: z
+    .object({
+      emissionsKgPerYear: z.number().nullable(),
+      primaryEnergyFactor: z.number().nullable(),
+    })
+    .optional(),
+  /**
+   * Abrechnungsmodus der Heizkosten.
+   */
+  mode: z.enum(["internal", "external"]),
+  /**
+   * § 6a-Informationsseite auf Vermieter-Wunsch weggelassen (nur extern).
+   */
+  billingInfoOmitted: z.boolean(),
+  /**
    * CO2KostAufG-Aufteilung (Wohngebäude). Der `landlordDeductionCents` ist
    * bereits aus `totalHeatingCostsCents` herausgerechnet. Optional - fehlt
    * bei deaktivierter Aufteilung und ohne erfasste CO2-Werte.

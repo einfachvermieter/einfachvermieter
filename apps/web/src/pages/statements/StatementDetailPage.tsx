@@ -4,6 +4,7 @@ import {
   formatEur,
   formatName,
   groupCalcWarnings,
+  hasHeatingBreakdown,
   isoDatePlusOneYear,
   isTenantWarning,
   todayIso,
@@ -72,6 +73,7 @@ import {
 import { tenantQueryOptions } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
 import { AdvanceAdjustmentCard } from "./components/AdvanceAdjustmentCard";
+import { BillingInfoCard } from "./components/detail/BillingInfoCard";
 import { HeatingCard } from "./components/detail/HeatingCard";
 import { OccupancyCard } from "./components/detail/OccupancyCard";
 import { OperatingCostsCard } from "./components/detail/OperatingCostsCard";
@@ -181,6 +183,15 @@ const StatementTabs = ({
     taxableLabor !== undefined && taxableLabor.byCategory.length > 0;
   const payments = result.payments ?? [];
   const hasPayments = payments.length > 0;
+  // Analog zu PDF-Anhängen: Rechenweg-Karte nur, wenn das PDF den
+  // Heizkosten-Anhang druckt; § 6a-Karte nur, wenn die Seite nicht in der
+  // Heizkonfiguration abgewählt wurde.
+  const showHeatingBreakdown = heatingDetail
+    ? hasHeatingBreakdown(heatingDetail, result.tenantPeriod, result.period)
+    : false;
+  const showBillingInfo =
+    heatingDetail !== undefined && !heatingDetail.billingInfoOmitted;
+  const showHeatingTab = showHeatingBreakdown || showBillingInfo;
   return (
     <Tabs value={activeTab} onValueChange={onTabChange}>
       <TabsList variant="pills">
@@ -205,7 +216,7 @@ const StatementTabs = ({
             {t("ui.statements.detail.tabs.taxableLabor")}
           </TabsTrigger>
         ) : null}
-        {heatingDetail ? (
+        {showHeatingTab ? (
           <TabsTrigger value="heizkosten">
             {t("ui.statements.detail.tabs.heating")}
           </TabsTrigger>
@@ -245,14 +256,21 @@ const StatementTabs = ({
           <TaxableLaborCard detail={taxableLabor} />
         </TabsContent>
       ) : null}
-      {heatingDetail ? (
+      {heatingDetail && showHeatingTab ? (
         <TabsContent value="heizkosten">
-          <HeatingCard
-            detail={heatingDetail}
-            tenantPeriod={result.tenantPeriod}
-            statementPeriod={result.period}
-            targetUnitId={result.unitId}
-          />
+          <div className="space-y-5">
+            {showHeatingBreakdown ? (
+              <HeatingCard
+                detail={heatingDetail}
+                tenantPeriod={result.tenantPeriod}
+                statementPeriod={result.period}
+                targetUnitId={result.unitId}
+              />
+            ) : null}
+            {showBillingInfo ? (
+              <BillingInfoCard detail={heatingDetail} />
+            ) : null}
+          </div>
         </TabsContent>
       ) : null}
       <TabsContent value="vorauszahlung">

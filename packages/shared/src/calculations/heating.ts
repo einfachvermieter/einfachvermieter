@@ -1257,6 +1257,8 @@ export const calculateHeating = (
   });
 
   return {
+    mode: "internal",
+    billingInfoOmitted: false,
     // Verteilter (Netto-)Topf nach CO2-Abzug (ohne CO2 = Brutto-Topf).
     totalHeatingCostsCents: distributablePotCents,
     heatingPotCents,
@@ -1353,6 +1355,8 @@ export const calculateExternalHeating = (
   );
 
   return {
+    mode: "external",
+    billingInfoOmitted: false,
     totalHeatingCostsCents,
     consumptionShareBps,
     consumptionPortionCents,

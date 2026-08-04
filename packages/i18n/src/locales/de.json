@@ -204,7 +204,7 @@
     "heatingNoConfigForDate": "Für den {date} existiert keine Heizkostenkonfiguration für dieses Gebäude. Frühestes „gültig ab“ ist der {earliest}. Bitte legen Sie eine Version an, deren „gültig ab“ auf oder vor dem {date} liegt.",
     "upload": {
       "unsupportedType": "Der Dateityp „{mimeType}“ wird nicht unterstützt.",
-      "tooLarge": "Die Datei ist zu groß (maximal {maxMb} MB)."
+      "tooLarge": "Die Datei ist zu groß (maximal {maxMb} MB)."
     },
     "ai": {
       "notConfigured": "Die KI-Extraktion ist nicht konfiguriert (MISTRAL_API_KEY fehlt).",
@@ -253,7 +253,8 @@
     "hotWaterSourceMissing": "Zentrale Warmwasserbereitung erfasst, aber weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch vorhanden – der Warmwasseranteil konnte nicht ermittelt werden.",
     "hotWaterFlatRateFallback": "Weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch erfasst. Der Warmwasseranteil wurde daher ersatzweise mit der Pauschalformel aus § 9 Abs. 2 Satz 5 HeizkostenV geschätzt (32 kWh je Quadratmeter Wohnfläche und Jahr). Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
     "hotWaterShareCapped": "Die geschätzte Warmwasser-Wärmemenge übersteigt die erfasste Gesamt-Wärmemenge – der Warmwasseranteil wurde auf 100 % begrenzt. Bitte Gesamt-Wärmemenge prüfen.",
-    "hotWaterTotalHeatPeriodMismatch": "Die Gesamt-Wärmemenge aus der Heizkosten-Konfiguration ist ein Jahreswert, die Abrechnungsperiode umfasst aber {periodDays} Tage. Die Warmwasser-Wärmemenge wird über die Periode gemessen, dadurch kann der Warmwasseranteil verzerrt sein. Bitte prüfen Sie, ob die Gesamt-Wärmemenge zur Periode passt.",
+    "hotWaterTotalHeatPeriodMismatch": "Die Gesamt-Wärmemenge aus der Heizkosten-Konfiguration ist ein Jahreswert, die Abrechnungsperiode umfasst aber {periodDays} Tage. Die Warmwasser-Wärmemenge wird über die Periode gemessen, dadurch kann der Warmwasseranteil verzerrt sein. Bitte prüfen Sie, ob die Gesamt-Wärmemenge zur Periode passt.",
+    "districtHeatInfoMissing": "Für die Fernwärme sind die jährlichen Treibhausgasemissionen oder der Primärenergiefaktor des Netzes nicht erfasst. Beide Angaben gehören nach § 6a HeizkostenV in die Abrechnung und stehen auf der Rechnung des Wärmelieferanten. Bitte tragen Sie die Werte in der Heizkosten-Konfiguration nach.",
     "co2SplitEnabledNoData": "Die CO₂-Kostenaufteilung ist aktiviert, aber keiner Kostenart sind CO₂-Kosten zugeordnet. Die Aufteilung nach CO2KostAufG entfällt.",
     "co2SplitMissingData": "CO₂-Kosten sind erfasst, aber CO₂-Menge oder Wohnfläche fehlt – eine Aufteilung nach CO2KostAufG ist nicht möglich.",
     "consumptionFallbackZeroDelta": "Die Verbrauchsmessungen liefern für die Periode eine Differenz von 0. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
@@ -1240,6 +1241,13 @@
         "heatPumpMonovalent": "Wärmepumpe monovalent betrieben",
         "heatPumpMonovalentDescription": "Deckt die Wärmepumpe die Wärme allein, ohne zweiten Wärmeerzeuger, wird die Warmwasser-Wärmemenge mit 0,30 multipliziert (§ 9 Abs. 2 HeizkostenV).",
         "districtHeatCorrectionNote": "Bei eigenständiger gewerblicher Wärmelieferung wird die Warmwasser-Wärmemenge durch 1,15 geteilt (§ 9 Abs. 2 HeizkostenV). Das ergibt sich aus dem Energieträger Fernwärme und ist automatisch berücksichtigt.",
+        "districtHeatEmissionsKgPerYear": "Treibhausgasemissionen (kg/Jahr)",
+        "districtHeatEmissionsKgPerYearDescription": "Jährliche Treibhausgasemissionen des Fernwärmenetzes in kg. Der Wert steht auf der Rechnung oder Jahresmitteilung Ihres Wärmelieferanten und gehört nach § 6a HeizkostenV in die Abrechnung.",
+        "districtHeatPrimaryEnergyFactor": "Primärenergiefaktor",
+        "districtHeatPrimaryEnergyFactorDescription": "Primärenergiefaktor des Fernwärmenetzes (z. B. 0,28). Der Wert steht auf der Rechnung Ihres Wärmelieferanten und gehört nach § 6a HeizkostenV in die Abrechnung.",
+        "includeBillingInfo": "§ 6a-Informationsseite beilegen",
+        "includeBillingInfoDescription": "Druckt die Seite „Abrechnungsinformationen nach § 6a Heizkostenverordnung“ (Beratungsstellen, Streitbeilegung) mit jeder Abrechnung.",
+        "includeBillingInfoWarning": "Diese Angaben sind nach § 6a HeizkostenV verpflichtend. Deaktivieren Sie die Seite nur, wenn die Angaben sicher auf der beigelegten Abrechnung Ihres Abrechnungsunternehmens enthalten sind.",
         "co2CostShareEnabled": "CO₂-Kosten aufteilen (CO2KostAufG)",
         "co2CostShareEnabledDescription": "Aufteilung zwischen Vermieter und Mieter nach Emissionsstufe",
         "co2CostShareEnabledHelp": "Bei Brennstoffen mit CO₂-Preis trägt der Vermieter einen Teil der CO₂-Kosten. Wie groß der Anteil ist, hängt vom Ausstoß des Gebäudes ab: Kilogramm CO₂ je Quadratmeter Wohnfläche und Jahr, eingeordnet in die zehn Stufen der Anlage zum CO2KostAufG (§ 5).\n\nJe schlechter die Dämmung, desto größer der Vermieteranteil. Er wird vor der Aufteilung in Grund- und Verbrauchskosten aus den Heizkosten herausgerechnet und auf der Abrechnung ausgewiesen.",
@@ -1260,6 +1268,8 @@
         "consumptionShareBandwidth": "Der Verbrauchsanteil muss zwischen 50 % und 70 % liegen (§ 7 Abs. 1 HeizkostenV)",
         "tempRange": "Temperatur zwischen 20 und 95 °C",
         "totalHeatEnergyInvalid": "Bitte geben Sie eine gültige Gesamt-Wärmemenge in kWh an (größer 0)",
+        "districtHeatEmissionsInvalid": "Bitte geben Sie die Treibhausgasemissionen als Zahl in kg an (z. B. 12500)",
+        "districtHeatFactorInvalid": "Bitte geben Sie den Primärenergiefaktor als Zahl zwischen 0 und 10 an (z. B. 0,28)",
         "seventyPercentMandatory": "Für dieses Gebäude sind 70 % Verbrauchsanteil zwingend (§ 7 Abs. 1 Satz 2 HeizkostenV)",
         "validToBeforeFrom": "Gültig-bis darf nicht vor Gültig-ab liegen"
       },
@@ -1902,7 +1912,7 @@
         },
         "logo": {
           "title": "Firmenlogo",
-          "description": "PNG, JPEG, WebP oder SVG, maximal 2 MB. Empfohlen: ca. 600 × 200 px.",
+          "description": "PNG, JPEG, WebP oder SVG, maximal 2 MB. Empfohlen: ca. 600 × 200 px.",
           "current": "Aktuelles Logo",
           "fallback": "Kein eigenes Logo hochgeladen – das App-Logo wird verwendet.",
           "uploadAction": "Logo hochladen",
@@ -2037,6 +2047,25 @@
       "appendixPayments": "Zahlungseingänge",
       "appendixOccupancy": "Belegung",
       "appendixTaxableLabor": "Steuerlich begünstigte Lohnkosten nach § 35a EStG",
+      "appendixBillingInfo": "Abrechnungsinformationen nach § 6a Heizkostenverordnung",
+      "billingInfo": {
+        "energyTitle": "Energieträger der Wärmeversorgung",
+        "energySourceLabel": "Eingesetzter Energieträger",
+        "energyShareLabel": "Anteil an der Wärmeversorgung",
+        "energyShareFull": "100 %",
+        "districtHeatEmissionsLabel": "Jährliche Treibhausgasemissionen des Fernwärmenetzes",
+        "districtHeatEmissionsValue": "{value} kg",
+        "districtHeatFactorLabel": "Primärenergiefaktor des Fernwärmenetzes",
+        "districtHeatFactorValue": "{value}",
+        "externalReference": "Die Angaben nach § 6a Abs. 3 HeizkostenV (Energieträger, Emissionen, Verbrauchsvergleiche) entnehmen Sie der beigefügten Heizkostenabrechnung Ihres Wärmedienstleisters.",
+        "contactsTitle": "Informations- und Beratungsstellen",
+        "contactsIntro": "Informationen über Maßnahmen zur Verbesserung der Energieeffizienz, Vergleichsprofile und technische Angaben zu energiebetriebenen Geräten erhalten Sie unter anderem hier:",
+        "contact1": "Verbraucherzentrale Bundesverband – www.verbraucherzentrale.de",
+        "contact2": "co2online gGmbH – www.co2online.de",
+        "contact3": "Deutsche Energie-Agentur (dena) – www.dena.de",
+        "disputeTitle": "Streitbeilegung",
+        "disputeText": "Der Vermieter ist zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle nach dem Verbraucherstreitbeilegungsgesetz nicht verpflichtet und nimmt daran nicht teil."
+      },
       "summary": {
         "operatingCosts": "Betriebskosten",
         "heatingCosts": "Heizkosten",

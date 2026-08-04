@@ -115,6 +115,19 @@ const internalSchema = z
     gasBillingByCalorificValue: z.boolean().default(false),
     heatPumpMonovalent: z.boolean().default(false),
     mandatorySeventyPercent: z.boolean().default(false),
+    // Fernwärme-Kennwerte für die Abrechnungsinformationen nach § 6a
+    // Abs. 3 HeizkostenV; nur bei fuelType = "district_heat" sinnvoll.
+    districtHeatEmissionsKgPerYear: z
+      .number()
+      .nonnegative()
+      .nullable()
+      .default(null),
+    districtHeatPrimaryEnergyFactor: z
+      .number()
+      .positive()
+      .max(10)
+      .nullable()
+      .default(null),
     co2CostShareEnabled: z.boolean(),
   })
   .strict();
@@ -124,6 +137,9 @@ const externalSchema = z
     mode: z.literal("external"),
     validFrom: isoDate(),
     validTo: isoDate().nullable(),
+    // § 6a-Informationsseite mitdrucken; abwählbar nur extern, wenn die
+    // Angaben auf der Abrechnung des Wärmedienstleisters stehen.
+    includeBillingInfo: z.boolean().default(true),
   })
   .strict();
 
@@ -222,6 +238,21 @@ export type HeatingSettings = {
    * § 7 Abs. 1 Satz 2 HeizkostenV.
    */
   mandatorySeventyPercent: boolean;
+  /**
+   * Jährliche Treibhausgasemissionen des Fernwärmenetzes in kg
+   * (§ 6a Abs. 3 HeizkostenV). Nur bei Fernwärme; NULL = nicht erfasst.
+   */
+  districtHeatEmissionsKgPerYear: number | null;
+  /**
+   * Primärenergiefaktor des Fernwärmenetzes (§ 6a Abs. 3 HeizkostenV).
+   * Nur bei Fernwärme; NULL = nicht erfasst.
+   */
+  districtHeatPrimaryEnergyFactor: number | null;
+  /**
+   * Ob die § 6a-Informationsseite mit der Abrechnung gedruckt wird. Nur im
+   * externen Modus abwählbar; intern immer true.
+   */
+  includeBillingInfo: boolean;
   co2CostShareEnabled: boolean;
   /**
    * Inklusiver Start-Stichtag (YYYY-MM-DD).
@@ -276,6 +307,20 @@ export type HeatingFormValues = {
   gasBillingByCalorificValue: boolean;
   heatPumpMonovalent: boolean;
   mandatorySeventyPercent: boolean;
+  /**
+   * Jährliche THG-Emissionen des Fernwärmenetzes in kg, als String im
+   * Formular; leer = nicht erfasst.
+   */
+  districtHeatEmissionsKgPerYear: string;
+  /**
+   * Primärenergiefaktor des Fernwärmenetzes, als String im Formular
+   * ("0,28"); leer = nicht erfasst.
+   */
+  districtHeatPrimaryEnergyFactor: string;
+  /**
+   * § 6a-Informationsseite mitdrucken; nur im externen Modus abwählbar.
+   */
+  includeBillingInfo: boolean;
   co2CostShareEnabled: boolean;
 };
 
@@ -326,6 +371,46 @@ const parseEnergyKwh = (raw: string): number =>
 
 const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/u;
 
+const decimalRegex = /^\d+([.,]\d+)?$/u;
+
+const parseDecimal = (value: string): number =>
+  Number.parseFloat(value.replace(",", "."));
+
+/**
+ * Formatprüfung der optionalen Fernwärme-Kennwerte (§ 6a Abs. 3
+ * HeizkostenV). Leere Felder sind zulässig, fehlende Werte melden
+ * erst die Berechnung als Warnung.
+ */
+const validateDistrictHeatFields = (
+  value: {
+    districtHeatEmissionsKgPerYear: string;
+    districtHeatPrimaryEnergyFactor: string;
+  },
+  ctx: z.RefinementCtx,
+): void => {
+  const emissionsRaw = value.districtHeatEmissionsKgPerYear.trim();
+  if (emissionsRaw.length > 0 && !decimalRegex.test(emissionsRaw)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["districtHeatEmissionsKgPerYear"],
+      message: messageKey("ui.heating.validation.districtHeatEmissionsInvalid"),
+    });
+  }
+
+  const factorRaw = value.districtHeatPrimaryEnergyFactor.trim();
+  if (
+    factorRaw.length > 0 &&
+    (!decimalRegex.test(factorRaw) ||
+      !(parseDecimal(factorRaw) > 0 && parseDecimal(factorRaw) <= 10))
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["districtHeatPrimaryEnergyFactor"],
+      message: messageKey("ui.heating.validation.districtHeatFactorInvalid"),
+    });
+  }
+};
+
 export const heatingFormSchema = z
   .object({
     buildingId: z.guid(),
@@ -344,6 +429,9 @@ export const heatingFormSchema = z
     gasBillingByCalorificValue: z.boolean(),
     heatPumpMonovalent: z.boolean(),
     mandatorySeventyPercent: z.boolean(),
+    districtHeatEmissionsKgPerYear: z.string(),
+    districtHeatPrimaryEnergyFactor: z.string(),
+    includeBillingInfo: z.boolean(),
     co2CostShareEnabled: z.boolean(),
   })
   .superRefine((value, ctx) => {
@@ -400,6 +488,11 @@ export const heatingFormSchema = z
         message: messageKey("ui.heating.validation.consumptionShareBandwidth"),
       });
     }
+
+    if (value.fuelType === "district_heat") {
+      validateDistrictHeatFields(value, ctx);
+    }
+
     if (value.heatingType === "central_with_hot_water") {
       const raw = value.hotWaterSupplyTemperatureCelsius;
       if (!tempIntRegex.test(raw)) {
@@ -450,6 +543,7 @@ export const heatingFormToDto = (
       mode: "external",
       validFrom: values.validFrom,
       validTo,
+      includeBillingInfo: values.includeBillingInfo,
     };
   }
   const consumption = Number.parseInt(values.consumptionSharePercent, 10);
@@ -481,8 +575,31 @@ export const heatingFormToDto = (
     gasBillingByCalorificValue: values.gasBillingByCalorificValue,
     heatPumpMonovalent: values.heatPumpMonovalent,
     mandatorySeventyPercent: values.mandatorySeventyPercent,
+    districtHeatEmissionsKgPerYear:
+      values.fuelType === "district_heat"
+        ? parseOptionalDecimal(values.districtHeatEmissionsKgPerYear)
+        : null,
+    districtHeatPrimaryEnergyFactor:
+      values.fuelType === "district_heat"
+        ? parseOptionalDecimal(values.districtHeatPrimaryEnergyFactor)
+        : null,
     co2CostShareEnabled: values.co2CostShareEnabled,
   };
+};
+
+/**
+ * Parst "1250" oder "0,28" in eine Zahl; leere/unlesbare Eingaben
+ * werden zu NULL (= nicht erfasst).
+ */
+const parseOptionalDecimal = (raw: string): number | null => {
+  const trimmed = raw.trim();
+  if (trimmed.length === 0 || !decimalRegex.test(trimmed)) {
+    return null;
+  }
+
+  const parsed = parseDecimal(trimmed);
+
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 };
 
 /**
@@ -509,6 +626,9 @@ export const emptyHeatingFormValues = (
   gasBillingByCalorificValue: false,
   heatPumpMonovalent: false,
   mandatorySeventyPercent: false,
+  districtHeatEmissionsKgPerYear: "",
+  districtHeatPrimaryEnergyFactor: "",
+  includeBillingInfo: true,
   co2CostShareEnabled: true,
 });
 
@@ -536,6 +656,15 @@ export const heatingSettingsToFormValues = (
   gasBillingByCalorificValue: settings.gasBillingByCalorificValue,
   heatPumpMonovalent: settings.heatPumpMonovalent,
   mandatorySeventyPercent: settings.mandatorySeventyPercent,
+  districtHeatEmissionsKgPerYear:
+    settings.districtHeatEmissionsKgPerYear === null
+      ? ""
+      : String(settings.districtHeatEmissionsKgPerYear).replace(".", ","),
+  districtHeatPrimaryEnergyFactor:
+    settings.districtHeatPrimaryEnergyFactor === null
+      ? ""
+      : String(settings.districtHeatPrimaryEnergyFactor).replace(".", ","),
+  includeBillingInfo: settings.includeBillingInfo,
   co2CostShareEnabled: settings.co2CostShareEnabled,
 });
 

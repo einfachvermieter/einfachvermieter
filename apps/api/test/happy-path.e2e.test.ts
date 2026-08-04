@@ -551,6 +551,14 @@ describe("Happy Path", () => {
       expect: 201,
     });
 
+    // Die external-entries-Route darf nicht von der ":id"-Route des
+    // Heizkonfigurations-Controllers abgefangen werden (war 404).
+    const externalEntries = await api(
+      `/buildings/${building.id}/heating/external-entries`,
+      { expect: 200 },
+    );
+    expect(Array.isArray(externalEntries)).toBe(true);
+
     // Vor dem Fix warf dieser Aufruf 400 "heatingMeterNoUnit".
     const preview = await api(
       `/statements/preview/calculate?buildingId=${building.id}&tenantId=${tenantId}&from=2025-01-01&to=2025-12-31`,

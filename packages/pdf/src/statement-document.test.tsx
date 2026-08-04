@@ -73,10 +73,16 @@ const waterMeter = (
 });
 
 const heatingDetail: HeatingDetail = {
+  mode: "internal",
+  billingInfoOmitted: false,
   totalHeatingCostsCents: 120_000,
   consumptionShareBps: 7000,
   consumptionPortionCents: 84_000,
   basicPortionCents: 36_000,
+  // Fernwärme mit § 6a-Kennwerten, damit der Informations-Anhang alle
+  // Energieträger-Zeilen rendert.
+  fuelType: "district_heat",
+  districtHeatInfo: { emissionsKgPerYear: 12_500, primaryEnergyFactor: 0.28 },
   perUnit: [
     {
       unitId: "u-eg",

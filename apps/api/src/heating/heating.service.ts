@@ -60,6 +60,9 @@ const defaultSettings = (buildingId: string): HeatingSettings => ({
   gasBillingByCalorificValue: false,
   heatPumpMonovalent: false,
   mandatorySeventyPercent: false,
+  districtHeatEmissionsKgPerYear: null,
+  districtHeatPrimaryEnergyFactor: null,
+  includeBillingInfo: true,
   co2CostShareEnabled: true,
   validFrom: "1900-01-01",
   validTo: null,
@@ -297,6 +300,9 @@ export class HeatingService {
         gasBillingByCalorificValue: false,
         heatPumpMonovalent: false,
         mandatorySeventyPercent: false,
+        districtHeatEmissionsKgPerYear: null,
+        districtHeatPrimaryEnergyFactor: null,
+        includeBillingInfo: dto.includeBillingInfo,
         co2CostShareEnabled: true,
       };
     }
@@ -318,6 +324,11 @@ export class HeatingService {
       gasBillingByCalorificValue: dto.gasBillingByCalorificValue,
       heatPumpMonovalent: dto.heatPumpMonovalent,
       mandatorySeventyPercent: dto.mandatorySeventyPercent,
+      districtHeatEmissionsKgPerYear: dto.districtHeatEmissionsKgPerYear,
+      districtHeatPrimaryEnergyFactor: dto.districtHeatPrimaryEnergyFactor,
+      // Die § 6a-Informationsseite ist nur im externen Modus abwählbar.
+      // intern ist die App die einzige Quelle der Angaben.
+      includeBillingInfo: true,
       co2CostShareEnabled: dto.co2CostShareEnabled,
     };
   }

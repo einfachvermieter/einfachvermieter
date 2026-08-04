@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { formatNumber } from "../format.js";
 import type { HeatingDetail } from "../types/index.js";
 import {
+  billingInfoRows,
   co2TenantShareCents,
   co2TierLabel,
   consumptionUnitLabel,
+  hasHeatingBreakdown,
   hotWaterFactRows,
   perMeterDisplayDigits,
   prepareHeatingDisplay,
@@ -14,6 +16,8 @@ import {
 const period = (start: string, end: string) => ({ start, end });
 
 const baseDetail = (overrides: Partial<HeatingDetail> = {}): HeatingDetail => ({
+  mode: "internal",
+  billingInfoOmitted: false,
   totalHeatingCostsCents: 100_000,
   consumptionShareBps: 7000,
   consumptionPortionCents: 70_000,
@@ -250,6 +254,83 @@ describe("hotWaterFactRows", () => {
     });
     expect(withFactor.map((row) => row.key)).toContain("correctionFactor");
     expect(withFactor.at(-1)?.value.params?.value).toBe("1,11");
+  });
+});
+
+describe("hasHeatingBreakdown", () => {
+  const full = period("2025-01-01", "2025-12-31");
+  const partial = period("2025-07-01", "2025-12-31");
+  const externalFlat = {
+    mode: "external" as const,
+    basicPortionCents: 0,
+    consumptionPortionCents: 0,
+  };
+
+  it("druckt den Rechenweg bei interner Abrechnung immer", () => {
+    expect(
+      hasHeatingBreakdown(baseDetail({ mode: "internal" }), full, full),
+    ).toBe(true);
+  });
+
+  it("behandelt Alt-Snapshots ohne Modus wie intern", () => {
+    expect(hasHeatingBreakdown(baseDetail(), full, full)).toBe(true);
+  });
+
+  it("extern ohne Kürzung und ohne Split: kein Rechenweg", () => {
+    expect(hasHeatingBreakdown(externalFlat, full, full)).toBe(false);
+  });
+
+  it("extern mit Teilperiode: Rechenweg wegen zeitanteiliger Kürzung", () => {
+    expect(hasHeatingBreakdown(externalFlat, partial, full)).toBe(true);
+  });
+
+  it("extern mit erfasstem Grund-/Verbrauchs-Split: Rechenweg", () => {
+    expect(
+      hasHeatingBreakdown(
+        { ...externalFlat, basicPortionCents: 30_000 },
+        full,
+        full,
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("billingInfoRows", () => {
+  it("liefert ohne Energieträger keine Zeilen (externer Modus)", () => {
+    expect(billingInfoRows({})).toEqual([]);
+  });
+
+  it("weist Energieträger und 100-%-Anteil aus", () => {
+    const rows = billingInfoRows({ fuelType: "gas" });
+    expect(rows.map((row) => row.key)).toEqual(["energySource", "energyShare"]);
+    expect(rows[0]?.value.key).toBe("ui.heating.fuelTypes.gas");
+  });
+
+  it("ergänzt bei Fernwärme Emissionen und Primärenergiefaktor", () => {
+    const rows = billingInfoRows({
+      fuelType: "district_heat",
+      districtHeatInfo: {
+        emissionsKgPerYear: 12_500,
+        primaryEnergyFactor: 0.28,
+      },
+    });
+    expect(rows.map((row) => row.key)).toEqual([
+      "energySource",
+      "energyShare",
+      "districtHeatEmissions",
+      "districtHeatFactor",
+    ]);
+    expect(rows[2]?.value.params?.value).toBe("12.500");
+    expect(rows[3]?.value.params?.value).toBe("0,28");
+  });
+
+  it("zeigt nicht erfasste Fernwärme-Werte als Leer-Platzhalter", () => {
+    const rows = billingInfoRows({
+      fuelType: "district_heat",
+      districtHeatInfo: { emissionsKgPerYear: null, primaryEnergyFactor: null },
+    });
+    expect(rows[2]?.value.key).toBe("ui.common.emptyValue");
+    expect(rows[3]?.value.key).toBe("ui.common.emptyValue");
   });
 });
 

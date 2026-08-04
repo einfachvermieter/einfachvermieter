@@ -45,6 +45,7 @@ import {
   type OperatingCostStatementCancelDto,
   type OperatingCostStatementCreateDto,
   type PaymentSummary,
+  type Period,
   prorationFactor,
   type ReadingPoint,
   STATEMENT_HEATING_COST_TYPE_ID,
@@ -1535,6 +1536,39 @@ export class StatementsService {
   }
 
   /**
+   * Externe Heizkostenabrechnung: übernimmt die Endbeträge des
+   * Wärmedienstleisters je Wohnung, bei Teilperioden zeitanteilig gekürzt.
+   */
+  private async buildExternalHeatingDetail(input: {
+    buildingId: string;
+    heatingSettings: Awaited<ReturnType<HeatingService["getForBuildingAt"]>>;
+    units: UnitInfo[];
+    effectivePeriod: Period;
+  }): Promise<HeatingDetail> {
+    const { buildingId, heatingSettings, units, effectivePeriod } = input;
+    const entries =
+      await this.externalHeatingEntriesService.listForBuildingAndPeriod(
+        buildingId,
+        effectivePeriod.start,
+        effectivePeriod.end,
+      );
+
+    const heatingDetail = calculateExternalHeating({
+      units,
+      entries: entries.map((entry) =>
+        prorateExternalHeatingEntry(
+          entry,
+          heatingSettings.prorationMethod,
+          effectivePeriod,
+        ),
+      ),
+    });
+    heatingDetail.billingInfoOmitted = !heatingSettings.includeBillingInfo;
+
+    return heatingDetail;
+  }
+
+  /**
    * Ermittelt das Heizkosten-Detail: entweder aus externer Abrechnung
    * (verbrauchsunabhängig prorata) oder über die interne HeizkostenV-Verteilung
    * inkl. Warmwasser-Abspaltung (§ 9 Abs. 2) und CO2-Bepreisung.
@@ -1582,25 +1616,12 @@ export class StatementsService {
 
     let heatingDetail: HeatingDetail;
     if (heatingSettings.mode === "external") {
-      const entries =
-        await this.externalHeatingEntriesService.listForBuildingAndPeriod(
-          buildingId,
-          effectivePeriod.start,
-          effectivePeriod.end,
-        );
-
-      heatingDetail = calculateExternalHeating({
+      return await this.buildExternalHeatingDetail({
+        buildingId,
+        heatingSettings,
         units,
-        entries: entries.map((entry) =>
-          prorateExternalHeatingEntry(
-            entry,
-            heatingSettings.prorationMethod,
-            effectivePeriod,
-          ),
-        ),
+        effectivePeriod,
       });
-
-      return heatingDetail;
     }
 
     const heatingAggregation = aggregateHeatingCosts(
@@ -1711,6 +1732,22 @@ export class StatementsService {
         heatingDetail.warnings = [];
       }
       heatingDetail.warnings.push(...hotWaterWarnings);
+
+      if (heatingSettings.fuelType === "district_heat") {
+        heatingDetail.districtHeatInfo = {
+          emissionsKgPerYear: heatingSettings.districtHeatEmissionsKgPerYear,
+          primaryEnergyFactor: heatingSettings.districtHeatPrimaryEnergyFactor,
+        };
+
+        // § 6a Abs. 3 HeizkostenV verlangt bei Fernwärme THG-Emissionen und
+        // Primärenergiefaktor des Netzes. Ohne die Werte fehlt der Anhang.
+        if (
+          heatingSettings.districtHeatEmissionsKgPerYear === null ||
+          heatingSettings.districtHeatPrimaryEnergyFactor === null
+        ) {
+          heatingDetail.warnings.push({ code: "districtHeatInfoMissing" });
+        }
+      }
     } catch (err) {
       throw this.toCalcHttpError(err);
     }

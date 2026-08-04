@@ -32,6 +32,7 @@ import type { Building } from "../../../../lib/buildings";
 import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import type { Meter } from "../../../../lib/meters";
+import { ExternalBillingInfoToggle } from "./ExternalBillingInfoToggle";
 import { HeatingProrationChart } from "./HeatingProrationChart";
 
 /**
@@ -319,6 +320,7 @@ export const HeatingSettingsFields = ({
             triggerClassName="max-w-md"
           />
           <HeatingProrationChart method={prorationMethod} />
+          <ExternalBillingInfoToggle form={form} mode={mode} />
         </FieldGroup>
       </SectionCard>
 
@@ -346,6 +348,33 @@ export const HeatingSettingsFields = ({
               options={fuelTypeOptions}
               triggerClassName="max-w-md"
             />
+            {fuelType === "district_heat" ? (
+              <div className="grid grid-cols-2 gap-4">
+                <TextInput
+                  control={form.control}
+                  name="districtHeatEmissionsKgPerYear"
+                  label={t("ui.heating.fields.districtHeatEmissionsKgPerYear")}
+                  labelHelp={t(
+                    "ui.heating.fields.districtHeatEmissionsKgPerYearDescription",
+                  )}
+                  inputMode="decimal"
+                  placeholder="12500"
+                  suffix="kg"
+                  optional={true}
+                />
+                <TextInput
+                  control={form.control}
+                  name="districtHeatPrimaryEnergyFactor"
+                  label={t("ui.heating.fields.districtHeatPrimaryEnergyFactor")}
+                  labelHelp={t(
+                    "ui.heating.fields.districtHeatPrimaryEnergyFactorDescription",
+                  )}
+                  inputMode="decimal"
+                  placeholder="0,28"
+                  optional={true}
+                />
+              </div>
+            ) : null}
             {isCentralWithHotWater ? (
               <Disclose
                 label={t("ui.heating.detail.hotWaterDisclose")}

@@ -4,6 +4,8 @@ import { heatingDetailSchema } from "./statement-result.js";
 describe("heatingDetailSchema - Vermieteranteil (Leerstand/Mieterwechsel)", () => {
   it("behält landlordBasicCostCents/landlordConsumptionCostCents beim Parsen", () => {
     const raw = {
+      mode: "internal",
+      billingInfoOmitted: false,
       totalHeatingCostsCents: 99_000,
       consumptionShareBps: 7000,
       consumptionPortionCents: 63_462,

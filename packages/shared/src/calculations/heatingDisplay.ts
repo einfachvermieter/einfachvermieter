@@ -449,6 +449,108 @@ export const hotWaterFactRows = (
 };
 
 /**
+ * Ob die Heizkosten-Anlage mit dem Rechenweg gedruckt wird: bei interner
+ * Abrechnung immer; bei externer Abrechnung nur, wenn die App tatsächlich
+ * etwas gerechnet oder aufgeschlüsselt hat.
+ */
+export const hasHeatingBreakdown = (
+  detail: Pick<
+    HeatingDetail,
+    "mode" | "basicPortionCents" | "consumptionPortionCents"
+  >,
+  tenantPeriod: Period,
+  statementPeriod: Period,
+): boolean => {
+  if (detail.mode === "internal") {
+    return true;
+  }
+
+  const isPartialPeriod =
+    tenantPeriod.start !== statementPeriod.start ||
+    tenantPeriod.end !== statementPeriod.end;
+
+  return (
+    isPartialPeriod ||
+    detail.basicPortionCents > 0 ||
+    detail.consumptionPortionCents > 0
+  );
+};
+
+export type BillingInfoRow = {
+  key:
+    | "energySource"
+    | "energyShare"
+    | "districtHeatEmissions"
+    | "districtHeatFactor";
+  label: HeatingLabelDescriptor;
+  value: HeatingLabelDescriptor;
+};
+
+/**
+ * Zeilen des Energieträger-Blocks der Abrechnungsinformationen nach
+ * § 6a Abs. 3 HeizkostenV. Die App kennt genau einen Energieträger je
+ * Heizkonfiguration, der Anteil ist daher immer 100 %.
+ * Bei Fernwärme kommen Treibhausgasemissionen und Primärenergiefaktor
+ * des Netzes dazu.
+ */
+export const billingInfoRows = (
+  detail: Pick<HeatingDetail, "fuelType" | "districtHeatInfo">,
+): BillingInfoRow[] => {
+  const rows: BillingInfoRow[] = [];
+
+  if (detail.fuelType === undefined) {
+    return rows;
+  }
+
+  rows.push(
+    {
+      key: "energySource",
+      label: { key: "statements.pdf.billingInfo.energySourceLabel" },
+      value: { key: `ui.heating.fuelTypes.${detail.fuelType}` },
+    },
+    {
+      key: "energyShare",
+      label: { key: "statements.pdf.billingInfo.energyShareLabel" },
+      value: { key: "statements.pdf.billingInfo.energyShareFull" },
+    },
+  );
+
+  const districtHeat = detail.districtHeatInfo;
+  if (districtHeat) {
+    rows.push(
+      {
+        key: "districtHeatEmissions",
+        label: { key: "statements.pdf.billingInfo.districtHeatEmissionsLabel" },
+        value:
+          districtHeat.emissionsKgPerYear === null
+            ? { key: "ui.common.emptyValue" }
+            : {
+                key: "statements.pdf.billingInfo.districtHeatEmissionsValue",
+                params: {
+                  value: formatNumber(districtHeat.emissionsKgPerYear, 0),
+                },
+              },
+      },
+      {
+        key: "districtHeatFactor",
+        label: { key: "statements.pdf.billingInfo.districtHeatFactorLabel" },
+        value:
+          districtHeat.primaryEnergyFactor === null
+            ? { key: "ui.common.emptyValue" }
+            : {
+                key: "statements.pdf.billingInfo.districtHeatFactorValue",
+                params: {
+                  value: formatNumber(districtHeat.primaryEnergyFactor, 2),
+                },
+              },
+      },
+    );
+  }
+
+  return rows;
+};
+
+/**
  * CO2KostAufG-Einstufungs-Label: Stufe des Gebäude-Ausstoßes als eine der drei
  * Bereichsformen (unterste/mittlere/oberste Stufe).
  */

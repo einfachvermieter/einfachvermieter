@@ -498,6 +498,23 @@ export type HeatingDetail = {
     | "heat_pump"
     | "other";
   /**
+   * Fernwärme-Kennwerte für die Abrechnungsinformationen nach § 6a Abs. 3
+   * HeizkostenV. Nur bei `fuelType = "district_heat"` gesetzt; NULL-Werte =
+   * in der Heizkonfiguration nicht erfasst (Warnung `districtHeatInfoMissing`).
+   */
+  districtHeatInfo?: {
+    emissionsKgPerYear: number | null;
+    primaryEnergyFactor: number | null;
+  };
+  /**
+   * Abrechnungsmodus der Heizkosten.
+   */
+  mode: "internal" | "external";
+  /**
+   * True, wenn der Vermieter die § 6a-Informationsseite abgewählt hat
+   */
+  billingInfoOmitted: boolean;
+  /**
    * CO2KostAufG-Aufteilung (nur Wohngebäude). Gesetzt bei aktivierter Aufteilung
    * mit erfassten CO2-Kosten und -Menge; `landlordDeductionCents` ist bereits aus
    * `totalHeatingCostsCents` herausgerechnet. Fehlt die Menge -> `undefined` + Warnung.

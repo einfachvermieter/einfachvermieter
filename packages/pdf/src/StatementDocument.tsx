@@ -4,11 +4,13 @@ import {
   formatIban,
   formatNumber,
   groupCalcWarnings,
+  hasHeatingBreakdown,
   isTenantWarning,
   type StatementResult,
 } from "@einfachvermieter/shared";
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { calcWarningKey, formatCalcWarning } from "./calcWarnings.js";
+import { BillingInfoAppendix } from "./components/BillingInfoAppendix.js";
 import { CostsTable } from "./components/CostsTable.js";
 import { HeatingAppendix } from "./components/HeatingAppendix.js";
 import { LetterMarks } from "./components/LetterMarks.js";
@@ -110,6 +112,24 @@ const renderWithBold = (text: string) =>
     ),
   );
 
+/**
+ * Welche Heizkosten-Anhänge gedruckt werden: der Rechenweg entfällt bei
+ * extern 1:1 übernommenen Beträgen, die § 6a-Informationsseite, wenn der
+ * Vermieter sie im externen Modus abgewählt hat.
+ */
+const heatingAppendixFlags = (result: StatementResult) => ({
+  showHeatingAppendix: result.heatingDetail
+    ? hasHeatingBreakdown(
+        result.heatingDetail,
+        result.tenantPeriod,
+        result.period,
+      )
+    : false,
+  showBillingInfoAppendix:
+    result.heatingDetail !== undefined &&
+    !result.heatingDetail.billingInfoOmitted,
+});
+
 const DraftWatermark = () => (
   <Text style={styles.draftWatermark} fixed={true}>
     {t("statements.pdf.draftWatermark")}
@@ -146,6 +166,8 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
   const isPartialTenantPeriod =
     tenantPeriod.start !== period.start || tenantPeriod.end !== period.end;
   const { statementReference } = meta;
+  const { showHeatingAppendix, showBillingInfoAppendix } =
+    heatingAppendixFlags(result);
 
   return (
     <Document>
@@ -515,7 +537,7 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
       </Page>
 
       {/* Heizkostenabrechnung als eigenständiger Anhang am Ende */}
-      {result.heatingDetail ? (
+      {result.heatingDetail && showHeatingAppendix ? (
         <Page size="A4" style={styles.page}>
           <LetterMarks />
           <Text style={styles.appendixHeading}>
@@ -527,6 +549,19 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
             statementPeriod={result.period}
             targetUnitId={result.unitId}
           />
+          <PageFooter statementReference={statementReference} />
+          {meta.isDraft ? <DraftWatermark /> : null}
+        </Page>
+      ) : null}
+
+      {/* Abrechnungsinformationen nach § 6a HeizkostenV (Abs. 3 und Abs. 5) */}
+      {result.heatingDetail && showBillingInfoAppendix ? (
+        <Page size="A4" style={styles.page}>
+          <LetterMarks />
+          <Text style={styles.appendixHeading}>
+            {t("statements.pdf.appendixBillingInfo")}
+          </Text>
+          <BillingInfoAppendix detail={result.heatingDetail} />
           <PageFooter statementReference={statementReference} />
           {meta.isDraft ? <DraftWatermark /> : null}
         </Page>

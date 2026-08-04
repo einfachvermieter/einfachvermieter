@@ -81,7 +81,7 @@ npm run desktop        # Entwicklung: baut alles und startet die App
 npm run desktop:dist   # Installer bauen (dmg/zip bzw. NSIS)
 ```
 
-Status und Details: `docs/electron-todo.md` (Signierung/Auto-Update folgen).
+Status und Details: `docs/desktop.md` (Signierung/Auto-Update folgen).
 
 ## Tests
 

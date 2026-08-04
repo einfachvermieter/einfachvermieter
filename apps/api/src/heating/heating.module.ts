@@ -8,8 +8,10 @@ import { HeatingOverviewController } from "./heating-overview.controller.js";
 @Module({
   controllers: [
     HeatingOverviewController,
-    HeatingController,
+    // Vor dem HeatingController registrieren: dessen ":id"-Route würde
+    // sonst ".../heating/external-entries" abfangen (id = "external-entries").
     ExternalHeatingEntriesController,
+    HeatingController,
   ],
   providers: [HeatingService, ExternalHeatingEntriesService],
   exports: [HeatingService, ExternalHeatingEntriesService],

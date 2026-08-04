@@ -16,7 +16,6 @@ import type { ReactNode } from "react";
 import { IconTile } from "../../components/common/IconTile";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
-import { useActiveBuilding } from "../../lib/activeBuilding";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
@@ -82,7 +81,6 @@ const QuickTileContent = ({
 export const DashboardPage = () => {
   const { data: stats } = useQuery(statsQueryOptions());
   const { data: buildings } = useQuery(buildingsQueryOptions);
-  const { setBuildingId } = useActiveBuilding();
   const navigate = useNavigate();
 
   const sub = stats
@@ -218,7 +216,8 @@ export const DashboardPage = () => {
               type="button"
               className="flex w-full cursor-pointer items-center gap-3.25 border-t border-border px-1 py-3.25 text-left first:border-t-0"
               onClick={() => {
-                setBuildingId(building.id);
+                // Nur navigieren, kein setBuildingId(), da sonst Konflikt
+                // mit Store, da navigate/buildingId primär ist.
                 navigate({
                   to: "/wohnungen",
                   search: { buildingId: building.id },
