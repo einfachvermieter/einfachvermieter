@@ -5,8 +5,12 @@
  */
 
 import type { TranslateFn } from "@einfachvermieter/i18n";
-import { formatEur, formatNumber } from "../format.js";
-import type { HeatingDetail, Period } from "../types/index.js";
+import { formatDate, formatEur, formatNumber } from "../format.js";
+import type {
+  EnergyComparison,
+  HeatingDetail,
+  Period,
+} from "../types/index.js";
 import {
   co2Tier,
   DEGREE_DAYS_PROMILLE_PER_MONTH,
@@ -691,6 +695,101 @@ export const averageUserComparison = (
         value: perSqm(totalConsumption, totalArea),
       },
     ],
+  };
+};
+
+export type EnergyComparisonBar = {
+  key: "current" | "previous";
+  label: HeatingLabelDescriptor;
+  value: HeatingLabelDescriptor;
+  widthPct: number;
+};
+
+export type EnergyComparisonDisplay = {
+  /**
+   * Leer, wenn die Vorperiode fehlt. Dann zeigt der Anhang die
+   * Hinweiszeile statt der Grafik
+   */
+  bars: EnergyComparisonBar[];
+  previousMissing: boolean;
+  notes: HeatingLabelDescriptor[];
+};
+
+/**
+ * Anzeigewerte des Vorperiodenvergleichs aus der eingefrorenen
+ * Snapshot-Sektion `energyComparison`. Gemeinsame Quelle für die
+ * Balkengrafik in PDF-Anhang und Web-Karte (WYSIWYG). Bei
+ * HKV-Werten oberhalb der Bewertungspunkte-Schwelle skaliert die Anzeige
+ * beide Balkenwerte einheitlich auf Punkte (/ 1.000).
+ */
+export const energyComparisonDisplay = (
+  comparison: EnergyComparison,
+): EnergyComparisonDisplay => {
+  if (!comparison.previous) {
+    return { bars: [], previousMissing: true, notes: [] };
+  }
+
+  const currentValue = comparison.current.normalizedConsumption;
+  const previousValue = comparison.previous.normalizedConsumption;
+  const maxValue = Math.max(currentValue, previousValue);
+
+  const isHkv = comparison.consumptionUnit === "hkv_units";
+  const useValuationPoints =
+    isHkv && maxValue >= HEATING_VALUATION_POINTS_THRESHOLD;
+
+  let valueKey = "statements.pdf.billingInfo.comparisonPrevValueKwh";
+  if (isHkv) {
+    valueKey = useValuationPoints
+      ? "statements.pdf.billingInfo.comparisonPrevValuePoints"
+      : "statements.pdf.billingInfo.comparisonPrevValueUnits";
+  }
+
+  const bar = (
+    key: "current" | "previous",
+    labelKey: string,
+    period: Period,
+    value: number,
+  ): EnergyComparisonBar => ({
+    key,
+    label: {
+      key: labelKey,
+      params: { start: formatDate(period.start), end: formatDate(period.end) },
+    },
+    value: {
+      key: valueKey,
+      params: {
+        value: formatNumber(useValuationPoints ? value / 1000 : value, 0),
+      },
+    },
+    widthPct: maxValue > 0 ? (value / maxValue) * 100 : 0,
+  });
+
+  const notes: HeatingLabelDescriptor[] = [
+    { key: "statements.pdf.billingInfo.comparisonPrevWeatherNote" },
+  ];
+  if (comparison.includesHotWater) {
+    notes.push({
+      key: "statements.pdf.billingInfo.comparisonPrevHotWaterNote",
+    });
+  }
+
+  return {
+    bars: [
+      bar(
+        "current",
+        "statements.pdf.billingInfo.comparisonPrevCurrentLabel",
+        comparison.current.period,
+        currentValue,
+      ),
+      bar(
+        "previous",
+        "statements.pdf.billingInfo.comparisonPrevPreviousLabel",
+        comparison.previous.period,
+        previousValue,
+      ),
+    ],
+    previousMissing: false,
+    notes,
   };
 };
 

@@ -635,4 +635,44 @@ export type HeatingDetail = {
      */
     landlordConsumptionCostCents: number;
   };
+  /**
+   * Vorperiodenvergleich des witterungsbereinigten Energieverbrauchs
+   */
+  energyComparison?: EnergyComparison;
+};
+
+/**
+ * Vergleichswerte für § 6a Abs. 3 Nr. 5 HeizkostenV: Energieverbrauch des
+ * Mieters im aktuellen und im unmittelbar vorhergehenden Abrechnungszeitraum,
+ * jeweils auf ein Normjahr umgerechnet (Heizung witterungsbereinigt über
+ * Gradtagszahlen, Warmwasser tagesanteilig).
+ */
+export type EnergyComparison = {
+  /**
+   * Einheit beider Vergleichswerte: kWh (Wärmemengenzähler) oder bewertete
+   * HKV-Einheiten. Warmwasser ist nur bei kWh enthalten.
+   */
+  consumptionUnit: "kwh" | "hkv_units";
+  /**
+   * `true`, wenn der Warmwasser-Energieanteil in beiden Werten enthalten ist.
+   */
+  includesHotWater: boolean;
+  current: EnergyComparisonValue;
+  /**
+   * Fehlt, wenn es kein finalisiertes Statement desselben Mieters mit
+   * unmittelbar vorausgehendem Zeitraum gibt oder dessen Verbrauch nicht
+   * vergleichbar ist (andere Messmethode, kein gemessener Verbrauch).
+   */
+  previous?: EnergyComparisonValue;
+};
+
+export type EnergyComparisonValue = {
+  /**
+   * Nutzungszeitraum, aus dem der Verbrauch stammt.
+   */
+  period: Period;
+  /**
+   * Aufs Normjahr umgerechneter Verbrauch in `consumptionUnit`.
+   */
+  normalizedConsumption: number;
 };

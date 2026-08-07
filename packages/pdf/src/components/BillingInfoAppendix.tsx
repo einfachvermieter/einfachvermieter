@@ -2,6 +2,7 @@ import {
   averageUserComparison,
   billingInfoCostRows,
   billingInfoRows,
+  energyComparisonDisplay,
   type HeatingDetail,
   type Period,
 } from "@einfachvermieter/shared";
@@ -41,6 +42,9 @@ export const BillingInfoAppendix = ({
     tenantPeriod,
     statementPeriod,
   );
+  const prevComparison = detail.energyComparison
+    ? energyComparisonDisplay(detail.energyComparison)
+    : null;
 
   return (
     <View>
@@ -121,6 +125,42 @@ export const BillingInfoAppendix = ({
         <Text style={styles.paragraph}>
           {t(comparison.note.key, comparison.note.params)}
         </Text>
+      ) : null}
+
+      {prevComparison ? (
+        <>
+          <Text style={styles.appendixSubheading}>
+            {t("statements.pdf.billingInfo.comparisonPrevTitle")}
+          </Text>
+          {prevComparison.previousMissing ? (
+            <Text style={styles.paragraph}>
+              {t("statements.pdf.billingInfo.comparisonPrevMissing")}
+            </Text>
+          ) : (
+            <>
+              {prevComparison.bars.map((bar) => (
+                <View key={bar.key} style={styles.energyBarRow}>
+                  <Text style={styles.energyBarLabel}>
+                    {t(bar.label.key, bar.label.params)}
+                  </Text>
+                  <View style={styles.energyBarTrack}>
+                    <View
+                      style={[styles.energyBar, { width: `${bar.widthPct}%` }]}
+                    />
+                  </View>
+                  <Text style={styles.energyBarValue}>
+                    {t(bar.value.key, bar.value.params)}
+                  </Text>
+                </View>
+              ))}
+              {prevComparison.notes.map((note) => (
+                <Text key={note.key} style={styles.footnote}>
+                  {t(note.key, note.params)}
+                </Text>
+              ))}
+            </>
+          )}
+        </>
       ) : null}
 
       <Text style={styles.appendixSubheading}>

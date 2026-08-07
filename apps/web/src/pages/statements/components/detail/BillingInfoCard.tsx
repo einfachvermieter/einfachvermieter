@@ -2,6 +2,7 @@ import {
   averageUserComparison,
   billingInfoCostRows,
   billingInfoRows,
+  energyComparisonDisplay,
   type HeatingDetail,
   type Period,
 } from "@einfachvermieter/shared";
@@ -32,6 +33,9 @@ export const BillingInfoCard = ({
     tenantPeriod,
     statementPeriod,
   );
+  const prevComparison = detail.energyComparison
+    ? energyComparisonDisplay(detail.energyComparison)
+    : null;
 
   return (
     <SectionCard
@@ -121,6 +125,44 @@ export const BillingInfoCard = ({
           <p className="text-muted-foreground">
             {t(comparison.note.key, comparison.note.params)}
           </p>
+        ) : null}
+        {prevComparison ? (
+          <section>
+            <h3 className="mb-2.5 font-semibold text-foreground">
+              {t("statements.pdf.billingInfo.comparisonPrevTitle")}
+            </h3>
+            {prevComparison.previousMissing ? (
+              <p className="text-muted-foreground">
+                {t("statements.pdf.billingInfo.comparisonPrevMissing")}
+              </p>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  {prevComparison.bars.map((bar) => (
+                    <div key={bar.key} className="flex items-center gap-3">
+                      <div className="w-72 shrink-0">
+                        {t(bar.label.key, bar.label.params)}
+                      </div>
+                      <div className="h-2.5 flex-1 overflow-hidden rounded-sm bg-muted">
+                        <div
+                          className="h-full rounded-sm bg-sky-500"
+                          style={{ width: `${bar.widthPct}%` }}
+                        />
+                      </div>
+                      <div className="w-44 shrink-0 text-right tabular-nums">
+                        {t(bar.value.key, bar.value.params)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-2.5 space-y-1 text-muted-foreground">
+                  {prevComparison.notes.map((note) => (
+                    <p key={note.key}>{t(note.key, note.params)}</p>
+                  ))}
+                </div>
+              </>
+            )}
+          </section>
         ) : null}
         <section>
           <h3 className="mb-2.5 font-semibold text-foreground">

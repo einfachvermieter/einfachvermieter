@@ -6,6 +6,10 @@
  *   A "Lindenhof"   - interne Zentralheizung OHNE Warmwasser, Gas,
  *                     Verbrauch über Heizkostenverteiler, Gradtagszahlen,
  *                     Kaltwasser mit virtuellem Differenzzähler, Mieterwechsel.
+ *                     Trägt zusätzlich ein 2024er Vorjahr (HKV-/Gas-Stände +
+ *                     Heizrechnungen, ohne Wasser): eine finalisierte
+ *                     2024er-Abrechnung liefert dann den Vorperioden-
+ *                     vergleich in der 2025er.
  *   B "Gartenstadt" - interne Zentralheizung MIT Warmwasser, Öl, Verbrauch
  *                     über Wärmemengenzähler, lineare Abgrenzung,
  *                     drei Wohnungen.
@@ -215,7 +219,8 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     hotWaterMeterId: null,
     hotWaterSupplyTemperatureCelsius: 60,
     co2CostShareEnabled: true,
-    validFrom: "2025-01-01",
+    // Ab 2024, damit auch die 2024er Vorjahres-Abrechnung rechenbar ist.
+    validFrom: "2024-01-01",
     validTo: null,
   });
 
@@ -239,7 +244,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       serialNumber: "DEMO-A-GAS-001",
       measurementUnit: "m3",
       costAllocationMode: "heating_cost_bill",
-      validFrom: "2025-01-01",
+      validFrom: "2024-01-01",
       isActive: true,
     },
     {
@@ -296,7 +301,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       kTotal: 1500,
       radiatorType: "Platten-HK",
       radiatorDimensions: "120x60",
-      validFrom: "2025-01-01",
+      validFrom: "2024-01-01",
       isActive: true,
     },
     {
@@ -313,7 +318,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       kTotal: 420,
       radiatorType: "Bad-HK",
       radiatorDimensions: "80x60",
-      validFrom: "2025-01-01",
+      validFrom: "2024-01-01",
       isActive: true,
     },
     {
@@ -330,7 +335,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       kTotal: 1800,
       radiatorType: "Platten-HK",
       radiatorDimensions: "140x60",
-      validFrom: "2025-01-01",
+      validFrom: "2024-01-01",
       isActive: true,
     },
     {
@@ -347,7 +352,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       kTotal: 1200,
       radiatorType: "Platten-HK",
       radiatorDimensions: "100x60",
-      validFrom: "2025-01-01",
+      validFrom: "2024-01-01",
       isActive: true,
     },
   ]);
@@ -370,7 +375,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   insert(schema.meterGasFactors, {
     id: nid(),
     meterId: aMeterGas,
-    validFrom: "2025-01-01",
+    validFrom: "2024-01-01",
     validUntil: null,
     energyFactorKwhPerM3: 10.1,
   });
@@ -383,7 +388,21 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   ]);
 
   insert(schema.meterReadings, [
-    // Gas (m3) - Jahresverbrauch 1800 m3
+    // Gas (m3) - Jahresverbrauch 2024: 1950 m3 (kälter), 2025: 1800 m3
+    {
+      id: nid(),
+      meterId: aMeterGas,
+      readingDate: "2024-01-01",
+      value: 3050,
+      readBy: "utility",
+    },
+    {
+      id: nid(),
+      meterId: aMeterGas,
+      readingDate: "2024-12-31",
+      value: 5000,
+      readBy: "utility",
+    },
     {
       id: nid(),
       meterId: aMeterGas,
@@ -428,61 +447,120 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       value: 60,
       readBy: "landlord",
     },
-    // Heizkostenverteiler (Striche)
+    // Heizkostenverteiler (Striche), kumulierende Stände seit Einbau 2024.
+    // 2024 war kälter: Jahresverbräuche liegen ~8 % über 2025, damit der
+    // Vorperiodenvergleich nach § 6a Abs. 3 Nr. 5 sichtbar unterschiedliche
+    // Balken zeigt.
     {
       id: nid(),
       meterId: aHkvEgWohn,
-      readingDate: "2025-01-01",
+      readingDate: "2024-01-01",
       value: 0,
       readBy: "metering_service",
     },
     {
       id: nid(),
       meterId: aHkvEgWohn,
+      readingDate: "2024-12-31",
+      value: 560,
+      readBy: "metering_service",
+    },
+    {
+      id: nid(),
+      meterId: aHkvEgWohn,
+      readingDate: "2025-01-01",
+      value: 560,
+      readBy: "metering_service",
+    },
+    {
+      id: nid(),
+      meterId: aHkvEgWohn,
       readingDate: "2025-12-31",
-      value: 520,
+      value: 1080,
+      readBy: "metering_service",
+    },
+    {
+      id: nid(),
+      meterId: aHkvEgBad,
+      readingDate: "2024-01-01",
+      value: 0,
+      readBy: "metering_service",
+    },
+    {
+      id: nid(),
+      meterId: aHkvEgBad,
+      readingDate: "2024-12-31",
+      value: 103,
       readBy: "metering_service",
     },
     {
       id: nid(),
       meterId: aHkvEgBad,
       readingDate: "2025-01-01",
-      value: 0,
+      value: 103,
       readBy: "metering_service",
     },
     {
       id: nid(),
       meterId: aHkvEgBad,
       readingDate: "2025-12-31",
-      value: 95,
+      value: 198,
       readBy: "metering_service",
     },
     {
       id: nid(),
       meterId: aHkvOgWohn,
-      readingDate: "2025-01-01",
+      readingDate: "2024-01-01",
       value: 0,
       readBy: "metering_service",
     },
     {
       id: nid(),
       meterId: aHkvOgWohn,
+      readingDate: "2024-12-31",
+      value: 660,
+      readBy: "metering_service",
+    },
+    {
+      id: nid(),
+      meterId: aHkvOgWohn,
+      readingDate: "2025-01-01",
+      value: 660,
+      readBy: "metering_service",
+    },
+    {
+      id: nid(),
+      meterId: aHkvOgWohn,
       readingDate: "2025-12-31",
-      value: 610,
+      value: 1270,
       readBy: "metering_service",
     },
     {
       id: nid(),
       meterId: aHkvOgSchlaf,
-      readingDate: "2025-01-01",
+      readingDate: "2024-01-01",
       value: 0,
       readBy: "metering_service",
     },
     {
       id: nid(),
       meterId: aHkvOgSchlaf,
+      readingDate: "2024-12-31",
+      value: 368,
+      readBy: "metering_service",
+    },
+    {
+      id: nid(),
+      meterId: aHkvOgSchlaf,
+      readingDate: "2025-01-01",
+      value: 368,
+      readBy: "metering_service",
+    },
+    {
+      id: nid(),
+      meterId: aHkvOgSchlaf,
       readingDate: "2025-12-31",
-      value: 340,
+      value: 708,
       readBy: "metering_service",
     },
   ]);
@@ -610,6 +688,47 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       amountCents: 240_000,
     },
   ]);
+
+  // Rechnungen A - Vorjahr 2024 (nur Heizung, damit die 2024er-Abrechnung
+  // den Vorperiodenvergleich der 2025er speist; Wasser/Betriebskosten
+  // bleiben bewusst aufs Jahr 2025 beschränkt).
+  const aGasEntry2024 = nid();
+  insert(schema.costEntries, {
+    id: aGasEntry2024,
+    invoiceDate: "2025-02-08",
+    invoiceNumber: "GAS-2024-3917",
+    vendor: "Stadtwerke Musterstadt",
+  });
+  insert(schema.costEntryItems, {
+    id: nid(),
+    costEntryId: aGasEntry2024,
+    costTypeId: aCtGas,
+    amountCents: 231_900,
+    co2AmountGrams: 3_940_000,
+    co2CostCents: 17_730,
+    containedTaxesCents: 76_300,
+    periodStart: "2024-01-01",
+    periodEnd: "2024-12-31",
+    position: 0,
+  });
+
+  const aMeterServiceEntry2024 = nid();
+  insert(schema.costEntries, {
+    id: aMeterServiceEntry2024,
+    invoiceDate: "2025-01-17",
+    invoiceNumber: "MD-2025-0733",
+    vendor: "Messdienst Musterstadt",
+  });
+  insert(schema.costEntryItems, {
+    id: nid(),
+    costEntryId: aMeterServiceEntry2024,
+    costTypeId: aCtMeterService,
+    amountCents: 18_400,
+    containedTaxesCents: 2938,
+    periodStart: "2024-01-01",
+    periodEnd: "2024-12-31",
+    position: 0,
+  });
 
   // Rechnungen A
   const aGasEntry = nid();

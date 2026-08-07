@@ -94,6 +94,19 @@ const heatingDetail: HeatingDetail = {
       totalCents: 120_000,
     },
   ],
+  // Vorperiodenvergleich mit beiden Zeiträumen, damit die Balkengrafik
+  // des § 6a-Anhangs durch den echten Renderer läuft.
+  // HKV-Einheiten mit siebenstelligen Werten: der breiteste Anzeigefall
+  // der Balkengrafik (Spaltenbreite `energyBarValue`).
+  energyComparison: {
+    consumptionUnit: "hkv_units",
+    includesHotWater: false,
+    current: { period, normalizedConsumption: 1_506_000 },
+    previous: {
+      period: { start: "2024-01-01", end: "2024-12-31" },
+      normalizedConsumption: 1_629_600,
+    },
+  },
 };
 
 /**

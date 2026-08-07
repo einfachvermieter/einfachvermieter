@@ -3,6 +3,7 @@ export * from "./advance.js";
 export * from "./allocation.js";
 export * from "./costsDisplay.js";
 export * from "./diagnostics.js";
+export * from "./energyComparison.js";
 export * from "./heating.js";
 export * from "./heatingDisplay.js";
 export * from "./meters.js";

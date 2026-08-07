@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatNumber } from "../format.js";
-import type { HeatingDetail } from "../types/index.js";
+import type { EnergyComparison, HeatingDetail } from "../types/index.js";
 import {
   averageUserComparison,
   billingInfoCostRows,
@@ -8,6 +8,7 @@ import {
   co2TenantShareCents,
   co2TierLabel,
   consumptionUnitLabel,
+  energyComparisonDisplay,
   hasHeatingBreakdown,
   hotWaterFactRows,
   perMeterDisplayDigits,
@@ -508,5 +509,80 @@ describe("consumptionUnitLabel", () => {
     expect(consumptionUnitLabel("heat_cost_allocator", true).key).toBe(
       "statements.pdf.heating.consumptionUnits",
     );
+  });
+});
+
+describe("energyComparisonDisplay (§ 6a Abs. 3 Nr. 5 HeizkostenV)", () => {
+  const comparison = (
+    overrides: Partial<EnergyComparison> = {},
+  ): EnergyComparison => ({
+    consumptionUnit: "kwh",
+    includesHotWater: false,
+    current: {
+      period: period("2025-01-01", "2025-12-31"),
+      normalizedConsumption: 1200,
+    },
+    previous: {
+      period: period("2024-01-01", "2024-12-31"),
+      normalizedConsumption: 1500,
+    },
+    ...overrides,
+  });
+
+  it("zeigt ohne Vorperiode die Hinweiszeile statt Balken", () => {
+    const display = energyComparisonDisplay(
+      comparison({ previous: undefined }),
+    );
+    expect(display.previousMissing).toBe(true);
+    expect(display.bars).toEqual([]);
+  });
+
+  it("skaliert die Balken relativ zum größeren Wert", () => {
+    const display = energyComparisonDisplay(comparison());
+    expect(display.bars.map((bar) => bar.key)).toEqual(["current", "previous"]);
+    expect(display.bars[0]?.widthPct).toBe(80);
+    expect(display.bars[1]?.widthPct).toBe(100);
+    expect(display.bars[0]?.value).toEqual({
+      key: "statements.pdf.billingInfo.comparisonPrevValueKwh",
+      params: { value: "1.200" },
+    });
+    expect(display.bars[0]?.label.params).toEqual({
+      start: "01.01.2025",
+      end: "31.12.2025",
+    });
+    expect(display.notes.map((note) => note.key)).toEqual([
+      "statements.pdf.billingInfo.comparisonPrevWeatherNote",
+    ]);
+  });
+
+  it("ergänzt die Warmwasser-Erläuterung, wenn Warmwasser enthalten ist", () => {
+    const display = energyComparisonDisplay(
+      comparison({ includesHotWater: true }),
+    );
+    expect(display.notes.map((note) => note.key)).toEqual([
+      "statements.pdf.billingInfo.comparisonPrevWeatherNote",
+      "statements.pdf.billingInfo.comparisonPrevHotWaterNote",
+    ]);
+  });
+
+  it("wechselt oberhalb der Schwelle einheitlich auf Bewertungspunkte", () => {
+    const display = energyComparisonDisplay(
+      comparison({
+        consumptionUnit: "hkv_units",
+        current: {
+          period: period("2025-01-01", "2025-12-31"),
+          normalizedConsumption: 8_000_000,
+        },
+        previous: {
+          period: period("2024-01-01", "2024-12-31"),
+          normalizedConsumption: 12_000_000,
+        },
+      }),
+    );
+    expect(display.bars[0]?.value).toEqual({
+      key: "statements.pdf.billingInfo.comparisonPrevValuePoints",
+      params: { value: "8.000" },
+    });
+    expect(display.bars[1]?.value.params?.value).toBe("12.000");
   });
 });

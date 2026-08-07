@@ -21,6 +21,7 @@ import {
   type AdvanceAdjustmentDetail,
   addDaysIso,
   aggregateHeatingCosts,
+  buildEnergyComparison,
   CalculationError,
   type CalcWarning,
   type CalcWarningGroup,
@@ -32,6 +33,7 @@ import {
   type DifferenceConfigInput,
   daysBetween,
   daysInYear,
+  type EnergyComparisonPeriodInput,
   type ExternalHeatingEntry,
   formatWarningParams,
   groupCalcWarnings,
@@ -778,6 +780,14 @@ export class StatementsService {
       targetUnitId,
     });
 
+    if (heatingDetail.mode === "internal") {
+      heatingDetail.energyComparison = buildEnergyComparison(
+        targetUnitId,
+        { detail: heatingDetail, tenantPeriod: effectivePeriod },
+        await this.loadPreviousComparisonPeriod(tenantId, periodStart),
+      );
+    }
+
     const totalAdvancesCents =
       await this.accountsService.getReceivedAdvancesForPeriod(
         tenantId,
@@ -846,6 +856,38 @@ export class StatementsService {
       ...(occupancyDetail ? { occupancyDetail } : {}),
       advanceAdjustment,
       ...(taxableLaborCosts ? { taxableLaborCosts } : {}),
+    };
+  }
+
+  /**
+   * Vorperioden-Daten für den Energieverbrauchs-Vergleich nach § 6a Abs. 3
+   * Nr. 5 HeizkostenV: das finalisierte Statement desselben Mieters, dessen
+   * Abrechnungszeitraum unmittelbar vor dem aktuellen endet. undefined, wenn
+   * es keins gibt (Erstabrechnung, Mieterwechsel) oder dessen Snapshot keine
+   * Heizdaten trägt (der Anhang zeigt dann die Hinweiszeile).
+   */
+  private async loadPreviousComparisonPeriod(
+    tenantId: string,
+    periodStart: string,
+  ): Promise<EnergyComparisonPeriodInput | undefined> {
+    const previous = await this.em.findOne(
+      OperatingCostStatementSchema,
+      {
+        tenantId,
+        status: "finalized",
+        periodEnd: addDaysIso(periodStart, -1),
+      },
+      { orderBy: { finalizedAt: "desc" } },
+    );
+
+    const snapshot = previous?.snapshotData;
+    if (!snapshot?.heatingDetail) {
+      return;
+    }
+
+    return {
+      detail: snapshot.heatingDetail,
+      tenantPeriod: snapshot.tenantPeriod,
     };
   }
 

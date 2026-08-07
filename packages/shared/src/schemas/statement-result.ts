@@ -256,6 +256,26 @@ export const heatingDetailSchema = z.object({
       landlordConsumptionCostCents: z.number().int(),
     })
     .optional(),
+  /**
+   * Vorperiodenvergleich des witterungsbereinigten Energieverbrauchs
+   * Optional, fehlt ohne gemessenen Verbrauch (externer Modus, Flächen-Fallback).
+   */
+  energyComparison: z
+    .object({
+      consumptionUnit: z.enum(["kwh", "hkv_units"]),
+      includesHotWater: z.boolean(),
+      current: z.object({
+        period: periodSchema,
+        normalizedConsumption: z.number(),
+      }),
+      previous: z
+        .object({
+          period: periodSchema,
+          normalizedConsumption: z.number(),
+        })
+        .optional(),
+    })
+    .optional(),
 });
 
 const paymentSummarySchema = z.object({

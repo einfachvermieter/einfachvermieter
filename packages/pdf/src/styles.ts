@@ -297,6 +297,38 @@ export const styles = StyleSheet.create({
     color: OPERATOR_GRAY,
   },
 
+  // ── Balkengrafik Vorperiodenvergleich ─────────────────────────────
+  // Zwei horizontale Balken (dieser/vorheriger Zeitraum). Der helle
+  // Laufbalken zeigt die volle Skala, darauf sitzt der dunklere Wertbalken
+  energyBarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  energyBarLabel: {
+    width: 200,
+    fontSize: SMALL_SIZE,
+    lineHeight: LINE_HEIGHT_TIGHT,
+  },
+  energyBarTrack: {
+    flex: 1,
+    height: 9,
+    backgroundColor: "#EEEEEE",
+  },
+  energyBar: {
+    height: "100%",
+    backgroundColor: "#BBBBBB",
+  },
+  // Breit genug für den längsten Wert („9.999.999 Verbrauchseinheiten"),
+  // sonst bricht react-pdf mit Trennstrich um und der Wert liest sich
+  // wie ein Minus.
+  energyBarValue: {
+    width: 145,
+    textAlign: "right",
+    fontSize: SMALL_SIZE,
+    fontFamily: "Geist Tnum",
+  },
+
   // ── Draft-Wasserzeichen ──────────────────────────────────────────
   // "ENTWURF" als diagonaler Schriftzug auf jeder Seite, solange die
   // Abrechnung im Draft-Status ist. Wird in jeder Page als LETZTES Element
