@@ -382,6 +382,8 @@ describe("averageUserComparison (§ 6a Abs. 3 Nr. 4 HeizkostenV)", () => {
     // 1000 kWh / 50 m2 = 20,0; (1000 + 800) / (50 + 30) = 22,5
     expect(result?.rows[0]?.value.params?.value).toBe("20,0");
     expect(result?.rows[1]?.value.params?.value).toBe("22,5");
+    // Der Schnitt nennt, ueber wie viele Wohnungen er geht.
+    expect(result?.rows[1]?.label.params?.count).toBe("2");
     expect(result?.rows[0]?.value.key).toBe(
       "statements.pdf.billingInfo.comparisonValueKwh",
     );
@@ -425,6 +427,14 @@ describe("averageUserComparison (§ 6a Abs. 3 Nr. 4 HeizkostenV)", () => {
     expect(result?.rows[0]?.value.params?.value).toBe("34,3");
     // Durchschnitt mit dem hochgerechneten Wert: (1715,3 + 800) / 80 m²
     expect(result?.rows[1]?.value.params?.value).toBe("31,4");
+  });
+
+  it("entfällt in einem Gebäude mit nur einer Wohnung", () => {
+    const detail = baseDetail();
+    detail.perUnit = detail.perUnit.slice(0, 1);
+    expect(
+      averageUserComparison(detail, "a", fullPeriod, fullPeriod),
+    ).toBeNull();
   });
 
   it("entfällt im externen Modus und im Flächen-Fallback", () => {

@@ -641,7 +641,13 @@ export const averageUserComparison = (
   const ownRow = detail.perUnit.find((row) => row.unitId === targetUnitId);
   const totalArea = detail.perUnit.reduce((acc, row) => acc + row.areaSqm, 0);
 
-  if (!ownRow || ownRow.areaSqm <= 0 || totalArea <= 0) {
+  // Bei einer einzigen Wohnung waere der "Durchschnitt" der eigene Verbrauch.
+  if (
+    !ownRow ||
+    ownRow.areaSqm <= 0 ||
+    totalArea <= 0 ||
+    detail.perUnit.length < 2
+  ) {
     return null;
   }
 
@@ -700,7 +706,10 @@ export const averageUserComparison = (
       },
       {
         key: "averageConsumption",
-        label: { key: "statements.pdf.billingInfo.comparisonAverageLabel" },
+        label: {
+          key: "statements.pdf.billingInfo.comparisonAverageLabel",
+          params: { count: String(detail.perUnit.length) },
+        },
         value: perSqm(totalConsumption, totalArea),
       },
     ],

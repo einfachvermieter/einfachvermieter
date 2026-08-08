@@ -2101,7 +2101,7 @@
         "meteringServiceValue": "{value}",
         "comparisonTitle": "Vergleich mit dem Durchschnittsnutzer",
         "comparisonOwnLabel": "Ihr Heizverbrauch je m²",
-        "comparisonAverageLabel": "Durchschnitt aller Wohnungen des Gebäudes",
+        "comparisonAverageLabel": "Durchschnitt aller {count} Wohnungen des Gebäudes",
         "comparisonValueKwh": "{value} kWh/m²",
         "comparisonValueUnits": "{value} Einheiten/m²",
         "comparisonValuePoints": "{value} Bewertungspunkte/m²",
