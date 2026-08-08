@@ -675,4 +675,15 @@ export type EnergyComparisonValue = {
    * Aufs Normjahr umgerechneter Verbrauch in `consumptionUnit`.
    */
   normalizedConsumption: number;
+  /**
+   * Klimafaktor (DWD bzw. manuell), mit dem der Heizanteil multipliziert
+   * wurde. Fehlt, wenn keiner verfügbar war - dann ist der Wert nicht
+   * witterungsbereinigt.
+   */
+  climateFactor?: number;
+  /**
+   * Der Faktor wurde manuell erfasst statt vom DWD geladen. Steuert die
+   * Quellen-Angabe in der Fußnote.
+   */
+  climateFactorIsManual?: boolean;
 };

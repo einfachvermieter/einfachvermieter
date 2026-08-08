@@ -496,3 +496,53 @@ export const CostEntryAttachmentSchema = new EntitySchema<CostEntryAttachment>({
     },
   ],
 });
+
+/**
+ * Cache der DWD-Klimafaktoren für die Witterungsbereinigung des
+ * Vorperiodenvergleichs. Ein Faktor je Zustell-Postleitzahl und
+ * 12-Monats-Zeitraum, beim ersten Berechnungslauf von opendata.dwd.de
+ * geladen und danach offline verfügbar.
+ */
+export type ClimateFactor = {
+  id: string;
+  postalCode: string;
+  periodStart: string;
+  periodEnd: string;
+  factor: number;
+  isManual: Opt<boolean>;
+  createdAt: Opt<string>;
+  updatedAt: Opt<string>;
+};
+
+export const ClimateFactorSchema = new EntitySchema<ClimateFactor>({
+  name: "ClimateFactor",
+  tableName: "climate_factors",
+  properties: {
+    id: {
+      type: "string",
+      primary: true,
+      onCreate: () => crypto.randomUUID(),
+    },
+    postalCode: { type: "string", fieldName: "postal_code" },
+    periodStart: { type: "string", fieldName: "period_start" },
+    periodEnd: { type: "string", fieldName: "period_end" },
+    factor: { type: "double" },
+    isManual: { type: "boolean", fieldName: "is_manual", default: false },
+    createdAt: {
+      type: "string",
+      fieldName: "created_at",
+      defaultRaw: "current_timestamp",
+    },
+    updatedAt: {
+      type: "string",
+      fieldName: "updated_at",
+      defaultRaw: "current_timestamp",
+    },
+  },
+  uniques: [
+    {
+      name: "climate_factors_postal_code_period",
+      properties: ["postalCode", "periodStart", "periodEnd"],
+    },
+  ],
+});

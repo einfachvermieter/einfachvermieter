@@ -74,6 +74,7 @@ import { tenantQueryOptions } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
 import { AdvanceAdjustmentCard } from "./components/AdvanceAdjustmentCard";
 import { BillingInfoCard } from "./components/detail/BillingInfoCard";
+import { ClimateFactorsCard } from "./components/detail/ClimateFactorsCard";
 import { HeatingCard } from "./components/detail/HeatingCard";
 import { OccupancyCard } from "./components/detail/OccupancyCard";
 import { OperatingCostsCard } from "./components/detail/OperatingCostsCard";
@@ -266,6 +267,11 @@ const StatementTabs = ({
                 statementPeriod={result.period}
                 targetUnitId={result.unitId}
               />
+            ) : null}
+            {/* Nur wenn es eine Vorperiode gibt: ohne sie entfällt der
+                Vergleich, und der Klimafaktor wäre wirkungslos. */}
+            {isDraft && heatingDetail.energyComparison?.previous ? (
+              <ClimateFactorsCard statementId={statementId} />
             ) : null}
             {showBillingInfo ? (
               <BillingInfoCard

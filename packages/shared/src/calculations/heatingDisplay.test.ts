@@ -327,13 +327,17 @@ describe("billingInfoRows", () => {
     expect(rows[3]?.value.params?.value).toBe("0,28");
   });
 
-  it("zeigt nicht erfasste Fernwärme-Werte als Leer-Platzhalter", () => {
+  it("erklärt nicht erfasste Fernwärme-Werte mit einem Satz statt Leer-Platzhalter", () => {
     const rows = billingInfoRows({
       fuelType: "district_heat",
       districtHeatInfo: { emissionsKgPerYear: null, primaryEnergyFactor: null },
     });
-    expect(rows[2]?.value.key).toBe("ui.common.emptyValue");
-    expect(rows[3]?.value.key).toBe("ui.common.emptyValue");
+    expect(rows[2]?.value.key).toBe(
+      "statements.pdf.billingInfo.districtHeatValueMissing",
+    );
+    expect(rows[3]?.value.key).toBe(
+      "statements.pdf.billingInfo.districtHeatValueMissing",
+    );
   });
 });
 
@@ -550,9 +554,160 @@ describe("energyComparisonDisplay (§ 6a Abs. 3 Nr. 5 HeizkostenV)", () => {
       start: "01.01.2025",
       end: "31.12.2025",
     });
+    // Ohne Klimafaktoren sagt die Fußnote ehrlich "nicht witterungsbereinigt".
     expect(display.notes.map((note) => note.key)).toEqual([
-      "statements.pdf.billingInfo.comparisonPrevWeatherNote",
+      "statements.pdf.billingInfo.comparisonPrevNoAdjustmentNote",
     ]);
+  });
+
+  it("nennt die Quelle im Witterungs-Satz, die Faktoren im Rechenweg", () => {
+    const display = energyComparisonDisplay(
+      comparison({
+        current: {
+          period: period("2025-01-01", "2025-12-31"),
+          normalizedConsumption: 1280,
+          climateFactor: 1.28,
+        },
+        previous: {
+          period: period("2024-01-01", "2024-12-31"),
+          normalizedConsumption: 2025,
+          climateFactor: 1.35,
+        },
+      }),
+    );
+    // Die Faktoren stehen im Rechenweg darunter, nicht doppelt im Satz.
+    expect(display.notes[0]).toEqual({
+      key: "statements.pdf.billingInfo.comparisonPrevWeatherNoteShort",
+    });
+  });
+
+  it("lässt den DWD-Vermerk weg, sobald ein Faktor manuell erfasst ist", () => {
+    const display = energyComparisonDisplay(
+      comparison({
+        current: {
+          period: period("2025-01-01", "2025-12-31"),
+          normalizedConsumption: 1280,
+          climateFactor: 1.28,
+          climateFactorIsManual: true,
+        },
+        previous: {
+          period: period("2024-01-01", "2024-12-31"),
+          normalizedConsumption: 2025,
+          climateFactor: 1.35,
+        },
+      }),
+    );
+    expect(display.notes[0]?.key).toBe(
+      "statements.pdf.billingInfo.comparisonPrevWeatherNoteShortManual",
+    );
+  });
+
+  it("legt den Rechenweg beider Seiten offen", () => {
+    const display = energyComparisonDisplay(
+      comparison({
+        current: {
+          period: period("2025-01-01", "2025-12-31"),
+          normalizedConsumption: 1280,
+          climateFactor: 1.28,
+        },
+        previous: {
+          period: period("2024-01-01", "2024-12-31"),
+          normalizedConsumption: 1350,
+          climateFactor: 1.35,
+        },
+      }),
+    );
+    const calculation = display.notes.find(
+      (note) =>
+        note.key === "statements.pdf.billingInfo.comparisonPrevCalculationNote",
+    );
+    // 1.280 / 1,28 = 1.000 bzw. 1.350 / 1,35 = 1.000
+    expect(calculation?.params).toEqual({
+      currentBase: "1.000",
+      currentFactor: "1,28",
+      currentResult: "1.280",
+      previousBase: "1.000",
+      previousFactor: "1,35",
+      previousResult: "1.350",
+    });
+  });
+
+  it("behält die Faktoren im Satz, wenn kein Rechenweg folgt (Warmwasser)", () => {
+    const display = energyComparisonDisplay(
+      comparison({
+        includesHotWater: true,
+        current: {
+          period: period("2025-01-01", "2025-12-31"),
+          normalizedConsumption: 1280,
+          climateFactor: 1.28,
+        },
+        previous: {
+          period: period("2024-01-01", "2024-12-31"),
+          normalizedConsumption: 1350,
+          climateFactor: 1.35,
+        },
+      }),
+    );
+    expect(display.notes[0]).toEqual({
+      key: "statements.pdf.billingInfo.comparisonPrevWeatherNote",
+      params: { current: "1,28", previous: "1,35" },
+    });
+  });
+
+  it("weist hochgerechnete Zeiträume in der Fußnote aus", () => {
+    const withPartial = energyComparisonDisplay(
+      comparison({
+        current: {
+          period: period("2025-07-01", "2025-12-31"),
+          normalizedConsumption: 1200,
+        },
+      }),
+    );
+    expect(
+      withPartial.notes.some(
+        (note) =>
+          note.key ===
+          "statements.pdf.billingInfo.comparisonPrevExtrapolatedNote",
+      ),
+    ).toBe(true);
+    // Die Balken-Labels bleiben einzeilig, sonst bricht der Anhang um.
+    expect(withPartial.bars[0]?.label.key).toBe(
+      "statements.pdf.billingInfo.comparisonPrevCurrentLabel",
+    );
+
+    // Zwei volle Kalenderjahre: kein Hinweis.
+    expect(
+      energyComparisonDisplay(comparison()).notes.some(
+        (note) =>
+          note.key ===
+          "statements.pdf.billingInfo.comparisonPrevExtrapolatedNote",
+      ),
+    ).toBe(false);
+  });
+
+  it("lässt den Rechenweg weg, wenn Warmwasser enthalten ist", () => {
+    const display = energyComparisonDisplay(
+      comparison({
+        includesHotWater: true,
+        current: {
+          period: period("2025-01-01", "2025-12-31"),
+          normalizedConsumption: 1280,
+          climateFactor: 1.28,
+        },
+        previous: {
+          period: period("2024-01-01", "2024-12-31"),
+          normalizedConsumption: 1350,
+          climateFactor: 1.35,
+        },
+      }),
+    );
+    expect(
+      display.notes.some(
+        (note) =>
+          note.key ===
+          "statements.pdf.billingInfo.comparisonPrevCalculationNote",
+      ),
+    ).toBe(false);
   });
 
   it("ergänzt die Warmwasser-Erläuterung, wenn Warmwasser enthalten ist", () => {
@@ -560,7 +715,7 @@ describe("energyComparisonDisplay (§ 6a Abs. 3 Nr. 5 HeizkostenV)", () => {
       comparison({ includesHotWater: true }),
     );
     expect(display.notes.map((note) => note.key)).toEqual([
-      "statements.pdf.billingInfo.comparisonPrevWeatherNote",
+      "statements.pdf.billingInfo.comparisonPrevNoAdjustmentNote",
       "statements.pdf.billingInfo.comparisonPrevHotWaterNote",
     ]);
   });

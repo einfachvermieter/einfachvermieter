@@ -101,10 +101,15 @@ const heatingDetail: HeatingDetail = {
   energyComparison: {
     consumptionUnit: "hkv_units",
     includesHotWater: false,
-    current: { period, normalizedConsumption: 1_506_000 },
+    current: {
+      period,
+      normalizedConsumption: 1_506_000,
+      climateFactor: 1.28,
+    },
     previous: {
       period: { start: "2024-01-01", end: "2024-12-31" },
       normalizedConsumption: 1_629_600,
+      climateFactor: 1.35,
     },
   },
 };

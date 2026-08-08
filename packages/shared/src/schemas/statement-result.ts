@@ -267,11 +267,15 @@ export const heatingDetailSchema = z.object({
       current: z.object({
         period: periodSchema,
         normalizedConsumption: z.number(),
+        climateFactor: z.number().optional(),
+        climateFactorIsManual: z.boolean().optional(),
       }),
       previous: z
         .object({
           period: periodSchema,
           normalizedConsumption: z.number(),
+          climateFactor: z.number().optional(),
+          climateFactorIsManual: z.boolean().optional(),
         })
         .optional(),
     })

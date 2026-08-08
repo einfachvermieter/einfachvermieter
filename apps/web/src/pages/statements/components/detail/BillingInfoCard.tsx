@@ -11,6 +11,8 @@ import { SectionCard } from "../../../../components/common/SectionCard";
 import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 
+const FOOTNOTE_MARKER = 1;
+
 /**
  * Web-Version des PDF-Anhangs „Abrechnungsinformationen nach § 6a HeizkostenV"
  */
@@ -99,6 +101,7 @@ export const BillingInfoCard = ({
           <section>
             <h3 className="mb-2.5 font-semibold text-foreground">
               {t("statements.pdf.billingInfo.comparisonTitle")}
+              <sup>{FOOTNOTE_MARKER}</sup>
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -116,7 +119,8 @@ export const BillingInfoCard = ({
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-muted-foreground">
+            <p className="mt-2 text-xs text-muted-foreground">
+              <sup>{FOOTNOTE_MARKER}</sup>{" "}
               {t("statements.pdf.billingInfo.comparisonNote")}
             </p>
           </section>
@@ -168,10 +172,10 @@ export const BillingInfoCard = ({
           <h3 className="mb-2.5 font-semibold text-foreground">
             {t("statements.pdf.billingInfo.contactsTitle")}
           </h3>
-          <p className="mb-2 text-muted-foreground">
+          <p className="mb-2 text-xs text-muted-foreground">
             {t("statements.pdf.billingInfo.contactsIntro")}
           </p>
-          <ul className="space-y-1 text-muted-foreground">
+          <ul className="space-y-1 text-xs text-muted-foreground">
             <li>{t("statements.pdf.billingInfo.contact1")}</li>
             <li>{t("statements.pdf.billingInfo.contact2")}</li>
             <li>{t("statements.pdf.billingInfo.contact3")}</li>
@@ -181,7 +185,7 @@ export const BillingInfoCard = ({
           <h3 className="mb-2.5 font-semibold text-foreground">
             {t("statements.pdf.billingInfo.disputeTitle")}
           </h3>
-          <p className="text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {t("statements.pdf.billingInfo.disputeText")}
           </p>
         </section>

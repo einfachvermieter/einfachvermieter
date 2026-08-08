@@ -18,8 +18,9 @@ const KEEP_TOGETHER_ROWS = 10;
 type Props = {
   /**
    * Überschrift über der Tabelle. Steht nie allein am Seitenfuß.
+   * ReactNode, damit Fußnoten-Marker hochgestellt werden können.
    */
-  heading?: string;
+  heading?: ReactNode;
   /**
    * Zellen der Kopfzeile, ohne umgebende Zeilen-View. Bei umbrechenden
    * Tabellen wiederholt sich die Kopfzeile auf jeder Folgeseite.

@@ -156,6 +156,15 @@ export const styles = StyleSheet.create({
   bold: { fontWeight: SEMIBOLD },
   small: { fontSize: SMALL_SIZE },
 
+  // Pflicht-Textblöcke, die niemand liest (Beratungsstellen,
+  // Streitbeilegung): Tabellen-Schriftgröße. Auf die umgebende View
+  // gesetzt, die Kind-Texte erben sie; Überschriften setzen ihre eigene
+  // Größe und bleiben davon unberührt.
+  fineprint: {
+    fontSize: SMALL_SIZE,
+    lineHeight: LINE_HEIGHT_TIGHT,
+  },
+
   // Fußnote, engerer Zeilenabstand als der restliche Text.
   footnote: {
     fontSize: SMALL_SIZE,

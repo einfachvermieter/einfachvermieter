@@ -85,6 +85,42 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     role: "admin",
   });
 
+  // Vorbefüllter Klimafaktor-Cache (echte DWD-Werte, Stand 08/2026) für die
+  // Seed-Postleitzahlen: die Witterungsbereinigung des Vorperiodenvergleichs
+  // funktioniert damit auch ohne Internet. Quelle: opendata.dwd.de
+  insert(schema.climateFactors, [
+    // Essen 45127 (Lindenhof 4)
+    {
+      id: nid(),
+      postalCode: "45127",
+      periodStart: "2024-01-01",
+      periodEnd: "2024-12-31",
+      factor: 1.35,
+    },
+    {
+      id: nid(),
+      postalCode: "45127",
+      periodStart: "2025-01-01",
+      periodEnd: "2025-12-31",
+      factor: 1.28,
+    },
+    // Bochum 44801 (Gartenstadt 12)
+    {
+      id: nid(),
+      postalCode: "44801",
+      periodStart: "2024-01-01",
+      periodEnd: "2024-12-31",
+      factor: 1.24,
+    },
+    {
+      id: nid(),
+      postalCode: "44801",
+      periodStart: "2025-01-01",
+      periodEnd: "2025-12-31",
+      factor: 1.17,
+    },
+  ]);
+
   // ════════════════════════════════════════════════════════════════════════
   // Gebäude A - "Lindenhof 4", Essen
   // Interne Zentralheizung ohne Warmwasser, Gas, HKV, Differenzzähler Wasser.
@@ -448,9 +484,8 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       readBy: "landlord",
     },
     // Heizkostenverteiler (Striche), kumulierende Stände seit Einbau 2024.
-    // 2024 war kälter: Jahresverbräuche liegen ~8 % über 2025, damit der
-    // Vorperiodenvergleich nach § 6a Abs. 3 Nr. 5 sichtbar unterschiedliche
-    // Balken zeigt.
+    // Der 2024er Jahresverbrauch liegt ca. 8 % über dem von 2025, damit der
+    // Vorperiodenvergleich zwei sichtbar unterschiedliche Balken zeigt.
     {
       id: nid(),
       meterId: aHkvEgWohn,

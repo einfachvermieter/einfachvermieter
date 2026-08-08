@@ -15,6 +15,7 @@ import {
   co2Tier,
   DEGREE_DAYS_PROMILLE_PER_MONTH,
   degreeDaysMonthlyBreakdown,
+  sumDegreeDays,
 } from "./heating.js";
 
 export type LandlordShareRow = {
@@ -527,7 +528,7 @@ export const billingInfoRows = (
         label: { key: "statements.pdf.billingInfo.districtHeatEmissionsLabel" },
         value:
           districtHeat.emissionsKgPerYear === null
-            ? { key: "ui.common.emptyValue" }
+            ? { key: "statements.pdf.billingInfo.districtHeatValueMissing" }
             : {
                 key: "statements.pdf.billingInfo.districtHeatEmissionsValue",
                 params: {
@@ -540,7 +541,7 @@ export const billingInfoRows = (
         label: { key: "statements.pdf.billingInfo.districtHeatFactorLabel" },
         value:
           districtHeat.primaryEnergyFactor === null
-            ? { key: "ui.common.emptyValue" }
+            ? { key: "statements.pdf.billingInfo.districtHeatValueMissing" }
             : {
                 key: "statements.pdf.billingInfo.districtHeatFactorValue",
                 params: {
@@ -744,6 +745,14 @@ export const energyComparisonDisplay = (
       : "statements.pdf.billingInfo.comparisonPrevValueUnits";
   }
 
+  /**
+   * Deckt der Zeitraum kein volles Jahr ab, ist der Wert über die
+   * Gradtagszahlen hochgerechnet - das gehört sichtbar ans Label, sonst
+   * liest sich der Balken wie ein gemessener Wert.
+   */
+  const isExtrapolated = (period: Period): boolean =>
+    Math.abs(sumDegreeDays(period) - 1000) > 0.01;
+
   const bar = (
     key: "current" | "previous",
     labelKey: string,
@@ -764,9 +773,88 @@ export const energyComparisonDisplay = (
     widthPct: maxValue > 0 ? (value / maxValue) * 100 : 0,
   });
 
+  // Klimafaktoren stehen entweder auf beiden Seiten oder gar nicht;
+  // in Fußnote steht, welcher Fall vorliegt. DWD-Quellenvermerk entfällt,
+  // sobald ein Faktor manuell erfasst ist.
+  const currentClimateFactor = comparison.current.climateFactor;
+  const previousClimateFactor = comparison.previous.climateFactor;
+  const anyManual =
+    comparison.current.climateFactorIsManual === true ||
+    comparison.previous.climateFactorIsManual === true;
+  // Rechenweg offenlegen (Praxis der Messdienste). Nur ohne Warmwasser-
+  // Anteil, sonst ginge die Gleichung nicht auf: Warmwasser wird
+  // unbereinigt addiert, nicht mitmultipliziert.
+  const showsCalculation =
+    currentClimateFactor !== undefined &&
+    previousClimateFactor !== undefined &&
+    !comparison.includesHotWater;
+
+  /**
+   * Die Faktoren stehen nur dann im Witterungs-Satz, wenn sie nicht
+   * ohnehin gleich darunter im Rechenweg auftauchen.
+   */
+  const weatherNoteKey = (): string => {
+    if (anyManual) {
+      return showsCalculation
+        ? "statements.pdf.billingInfo.comparisonPrevWeatherNoteShortManual"
+        : "statements.pdf.billingInfo.comparisonPrevWeatherNoteManual";
+    }
+    return showsCalculation
+      ? "statements.pdf.billingInfo.comparisonPrevWeatherNoteShort"
+      : "statements.pdf.billingInfo.comparisonPrevWeatherNote";
+  };
+
   const notes: HeatingLabelDescriptor[] = [
-    { key: "statements.pdf.billingInfo.comparisonPrevWeatherNote" },
+    currentClimateFactor !== undefined && previousClimateFactor !== undefined
+      ? {
+          key: weatherNoteKey(),
+          ...(showsCalculation
+            ? {}
+            : {
+                params: {
+                  current: formatNumber(currentClimateFactor, 2),
+                  previous: formatNumber(previousClimateFactor, 2),
+                },
+              }),
+        }
+      : { key: "statements.pdf.billingInfo.comparisonPrevNoAdjustmentNote" },
   ];
+  if (showsCalculation && currentClimateFactor && previousClimateFactor) {
+    const scale = (value: number, factor: number): string =>
+      formatNumber(
+        useValuationPoints ? value / factor / 1000 : value / factor,
+        0,
+      );
+    notes.push({
+      key: "statements.pdf.billingInfo.comparisonPrevCalculationNote",
+      params: {
+        currentBase: scale(currentValue, currentClimateFactor),
+        currentFactor: formatNumber(currentClimateFactor, 2),
+        currentResult: formatNumber(
+          useValuationPoints ? currentValue / 1000 : currentValue,
+          0,
+        ),
+        previousBase: scale(previousValue, previousClimateFactor),
+        previousFactor: formatNumber(previousClimateFactor, 2),
+        previousResult: formatNumber(
+          useValuationPoints ? previousValue / 1000 : previousValue,
+          0,
+        ),
+      },
+    });
+  }
+
+  // Hochrechnung als Fußnote statt am Balken-Label: dort würde der Zusatz
+  // beide Labels zweizeilig machen und den Anhang über die Seite treiben.
+  if (
+    isExtrapolated(comparison.current.period) ||
+    isExtrapolated(comparison.previous.period)
+  ) {
+    notes.push({
+      key: "statements.pdf.billingInfo.comparisonPrevExtrapolatedNote",
+    });
+  }
+
   if (comparison.includesHotWater) {
     notes.push({
       key: "statements.pdf.billingInfo.comparisonPrevHotWaterNote",

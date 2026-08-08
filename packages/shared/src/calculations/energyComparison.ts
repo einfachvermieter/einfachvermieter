@@ -26,6 +26,16 @@ export type EnergyComparisonPeriodInput = {
    * abdeckt (Zwischenablesungs-Logik der Heizkostenberechnung).
    */
   tenantPeriod: Period;
+  /**
+   * Klimafaktor des Abrechnungszeitraums (DWD je Postleitzahl bzw.
+   * manuell erfasst). null/undefined, wenn keiner verfügbar ist,
+   * bleibt der Heizanteil dann unbereinigt.
+   */
+  climateFactor?: number | null;
+  /**
+   * Der Faktor stammt aus manueller Erfassung statt vom DWD.
+   */
+  climateFactorIsManual?: boolean;
 };
 
 type PeriodEnergy = {
@@ -104,7 +114,8 @@ const periodEnergy = (
  * Periode keinen vergleichbaren Verbrauch hat (dann entfällt der Block im
  * § 6a-Anhang). Die Vorperiode fällt still weg, wenn ihr Verbrauch fehlt
  * oder in einer anderen Einheit gemessen wurde; Warmwasser ist nur
- * enthalten, wenn es sich für beide Perioden ermitteln lässt.
+ * enthalten, wenn es sich für beide Perioden ermitteln lässt. Klimafaktoren
+ * werden nur angewendet, wenn sie für beide Vergleichsseiten vorliegen.
  */
 export const buildEnergyComparison = (
   targetUnitId: string,
@@ -125,23 +136,50 @@ export const buildEnergyComparison = (
     currentEnergy.normalizedHotWaterKwh !== null &&
     (previousEnergy === null || previousEnergy.normalizedHotWaterKwh !== null);
 
-  const totalOf = (energy: PeriodEnergy): number =>
-    includesHotWater
-      ? energy.normalizedHeat + (energy.normalizedHotWaterKwh ?? 0)
-      : energy.normalizedHeat;
+  const currentFactor = current.climateFactor ?? null;
+  const previousFactor = previousEnergy
+    ? (previous?.climateFactor ?? null)
+    : null;
+  const applyFactors = previousEnergy
+    ? currentFactor !== null && previousFactor !== null
+    : currentFactor !== null;
+
+  const totalOf = (energy: PeriodEnergy, factor: number | null): number => {
+    const heat =
+      applyFactors && factor !== null
+        ? energy.normalizedHeat * factor
+        : energy.normalizedHeat;
+    return includesHotWater ? heat + (energy.normalizedHotWaterKwh ?? 0) : heat;
+  };
 
   return {
     consumptionUnit: currentEnergy.unit,
     includesHotWater,
     current: {
       period: current.tenantPeriod,
-      normalizedConsumption: totalOf(currentEnergy),
+      normalizedConsumption: totalOf(currentEnergy, currentFactor),
+      ...(applyFactors && currentFactor !== null
+        ? {
+            climateFactor: currentFactor,
+            ...(current.climateFactorIsManual
+              ? { climateFactorIsManual: true }
+              : {}),
+          }
+        : {}),
     },
     ...(previousEnergy && previous
       ? {
           previous: {
             period: previous.tenantPeriod,
-            normalizedConsumption: totalOf(previousEnergy),
+            normalizedConsumption: totalOf(previousEnergy, previousFactor),
+            ...(applyFactors && previousFactor !== null
+              ? {
+                  climateFactor: previousFactor,
+                  ...(previous.climateFactorIsManual
+                    ? { climateFactorIsManual: true }
+                    : {}),
+                }
+              : {}),
           },
         }
       : {}),

@@ -9,6 +9,7 @@ import {
 import { Text, View } from "@react-pdf/renderer";
 import { t } from "../i18n.js";
 import { styles } from "../styles.js";
+import { renderSuperscripts, toSuperscript } from "../superscript.js";
 import { Table } from "./Table.js";
 
 const INFO_COL_LABEL = { flex: 1 };
@@ -96,7 +97,11 @@ export const BillingInfoAppendix = ({
 
       {comparison?.rows ? (
         <>
-          <Table heading={t("statements.pdf.billingInfo.comparisonTitle")}>
+          <Table
+            heading={renderSuperscripts(
+              `${t("statements.pdf.billingInfo.comparisonTitle")}${toSuperscript(1)}`,
+            )}
+          >
             {comparison.rows.map((row, index) => (
               <View
                 key={row.key}
@@ -115,8 +120,10 @@ export const BillingInfoAppendix = ({
               </View>
             ))}
           </Table>
-          <Text style={styles.paragraph}>
-            {t("statements.pdf.billingInfo.comparisonNote")}
+          <Text style={styles.footnote}>
+            {renderSuperscripts(
+              `${toSuperscript(1)} ${t("statements.pdf.billingInfo.comparisonNote")}`,
+            )}
           </Text>
         </>
       ) : null}
@@ -163,20 +170,22 @@ export const BillingInfoAppendix = ({
         </>
       ) : null}
 
-      <Text style={styles.appendixSubheading}>
-        {t("statements.pdf.billingInfo.contactsTitle")}
-      </Text>
-      <Text style={styles.paragraph}>
-        {t("statements.pdf.billingInfo.contactsIntro")}
-      </Text>
-      <Text>{t("statements.pdf.billingInfo.contact1")}</Text>
-      <Text>{t("statements.pdf.billingInfo.contact2")}</Text>
-      <Text>{t("statements.pdf.billingInfo.contact3")}</Text>
+      <View style={styles.fineprint}>
+        <Text style={styles.appendixSubheading}>
+          {t("statements.pdf.billingInfo.contactsTitle")}
+        </Text>
+        <Text style={styles.paragraph}>
+          {t("statements.pdf.billingInfo.contactsIntro")}
+        </Text>
+        <Text>{t("statements.pdf.billingInfo.contact1")}</Text>
+        <Text>{t("statements.pdf.billingInfo.contact2")}</Text>
+        <Text>{t("statements.pdf.billingInfo.contact3")}</Text>
 
-      <Text style={styles.appendixSubheading}>
-        {t("statements.pdf.billingInfo.disputeTitle")}
-      </Text>
-      <Text>{t("statements.pdf.billingInfo.disputeText")}</Text>
+        <Text style={styles.appendixSubheading}>
+          {t("statements.pdf.billingInfo.disputeTitle")}
+        </Text>
+        <Text>{t("statements.pdf.billingInfo.disputeText")}</Text>
+      </View>
     </View>
   );
 };

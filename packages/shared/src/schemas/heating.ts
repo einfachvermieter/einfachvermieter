@@ -789,3 +789,30 @@ export const externalHeatingEntryToFormValues = (
   consumptionCostCents: centsToEurInputOrEmpty(entry.consumptionCostCents),
   notes: entry.notes ?? "",
 });
+
+/**
+ * Manuell erfassten Klimafaktor setzen (Witterungsbereinigung).
+ * Der Zeitraum muss ein Abrechnungszeitraum (12-Monats-Fenster) sein.
+ */
+export const climateFactorWriteSchema = z
+  .object({
+    buildingId: z.guid(),
+    periodStart: isoDate(),
+    periodEnd: isoDate(),
+    factor: z.number().positive().max(5),
+  })
+  .strict();
+export type ClimateFactorWriteDto = z.infer<typeof climateFactorWriteSchema>;
+
+/**
+ * Klimafaktor eines Zeitraums frisch vom DWD laden (überschreibt auch
+ * manuell erfasste Werte).
+ */
+export const climateFactorReloadSchema = z
+  .object({
+    buildingId: z.guid(),
+    periodStart: isoDate(),
+    periodEnd: isoDate(),
+  })
+  .strict();
+export type ClimateFactorReloadDto = z.infer<typeof climateFactorReloadSchema>;

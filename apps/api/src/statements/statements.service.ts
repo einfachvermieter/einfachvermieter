@@ -1,4 +1,5 @@
 import {
+  BuildingSchema,
   type CostEntryItem,
   CostEntryItemSchema,
   type CostType,
@@ -78,6 +79,7 @@ import { HeatingService } from "../heating/heating.service.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
 import { TenantsService } from "../tenants/tenants.service.js";
+import { ClimateFactorService } from "./climate-factor.service.js";
 
 type StatementRow = OperatingCostStatement;
 
@@ -407,6 +409,7 @@ export class StatementsService {
     private readonly heatingService: HeatingService,
     private readonly externalHeatingEntriesService: ExternalHeatingEntriesService,
     private readonly accountsService: AccountsService,
+    private readonly climateFactorService: ClimateFactorService,
   ) {}
 
   /**
@@ -781,11 +784,14 @@ export class StatementsService {
     });
 
     if (heatingDetail.mode === "internal") {
-      heatingDetail.energyComparison = buildEnergyComparison(
+      await this.attachEnergyComparison({
+        heatingDetail,
+        buildingId,
+        tenantId,
+        statementPeriod,
+        effectivePeriod,
         targetUnitId,
-        { detail: heatingDetail, tenantPeriod: effectivePeriod },
-        await this.loadPreviousComparisonPeriod(tenantId, periodStart),
-      );
+      });
     }
 
     const totalAdvancesCents =
@@ -860,6 +866,59 @@ export class StatementsService {
   }
 
   /**
+   * Reichert das Heiz-Detail um den Vorperiodenvergleich (§ 6a Abs. 3
+   * Nr. 5 HeizkostenV) an: Klimafaktoren je Seite besorgen, Vergleich
+   * bauen und einen unbereinigten Vergleich als Warnung ausweisen, damit
+   * es vor dem Finalisieren auffällt.
+   */
+  private async attachEnergyComparison(input: {
+    heatingDetail: HeatingDetail;
+    buildingId: string;
+    tenantId: string;
+    statementPeriod: Period;
+    effectivePeriod: Period;
+    targetUnitId: string;
+  }): Promise<void> {
+    const { heatingDetail, buildingId, tenantId } = input;
+
+    const building = await this.em.findOne(BuildingSchema, {
+      id: buildingId,
+    });
+
+    const postalCode = building?.addressPostalCode ?? null;
+
+    const currentFactor = await this.climateFactorService.getFactor(
+      postalCode,
+      input.statementPeriod,
+    );
+
+    const energyComparison = buildEnergyComparison(
+      input.targetUnitId,
+      {
+        detail: heatingDetail,
+        tenantPeriod: input.effectivePeriod,
+        climateFactor: currentFactor?.factor,
+        climateFactorIsManual: currentFactor?.isManual,
+      },
+      await this.loadPreviousComparisonPeriod(
+        tenantId,
+        input.statementPeriod.start,
+        postalCode,
+      ),
+    );
+
+    heatingDetail.energyComparison = energyComparison;
+
+    if (
+      energyComparison?.previous &&
+      energyComparison.current.climateFactor === undefined
+    ) {
+      heatingDetail.warnings = heatingDetail.warnings ?? [];
+      heatingDetail.warnings.push({ code: "climateFactorMissing" });
+    }
+  }
+
+  /**
    * Vorperioden-Daten für den Energieverbrauchs-Vergleich nach § 6a Abs. 3
    * Nr. 5 HeizkostenV: das finalisierte Statement desselben Mieters, dessen
    * Abrechnungszeitraum unmittelbar vor dem aktuellen endet. undefined, wenn
@@ -869,6 +928,7 @@ export class StatementsService {
   private async loadPreviousComparisonPeriod(
     tenantId: string,
     periodStart: string,
+    postalCode: string | null,
   ): Promise<EnergyComparisonPeriodInput | undefined> {
     const previous = await this.em.findOne(
       OperatingCostStatementSchema,
@@ -881,13 +941,20 @@ export class StatementsService {
     );
 
     const snapshot = previous?.snapshotData;
-    if (!snapshot?.heatingDetail) {
+    if (!previous || !snapshot?.heatingDetail) {
       return;
     }
+
+    const factor = await this.climateFactorService.getFactor(postalCode, {
+      start: previous.periodStart,
+      end: previous.periodEnd,
+    });
 
     return {
       detail: snapshot.heatingDetail,
       tenantPeriod: snapshot.tenantPeriod,
+      climateFactor: factor?.factor,
+      climateFactorIsManual: factor?.isManual,
     };
   }
 

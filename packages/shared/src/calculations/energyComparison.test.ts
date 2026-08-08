@@ -125,6 +125,52 @@ describe("buildEnergyComparison (§ 6a Abs. 3 Nr. 5 HeizkostenV)", () => {
     expect(result?.previous?.normalizedConsumption).toBe(800);
   });
 
+  it("bereinigt beide Seiten mit ihren Klimafaktoren", () => {
+    const result = buildEnergyComparison(
+      "a",
+      { ...periodInput(1000, fullYear2025), climateFactor: 1.28 },
+      { ...periodInput(800, fullYear2024), climateFactor: 1.35 },
+    );
+    expect(result?.current.normalizedConsumption).toBeCloseTo(1280, 6);
+    expect(result?.current.climateFactor).toBe(1.28);
+    expect(result?.previous?.normalizedConsumption).toBeCloseTo(1080, 6);
+    expect(result?.previous?.climateFactor).toBe(1.35);
+  });
+
+  it("lässt beide Seiten unbereinigt, wenn nur eine einen Faktor hat", () => {
+    const result = buildEnergyComparison(
+      "a",
+      { ...periodInput(1000, fullYear2025), climateFactor: 1.28 },
+      periodInput(800, fullYear2024),
+    );
+    expect(result?.current.normalizedConsumption).toBe(1000);
+    expect(result?.current.climateFactor).toBeUndefined();
+    expect(result?.previous?.normalizedConsumption).toBe(800);
+    expect(result?.previous?.climateFactor).toBeUndefined();
+  });
+
+  it("bereinigt nur die Heizung, Warmwasser bleibt unbereinigt", () => {
+    const result = buildEnergyComparison(
+      "a",
+      {
+        ...periodInput(1000, fullYear2025, {
+          hotWaterDetail: hotWaterDetail(2000, 30, 100),
+        }),
+        climateFactor: 1.2,
+      },
+      {
+        ...periodInput(800, fullYear2024, {
+          hotWaterDetail: hotWaterDetail(1800, 30, 100),
+        }),
+        climateFactor: 1.5,
+      },
+    );
+    // Heizung 1.000 x 1,2 = 1.200 plus Warmwasser 600 unbereinigt.
+    expect(result?.current.normalizedConsumption).toBeCloseTo(1800, 6);
+    // Heizung 800 x 1,5 = 1.200 plus Warmwasser 540 unbereinigt.
+    expect(result?.previous?.normalizedConsumption).toBeCloseTo(1740, 6);
+  });
+
   it("entfällt ohne gemessenen Verbrauch der aktuellen Periode", () => {
     expect(
       buildEnergyComparison(

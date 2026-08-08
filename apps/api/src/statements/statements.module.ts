@@ -6,6 +6,8 @@ import { SettingsModule } from "../settings/settings.module.js";
 import { StorageModule } from "../storage/storage.module.js";
 import { TenantsModule } from "../tenants/tenants.module.js";
 import { UnitsModule } from "../units/units.module.js";
+import { ClimateFactorService } from "./climate-factor.service.js";
+import { ClimateFactorsController } from "./climate-factors.controller.js";
 import { PdfService } from "./pdf.service.js";
 import { StatementsController } from "./statements.controller.js";
 import { StatementsService } from "./statements.service.js";
@@ -20,8 +22,8 @@ import { StatementsService } from "./statements.service.js";
     SettingsModule,
     StorageModule,
   ],
-  controllers: [StatementsController],
-  providers: [StatementsService, PdfService],
+  controllers: [StatementsController, ClimateFactorsController],
+  providers: [StatementsService, PdfService, ClimateFactorService],
   exports: [StatementsService],
 })
 export class StatementsModule {}
