@@ -13,6 +13,7 @@ import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
+import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
@@ -23,6 +24,7 @@ import {
   heatingOverviewQueryOptions,
 } from "../../lib/heating";
 import { t } from "../../lib/i18n";
+import { metersOverviewQueryOptions } from "../../lib/meters";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { rowActionsColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
@@ -166,6 +168,17 @@ export const HeatingOverviewPage = () => {
     enabled: buildingId !== undefined,
   });
 
+  // Fernablesbare Geräte lösen die Pflicht zu unterjährigen
+  // Verbrauchsinformationen aus (§ 6a Abs. 1/2 HeizkostenV) - die Seite
+  // weist darauf hin, weil die App diese Mitteilungen nicht erstellt.
+  const { data: metersData } = useQuery({
+    ...metersOverviewQueryOptions({ page: 0, pageSize: 1000, buildingId }),
+    enabled: buildingId !== undefined,
+  });
+  const hasRemoteReadableMeters = (metersData?.items ?? []).some(
+    (meter) => meter.isRemoteReadable && meter.isActive,
+  );
+
   const deletion = useDeleteResource<Row>({
     endpoint: (row) => `/buildings/${row.building.id}/heating/${row.id}`,
     invalidateKeys: [["heating"]],
@@ -243,6 +256,15 @@ export const HeatingOverviewPage = () => {
           ) : undefined
         }
       />
+
+      {hasRemoteReadableMeters ? (
+        <Alert variant="info">
+          <AlertTitle>{t("ui.heating.remoteReadableNotice.title")}</AlertTitle>
+          <AlertDescription>
+            {t("ui.heating.remoteReadableNotice.text")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       <DataTable
         data={items}

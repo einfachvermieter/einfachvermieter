@@ -1030,6 +1030,9 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   ]);
 
   // Warmwasser-Wärmemengenzähler (für die § 9-Abspaltung referenziert).
+  // Die Wärmemengenzähler sind fernablesbar markiert, die Heizkonfiguration
+  // von Gartenstadt zeigt dadurch den Hinweis auf die unterjährigen
+  // Verbrauchsinformationen nach § 6a Abs. 1/2 HeizkostenV.
   const bMeterHeatHotWater = nid();
   const bMeterHeatEg = nid();
   const bMeterHeatOg = nid();
@@ -1051,6 +1054,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       costAllocationMode: "heating_cost_bill",
       validFrom: "2025-01-01",
       isActive: true,
+      isRemoteReadable: true,
     },
     {
       id: bMeterHeatEg,
@@ -1064,6 +1068,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       costAllocationMode: "heating_cost_bill",
       validFrom: "2025-01-01",
       isActive: true,
+      isRemoteReadable: true,
     },
     {
       id: bMeterHeatOg,
@@ -1077,6 +1082,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       costAllocationMode: "heating_cost_bill",
       validFrom: "2025-01-01",
       isActive: true,
+      isRemoteReadable: true,
     },
     {
       id: bMeterHeatDg,
@@ -1090,6 +1096,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       costAllocationMode: "heating_cost_bill",
       validFrom: "2025-01-01",
       isActive: true,
+      isRemoteReadable: true,
     },
     {
       id: bMeterWaterMain,

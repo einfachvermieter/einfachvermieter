@@ -502,6 +502,8 @@
         "energyFactorDescription": "Produkt aus Zustandszahl × Brennwert gemäß Gasrechnung. Wird benötigt, um m³ in kWh umzurechnen. Optional – leer lassen, wenn nur m³-Verteilung genügt.",
         "validFrom": "Gültig ab",
         "validUntil": "Gültig bis",
+        "isRemoteReadable": "Fernablesbar",
+        "isRemoteReadableDescription": "Das Gerät lässt sich ohne Zutritt zur Wohnung ablesen.",
         "radiator": "Heizkörper",
         "radiatorPlaceholder": "z. B. Heizkörper Wohnzimmer Süd",
         "kTotal": "KGesamt",
@@ -1151,6 +1153,10 @@
       "title": "Heizkosten",
       "sub": "Heizkosten-Konfigurationen für {building}",
       "description": "Pro Gebäude eine Konfiguration, wie Heizkosten abgerechnet werden.",
+      "remoteReadableNotice": {
+        "title": "Fernablesbare Geräte vorhanden",
+        "text": "Mindestens ein Zähler dieses Gebäudes ist als fernablesbar markiert. Sie müssen Ihre Mieter dann monatlich über deren Verbrauch informieren (§ 6a Abs. 1 und 2 HeizkostenV). Diese unterjährigen Mitteilungen erstellt „EinfachVermieter“ nicht."
+      },
       "editTitle": "Heizkosten bearbeiten",
       "detail": {
         "validitySection": "Gültigkeit",

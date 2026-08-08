@@ -87,6 +87,16 @@ export const isHeatCostAllocator = (type: MeterType): boolean =>
   type === "heat_cost_allocator";
 
 /**
+ * Zählertypen, für die Fernablesbarkeit (§ 5 Abs. 2 HeizkostenV) fachlich
+ * relevant ist: die Ausstattung zur Verbrauchserfassung von Heizung und
+ * Warmwasser. Nur diese Typen zeigen das Formularfeld.
+ */
+export const isRemoteReadableRelevantType = (type: MeterType): boolean =>
+  type === "heat_cost_allocator" ||
+  type === "heat_meter" ||
+  type === "water_hot";
+
+/**
  * Eine Periode des Gas-Umrechnungsfaktors. Gehört zu einem Gaszähler.
  * Mehrere Perioden je Zähler sind erlaubt. Der Umrechnungsfaktor selbst
  * ist optional - fehlt er, kann der Zähler weiterhin als reine m3-Quelle
@@ -171,6 +181,12 @@ const meterBaseShape = {
     .max(100, messageKey("validation.tooLong", { max: 100 }))
     .nullable()
     .optional(),
+  /**
+   * Gerät ist fernablesbar (§ 5 Abs. 2 HeizkostenV). Nur für die
+   * Verbrauchserfassung Heizung/Warmwasser relevant; steuert den Hinweis
+   * auf die unterjährigen Verbrauchsinformationen nach § 6a Abs. 1/2.
+   */
+  isRemoteReadable: z.boolean().optional(),
   /**
    * Gültigkeitszeitraum für die Abrechnung. Nur Abrechnungen, deren Zeitraum
    * mit [validFrom, validUntil] überlappt, berücksichtigen diesen Zähler.
@@ -353,6 +369,7 @@ export type MeterFormValues = {
   radiatorModel: string;
   radiatorType: string;
   radiatorDimensions: string;
+  isRemoteReadable: boolean;
   validFrom: string;
   validUntil: string;
   costAllocationMode: CostAllocationMode;
@@ -395,6 +412,7 @@ export const meterFormSchema = z
     radiatorDimensions: z
       .string()
       .max(100, messageKey("validation.tooLong", { max: 100 })),
+    isRemoteReadable: z.boolean(),
     validFrom: z
       .string()
       .min(1, messageKey("ui.meters.validation.validFromRequired"))
@@ -604,6 +622,9 @@ export const meterFormToDto = (
     radiatorModel: isHkv ? blank(values.radiatorModel) : null,
     radiatorType: isHkv ? blank(values.radiatorType) : null,
     radiatorDimensions: isHkv ? blank(values.radiatorDimensions) : null,
+    isRemoteReadable: isRemoteReadableRelevantType(values.type)
+      ? values.isRemoteReadable
+      : false,
     validFrom: values.validFrom,
     validUntil: meterValidUntil,
     costAllocationMode,

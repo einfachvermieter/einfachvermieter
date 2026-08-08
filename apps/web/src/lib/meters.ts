@@ -51,6 +51,7 @@ export type Meter = {
   validFrom: string;
   validUntil: string | null;
   isActive: boolean;
+  isRemoteReadable: boolean;
   costAllocationMode: CostAllocationMode;
   costAllocationModeLocked: boolean;
   costTypeIds: string[];

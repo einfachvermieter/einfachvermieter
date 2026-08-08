@@ -1,5 +1,6 @@
 import {
   isDifferenceCapableType,
+  isRemoteReadableRelevantType,
   isUnitScopedRole,
   type MeterFormValues,
   type MeterRole,
@@ -17,6 +18,7 @@ import { SectionCard } from "@/components/common/SectionCard";
 import { DateInput } from "@/components/form/DateInput";
 import { ReadonlyField } from "@/components/form/ReadonlyField";
 import { SelectInput } from "@/components/form/SelectInput";
+import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
 import type { Building } from "../../../../lib/buildings";
@@ -155,6 +157,14 @@ export const MeterBaseFields = ({
               isVirtual ? t("ui.meters.hints.virtualNoReadings") : undefined
             }
           />
+          {isRemoteReadableRelevantType(selectedType) && !isVirtual ? (
+            <SwitchInput
+              control={form.control}
+              name="isRemoteReadable"
+              label={t("ui.meters.fields.isRemoteReadable")}
+              description={t("ui.meters.fields.isRemoteReadableDescription")}
+            />
+          ) : null}
         </div>
         <Disclose label={t("ui.meters.detail.moreFields")}>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

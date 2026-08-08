@@ -55,6 +55,11 @@ export type Meter = {
   validFrom: string;
   validUntil: string | null;
   isActive: Opt<boolean>;
+  /**
+   * Gerät ist fernablesbar (§ 5 Abs. 2 HeizkostenV). Steuert nur den
+   * Hinweis auf die unterjährigen Verbrauchsinformationen, keine Berechnung.
+   */
+  isRemoteReadable: Opt<boolean>;
   createdAt: Opt<string>;
   updatedAt: Opt<string>;
 };
@@ -110,6 +115,11 @@ export const MeterSchema = new EntitySchema<Meter>({
     validFrom: { type: "string", fieldName: "valid_from" },
     validUntil: { type: "string", fieldName: "valid_until", nullable: true },
     isActive: { type: "boolean", fieldName: "is_active", default: true },
+    isRemoteReadable: {
+      type: "boolean",
+      fieldName: "is_remote_readable",
+      default: false,
+    },
     createdAt: {
       type: "string",
       fieldName: "created_at",
