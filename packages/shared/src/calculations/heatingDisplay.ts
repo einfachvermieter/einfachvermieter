@@ -613,12 +613,14 @@ export type AverageUserComparisonRow = {
  * Abrechnungsperiode. Alle Werte stammen aus dem eingefrorenen
  * `perUnit`-Snapshot, die Ableitung ist damit reproduzierbar.
  *
- * - `rows`: die beiden Vergleichszeilen (kWh bzw. HKV-Einheiten je m2).
- * - `note`: Hinweis statt Vergleich, wenn der Nutzungszeitraum kürzer als
- *   der Abrechnungszeitraum ist. Der eigene Verbrauch deckt dann nur die
- *   Mietzeit ab und wäre gegen den Ganzjahres-Durchschnitt irreführend.
- * - `null`: kein Vergleich möglich (externer Modus, Flächen-Fallback ohne
- *   gemessenen Verbrauch, fehlende Flächen)
+ * Bei unterjähriger Nutzung deckt der eigene Verbrauch nur die Mietzeit ab.
+ * Er wird dann über die Gradtagszahlen auf den vollen Abrechnungszeitraum
+ * hochgerechnet (Praxis der Messdienste) und geht auch so in den
+ * Gebäudedurchschnitt ein, damit beide Seiten denselben Zeitraum abbilden.
+ * `isExtrapolated` sagt der Anzeige, dass die Fußnote dazu nötig ist.
+ *
+ * `null`, wenn kein Vergleich möglich ist: externer Modus, Flächen-Fallback
+ * ohne gemessenen Verbrauch, fehlende Flächen.
  */
 export const averageUserComparison = (
   detail: Pick<
@@ -628,10 +630,7 @@ export const averageUserComparison = (
   targetUnitId: string,
   tenantPeriod: Period,
   statementPeriod: Period,
-):
-  | { rows: AverageUserComparisonRow[]; note?: undefined }
-  | { rows?: undefined; note: HeatingLabelDescriptor }
-  | null => {
+): { rows: AverageUserComparisonRow[]; isExtrapolated: boolean } | null => {
   if (
     detail.mode === "external" ||
     (detail.consumptionDistributionMethod ?? "consumption") === "heating_area"
@@ -640,24 +639,33 @@ export const averageUserComparison = (
   }
 
   const ownRow = detail.perUnit.find((row) => row.unitId === targetUnitId);
-  const totalConsumption = detail.perUnit.reduce(
-    (acc, row) => acc + row.consumptionKwh,
-    0,
-  );
   const totalArea = detail.perUnit.reduce((acc, row) => acc + row.areaSqm, 0);
 
   if (!ownRow || ownRow.areaSqm <= 0 || totalArea <= 0) {
     return null;
   }
 
-  if (
+  const isExtrapolated =
     tenantPeriod.start !== statementPeriod.start ||
-    tenantPeriod.end !== statementPeriod.end
-  ) {
-    return {
-      note: { key: "statements.pdf.billingInfo.comparisonPartialPeriodNote" },
-    };
+    tenantPeriod.end !== statementPeriod.end;
+  const tenantDegreeDays = sumDegreeDays(tenantPeriod);
+
+  if (isExtrapolated && tenantDegreeDays <= 0) {
+    return null;
   }
+
+  const ownConsumption = isExtrapolated
+    ? (ownRow.consumptionKwh / tenantDegreeDays) *
+      sumDegreeDays(statementPeriod)
+    : ownRow.consumptionKwh;
+  // Die anderen Wohnungen stehen mit dem vollen Zeitraum im Snapshot, die
+  // Ziel-Wohnung nur mit der Mietzeit, für den Durchschnitt zählt deshalb
+  // ihr hochgerechneter Wert.
+  const totalConsumption = detail.perUnit.reduce(
+    (acc, row) =>
+      acc + (row.unitId === targetUnitId ? ownConsumption : row.consumptionKwh),
+    0,
+  );
 
   const isHkv = detail.consumptionMethod === "heat_cost_allocator";
   const useValuationPoints =
@@ -688,7 +696,7 @@ export const averageUserComparison = (
       {
         key: "ownConsumption",
         label: { key: "statements.pdf.billingInfo.comparisonOwnLabel" },
-        value: perSqm(ownRow.consumptionKwh, ownRow.areaSqm),
+        value: perSqm(ownConsumption, ownRow.areaSqm),
       },
       {
         key: "averageConsumption",
@@ -696,6 +704,7 @@ export const averageUserComparison = (
         value: perSqm(totalConsumption, totalArea),
       },
     ],
+    isExtrapolated,
   };
 };
 

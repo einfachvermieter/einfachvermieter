@@ -375,14 +375,14 @@ describe("averageUserComparison (§ 6a Abs. 3 Nr. 4 HeizkostenV)", () => {
       fullPeriod,
       fullPeriod,
     );
-    expect(result?.rows?.map((row) => row.key)).toEqual([
+    expect(result?.rows.map((row) => row.key)).toEqual([
       "ownConsumption",
       "averageConsumption",
     ]);
     // 1000 kWh / 50 m2 = 20,0; (1000 + 800) / (50 + 30) = 22,5
-    expect(result?.rows?.[0]?.value.params?.value).toBe("20,0");
-    expect(result?.rows?.[1]?.value.params?.value).toBe("22,5");
-    expect(result?.rows?.[0]?.value.key).toBe(
+    expect(result?.rows[0]?.value.params?.value).toBe("20,0");
+    expect(result?.rows[1]?.value.params?.value).toBe("22,5");
+    expect(result?.rows[0]?.value.key).toBe(
       "statements.pdf.billingInfo.comparisonValueKwh",
     );
   });
@@ -394,7 +394,7 @@ describe("averageUserComparison (§ 6a Abs. 3 Nr. 4 HeizkostenV)", () => {
       fullPeriod,
       fullPeriod,
     );
-    expect(result?.rows?.[0]?.value.key).toBe(
+    expect(result?.rows[0]?.value.key).toBe(
       "statements.pdf.billingInfo.comparisonValueUnits",
     );
   });
@@ -406,24 +406,25 @@ describe("averageUserComparison (§ 6a Abs. 3 Nr. 4 HeizkostenV)", () => {
       consumptionKwh: idx === 0 ? 8_000_000 : 4_000_000,
     }));
     const result = averageUserComparison(detail, "a", fullPeriod, fullPeriod);
-    expect(result?.rows?.[0]?.value.key).toBe(
+    expect(result?.rows[0]?.value.key).toBe(
       "statements.pdf.billingInfo.comparisonValuePoints",
     );
     // 8.000.000 / 50 m² / 1000 = 160,0
-    expect(result?.rows?.[0]?.value.params?.value).toBe("160,0");
+    expect(result?.rows[0]?.value.params?.value).toBe("160,0");
   });
 
-  it("zeigt bei unterjähriger Nutzung einen Hinweis statt Vergleich", () => {
+  it("rechnet bei unterjähriger Nutzung über die Gradtagszahlen hoch", () => {
     const result = averageUserComparison(
       baseDetail(),
       "a",
       period("2025-01-01", "2025-06-30"),
       fullPeriod,
     );
-    expect(result?.rows).toBeUndefined();
-    expect(result?.note?.key).toBe(
-      "statements.pdf.billingInfo.comparisonPartialPeriodNote",
-    );
+    // Jan-Jun = 583 ‰ -> 1000 kWh / 583 × 1000 = 1715,3 kWh; / 50 m² = 34,3
+    expect(result?.isExtrapolated).toBe(true);
+    expect(result?.rows[0]?.value.params?.value).toBe("34,3");
+    // Durchschnitt mit dem hochgerechneten Wert: (1715,3 + 800) / 80 m²
+    expect(result?.rows[1]?.value.params?.value).toBe("31,4");
   });
 
   it("entfällt im externen Modus und im Flächen-Fallback", () => {

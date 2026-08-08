@@ -2106,7 +2106,7 @@
         "comparisonValueUnits": "{value} Einheiten/m²",
         "comparisonValuePoints": "{value} Bewertungspunkte/m²",
         "comparisonNote": "Als Durchschnittsnutzer derselben Nutzerkategorie dient der Durchschnitt aller Wohnungen dieses Gebäudes im selben Abrechnungszeitraum.",
-        "comparisonPartialPeriodNote": "Der Vergleich mit dem Durchschnittsnutzer entfällt, weil Ihr Nutzungszeitraum kürzer ist als der Abrechnungszeitraum.",
+        "comparisonExtrapolatedNote": "Ihr Nutzungszeitraum ist kürzer als der Abrechnungszeitraum. Ihr Verbrauch ist deshalb über die Gradtagszahlen auf den vollen Abrechnungszeitraum hochgerechnet.",
         "comparisonPrevTitle": "Vergleich mit dem vorhergehenden Abrechnungszeitraum",
         "comparisonPrevCurrentLabel": "Dieser Zeitraum ({start} bis {end})",
         "comparisonPrevPreviousLabel": "Vorheriger Zeitraum ({start} bis {end})",

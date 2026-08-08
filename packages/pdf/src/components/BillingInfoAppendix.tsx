@@ -125,13 +125,12 @@ export const BillingInfoAppendix = ({
               `${toSuperscript(1)} ${t("statements.pdf.billingInfo.comparisonNote")}`,
             )}
           </Text>
+          {comparison.isExtrapolated ? (
+            <Text style={styles.footnote}>
+              {t("statements.pdf.billingInfo.comparisonExtrapolatedNote")}
+            </Text>
+          ) : null}
         </>
-      ) : null}
-
-      {comparison?.note ? (
-        <Text style={styles.paragraph}>
-          {t(comparison.note.key, comparison.note.params)}
-        </Text>
       ) : null}
 
       {prevComparison ? (
@@ -140,7 +139,7 @@ export const BillingInfoAppendix = ({
             {t("statements.pdf.billingInfo.comparisonPrevTitle")}
           </Text>
           {prevComparison.previousMissing ? (
-            <Text style={styles.paragraph}>
+            <Text style={styles.footnote}>
               {t("statements.pdf.billingInfo.comparisonPrevMissing")}
             </Text>
           ) : (

@@ -123,12 +123,12 @@ export const BillingInfoCard = ({
               <sup>{FOOTNOTE_MARKER}</sup>{" "}
               {t("statements.pdf.billingInfo.comparisonNote")}
             </p>
+            {comparison.isExtrapolated ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("statements.pdf.billingInfo.comparisonExtrapolatedNote")}
+              </p>
+            ) : null}
           </section>
-        ) : null}
-        {comparison?.note ? (
-          <p className="text-muted-foreground">
-            {t(comparison.note.key, comparison.note.params)}
-          </p>
         ) : null}
         {prevComparison ? (
           <section>
