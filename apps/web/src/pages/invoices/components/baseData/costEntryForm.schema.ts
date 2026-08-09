@@ -1,5 +1,10 @@
 import { messageKey } from "@einfachvermieter/i18n";
-import { centsToEurInput, parseEurToCents } from "@einfachvermieter/shared";
+import {
+  type ContainedTaxKind,
+  centsToEurInput,
+  containedTaxKinds,
+  parseEurToCents,
+} from "@einfachvermieter/shared";
 import { z } from "zod";
 import type {
   CostType,
@@ -180,6 +185,11 @@ export type CostEntryItemFormValues = {
    * eingeblendet; leer = nicht erfasst.
    */
   containedTaxesInput: string;
+  /**
+   * Arten der enthaltenen Steuern und Abgaben. Gleiche Sichtbarkeitsregel
+   * wie `containedTaxesInput`.
+   */
+  containedTaxKinds: string[];
   periodStart: string;
   periodEnd: string;
 };
@@ -237,6 +247,7 @@ const itemSchema = z
         (value) => value === "" || amountRegex.test(value),
         messageKey("ui.costs.validation.containedTaxesFormat"),
       ),
+    containedTaxKinds: z.array(z.enum(containedTaxKinds)),
     periodStart: z
       .string()
       .min(1, messageKey("ui.costs.validation.periodStartRequired")),
@@ -334,6 +345,7 @@ export type CostEntryItemSubmitValues = {
   co2AmountGrams: number | null;
   co2CostCents: number | null;
   containedTaxesCents: number | null;
+  containedTaxKinds: ContainedTaxKind[] | null;
   periodStart: string;
   periodEnd: string;
 };
@@ -382,6 +394,8 @@ export const costEntryFormToDto = (
         item.containedTaxesInput.trim() === ""
           ? null
           : parseEurToCents(item.containedTaxesInput),
+      containedTaxKinds:
+        item.containedTaxKinds.length > 0 ? item.containedTaxKinds : null,
       periodStart: item.periodStart,
       periodEnd: item.periodEnd,
     };
@@ -397,6 +411,7 @@ type CostEntryItemSource = {
   co2AmountGrams?: number | null;
   co2CostCents?: number | null;
   containedTaxesCents?: number | null;
+  containedTaxKinds?: string[] | null;
   periodStart: string;
   periodEnd: string;
 };
@@ -444,6 +459,7 @@ export const costEntryToFormValues = (
         item.containedTaxesCents === undefined
           ? ""
           : centsToEurInput(item.containedTaxesCents),
+      containedTaxKinds: item.containedTaxKinds ?? [],
       periodStart: item.periodStart,
       periodEnd: item.periodEnd,
     };
@@ -460,6 +476,7 @@ export const emptyItem = (defaultCostTypeId = ""): CostEntryItemFormValues => ({
   co2AmountInput: "",
   co2CostInput: "",
   containedTaxesInput: "",
+  containedTaxKinds: [],
   periodStart: "",
   periodEnd: "",
 });

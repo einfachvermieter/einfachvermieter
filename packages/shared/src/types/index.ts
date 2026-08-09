@@ -492,6 +492,14 @@ export type HeatingDetail = {
    */
   containedTaxesCents?: number;
   /**
+   * Arten der enthaltenen Steuern und Abgaben, aus den Heiz-Positionen der
+   * Periode zusammengetragen. Nur gesetzt, wenn mindestens eine Position
+   * eine Art nennt.
+   */
+  containedTaxKinds?: Array<
+    "value_added_tax" | "energy_tax" | "co2_price" | "concession_fee" | "other"
+  >;
+  /**
    * Entgelte für Gebrauchsüberlassung/Eichung der Erfassungsgeräte sowie
    * Ablesung und Abrechnung (§ 6a Abs. 3 Nr. 1c HeizkostenV):
    * periodenanteilige Summe der als Erfassungs-/Abrechnungsentgelt

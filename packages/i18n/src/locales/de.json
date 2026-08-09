@@ -1035,7 +1035,16 @@
         "co2Cost": "Enthaltener CO₂-Kostenanteil",
         "co2CostDescription": "Der bereits im Bruttobetrag enthaltene CO₂-Preisanteil – kein zusätzlicher Betrag.",
         "containedTaxes": "Enthaltene Steuern und Abgaben",
-        "containedTaxesDescription": "Die bereits im Bruttobetrag enthaltene Summe aus Steuern, Abgaben und Zöllen laut Rechnung (z. B. Umsatzsteuer, Energiesteuer, CO₂-Preis) – kein zusätzlicher Betrag. Wird in der Abrechnung nach § 6a HeizkostenV ausgewiesen."
+        "containedTaxesDescription": "Die bereits im Bruttobetrag enthaltene Summe aus Steuern, Abgaben und Zöllen laut Rechnung (z. B. Umsatzsteuer, Energiesteuer, CO₂-Preis) – kein zusätzlicher Betrag. Wird in der Abrechnung nach § 6a HeizkostenV ausgewiesen.",
+        "containedTaxKinds": "Arten der enthaltenen Steuern und Abgaben",
+        "containedTaxKindsDescription": "Welche Steuern und Abgaben in der Summe stecken. Die Auswahl steht in der Abrechnung nach § 6a HeizkostenV neben dem Betrag."
+      },
+      "taxKinds": {
+        "value_added_tax": "Umsatzsteuer",
+        "energy_tax": "Energiesteuer",
+        "co2_price": "CO₂-Abgabe nach BEHG",
+        "concession_fee": "Konzessionsabgabe",
+        "other": "Sonstige Abgaben"
       },
       "validation": {
         "amountRequired": "Betrag erforderlich",
@@ -2096,6 +2105,7 @@
         "districtHeatFactorValue": "{value}",
         "costsTitle": "Steuern, Abgaben und Entgelte",
         "containedTaxesLabel": "In den Heizkosten enthaltene Steuern, Abgaben und Zölle",
+        "containedTaxesLabelWithKinds": "In den Heizkosten enthaltene Steuern, Abgaben und Zölle ({kinds})",
         "containedTaxesValue": "{value}",
         "meteringServiceLabel": "Entgelte für Gebrauchsüberlassung und Eichung der Erfassungsgeräte sowie für Ablesung und Abrechnung",
         "meteringServiceValue": "{value}",

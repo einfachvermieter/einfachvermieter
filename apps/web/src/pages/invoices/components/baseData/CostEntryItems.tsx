@@ -1,3 +1,4 @@
+import { containedTaxKinds } from "@einfachvermieter/shared";
 import {
   RiAddLine,
   RiDeleteBin5Line,
@@ -9,6 +10,7 @@ import { useEffect } from "react";
 import { type UseFormReturn, useFieldArray, useWatch } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
 import { SectionCard } from "@/components/common/SectionCard";
+import { CheckboxGroupInput } from "@/components/form/CheckboxGroupInput";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { DateInput } from "@/components/form/DateInput";
 import { SelectInput } from "@/components/form/SelectInput";
@@ -190,6 +192,9 @@ const CostEntryItemFields = ({
       form.setValue(`items.${index}.containedTaxesInput`, "", {
         shouldDirty: true,
       });
+      form.setValue(`items.${index}.containedTaxKinds`, [], {
+        shouldDirty: true,
+      });
     }
   }, [showContainedTaxesInput, form, index]);
 
@@ -345,19 +350,38 @@ const CostEntryItemFields = ({
           </>
         ) : null}
         {showContainedTaxesInput ? (
-          <div className="sm:col-span-2">
-            <TextInput
-              control={form.control}
-              name={`items.${index}.containedTaxesInput`}
-              label={t("ui.costs.entryFields.containedTaxes")}
-              description={t("ui.costs.entryFields.containedTaxesDescription")}
-              optional={true}
-              inputMode="decimal"
-              placeholder="0,00"
-              suffix="€"
-              inputClassName="max-w-xs"
-            />
-          </div>
+          <>
+            <div className="sm:col-span-2">
+              <TextInput
+                control={form.control}
+                name={`items.${index}.containedTaxesInput`}
+                label={t("ui.costs.entryFields.containedTaxes")}
+                description={t(
+                  "ui.costs.entryFields.containedTaxesDescription",
+                )}
+                optional={true}
+                inputMode="decimal"
+                placeholder="0,00"
+                suffix="€"
+                inputClassName="max-w-xs"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <CheckboxGroupInput
+                control={form.control}
+                name={`items.${index}.containedTaxKinds`}
+                label={t("ui.costs.entryFields.containedTaxKinds")}
+                description={t(
+                  "ui.costs.entryFields.containedTaxKindsDescription",
+                )}
+                optional={true}
+                options={containedTaxKinds.map((kind) => ({
+                  value: kind,
+                  label: t(`ui.costs.taxKinds.${kind}`),
+                }))}
+              />
+            </div>
+          </>
         ) : null}
       </FieldGroup>
     </div>

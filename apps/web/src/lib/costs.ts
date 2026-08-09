@@ -82,6 +82,10 @@ export type CostEntryItem = {
    * Enthaltene Steuern, Abgaben und Zölle in Cent
    */
   containedTaxesCents: number | null;
+  /**
+   * Arten der enthaltenen Steuern und Abgaben
+   */
+  containedTaxKinds: string[] | null;
 };
 
 export type CostEntryDetail = CostEntry & {

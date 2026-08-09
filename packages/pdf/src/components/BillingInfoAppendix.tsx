@@ -36,7 +36,7 @@ export const BillingInfoAppendix = ({
   statementPeriod: Period;
 }) => {
   const rows = billingInfoRows(detail);
-  const costRows = billingInfoCostRows(detail);
+  const costRows = billingInfoCostRows(detail, t);
   const comparison = averageUserComparison(
     detail,
     targetUnitId,

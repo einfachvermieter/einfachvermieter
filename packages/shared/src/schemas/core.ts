@@ -110,6 +110,20 @@ export const costTypeUpdateSchema = costTypeFieldsSchema
   );
 export type CostTypeUpdateDto = z.infer<typeof costTypeUpdateSchema>;
 
+/**
+ * Arten von Steuern und Abgaben, die in einer Heiz-Rechnungsposition stecken
+ * können. Erfasst wird nur, welche Arten enthalten sind.
+ * Der Betrag bleibt eine Summe je Position.
+ */
+export const containedTaxKinds = [
+  "value_added_tax",
+  "energy_tax",
+  "co2_price",
+  "concession_fee",
+  "other",
+] as const;
+export type ContainedTaxKind = (typeof containedTaxKinds)[number];
+
 export const costEntryItemSchema = z
   .object({
     costTypeId: z.guid(),
@@ -142,6 +156,10 @@ export const costEntryItemSchema = z
      * Muss zwischen 0 und `amountCents` liegen.
      */
     containedTaxesCents: z.number().int().nonnegative().optional().nullable(),
+    /**
+     * Arten der in `containedTaxesCents` enthaltenen Steuern und Abgaben.
+     */
+    containedTaxKinds: z.array(z.enum(containedTaxKinds)).optional().nullable(),
     periodStart: isoDate(),
     periodEnd: isoDate(),
   })

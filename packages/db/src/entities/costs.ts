@@ -154,6 +154,12 @@ export type CostEntryItem = {
    * nur bei Heiz-Positionen erfasst.
    */
   containedTaxesCents: number | null;
+  /**
+   * Arten der in `containedTaxesCents` enthaltenen Steuern und Abgaben
+   * (Umsatzsteuer, Energiesteuer, CO2-Abgabe nach BEHG ...);
+   * nur die Arten, die Betraege bleiben eine Summe.
+   */
+  containedTaxKinds: string[] | null;
   periodStart: string;
   periodEnd: string;
   position: number;
@@ -193,6 +199,11 @@ export const CostEntryItemSchema = new EntitySchema<CostEntryItem>({
     containedTaxesCents: {
       type: "integer",
       fieldName: "contained_taxes_cents",
+      nullable: true,
+    },
+    containedTaxKinds: {
+      type: "json",
+      fieldName: "contained_tax_kinds",
       nullable: true,
     },
     periodStart: { type: "string", fieldName: "period_start" },

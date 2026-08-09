@@ -59,6 +59,7 @@ type CostEntryItemRow = {
   co2AmountGrams: number | null;
   co2CostCents: number | null;
   containedTaxesCents: number | null;
+  containedTaxKinds: string[] | null;
   periodStart: string;
   periodEnd: string;
   position: number;
@@ -718,6 +719,7 @@ export class CostsService {
       co2AmountGrams: item.co2AmountGrams,
       co2CostCents: item.co2CostCents,
       containedTaxesCents: item.containedTaxesCents,
+      containedTaxKinds: item.containedTaxKinds,
       periodStart: item.periodStart,
       periodEnd: item.periodEnd,
       position: item.position,
@@ -745,6 +747,7 @@ export class CostsService {
           co2AmountGrams: item.co2AmountGrams ?? null,
           co2CostCents: item.co2CostCents ?? null,
           containedTaxesCents: item.containedTaxesCents ?? null,
+          containedTaxKinds: item.containedTaxKinds ?? null,
           periodStart: item.periodStart,
           periodEnd: item.periodEnd,
           position: index,

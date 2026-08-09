@@ -4,6 +4,7 @@ import {
   type StatementResult,
 } from "../types/index.js";
 import { allocationKeys, isoDate } from "./common.js";
+import { containedTaxKinds } from "./core.js";
 
 const periodSchema = z.object({
   start: isoDate(),
@@ -163,6 +164,11 @@ export const heatingDetailSchema = z.object({
    * Fehlt, wenn keine Heiz-Position den Wert erfasst hat.
    */
   containedTaxesCents: z.number().int().optional(),
+  /**
+   * Arten der enthaltenen Steuern und Abgaben. Fehlt, wenn keine
+   * Heiz-Position eine Art nennt.
+   */
+  containedTaxKinds: z.array(z.enum(containedTaxKinds)).optional(),
   /**
    * Entgelte für Gebrauchsüberlassung/Eichung der Erfassungsgeräte sowie
    * Ablesung und Abrechnung (§ 6a Abs. 3 Nr. 1c HeizkostenV),

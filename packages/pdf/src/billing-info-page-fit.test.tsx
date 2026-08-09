@@ -59,6 +59,14 @@ const fullBillingInfo = (
   // uns keine Angaben des Versorgers vor").
   districtHeatInfo: { emissionsKgPerYear: null, primaryEnergyFactor: null },
   containedTaxesCents: 74_434,
+  // Alle Arten angehakt = längste Zelle des Steuern-Blocks
+  containedTaxKinds: [
+    "value_added_tax",
+    "energy_tax",
+    "co2_price",
+    "concession_fee",
+    "other",
+  ],
   meteringServiceCostCents: 19_000,
   perUnit: [
     {

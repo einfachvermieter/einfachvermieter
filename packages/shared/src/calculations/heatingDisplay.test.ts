@@ -342,15 +342,20 @@ describe("billingInfoRows", () => {
 });
 
 describe("billingInfoCostRows", () => {
+  const lastSegment = (key: string): string => key.split(".").at(-1) ?? key;
+
   it("liefert ohne erfasste Werte keine Zeilen", () => {
-    expect(billingInfoCostRows({})).toEqual([]);
+    expect(billingInfoCostRows({}, lastSegment)).toEqual([]);
   });
 
   it("weist erfasste Steuern/Abgaben und Erfassungsentgelte als Euro-Beträge aus", () => {
-    const rows = billingInfoCostRows({
-      containedTaxesCents: 71_400,
-      meteringServiceCostCents: 19_000,
-    });
+    const rows = billingInfoCostRows(
+      {
+        containedTaxesCents: 71_400,
+        meteringServiceCostCents: 19_000,
+      },
+      lastSegment,
+    );
     expect(rows.map((row) => row.key)).toEqual([
       "containedTaxes",
       "meteringService",
@@ -359,8 +364,26 @@ describe("billingInfoCostRows", () => {
     expect(rows[1]?.value.params?.value).toBe("190,00 €");
   });
 
+  it("nennt die erfassten Arten im Label der Steuerzeile", () => {
+    const rows = billingInfoCostRows(
+      {
+        containedTaxesCents: 71_400,
+        containedTaxKinds: ["value_added_tax", "co2_price"],
+      },
+      lastSegment,
+    );
+    expect(rows.map((row) => row.key)).toEqual(["containedTaxes"]);
+    expect(rows[0]?.label.key).toBe(
+      "statements.pdf.billingInfo.containedTaxesLabelWithKinds",
+    );
+    expect(rows[0]?.label.params?.kinds).toBe("value_added_tax, co2_price");
+  });
+
   it("zeigt jede der beiden Zeilen auch einzeln", () => {
-    const rows = billingInfoCostRows({ meteringServiceCostCents: 5000 });
+    const rows = billingInfoCostRows(
+      { meteringServiceCostCents: 5000 },
+      lastSegment,
+    );
     expect(rows.map((row) => row.key)).toEqual(["meteringService"]);
   });
 });

@@ -20,12 +20,14 @@ import {
 import { createTranslate } from "@einfachvermieter/i18n";
 import {
   type AdvanceAdjustmentDetail,
+  type AggregatedHeatingCosts,
   addDaysIso,
   aggregateHeatingCosts,
   buildEnergyComparison,
   CalculationError,
   type CalcWarning,
   type CalcWarningGroup,
+  type ContainedTaxKind,
   type CostEntry,
   calculateExternalHeating,
   calculateHeating,
@@ -121,6 +123,7 @@ type HeatingPotEntry = CostEntry & {
   co2CostCents: number | null;
   co2AmountGrams: number | null;
   containedTaxesCents: number | null;
+  containedTaxKinds: ContainedTaxKind[] | null;
   isMeteringServiceCost: boolean;
 };
 
@@ -171,6 +174,29 @@ const laborItemsFromCostType = (
     }));
 
 /**
+ * Pflichtangaben nach § 6a Abs. 3 Nr. 1b/1c an die Heizkosten-Details
+ * hängen: Steuern/Abgaben samt ihrer Arten und die Erfassungs- bzw.
+ * Abrechnungsentgelte.
+ */
+const applyBillingInfoCosts = (
+  detail: HeatingDetail,
+  aggregation: AggregatedHeatingCosts,
+  meteringServiceCostCents: number,
+): void => {
+  if (aggregation.totalContainedTaxesCents > 0) {
+    detail.containedTaxesCents = aggregation.totalContainedTaxesCents;
+  }
+
+  if (aggregation.containedTaxKindsFound.length > 0) {
+    detail.containedTaxKinds = aggregation.containedTaxKindsFound;
+  }
+
+  if (meteringServiceCostCents > 0) {
+    detail.meteringServiceCostCents = meteringServiceCostCents;
+  }
+};
+
+/**
  * Heizkosten-Topf-Positionen einer Kostenart (category=heating)
  */
 const heatingEntriesFromCostType = (
@@ -186,6 +212,9 @@ const heatingEntriesFromCostType = (
     co2CostCents: ct.co2Tracked ? c.co2CostCents : null,
     co2AmountGrams: ct.co2Tracked ? c.co2AmountGrams : null,
     containedTaxesCents: c.containedTaxesCents,
+    containedTaxKinds: (c.containedTaxKinds ?? null) as
+      | ContainedTaxKind[]
+      | null,
     isMeteringServiceCost: ct.isMeteringServiceCost,
     periodStart: c.periodStart,
     periodEnd: c.periodEnd,
@@ -1847,13 +1876,11 @@ export class StatementsService {
         },
       });
       heatingDetail.costBreakdown = costBreakdown;
-      if (heatingAggregation.totalContainedTaxesCents > 0) {
-        heatingDetail.containedTaxesCents =
-          heatingAggregation.totalContainedTaxesCents;
-      }
-      if (meteringServiceCostCents > 0) {
-        heatingDetail.meteringServiceCostCents = meteringServiceCostCents;
-      }
+      applyBillingInfoCosts(
+        heatingDetail,
+        heatingAggregation,
+        meteringServiceCostCents,
+      );
       heatingDetail.fuelType = heatingSettings.fuelType;
       if (!heatingDetail.warnings) {
         heatingDetail.warnings = [];

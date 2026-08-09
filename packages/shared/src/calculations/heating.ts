@@ -1,3 +1,4 @@
+import { type ContainedTaxKind, containedTaxKinds } from "../schemas/core.js";
 import type {
   HeatingFuelType,
   HeatingProrationMethod,
@@ -136,6 +137,7 @@ type HeatingCostItem = {
   co2CostCents?: number | null;
   co2AmountGrams?: number | null;
   containedTaxesCents?: number | null;
+  containedTaxKinds?: ContainedTaxKind[] | null;
 };
 
 export type AggregatedHeatingCosts = {
@@ -144,6 +146,7 @@ export type AggregatedHeatingCosts = {
   totalCo2CostCents: number;
   totalCo2AmountGrams: number;
   totalContainedTaxesCents: number;
+  containedTaxKindsFound: ContainedTaxKind[];
 };
 
 /**
@@ -167,6 +170,7 @@ export const aggregateHeatingCosts = (
   let totalCo2CostCents = 0;
   let totalCo2AmountGrams = 0;
   let totalContainedTaxesCents = 0;
+  const kindsFound = new Set<ContainedTaxKind>();
 
   for (const item of items) {
     const itemPeriod: Period = {
@@ -209,6 +213,9 @@ export const aggregateHeatingCosts = (
     totalContainedTaxesCents += Math.round(
       (item.containedTaxesCents ?? 0) * factor,
     );
+    for (const kind of item.containedTaxKinds ?? []) {
+      kindsFound.add(kind);
+    }
   }
 
   return {
@@ -217,6 +224,9 @@ export const aggregateHeatingCosts = (
     totalCo2CostCents,
     totalCo2AmountGrams,
     totalContainedTaxesCents,
+    containedTaxKindsFound: containedTaxKinds.filter((kind) =>
+      kindsFound.has(kind),
+    ),
   };
 };
 

@@ -564,22 +564,37 @@ export type BillingInfoCostRow = {
 /**
  * Zeilen des Blocks "Steuern, Abgaben und Entgelte" der Abrechnungs-
  * informationen nach § 6a Abs. 3 Nr. 1b/1c HeizkostenV: in den Heizkosten
- * enthaltene Steuern/Abgaben (soweit auf den Rechnungspositionen erfasst)
- * und die Summe der als Erfassungs-/Abrechnungsentgelt gekennzeichneten
- * Positionen. Leer, wenn nichts erfasst ist.
+ * enthaltene Steuern/Abgaben (soweit auf den Rechnungspositionen erfasst,
+ * die erfassten Arten stehen im Label) und die Summe der als Erfassungs-/
+ * Abrechnungsentgelt gekennzeichneten Positionen. Leer, wenn nichts
+ * erfasst ist.
  */
 export const billingInfoCostRows = (
   detail: Pick<
     HeatingDetail,
-    "containedTaxesCents" | "meteringServiceCostCents"
+    "containedTaxesCents" | "containedTaxKinds" | "meteringServiceCostCents"
   >,
+  translate: TranslateFn,
 ): BillingInfoCostRow[] => {
   const rows: BillingInfoCostRow[] = [];
+  const kinds = detail.containedTaxKinds ?? [];
 
   if (detail.containedTaxesCents !== undefined) {
     rows.push({
       key: "containedTaxes",
-      label: { key: "statements.pdf.billingInfo.containedTaxesLabel" },
+      // Die erfassten Arten benennen die Summe naeher und gehoeren deshalb
+      // ins Label - die Wertspalte bleibt eine reine Betragsspalte.
+      label:
+        kinds.length > 0
+          ? {
+              key: "statements.pdf.billingInfo.containedTaxesLabelWithKinds",
+              params: {
+                kinds: kinds
+                  .map((kind) => translate(`ui.costs.taxKinds.${kind}`))
+                  .join(", "),
+              },
+            }
+          : { key: "statements.pdf.billingInfo.containedTaxesLabel" },
       value: {
         key: "statements.pdf.billingInfo.containedTaxesValue",
         params: { value: formatEur(detail.containedTaxesCents) },
