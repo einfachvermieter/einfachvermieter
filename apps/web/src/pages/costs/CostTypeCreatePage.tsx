@@ -1,11 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { getRouteApi } from "@tanstack/react-router";
-import { useState } from "react";
 import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
+import { FormSkeleton } from "../../components/FormSkeleton";
+import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
-import { buildingsQueryOptions } from "../../lib/buildings";
 import type { CostType } from "../../lib/costs";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
@@ -14,37 +12,12 @@ import { useGoBack } from "../../lib/useGoBack";
 import { CostTypeForm } from "./components/baseData/CostTypeForm";
 import {
   ALLOCATION_KEY_NONE,
-  type CostTypeFormValues,
   type CostTypeSubmitValues,
   LABOR_CATEGORY_NONE,
 } from "./components/baseData/costTypeForm.schema";
 
-const routeApi = getRouteApi("/kostenarten/neu");
-
 export const CostTypeCreatePage = () => {
-  const { data: buildings } = useQuery(buildingsQueryOptions);
-  const { buildingId: preselectedBuildingId } = routeApi.useSearch();
-
-  // Gebäude-Auswahl aus dem Formular, für die Kontext-Karte
-  const [selectedBuildingId, setSelectedBuildingId] = useState<string>();
-
-  const matchingBuilding = buildings?.find(
-    (building) => building.id === preselectedBuildingId,
-  );
-  const defaultValues: CostTypeFormValues = {
-    buildingId: matchingBuilding?.id ?? buildings?.[0]?.id ?? "",
-    name: "",
-    category: "operating",
-    defaultAllocationKey: ALLOCATION_KEY_NONE,
-    laborCostCategory: LABOR_CATEGORY_NONE,
-    co2Tracked: false,
-    isMeteringServiceCost: false,
-  };
-
-  const contextBuilding =
-    buildings?.find((building) => building.id === selectedBuildingId) ??
-    matchingBuilding ??
-    buildings?.[0];
+  const { buildingId, building } = useActiveBuilding();
 
   const goBack = useGoBack("/kostenarten");
 
@@ -65,19 +38,28 @@ export const CostTypeCreatePage = () => {
         />
       }
       title={t("ui.costs.typeCreateTitle")}
-      aside={<BuildingContextCard building={contextBuilding} />}
+      aside={<BuildingContextCard building={building} />}
     >
-      <CostTypeForm
-        key={defaultValues.buildingId}
-        mode="create"
-        buildings={buildings ?? []}
-        defaultValues={defaultValues}
-        onSubmit={async (values) => {
-          await createCostType.mutateAsync(values);
-        }}
-        onCancel={goBack}
-        onBuildingChange={setSelectedBuildingId}
-      />
+      {buildingId ? (
+        <CostTypeForm
+          mode="create"
+          defaultValues={{
+            buildingId,
+            name: "",
+            category: "operating",
+            defaultAllocationKey: ALLOCATION_KEY_NONE,
+            laborCostCategory: LABOR_CATEGORY_NONE,
+            co2Tracked: false,
+            isMeteringServiceCost: false,
+          }}
+          onSubmit={async (values) => {
+            await createCostType.mutateAsync(values);
+          }}
+          onCancel={goBack}
+        />
+      ) : (
+        <FormSkeleton rows={4} />
+      )}
     </FormPage>
   );
 };

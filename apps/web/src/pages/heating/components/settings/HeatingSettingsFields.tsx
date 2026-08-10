@@ -14,7 +14,6 @@ import { Disclose } from "@/components/common/Disclose";
 import { SectionCard } from "@/components/common/SectionCard";
 import { SplitBar } from "@/components/common/SplitBar";
 import { MonthInput } from "@/components/form/MonthInput";
-import { ReadonlyField } from "@/components/form/ReadonlyField";
 import { SelectInput } from "@/components/form/SelectInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -28,7 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/Select";
-import type { Building } from "../../../../lib/buildings";
 import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import type { Meter } from "../../../../lib/meters";
@@ -100,13 +98,9 @@ const applyBillingType = (
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: Länge liegt in den Feld-Sektionen (JSX).
 export const HeatingSettingsFields = ({
   form,
-  buildings,
-  buildingFieldDisabled = false,
   hotWaterMeterCandidates,
 }: {
   form: UseFormReturn<HeatingFormValues>;
-  buildings: Building[];
-  buildingFieldDisabled?: boolean;
   hotWaterMeterCandidates: Meter[];
 }) => {
   const billingTypeFieldId = useId();
@@ -185,26 +179,6 @@ export const HeatingSettingsFields = ({
         description={t("ui.heating.detail.validityDescription")}
       >
         <FieldGroup className="gap-4">
-          {buildingFieldDisabled ? (
-            <ReadonlyField
-              label={t("ui.buildings.title")}
-              value={
-                buildings.find(
-                  (building) => building.id === form.getValues("buildingId"),
-                )?.name
-              }
-            />
-          ) : (
-            <SelectInput
-              control={form.control}
-              name="buildingId"
-              label={t("ui.buildings.title")}
-              options={buildings.map((building) => ({
-                value: building.id,
-                label: building.name,
-              }))}
-            />
-          )}
           <div className="grid grid-cols-2 gap-4">
             <MonthInput
               control={form.control}

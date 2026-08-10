@@ -5,27 +5,22 @@ import {
   unitFormToDto,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
-import type { Building } from "../../lib/buildings";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { UnitDataFields } from "./components/baseData/UnitDataFields";
 
 export const UnitForm = ({
   mode,
-  buildings,
   defaultValues,
   onSubmit,
   onCancel,
   savedAt,
-  onBuildingChange,
 }: {
   mode: "create" | "edit";
-  buildings: Building[];
   defaultValues: UnitFormValues;
   onSubmit: (values: UnitCreateDto) => Promise<void>;
   onCancel: () => void;
@@ -34,12 +29,6 @@ export const UnitForm = ({
    * Formatierter Speicherzeitpunkt für die Savebar (nur mode="edit")
    */
   savedAt?: string;
-
-  /**
-   * Meldet die aktuelle Gebäude-Auswahl nach außen, damit die
-   * Kontext-Karte der Anlege-Seite dem Wechsel folgt
-   */
-  onBuildingChange?: (buildingId: string) => void;
 }) => {
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
@@ -49,18 +38,9 @@ export const UnitForm = ({
 
   const submitting = form.formState.isSubmitting;
 
-  const selectedBuildingId = form.watch("buildingId");
-  useEffect(() => {
-    onBuildingChange?.(selectedBuildingId);
-  }, [onBuildingChange, selectedBuildingId]);
-
   const fields = (
     <fieldset disabled={submitting} className="contents">
-      <UnitDataFields
-        form={form}
-        buildings={buildings}
-        buildingFieldDisabled={mode === "edit"}
-      />
+      <UnitDataFields form={form} />
     </fieldset>
   );
 

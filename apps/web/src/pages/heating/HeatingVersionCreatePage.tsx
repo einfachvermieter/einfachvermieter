@@ -7,40 +7,25 @@ import {
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
-import { getRouteApi } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
-import { type Building, buildingsQueryOptions } from "../../lib/buildings";
+import { useActiveBuilding } from "../../lib/activeBuilding";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import {
   createHeatingSettings,
   heatingSettingsListQueryOptions,
 } from "../../lib/heating";
 import { t } from "../../lib/i18n";
-import { metersOverviewQueryOptions } from "../../lib/meters";
+import { type Meter, metersOverviewQueryOptions } from "../../lib/meters";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useGoBack } from "../../lib/useGoBack";
 import { HeatingForm } from "./HeatingForm";
 
-const routeApi = getRouteApi("/heizkosten/neu");
-
 export const HeatingVersionCreatePage = () => {
-  const { buildingId: preselected } = routeApi.useSearch();
-  const { data: buildings } = useQuery(buildingsQueryOptions);
-
-  const matching = buildings?.find((building) => building.id === preselected);
-  const initialBuildingId = matching?.id ?? buildings?.[0]?.id ?? "";
-
-  // Gebäude-Auswahl aus dem Formular, für die Kontext-Karte
-  const [selectedBuildingId, setSelectedBuildingId] = useState<string>();
-  const contextBuilding =
-    buildings?.find((building) => building.id === selectedBuildingId) ??
-    matching ??
-    buildings?.[0];
+  const { buildingId, building } = useActiveBuilding();
 
   return (
     <FormPage
@@ -52,15 +37,10 @@ export const HeatingVersionCreatePage = () => {
         />
       }
       title={t("ui.heating.versions.createTitle")}
-      aside={<BuildingContextCard building={contextBuilding} />}
+      aside={<BuildingContextCard building={building} />}
     >
-      {buildings && buildings.length > 0 ? (
-        <HeatingVersionCreateView
-          key={initialBuildingId}
-          buildings={buildings}
-          initialBuildingId={initialBuildingId}
-          onBuildingChange={setSelectedBuildingId}
-        />
+      {buildingId ? (
+        <HeatingVersionCreateView buildingId={buildingId} />
       ) : (
         <FormSkeleton rows={4} />
       )}
@@ -68,72 +48,60 @@ export const HeatingVersionCreatePage = () => {
   );
 };
 
-const HeatingVersionCreateView = ({
-  buildings,
-  initialBuildingId,
-  onBuildingChange,
-}: {
-  buildings: Building[];
-  initialBuildingId: string;
+const HeatingVersionCreateView = ({ buildingId }: { buildingId: string }) => {
+  const { data: versions } = useQuery(
+    heatingSettingsListQueryOptions(buildingId),
+  );
+  const { data: metersResult } = useQuery(
+    metersOverviewQueryOptions({
+      page: 0,
+      pageSize: 500,
+      buildingId,
+    }),
+  );
 
-  /**
-   * Meldet die aktuelle Gebäude-Auswahl nach außen, damit die
-   * Kontext-Karte der Seite dem Wechsel folgt
-   */
-  onBuildingChange: (buildingId: string) => void;
+  if (!versions || !metersResult) {
+    return <FormSkeleton rows={4} />;
+  }
+
+  // Gibt es für das Gebäude bereits Versionen, dient die jüngste als
+  // Vorlage; die Gültigkeit beginnt heute. Die Werte stehen fest,
+  // bevor das Formular initialisiert wird
+  const [latest] = versions;
+  const defaultValues = latest
+    ? {
+        ...heatingSettingsToFormValues(latest),
+        validFrom: todayIso(),
+        validTo: "",
+      }
+    : emptyHeatingFormValues(buildingId, todayIso());
+
+  return (
+    <HeatingVersionCreateForm
+      buildingId={buildingId}
+      defaultValues={defaultValues}
+      meters={metersResult.items}
+    />
+  );
+};
+
+const HeatingVersionCreateForm = ({
+  buildingId,
+  defaultValues,
+  meters,
+}: {
+  buildingId: string;
+  defaultValues: HeatingFormValues;
+  meters: Meter[];
 }) => {
   const form = useForm<HeatingFormValues>({
     resolver: zodResolver(heatingFormSchema),
     reValidateMode: "onSubmit",
-    defaultValues: emptyHeatingFormValues(initialBuildingId, todayIso()),
+    defaultValues,
   });
-
-  const watchedBuildingId = form.watch("buildingId");
-  useEffect(() => {
-    onBuildingChange(watchedBuildingId);
-  }, [onBuildingChange, watchedBuildingId]);
-
-  const { data: versions } = useQuery({
-    ...heatingSettingsListQueryOptions(watchedBuildingId),
-    enabled: Boolean(watchedBuildingId),
-  });
-  const { data: metersResult } = useQuery({
-    ...metersOverviewQueryOptions({
-      page: 0,
-      pageSize: 500,
-      buildingId: watchedBuildingId,
-    }),
-    enabled: Boolean(watchedBuildingId),
-  });
-
-  // Wenn der User das Gebäude wechselt und es bereits Versionen für das
-  // neue Gebäude gibt, übernehmen wir die jüngste als Vorlage, analog
-  // zum Erst-Aufruf (Reduziert Tipparbeit, validFrom bleibt heute).
-  useEffect(() => {
-    if (!versions || versions.length === 0) {
-      return;
-    }
-
-    const currentValues = form.getValues();
-    if (currentValues.buildingId !== watchedBuildingId) {
-      return;
-    }
-
-    const [latest] = versions;
-    if (!latest) {
-      return;
-    }
-
-    const template = heatingSettingsToFormValues(latest);
-    form.reset({
-      ...template,
-      validFrom: currentValues.validFrom || todayIso(),
-      validTo: "",
-    });
-  }, [versions, watchedBuildingId, form]);
 
   const goBack = useGoBack("/heizkosten", {
-    search: { buildingId: watchedBuildingId || undefined },
+    search: { buildingId },
   });
 
   const create = useCrudMutation({
@@ -145,7 +113,7 @@ const HeatingVersionCreateView = ({
     onSuccess: goBack,
   });
 
-  const hotWaterMeterCandidates = (metersResult?.items ?? []).filter(
+  const hotWaterMeterCandidates = meters.filter(
     (meter) =>
       meter.type === "heat_meter" &&
       meter.unitId === null &&
@@ -154,20 +122,14 @@ const HeatingVersionCreateView = ({
       meter.costAllocationMode === "heating_cost_bill",
   );
 
-  return metersResult ? (
+  return (
     <HeatingForm
       form={form}
-      buildings={buildings}
       hotWaterMeterCandidates={hotWaterMeterCandidates}
       onSubmit={async (dto) => {
-        await create.mutateAsync({
-          buildingId: form.getValues("buildingId"),
-          dto,
-        });
+        await create.mutateAsync({ buildingId, dto });
       }}
       onCancel={goBack}
     />
-  ) : (
-    <FormSkeleton rows={4} />
   );
 };

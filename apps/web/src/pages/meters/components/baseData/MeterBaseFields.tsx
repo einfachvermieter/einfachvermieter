@@ -16,12 +16,10 @@ import type { UseFormReturn } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
 import { SectionCard } from "@/components/common/SectionCard";
 import { DateInput } from "@/components/form/DateInput";
-import { ReadonlyField } from "@/components/form/ReadonlyField";
 import { SelectInput } from "@/components/form/SelectInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
-import type { Building } from "../../../../lib/buildings";
 import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import { measurementUnitLabel } from "../../../../lib/meters";
@@ -33,15 +31,11 @@ const calendarEnd = new Date(today.getFullYear() + 5, 11, 1);
 
 export const MeterBaseFields = ({
   form,
-  buildings,
   units,
-  buildingFieldDisabled,
   onTypeChange,
 }: {
   form: UseFormReturn<MeterFormValues>;
-  buildings: Building[];
   units: Unit[];
-  buildingFieldDisabled: boolean;
   onTypeChange: (newType: string) => void;
 }) => {
   const selectedBuildingId = form.watch("buildingId");
@@ -111,27 +105,6 @@ export const MeterBaseFields = ({
               label: t(`meters.roles.${role}`),
             }))}
           />
-          {buildingFieldDisabled ? (
-            <ReadonlyField
-              label={t("ui.buildings.title")}
-              value={
-                buildings.find(
-                  (building) => building.id === form.getValues("buildingId"),
-                )?.name
-              }
-            />
-          ) : (
-            <SelectInput
-              control={form.control}
-              name="buildingId"
-              label={t("ui.buildings.title")}
-              onValueChange={() => form.setValue("unitId", UNIT_NONE)}
-              options={buildings.map((building) => ({
-                value: building.id,
-                label: building.name,
-              }))}
-            />
-          )}
           {showUnitField ? (
             <SelectInput
               control={form.control}

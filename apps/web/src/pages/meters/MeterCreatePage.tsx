@@ -1,13 +1,12 @@
 import { type MeterCreateDto, todayIso } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
-import { useState } from "react";
 import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
+import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
-import { buildingsQueryOptions } from "../../lib/buildings";
 import { costTypesQueryOptions } from "../../lib/costs";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
@@ -21,22 +20,10 @@ import { MeterForm } from "./MeterForm";
 const routeApi = getRouteApi("/zaehler/neu");
 
 export const MeterCreatePage = () => {
-  const { data: buildings } = useQuery(buildingsQueryOptions);
+  const { buildingId, building } = useActiveBuilding();
   const { data: units } = useQuery(unitsQueryOptions);
   const { data: costTypes } = useQuery(costTypesQueryOptions);
-  const { buildingId: preselectedBuildingId, type: preselectedType } =
-    routeApi.useSearch();
-
-  // Gebäude-Auswahl aus dem Formular, für die Kontext-Karte
-  const [selectedBuildingId, setSelectedBuildingId] = useState<string>();
-
-  const matchingBuilding = buildings?.find(
-    (building) => building.id === preselectedBuildingId,
-  );
-  const contextBuilding =
-    buildings?.find((building) => building.id === selectedBuildingId) ??
-    matchingBuilding ??
-    buildings?.[0];
+  const { type: preselectedType } = routeApi.useSearch();
 
   const goBack = useGoBack("/zaehler", {
     search: { buildingId: undefined, type: undefined },
@@ -58,35 +45,23 @@ export const MeterCreatePage = () => {
         />
       }
       title={t("ui.meters.createTitle")}
-      aside={<BuildingContextCard building={contextBuilding} />}
+      aside={<BuildingContextCard building={building} />}
     >
-      {buildings && units && costTypes ? (
-        (() => {
-          const initialBuildingId =
-            matchingBuilding?.id ?? buildings[0]?.id ?? "";
-          const today = todayIso();
-          const defaultValues = emptyMeterFormValues(
-            initialBuildingId,
-            today,
+      {buildingId && units && costTypes ? (
+        <MeterForm
+          mode="create"
+          units={units}
+          costTypes={costTypes}
+          defaultValues={emptyMeterFormValues(
+            buildingId,
+            todayIso(),
             preselectedType,
-          );
-
-          return (
-            <MeterForm
-              key={defaultValues.buildingId}
-              mode="create"
-              buildings={buildings}
-              units={units}
-              costTypes={costTypes}
-              defaultValues={defaultValues}
-              onSubmit={async (values) => {
-                await createMeter.mutateAsync(values);
-              }}
-              onCancel={goBack}
-              onBuildingChange={setSelectedBuildingId}
-            />
-          );
-        })()
+          )}
+          onSubmit={async (values) => {
+            await createMeter.mutateAsync(values);
+          }}
+          onCancel={goBack}
+        />
       ) : (
         <FormSkeleton rows={4} />
       )}

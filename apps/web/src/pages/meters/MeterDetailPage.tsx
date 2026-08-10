@@ -7,7 +7,6 @@ import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { InfoCard } from "../../components/common/InfoCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
-import { buildingsQueryOptions } from "../../lib/buildings";
 import { costTypesQueryOptions } from "../../lib/costs";
 import { domainVisuals } from "../../lib/domainVisuals";
 import {
@@ -32,7 +31,6 @@ export const MeterDetailPage = () => {
 
   const meterQuery = useQuery(meterQueryOptions(meterId));
   const meter = meterQuery.data;
-  const { data: buildings } = useQuery(buildingsQueryOptions);
   const { data: units } = useQuery(unitsQueryOptions);
   const { data: costTypes } = useQuery(costTypesQueryOptions);
   const { data: readings } = useQuery(readingsQueryOptions(meterId));
@@ -71,7 +69,7 @@ export const MeterDetailPage = () => {
     );
   }
 
-  const loaded = meter && buildings && units && costTypes;
+  const loaded = meter && units && costTypes;
 
   return (
     <div className="pb-24">
@@ -97,7 +95,6 @@ export const MeterDetailPage = () => {
             <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
               <MeterForm
                 mode="edit"
-                buildings={buildings}
                 units={units}
                 costTypes={costTypes}
                 defaultValues={meterToFormValues(meter)}

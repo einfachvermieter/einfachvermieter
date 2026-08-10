@@ -8,13 +8,11 @@ import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
-import { ReadonlyField } from "@/components/form/ReadonlyField";
 import { SelectInput } from "@/components/form/SelectInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
-import type { Building } from "../../../../lib/buildings";
 import {
   costTypeCategoryLabel,
   laborCostCategoryLabel,
@@ -40,12 +38,8 @@ const LABOR_CATEGORY_OPTIONS = [
 
 export const CostTypeBaseFields = ({
   form,
-  buildings,
-  buildingFieldDisabled,
 }: {
   form: UseFormReturn<CostTypeFormValues>;
-  buildings: Building[];
-  buildingFieldDisabled: boolean;
 }) => {
   const selectedCategory = form.watch("category");
   const isHeating = selectedCategory === "heating";
@@ -100,26 +94,6 @@ export const CostTypeBaseFields = ({
   return (
     <FieldGroup className="gap-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {buildingFieldDisabled ? (
-          <ReadonlyField
-            label={t("ui.buildings.title")}
-            value={
-              buildings.find(
-                (building) => building.id === form.getValues("buildingId"),
-              )?.name
-            }
-          />
-        ) : (
-          <SelectInput
-            control={form.control}
-            name="buildingId"
-            label={t("ui.buildings.title")}
-            options={buildings.map((building) => ({
-              value: building.id,
-              label: building.name,
-            }))}
-          />
-        )}
         <TextInput
           control={form.control}
           name="name"

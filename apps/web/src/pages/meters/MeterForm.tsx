@@ -6,12 +6,10 @@ import {
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiPriceTag3Line } from "@remixicon/react";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
-import type { Building } from "../../lib/buildings";
 import type { CostType } from "../../lib/costs";
 import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
@@ -25,7 +23,6 @@ import { HkvFields } from "./components/hkv/HkvFields";
 
 export const MeterForm = ({
   mode,
-  buildings,
   units,
   costTypes,
   defaultValues,
@@ -34,10 +31,8 @@ export const MeterForm = ({
   onSubmit,
   onCancel,
   savedAt,
-  onBuildingChange,
 }: {
   mode: "create" | "edit";
-  buildings: Building[];
   units: Unit[];
   costTypes: CostType[];
   defaultValues: MeterFormValues;
@@ -47,12 +42,6 @@ export const MeterForm = ({
   onCancel: () => void;
   /** Formatierter Speicherzeitpunkt für die Savebar (nur mode="edit") */
   savedAt?: string;
-
-  /**
-   * Meldet die aktuelle Gebäude-Auswahl nach außen, damit die
-   * Kontext-Karte der Anlege-Seite dem Wechsel folgt
-   */
-  onBuildingChange?: (buildingId: string) => void;
 }) => {
   const form = useForm<MeterFormValues>({
     resolver: zodResolver(meterFormSchema),
@@ -61,11 +50,6 @@ export const MeterForm = ({
   });
 
   const submitting = form.formState.isSubmitting;
-
-  const selectedBuildingId = form.watch("buildingId");
-  useEffect(() => {
-    onBuildingChange?.(selectedBuildingId);
-  }, [onBuildingChange, selectedBuildingId]);
 
   const selectedType = form.watch("type");
   const selectedRole = form.watch("role");
@@ -102,9 +86,7 @@ export const MeterForm = ({
         <div className="space-y-5">
           <MeterBaseFields
             form={form}
-            buildings={buildings}
             units={units}
-            buildingFieldDisabled={mode === "edit"}
             onTypeChange={onTypeChange}
           />
           {isGas ? <GasFactorsCard form={form} /> : null}

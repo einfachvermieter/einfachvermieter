@@ -4,7 +4,7 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useId, useMemo } from "react";
+import { useId, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { DateInput } from "@/components/form/DateInput";
 import { MonthInput } from "@/components/form/MonthInput";
@@ -23,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/Select";
-import type { Building } from "../../../lib/buildings";
 import { t } from "../../../lib/i18n";
 import type { TenantOverviewRow } from "../../../lib/tenants";
 import {
@@ -33,26 +32,17 @@ import {
 } from "./statementForm.schema";
 
 export const StatementForm = ({
-  buildings,
   tenants,
   defaultValues,
   onSubmit,
   onCancel,
   submitting = false,
-  onBuildingChange,
 }: {
-  buildings: Building[];
   tenants: TenantOverviewRow[];
   defaultValues: StatementFormValues;
   onSubmit: (values: StatementSubmitValues) => void;
   onCancel: () => void;
   submitting?: boolean;
-
-  /**
-   * Meldet die aktuelle Gebäude-Auswahl nach außen, damit die
-   * Kontext-Karte der Anlege-Seite dem Wechsel folgt
-   */
-  onBuildingChange?: (buildingId: string) => void;
 }) => {
   const formId = useId();
   const form = useForm<StatementFormValues>({
@@ -61,10 +51,6 @@ export const StatementForm = ({
   });
 
   const selectedBuildingId = form.watch("buildingId");
-  useEffect(() => {
-    onBuildingChange?.(selectedBuildingId);
-  }, [onBuildingChange, selectedBuildingId]);
-
   const scopedTenants = useMemo(
     () => tenants.filter((tenant) => tenant.buildingId === selectedBuildingId),
     [tenants, selectedBuildingId],
@@ -93,43 +79,6 @@ export const StatementForm = ({
         </Alert>
       ) : null}
       <FieldGroup className="gap-4">
-        <Controller
-          name="buildingId"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={`${formId}-buildingId`}>
-                {t("ui.buildings.title")}
-              </FieldLabel>
-              <Select
-                name={field.name}
-                value={field.value}
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  form.setValue("tenantId", "");
-                }}
-              >
-                <SelectTrigger
-                  id={`${formId}-buildingId`}
-                  aria-invalid={fieldState.invalid}
-                  className="w-full"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  {buildings.map((building) => (
-                    <SelectItem key={building.id} value={building.id}>
-                      {building.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {fieldState.invalid ? (
-                <FieldError errors={[fieldState.error]} />
-              ) : null}
-            </Field>
-          )}
-        />
         <Controller
           name="tenantId"
           control={form.control}

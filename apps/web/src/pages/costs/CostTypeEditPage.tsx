@@ -9,7 +9,6 @@ import { InfoCard } from "../../components/common/InfoCard";
 import { PageHeader } from "../../components/common/PageHeader";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
-import { buildingsQueryOptions } from "../../lib/buildings";
 import {
   type CostType,
   type CostTypeDetail,
@@ -63,7 +62,6 @@ const toFormValues = (costType: CostType): CostTypeFormValues => {
 export const CostTypeEditPage = () => {
   const { costTypeId } = routeApi.useParams();
 
-  const { data: buildings } = useQuery(buildingsQueryOptions);
   const costTypeQuery = useQuery(costTypeQueryOptions(costTypeId));
   const { data: heatingVersions } = useQuery({
     ...heatingSettingsListQueryOptions(costTypeQuery.data?.buildingId ?? ""),
@@ -143,11 +141,10 @@ export const CostTypeEditPage = () => {
         }
       />
 
-      {costType && buildings ? (
+      {costType ? (
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
           <CostTypeForm
             mode="edit"
-            buildings={buildings}
             savedAt={
               costType.updatedAt
                 ? formatDate(costType.updatedAt.slice(0, 10))

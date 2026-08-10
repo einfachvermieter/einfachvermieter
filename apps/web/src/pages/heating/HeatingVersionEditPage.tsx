@@ -135,7 +135,6 @@ export const HeatingVersionEditPage = () => {
       />
       {loaded ? (
         <HeatingVersionEditView
-          buildings={buildings}
           building={building}
           version={version}
           hotWaterMeterCandidates={hotWaterMeterCandidates}
@@ -149,13 +148,11 @@ export const HeatingVersionEditPage = () => {
 };
 
 const HeatingVersionEditView = ({
-  buildings,
   building,
   version,
   hotWaterMeterCandidates,
   onDone,
 }: {
-  buildings: Building[];
   building: Building;
   version: HeatingSettings;
   hotWaterMeterCandidates: Meter[];
@@ -199,8 +196,6 @@ const HeatingVersionEditView = ({
         <div>
           <HeatingForm
             form={form}
-            buildings={buildings}
-            buildingFieldDisabled={true}
             hotWaterMeterCandidates={hotWaterMeterCandidates}
             savedAt={formatDate(version.updatedAt.slice(0, 10))}
             onSubmit={async (dto) => {

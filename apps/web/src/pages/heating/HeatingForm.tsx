@@ -6,22 +6,17 @@ import {
 import type { UseFormReturn } from "react-hook-form";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
-import type { Building } from "../../lib/buildings";
 import type { Meter } from "../../lib/meters";
 import { HeatingSettingsFields } from "./components/settings/HeatingSettingsFields";
 
 export const HeatingForm = ({
   form,
-  buildings,
-  buildingFieldDisabled = false,
   hotWaterMeterCandidates,
   onSubmit,
   onCancel,
   savedAt,
 }: {
   form: UseFormReturn<HeatingFormValues>;
-  buildings: Building[];
-  buildingFieldDisabled?: boolean;
   hotWaterMeterCandidates: Meter[];
   onSubmit: (values: HeatingSettingsWriteDto) => Promise<void>;
   onCancel: () => void;
@@ -35,8 +30,6 @@ export const HeatingForm = ({
       <fieldset disabled={submitting} className="contents">
         <HeatingSettingsFields
           form={form}
-          buildings={buildings}
-          buildingFieldDisabled={buildingFieldDisabled}
           hotWaterMeterCandidates={hotWaterMeterCandidates}
         />
       </fieldset>
