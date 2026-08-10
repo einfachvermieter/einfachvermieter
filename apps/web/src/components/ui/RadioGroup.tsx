@@ -8,6 +8,7 @@ const radioGroupVariants = cva("grid w-full gap-3", {
     columns: {
       1: "grid-cols-1",
       2: "grid-cols-2",
+      3: "grid-cols-2 sm:grid-cols-3",
     },
   },
   defaultVariants: {

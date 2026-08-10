@@ -7,10 +7,10 @@ export type CostTypeForPrompt = {
 };
 
 /**
- * JSON-Schema, das Mistral via response_format=json_schema einhalten muss.
- * Pro Position liefert die KI Rohwerte aus der Rechnung (Netto- bzw.
- * Brutto-Betrag und USt-Satz); die Brutto-Umrechnung übernimmt das Backend
- * selbst. LLM-"Multiplikation" ist zu fehleranfällig.
+ * JSON-Schema, das die Antwort des KI-Anbieters einhalten muss. Pro Position
+ * liefert die KI Rohwerte aus der Rechnung (Netto- bzw. Brutto-Betrag und
+ * USt-Satz); die Brutto-Umrechnung übernimmt das Backend selbst.
+ * LLM-"Multiplikation" ist zu fehleranfällig.
  */
 export const COST_ENTRY_EXTRACTION_JSON_SCHEMA = {
   name: "cost_entry_extraction",
@@ -79,9 +79,9 @@ export const COST_ENTRY_EXTRACTION_JSON_SCHEMA = {
 } as const;
 
 /**
- * Zod-Schema zur Validierung der Mistral-Antwort
+ * Zod-Schema zur Validierung der KI-Antwort
  */
-export const mistralRawItemSchema = z.object({
+export const aiRawItemSchema = z.object({
   description: z.string(),
   amountNetCents: z.number().int().nonnegative().nullable(),
   amountGrossCents: z.number().int().nonnegative().nullable(),
@@ -99,7 +99,7 @@ export const mistralRawItemSchema = z.object({
   costTypeMatchReason: z.string(),
 });
 
-export const mistralRawResultSchema = z.object({
+export const aiRawResultSchema = z.object({
   vendor: z.string().nullable(),
   invoiceNumber: z.string().nullable(),
   invoiceDate: z
@@ -107,18 +107,17 @@ export const mistralRawResultSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/u)
     .nullable(),
   invoiceTotalCents: z.number().int().nonnegative().nullable(),
-  items: z.array(mistralRawItemSchema),
+  items: z.array(aiRawItemSchema),
   warnings: z.array(z.string()),
 });
 
-export type MistralRawItem = z.infer<typeof mistralRawItemSchema>;
-export type MistralRawResult = z.infer<typeof mistralRawResultSchema>;
+export type AiRawItem = z.infer<typeof aiRawItemSchema>;
+export type AiRawResult = z.infer<typeof aiRawResultSchema>;
 
 /**
- * Rechnet aus den Roh-Feldern einer Mistral-Position den Brutto-Betrag in
- * Cent
+ * Rechnet aus den Roh-Feldern einer KI-Position den Brutto-Betrag in Cent
  */
-export const computeGrossCents = (item: MistralRawItem): number | null => {
+export const computeGrossCents = (item: AiRawItem): number | null => {
   if (item.amountGrossCents !== null) {
     return item.amountGrossCents;
   }
@@ -251,3 +250,23 @@ export const buildSystemPrompt = (costTypes: CostTypeForPrompt[]): string => {
 
 export const USER_INSTRUCTION =
   "Bitte diese Rechnung extrahieren. Antworten Sie ausschließlich mit dem JSON-Objekt gemäß Schema.";
+
+/**
+ * Anweisung für die Texterkennung bei Anbietern ohne eigenen OCR-Endpoint:
+ * das Dokument wird direkt vom multimodalen Chat-Modell gelesen. Das
+ * Ergebnis geht anschließend als Rechnungstext in die eigentliche
+ * Extraktion, muss also vollständig und unkommentiert sein.
+ */
+export const TRANSCRIPTION_INSTRUCTION = [
+  "Geben Sie den vollständigen Inhalt dieses Dokuments als Markdown wieder.",
+  "",
+  "Übernehmen Sie sämtlichen Text wörtlich, einschließlich Kopf- und Fußzeilen,",
+  "Rechnungsnummern, Datumsangaben, Zeiträumen und aller Beträge. Tabellen als",
+  "Markdown-Tabellen abbilden und dabei die Zuordnung von Bezeichnung, Menge,",
+  "Einzelpreis und Betrag erhalten. Zahlen, Einheiten und Währungsangaben exakt",
+  "so übernehmen, wie sie im Dokument stehen – nichts umrechnen, runden,",
+  "zusammenfassen oder auslassen.",
+  "",
+  "Antworten Sie ausschließlich mit dem Dokumentinhalt, ohne Vorbemerkung und",
+  "ohne abschließenden Kommentar.",
+].join("\n");

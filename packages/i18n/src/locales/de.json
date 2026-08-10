@@ -207,13 +207,17 @@
       "tooLarge": "Die Datei ist zu groß (maximal {maxMb} MB)."
     },
     "ai": {
-      "notConfigured": "Die KI-Extraktion ist nicht konfiguriert (MISTRAL_API_KEY fehlt).",
+      "notConfigured": "Es ist kein KI-Anbieter eingerichtet. Bitte hinterlegen Sie unter „Einstellungen / KI-Anbieter“ einen Anbieter und den zugehörigen API-Key.",
+      "pdfNotSupported": "Der gewählte KI-Anbieter kann keine PDF-Dateien lesen. Bitte laden Sie ein Bild der Rechnung hoch oder wählen Sie einen anderen Anbieter.",
+      "refused": "Der KI-Dienst hat die Bearbeitung dieses Dokuments abgelehnt.",
+      "truncated": "Die Antwort des KI-Dienstes wurde abgeschnitten. Das Dokument ist vermutlich zu umfangreich.",
       "noResponse": "Der KI-Dienst lieferte keine verwertbare Antwort.",
       "noText": "Die KI konnte aus dem Dokument keinen Text extrahieren.",
       "invalidJson": "Die KI lieferte keine valide JSON-Antwort.",
       "schemaMismatch": "Die KI-Antwort entspricht nicht dem erwarteten Schema.",
       "itemMissingAmount": "Für die Position „{description}“ fehlt ein Betrag – die KI-Extraktion ist unvollständig.",
-      "upstreamError": "Der KI-Dienst hat einen Fehler gemeldet ({step}, Status {status})."
+      "upstreamError": "Der KI-Dienst hat einen Fehler gemeldet ({step}, Status {status}).",
+      "upstreamErrorDetail": "Der KI-Dienst hat einen Fehler gemeldet ({step}, Status {status}): {detail}"
     },
     "calc": {
       "allocationKwhNotImplemented": "Der Verteilerschlüssel „nach Verbrauch (kWh)“ für die Kostenart „{costTypeName}“ wird noch nicht unterstützt. Bitte wählen Sie einen anderen Schlüssel.",
@@ -347,6 +351,7 @@
         "detail": "Detail",
         "settings": "Einstellungen",
         "settingsSender": "Absenderdaten",
+        "settingsAi": "KI-Anbieter",
         "settingsPassword": "Passwort ändern",
         "settingsProfile": "Profil"
       },
@@ -1898,8 +1903,44 @@
       "eyebrow": "Einstellungen",
       "nav": {
         "sender": "Absenderdaten",
+        "ai": "KI-Anbieter",
         "password": "Passwort",
         "profile": "Profil"
+      },
+      "ai": {
+        "title": "KI-Anbieter",
+        "description": "Legt fest, welcher Dienst Ihre Rechnungen ausliest und die Felder vorausfüllt. Ohne Anbieter bleibt die Erfassung rein manuell.",
+        "saveSuccess": "KI-Einstellungen gespeichert.",
+        "advanced": "Erweiterte Einstellungen",
+        "keyLink": "API-Key erstellen auf {domain}",
+        "envKeyAvailable": "Für diesen Anbieter liegt bereits ein API-Key in der Umgebung des Servers. Sie können das Feld leer lassen; ein Eintrag hier hat Vorrang.",
+        "trademarkNotice": "Google und Gemini sind Marken von Google LLC. OpenAI, Claude, Mistral und Ollama sind Marken ihrer jeweiligen Eigentümer. Die Logos dienen ausschließlich zur Kennzeichnung der unterstützten KI-Anbieter und bedeuten weder eine Zusammenarbeit mit ihnen noch deren Empfehlung.",
+        "imagesOnlyNotice": "Dieser Anbieter liest nur Bilddateien. PDF-Rechnungen müssen Sie vorher als Bild speichern oder abfotografieren.",
+        "dataTransferNotice": "Beim Auslesen wird der Beleg an diesen Anbieter übertragen, zusammen mit technischen Verbindungsdaten wie der IP-Adresse. Was der Anbieter mit den Daten macht, liegt außerhalb von „EinfachVermieter“. Bitte prüfen Sie dessen Bedingungen, bevor Sie Belege mit personenbezogenen Daten auslesen lassen.",
+        "sections": {
+          "provider": "Anbieter",
+          "providerDescription": "Wer Ihre Rechnungen ausliest",
+          "connection": "Zugang",
+          "connectionDescription": "API-Key und Modell des gewählten Anbieters"
+        },
+        "fields": {
+          "provider": "Anbieter",
+          "providerNone": "Keine KI-Extraktion",
+          "apiKey": "API-Key",
+          "apiKeyStoredDescription": "Zum Austauschen erst entfernen",
+          "removeApiKey": "API-Key entfernen",
+          "model": "Modell",
+          "modelDescription": "Leer lassen, um das empfohlene Modell des Anbieters zu nutzen.",
+          "baseUrl": "Endpoint-Adresse",
+          "baseUrlDescription": "Nur nötig, wenn Sie den Anbieter über einen eigenen Server oder Proxy ansprechen. Leer lassen für die Standardadresse."
+        },
+        "providers": {
+          "mistral": { "label": "Mistral" },
+          "openai": { "label": "OpenAI" },
+          "anthropic": { "label": "Anthropic (Claude)" },
+          "gemini": { "label": "Google Gemini" },
+          "ollama": { "label": "Ollama (lokal)" }
+        }
       },
       "password": {
         "title": "Passwort ändern",

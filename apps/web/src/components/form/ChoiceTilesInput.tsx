@@ -17,9 +17,37 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 export type ChoiceTileOption = {
   value: string;
   icon?: RemixiconComponentType;
+  /**
+   * Freier Bildinhalt anstelle des Icons, etwa ein Anbieter-Logo. Anders
+   * als `icon` wird er nicht eingefärbt und behält seine eigenen Farben.
+   */
+  media?: ReactNode;
   title: ReactNode;
   description?: ReactNode;
   disabled?: boolean;
+};
+
+/**
+ * Vorangestelltes Bildelement einer Kachel: freier Inhalt hat Vorrang vor
+ * dem Icon, damit Logos ihre eigenen Farben behalten.
+ */
+const tileLeading = (option: ChoiceTileOption): ReactNode => {
+  if (option.media) {
+    return (
+      <span className="flex size-5 shrink-0 items-center justify-center">
+        {option.media}
+      </span>
+    );
+  }
+
+  if (!option.icon) {
+    return null;
+  }
+
+  const Icon = option.icon;
+  return (
+    <Icon data-slot="tile-icon" className="size-4.25 shrink-0 text-slate-400" />
+  );
 };
 
 type ChoiceTilesInputProps<T extends FieldValues> = {
@@ -29,7 +57,7 @@ type ChoiceTilesInputProps<T extends FieldValues> = {
   label?: string;
   description?: ReactNode;
   options: ChoiceTileOption[];
-  columns?: 1 | 2;
+  columns?: 1 | 2 | 3;
   disabled?: boolean;
   onValueChange?: (value: string) => void;
 };
@@ -72,7 +100,6 @@ export const ChoiceTilesInput = <T extends FieldValues>({
             disabled={disabled}
           >
             {options.map((option) => {
-              const Icon = option.icon;
               const optionId = `${baseId}-${option.value}`;
               return (
                 <label
@@ -90,12 +117,7 @@ export const ChoiceTilesInput = <T extends FieldValues>({
                     data-slot="tile-title"
                     className="flex items-center gap-2 text-sm font-semibold text-slate-400"
                   >
-                    {Icon ? (
-                      <Icon
-                        data-slot="tile-icon"
-                        className="size-4.25 shrink-0 text-slate-400"
-                      />
-                    ) : null}
+                    {tileLeading(option)}
                     {option.title}
                   </span>
                   {option.description ? (

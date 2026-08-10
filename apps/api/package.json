@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.117.1",
     "@einfachvermieter/db": "*",
     "@einfachvermieter/i18n": "*",
     "@einfachvermieter/pdf": "*",

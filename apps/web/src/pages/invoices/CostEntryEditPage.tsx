@@ -264,9 +264,7 @@ export const CostEntryEditPage = () => {
             />
             <CostEntryAttachments
               costEntryId={entry.id}
-              onExtract={
-                aiConfig?.mistralConfigured ? handleExtract : undefined
-              }
+              onExtract={aiConfig?.configured ? handleExtract : undefined}
               extractingAttachmentId={extractingAttachmentId}
             />
             {extractError ? (

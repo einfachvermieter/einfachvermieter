@@ -4,11 +4,19 @@ import {
   AppSettingsSchema,
 } from "@einfachvermieter/db";
 import type {
+  AiProvider,
+  AiSettingsDto,
+  AiSettingsUpdateDto,
   SenderSettingsDto,
   SenderSettingsUpdateDto,
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import {
+  maskApiKey,
+  providersWithEnvApiKey,
+  type StoredAiSettings,
+} from "../ai/ai-config.js";
 import {
   renderLogoDocument,
   sanitizeSvgInWorker,
@@ -90,6 +98,19 @@ const toDto = (row: AppSettings): SenderSettingsDto => ({
   logoMimeType: row.logoMimeType,
 });
 
+/**
+ * Projiziert die AppSettings-Zeile auf das KI-DTO.
+ * Der API-Key wird teil-versteckt
+ */
+const toAiDto = (stored: StoredAiSettings): AiSettingsDto => ({
+  aiProvider: (stored.aiProvider as AiProvider | null) ?? null,
+  aiBaseUrl: stored.aiBaseUrl,
+  aiModel: stored.aiModel,
+  hasApiKey: Boolean(stored.aiApiKey),
+  apiKeyPreview: maskApiKey(stored.aiApiKey),
+  providersWithEnvApiKey: providersWithEnvApiKey(process.env),
+});
+
 @Injectable()
 export class SettingsService {
   private readonly logger = new Logger(SettingsService.name);
@@ -133,6 +154,59 @@ export class SettingsService {
     await this.em.flush();
 
     return toDto(row);
+  }
+
+  /**
+   * Die hier hinterlegten KI-Anbieter-Daten inklusive API-Key.
+   */
+  async getStoredAiSettings(): Promise<StoredAiSettings> {
+    const row = await this.ensureRow();
+
+    return {
+      aiProvider: row.aiProvider,
+      aiApiKey: row.aiApiKey,
+      aiBaseUrl: row.aiBaseUrl,
+      aiModel: row.aiModel,
+    };
+  }
+
+  /**
+   * KI-Einstellungen für die Oberfläche, ohne den API-Key.
+   */
+  async getAiSettings(): Promise<AiSettingsDto> {
+    return toAiDto(await this.getStoredAiSettings());
+  }
+
+  /**
+   * Aktualisiert die KI-Einstellungen. Ein fehlendes `aiApiKey` lässt den
+   * gespeicherten API-Key unverändert, ein leerer String löscht ihn.
+   *
+   * Beim Wechsel des Anbieters wird ein noch gespeicherter API-Key
+   * verworfen: er gehört zum vorherigen Anbieter und wäre beim neuen
+   * bestenfalls wertlos.
+   */
+  async updateAiSettings(dto: AiSettingsUpdateDto): Promise<AiSettingsDto> {
+    const row = await this.ensureRow();
+    const providerChanged = dto.aiProvider !== row.aiProvider;
+
+    let apiKey = row.aiApiKey;
+    if (dto.aiApiKey !== undefined) {
+      apiKey = dto.aiApiKey.trim() || null;
+    } else if (providerChanged) {
+      apiKey = null;
+    }
+
+    this.em.assign(row, {
+      aiProvider: dto.aiProvider,
+      aiApiKey: apiKey,
+      aiBaseUrl: dto.aiBaseUrl?.trim() || null,
+      aiModel: dto.aiModel?.trim() || null,
+      updatedAt: new Date().toISOString(),
+    });
+
+    await this.em.flush();
+
+    return this.getAiSettings();
   }
 
   /**

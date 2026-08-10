@@ -1,6 +1,7 @@
 import {
   RiContactsBook2Line,
   RiLockPasswordLine,
+  RiSparkling2Line,
   RiUserLine,
 } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
@@ -12,11 +13,12 @@ import { domainVisuals, gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import { useAuthMode } from "@/lib/setup";
 
-type SettingsTab = "profile" | "sender" | "password";
+type SettingsTab = "profile" | "sender" | "ai" | "password";
 
 const TAB_ROUTES: Record<SettingsTab, string> = {
   profile: "/einstellungen/profil",
   sender: "/einstellungen/absender",
+  ai: "/einstellungen/ki",
   password: "/einstellungen/passwort",
 };
 
@@ -52,33 +54,39 @@ export const SettingsLayout = ({
           title={title}
           sub={description}
         />
-        {/* Desktop-App (`local`): ohne Passwort-Seite bleibt nur ein
-            einziger Tab übrig - dann ganz auf die Leiste verzichten. */}
-        {authMode !== "local" ? (
-          <Tabs
-            value={active}
-            onValueChange={(value) => {
-              navigate({ to: TAB_ROUTES[value as SettingsTab] }).catch(
-                () => undefined,
-              );
-            }}
-          >
-            <TabsList variant="default">
+        <Tabs
+          value={active}
+          onValueChange={(value) => {
+            navigate({ to: TAB_ROUTES[value as SettingsTab] }).catch(
+              () => undefined,
+            );
+          }}
+        >
+          <TabsList variant="default">
+            {/* Desktop-App (`local`): dort gibt es kein Anmelde-Konto,
+                also auch keine Profil- und Passwort-Seite. */}
+            {authMode !== "local" ? (
               <TabsTrigger value="profile">
                 <RiUserLine />
                 {t("ui.settings.nav.profile")}
               </TabsTrigger>
-              <TabsTrigger value="sender">
-                <RiContactsBook2Line />
-                {t("ui.settings.nav.sender")}
-              </TabsTrigger>
+            ) : null}
+            <TabsTrigger value="sender">
+              <RiContactsBook2Line />
+              {t("ui.settings.nav.sender")}
+            </TabsTrigger>
+            <TabsTrigger value="ai">
+              <RiSparkling2Line />
+              {t("ui.settings.nav.ai")}
+            </TabsTrigger>
+            {authMode !== "local" ? (
               <TabsTrigger value="password">
                 <RiLockPasswordLine />
                 {t("ui.settings.nav.password")}
               </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        ) : null}
+            ) : null}
+          </TabsList>
+        </Tabs>
       </div>
       {children}
     </div>

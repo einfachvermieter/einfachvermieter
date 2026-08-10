@@ -3,37 +3,50 @@ import {
   attachmentMaxBytesFromEnv,
   type CostEntryExtractionResult,
 } from "@einfachvermieter/shared";
-import { BadGatewayException, Injectable, Logger } from "@nestjs/common";
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+  Logger,
+} from "@nestjs/common";
 import { assertUploadAllowed } from "../common/upload-guard.js";
 import { AttachmentsService } from "../costs/attachments.service.js";
 import { CostsService } from "../costs/costs.service.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { debugKeyFor, StorageService } from "../storage/storage.service.js";
+import { AiClientFactory } from "./ai-client.factory.js";
+import type { AiClient, AiDebugEntry, AiDebugRecorder } from "./ai-client.js";
 import {
-  MistralClient,
-  type MistralDebugEntry,
-  type MistralDebugRecorder,
-} from "./mistral-client.provider.js";
-import {
+  type AiRawItem,
+  type AiRawResult,
+  aiRawResultSchema,
   buildSystemPrompt,
   COST_ENTRY_EXTRACTION_JSON_SCHEMA,
   type CostTypeForPrompt,
   computeGrossCents,
-  type MistralRawItem,
-  type MistralRawResult,
-  mistralRawResultSchema,
   USER_INSTRUCTION,
 } from "./prompts.js";
 
 const MAX_ATTACHMENT_BYTES = attachmentMaxBytesFromEnv(process.env);
 
-const MISTRAL_SUPPORTED_MIME_TYPES = new Set([
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-]);
+const IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+/**
+ * Erlaubte Uploads. PDF nur bei Anbietern, die Dokumente lesen können
+ * (Ollama verarbeitet ausschließlich Bilder)
+ */
+const supportedMimeTypes = (supportsPdf: boolean): Set<string> =>
+  new Set(
+    supportsPdf ? ["application/pdf", ...IMAGE_MIME_TYPES] : IMAGE_MIME_TYPES,
+  );
+
+/**
+ * Debug-Dumps enthalten den Volltext der Belege (personenbezogene Daten) im
+ * Klartext und sind deshalb in Produktion hart deaktiviert.
+ */
+const DEBUG_ENABLED =
+  process.env.NODE_ENV !== "production" &&
+  process.env.AI_DEBUG?.trim().toLowerCase() === "true";
 
 /**
  * Prüfen, ob der MIME-Typ ein Bild bezeichnet.
@@ -76,7 +89,7 @@ const TOTAL_TOLERANCE_CENTS = 2;
 /**
  * Brutto-Summe aller Positionen in Cent bilden
  */
-const sumItemGrossCents = (items: MistralRawItem[]): number =>
+const sumItemGrossCents = (items: AiRawItem[]): number =>
   items.reduce((sum, item) => sum + (computeGrossCents(item) ?? 0), 0);
 
 /**
@@ -85,7 +98,7 @@ const sumItemGrossCents = (items: MistralRawItem[]): number =>
  * Die Summe wird aus den Roh-Feldern (Netto + USt bzw. Brutto) berechnet,
  * nicht aus einer LLM-Multiplikation übernommen.
  */
-const sumMismatch = (result: MistralRawResult): number | null => {
+const sumMismatch = (result: AiRawResult): number | null => {
   if (result.invoiceTotalCents === null) {
     return null;
   }
@@ -98,10 +111,10 @@ const sumMismatch = (result: MistralRawResult): number | null => {
 };
 
 /**
- * Bildet die Roh-Mistral-Antwort auf die öffentliche Client-API ab. Pro
+ * Bildet die Roh-Antwort der KI auf die öffentliche Client-API ab. Pro
  * Position wird der Brutto-Betrag im Backend berechnet.
  */
-const mapRawItemsToPublic = (items: MistralRawItem[]): AiExtractionItem[] =>
+const mapRawItemsToPublic = (items: AiRawItem[]): AiExtractionItem[] =>
   items.map((item) => ({
     description: item.description,
     amountCents: computeGrossCents(item),
@@ -125,14 +138,17 @@ export class AiExtractionService {
   private readonly logger = new Logger(AiExtractionService.name);
 
   constructor(
-    private readonly mistral: MistralClient,
+    private readonly aiClients: AiClientFactory,
     private readonly costsService: CostsService,
     private readonly attachmentsService: AttachmentsService,
     private readonly storage: StorageService,
   ) {}
 
-  isConfigured(): boolean {
-    return this.mistral.isConfigured();
+  /**
+   * Ist ein API-Anbieter samt Key eingerichteet
+   */
+  async isConfigured(): Promise<boolean> {
+    return (await this.aiClients.resolveConfig()) !== null;
   }
 
   /**
@@ -144,7 +160,7 @@ export class AiExtractionService {
     input: ExtractFromBufferInput,
   ): Promise<CostEntryExtractionResult> {
     let ctx: ExtractionContext | null = null;
-    if (this.mistral.isDebugEnabled()) {
+    if (DEBUG_ENABLED) {
       // Datei unter UUID in einen separaten Ordner ablegen, damit das
       // .debug-File daneben landen kann. Beim Neu-anlegen gibt es noch keine
       // Anhangs-Zeile, also kein DB-Cache, nur die Datei + .debug.
@@ -206,10 +222,16 @@ export class AiExtractionService {
     input: ExtractFromBufferInput,
     ctx: ExtractionContext | null,
   ): Promise<CostEntryExtractionResult> {
+    const { client, config } = await this.aiClients.require();
+
+    if (!config.supportsPdf && input.mimeType === "application/pdf") {
+      throw new BadRequestException(getI18n().t("errors.ai.pdfNotSupported"));
+    }
+
     assertUploadAllowed(
       input.mimeType,
       input.buffer.length,
-      MISTRAL_SUPPORTED_MIME_TYPES,
+      supportedMimeTypes(config.supportsPdf),
       MAX_ATTACHMENT_BYTES,
     );
 
@@ -226,17 +248,18 @@ export class AiExtractionService {
       warnings.push(getI18n().t("warnings.aiNoCostTypes"));
     }
 
-    const debugWanted = this.mistral.isDebugEnabled() && ctx !== null;
-    const debugEntries: MistralDebugEntry[] = [];
-    const recorder: MistralDebugRecorder | undefined = debugWanted
+    const debugWanted = DEBUG_ENABLED && ctx !== null;
+    const debugEntries: AiDebugEntry[] = [];
+    const recorder: AiDebugRecorder | undefined = debugWanted
       ? { record: (entry) => debugEntries.push(entry) }
       : undefined;
 
     try {
       const dataUrl = `data:${input.mimeType};base64,${input.buffer.toString("base64")}`;
-      const ocrText = await this.mistral.ocr(
+      const ocrText = await client.transcribe(
         {
           documentDataUrl: dataUrl,
+          mimeType: input.mimeType,
           isImage: isImageMime(input.mimeType),
         },
         recorder,
@@ -260,13 +283,10 @@ export class AiExtractionService {
       const systemPrompt = buildSystemPrompt(promptCostTypes);
       const userPrompt = `${USER_INSTRUCTION}\n\n--- Rechnungstext ---\n${ocrText}`;
 
-      const firstJson = await this.mistral.chatJson(
+      const firstJson = await client.chatJson(
         {
-          model: this.mistral.getModel(),
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
+          systemPrompt,
+          userPrompt,
           jsonSchema: COST_ENTRY_EXTRACTION_JSON_SCHEMA,
         },
         recorder,
@@ -274,7 +294,7 @@ export class AiExtractionService {
 
       const raw = await this.revalidateGrossWithRetry(
         this.parseAndValidate(firstJson),
-        { systemPrompt, userPrompt, firstJson, recorder, warnings },
+        { client, systemPrompt, userPrompt, firstJson, recorder, warnings },
       );
 
       const publicItems = mapRawItemsToPublic(raw.items);
@@ -302,7 +322,7 @@ export class AiExtractionService {
       };
     } finally {
       if (debugWanted && ctx && debugEntries.length > 0) {
-        await this.writeDebugDump(ctx.storageKey, debugEntries);
+        await this.writeDebugDump(ctx.storageKey, client.model, debugEntries);
       }
     }
   }
@@ -313,15 +333,16 @@ export class AiExtractionService {
    * daneben, die Variante mit der geringeren Abweichung nehmen und warnen.
    */
   private async revalidateGrossWithRetry(
-    raw: MistralRawResult,
+    raw: AiRawResult,
     ctx: {
+      client: AiClient;
       systemPrompt: string;
       userPrompt: string;
       firstJson: string;
-      recorder: MistralDebugRecorder | undefined;
+      recorder: AiDebugRecorder | undefined;
       warnings: string[];
     },
-  ): Promise<MistralRawResult> {
+  ): Promise<AiRawResult> {
     const firstDiff = sumMismatch(raw);
     if (firstDiff === null || Math.abs(firstDiff) <= TOTAL_TOLERANCE_CENTS) {
       return raw;
@@ -356,13 +377,10 @@ export class AiExtractionService {
       "Bitte gib eine korrigierte JSON-Antwort gemäß Schema zurück.",
     ].join("\n");
 
-    const retryJson = await this.mistral.chatJson(
+    const retryJson = await ctx.client.chatJson(
       {
-        model: this.mistral.getModel(),
-        messages: [
-          { role: "system", content: ctx.systemPrompt },
-          { role: "user", content: correctionPrompt },
-        ],
+        systemPrompt: ctx.systemPrompt,
+        userPrompt: correctionPrompt,
         jsonSchema: COST_ENTRY_EXTRACTION_JSON_SCHEMA,
       },
       ctx.recorder,
@@ -386,10 +404,10 @@ export class AiExtractionService {
   }
 
   /**
-   * Mistral-JSON parsen und gegen das Schema validieren; werfen, wenn eine
+   * KI-JSON parsen und gegen das Schema validieren; werfen, wenn eine
    * Position weder Netto- noch Brutto-Betrag enthält.
    */
-  private parseAndValidate(chatJson: string): MistralRawResult {
+  private parseAndValidate(chatJson: string): AiRawResult {
     let parsed: unknown;
 
     try {
@@ -400,7 +418,7 @@ export class AiExtractionService {
       });
     }
 
-    const validated = mistralRawResultSchema.safeParse(parsed);
+    const validated = aiRawResultSchema.safeParse(parsed);
     if (!validated.success) {
       throw new BadGatewayException(getI18n().t("errors.ai.schemaMismatch"));
     }
@@ -422,17 +440,17 @@ export class AiExtractionService {
   }
 
   /**
-   * Mistral-Debug-Einträge als JSON-Datei neben der Quelldatei ablegen.
+   * Debug-Einträge der KI-Aufrufe als JSON-Datei neben der Quelldatei ablegen.
    */
   private async writeDebugDump(
     storageKey: string,
-    entries: MistralDebugEntry[],
+    model: string,
+    entries: AiDebugEntry[],
   ): Promise<void> {
     const dump = {
       timestamp: new Date().toISOString(),
       sourceStorageKey: storageKey,
-      ocrModel: process.env.MISTRAL_OCR_MODEL?.trim() || "mistral-ocr-latest",
-      chatModel: this.mistral.getModel(),
+      model,
       entries,
     };
 
@@ -445,7 +463,7 @@ export class AiExtractionService {
       );
     } catch (err) {
       this.logger.warn(
-        `Konnte Mistral-Debug-Datei nicht schreiben (${debugKey}): ${
+        `Konnte KI-Debug-Datei nicht schreiben (${debugKey}): ${
           err instanceof Error ? err.message : String(err)
         }`,
       );

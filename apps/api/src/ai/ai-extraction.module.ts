@@ -1,13 +1,14 @@
 import { Module } from "@nestjs/common";
 import { CostsModule } from "../costs/costs.module.js";
+import { SettingsModule } from "../settings/settings.module.js";
 import { StorageModule } from "../storage/storage.module.js";
+import { AiClientFactory } from "./ai-client.factory.js";
 import { AiExtractionController } from "./ai-extraction.controller.js";
 import { AiExtractionService } from "./ai-extraction.service.js";
-import { MistralClient } from "./mistral-client.provider.js";
 
 @Module({
-  imports: [CostsModule, StorageModule],
+  imports: [CostsModule, SettingsModule, StorageModule],
   controllers: [AiExtractionController],
-  providers: [AiExtractionService, MistralClient],
+  providers: [AiExtractionService, AiClientFactory],
 })
 export class AiExtractionModule {}

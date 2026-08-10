@@ -1,4 +1,6 @@
 import {
+  type AiSettingsUpdateDto,
+  aiSettingsUpdateSchema,
   type SenderSettingsUpdateDto,
   senderSettingsUpdateSchema,
 } from "@einfachvermieter/shared";
@@ -43,6 +45,20 @@ export class SettingsController {
     dto: SenderSettingsUpdateDto,
   ) {
     return this.settingsService.updateSenderSettings(dto);
+  }
+
+  @Get("ai")
+  getAi() {
+    return this.settingsService.getAiSettings();
+  }
+
+  @Patch("ai")
+  @Roles("admin")
+  updateAi(
+    @Body(new ZodValidationPipe(aiSettingsUpdateSchema))
+    dto: AiSettingsUpdateDto,
+  ) {
+    return this.settingsService.updateAiSettings(dto);
   }
 
   @Post("sender/logo")

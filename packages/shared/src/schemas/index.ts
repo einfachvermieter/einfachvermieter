@@ -1,4 +1,5 @@
 export * from "./ai-extraction.js";
+export * from "./ai-settings.js";
 export * from "./attachments.js";
 export * from "./auth.js";
 export * from "./buildings.js";

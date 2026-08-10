@@ -13,7 +13,7 @@ Betriebskosten verwalten und daraus Nebenkostenabrechnungen als PDF erstellen.
 - Abrechnungen mit Live-PDF-Vorschau, finalisierbar und unveränderlich
   (inkl. Storno-/Korrektur-Workflow)
 - Heizkosten nach HeizkostenV inkl. Warmwasser-Abspaltung und CO2-Kostenaufteilung
-- Optionales KI-Vorausfüllen von Lieferantenrechnungen (Mistral OCR)
+- Optionales KI-Vorausfüllen von Lieferantenrechnungen (Mistral, OpenAI, Anthropic, Gemini oder lokal per Ollama)
 
 Die App unterstützt nur Wohnraumvermietung. Eine gewerbliche Vermietung wäre für
 dieses Projekt viel zu aufwändig. Brutto, Netto, Steuerausweis, andere Fristen,

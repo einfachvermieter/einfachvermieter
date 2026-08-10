@@ -4,7 +4,8 @@ export const APP_SETTINGS_ID = "default";
 
 /**
  * Globale Anwendungs-Einstellungen als Singleton (genau eine Zeile mit
- * id = "default"). Aktuell Absender-Daten für ausgehende Schreiben.
+ * id = "default"): Absender-Daten für ausgehende Schreiben und die
+ * Anbindung des KI-Anbieters für das Auslesen von Rechnungen.
  */
 export type AppSettings = {
   id: string;
@@ -21,6 +22,10 @@ export type AppSettings = {
   useLogo: boolean;
   logoStorageKey: string | null;
   logoMimeType: string | null;
+  aiProvider: string | null;
+  aiApiKey: string | null;
+  aiBaseUrl: string | null;
+  aiModel: string | null;
   createdAt: Opt<string>;
   updatedAt: Opt<string>;
 };
@@ -75,6 +80,10 @@ export const AppSettingsSchema = new EntitySchema<AppSettings>({
       fieldName: "logo_mime_type",
       nullable: true,
     },
+    aiProvider: { type: "string", fieldName: "ai_provider", nullable: true },
+    aiApiKey: { type: "text", fieldName: "ai_api_key", nullable: true },
+    aiBaseUrl: { type: "text", fieldName: "ai_base_url", nullable: true },
+    aiModel: { type: "string", fieldName: "ai_model", nullable: true },
     createdAt: {
       type: "string",
       fieldName: "created_at",

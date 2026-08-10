@@ -27,8 +27,8 @@ export const costEntryExtractionResultSchema = z.object({
   items: z.array(aiExtractionItemSchema),
   warnings: z.array(z.string()),
   /**
-   * Roher OCR-Text der Datei (Mistral OCR). Wird vom Server nach erfolgreicher
-   * Extraktion angefügt - nicht vom LLM erzeugt.
+   * Roher Text der Datei aus der Texterkennung. Wird vom Server nach
+   * erfolgreicher Extraktion angefügt.
    */
   ocrText: z.string().default(""),
 });
@@ -39,7 +39,11 @@ export type CostEntryExtractionResult = z.infer<
 >;
 
 export const aiConfigSchema = z.object({
-  mistralConfigured: z.boolean(),
+  /**
+   * Ob ein Anbieter samt Schlüssel hinterlegt ist und die Extraktion
+   * angeboten werden darf.
+   */
+  configured: z.boolean(),
 });
 
 export type AiConfig = z.infer<typeof aiConfigSchema>;

@@ -177,7 +177,7 @@ export const CostEntryCreatePage = () => {
             return cleaned;
           });
         }}
-        onExtract={aiConfig?.mistralConfigured ? handleExtract : undefined}
+        onExtract={aiConfig?.configured ? handleExtract : undefined}
         extractingFile={extractingFile}
       />
       {extractError ? (

@@ -36,8 +36,8 @@ export class AiExtractionController {
   @Get("config")
   @UseGuards(SessionAuthGuard, RolesGuard)
   @Roles("admin")
-  config() {
-    return { mistralConfigured: this.service.isConfigured() };
+  async config() {
+    return { configured: await this.service.isConfigured() };
   }
 
   @Post("extract-cost-entry/upload")

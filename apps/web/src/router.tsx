@@ -97,6 +97,7 @@ import { FeePage } from "./pages/mieterkonto/FeePage";
 import { MieterkontoDetail } from "./pages/mieterkonto/MieterkontoDetail";
 import { PaymentCreatePage } from "./pages/payments/PaymentCreatePage";
 import { PaymentEditPage } from "./pages/payments/PaymentEditPage";
+import { AiSettingsPage } from "./pages/settings/AiSettingsPage";
 import { PasswordSettingsPage } from "./pages/settings/PasswordSettingsPage";
 import { ProfileSettingsPage } from "./pages/settings/ProfileSettingsPage";
 import { SenderSettingsPage } from "./pages/settings/SenderSettingsPage";
@@ -1128,6 +1129,19 @@ const senderSettingsRoute = createRoute({
   },
 });
 
+const aiSettingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/einstellungen/ki",
+  beforeLoad: requireAuth,
+  component: AiSettingsPage,
+  staticData: {
+    crumb: () => [
+      { label: t("ui.common.crumbs.settings") },
+      { label: t("ui.common.crumbs.settingsAi") },
+    ],
+  },
+});
+
 const passwordSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/einstellungen/passwort",
@@ -1178,6 +1192,7 @@ const routeTree = rootRoute.addChildren([
   statementDetailRoute,
   profileSettingsRoute,
   senderSettingsRoute,
+  aiSettingsRoute,
   passwordSettingsRoute,
 ]);
 
