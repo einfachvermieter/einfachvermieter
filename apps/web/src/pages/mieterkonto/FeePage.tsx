@@ -13,12 +13,14 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { EntityNotFound } from "@/components/common/EntityNotFound";
+import { FormPage } from "@/components/common/FormPage";
 import { IconTile } from "@/components/common/IconTile";
 import { PageHeader } from "@/components/common/PageHeader";
+import { TenantContextCard } from "@/components/common/TenantContextCard";
 import { FormSkeleton } from "@/components/FormSkeleton";
 import { DateInput } from "@/components/form/DateInput";
 import { Form } from "@/components/form/Form";
-import { FormActions } from "@/components/form/FormActions";
+import { Savebar } from "@/components/form/Savebar";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextareaInput } from "@/components/form/TextareaInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -28,6 +30,7 @@ import { feeIdentityLabel, tenantFeesQueryOptions } from "@/lib/accounts";
 import { api } from "@/lib/api";
 import { gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
+import { tenantsOverviewQueryOptions } from "@/lib/tenants";
 import { useCrudMutation } from "@/lib/useCrudMutation";
 import { useGoBack } from "@/lib/useGoBack";
 
@@ -62,6 +65,10 @@ export const FeePage = () => {
     enabled: isEdit,
   });
   const fees = feesQuery.data;
+  const { data: tenantsResult } = useQuery(
+    tenantsOverviewQueryOptions({ page: 0, pageSize: 1000 }),
+  );
+  const contextTenant = tenantsResult?.items.find(({ id }) => id === tenantId);
   const existing = isEdit
     ? fees?.find((fee) => fee.feeId === feeId)
     : undefined;
@@ -138,20 +145,24 @@ export const FeePage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        tile={
-          <IconTile
-            icon={RiMoneyEuroCircleLine}
-            size={44}
-            background={gradients.money}
-          />
-        }
-        title={
-          existing ? feeIdentityLabel(existing) : t("ui.account.fee.title")
-        }
-        loading={isEdit && !fees}
-      />
+    <FormPage
+      head={
+        <PageHeader
+          tile={
+            <IconTile
+              icon={RiMoneyEuroCircleLine}
+              size={44}
+              background={gradients.money}
+            />
+          }
+          title={
+            existing ? feeIdentityLabel(existing) : t("ui.account.fee.title")
+          }
+          loading={isEdit && !fees}
+        />
+      }
+      aside={<TenantContextCard tenant={contextTenant} />}
+    >
       {isEdit && !fees ? (
         <FormSkeleton rows={4} />
       ) : (
@@ -192,7 +203,7 @@ export const FeePage = () => {
               </FieldGroup>
             </CardContent>
           </Card>
-          <FormActions
+          <Savebar
             submitting={form.formState.isSubmitting}
             onCancel={goBack}
             submitLabel={
@@ -201,6 +212,6 @@ export const FeePage = () => {
           />
         </Form>
       )}
-    </div>
+    </FormPage>
   );
 };

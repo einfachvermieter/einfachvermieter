@@ -10,12 +10,10 @@ import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { Disclose } from "@/components/common/Disclose";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Spinner } from "@/components/common/Spinner";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
-import { Button } from "@/components/ui/Button";
 import { gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import type { PendingLogo, SenderSettings } from "@/lib/senderSettings";
@@ -210,20 +208,7 @@ export const SenderSettingsForm = ({
           </SectionCard>
         </div>
       </fieldset>
-      <Savebar>
-        <Button
-          variant="secondary"
-          type="button"
-          onClick={onCancel}
-          disabled={submitting}
-        >
-          {t("ui.common.action.cancel")}
-        </Button>
-        <Button type="submit" disabled={submitting}>
-          {submitting ? <Spinner data-icon="inline-start" /> : null}
-          {t("ui.common.action.save")}
-        </Button>
-      </Savebar>
+      <Savebar submitting={submitting} onCancel={onCancel} />
     </Form>
   );
 };

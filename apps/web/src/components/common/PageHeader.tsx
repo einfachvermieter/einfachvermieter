@@ -60,9 +60,9 @@ export const PageHeader = ({
 
   return (
     <header className="page-header-wash relative mb-5.5 flex items-center gap-4 px-5 pt-3.5 pb-6.5 max-lg:flex-wrap sm:gap-5.5">
-      <div className="relative shrink-0">{tile}</div>
+      <div className="shrink-0">{tile}</div>
 
-      <div className="relative min-w-0 flex-1">
+      <div className="min-w-0 flex-1">
         {ancestors.length > 0 ? (
           <nav className="flex flex-wrap items-center gap-1.75 text-[12.5px] font-semibold tracking-[0.005em] text-slate-400">
             {ancestors.map((entry, index) => (
@@ -107,7 +107,7 @@ export const PageHeader = ({
       </div>
 
       {statsSkeletonKeys.length > 0 ? (
-        <div className="relative ml-auto flex max-lg:ml-0 max-lg:w-full max-lg:justify-between max-sm:grid max-sm:grid-cols-2 max-sm:gap-x-4 max-sm:gap-y-3">
+        <div className="ml-auto flex max-lg:ml-0 max-lg:w-full max-lg:justify-between max-sm:grid max-sm:grid-cols-2 max-sm:gap-x-4 max-sm:gap-y-3">
           {statsSkeletonKeys.map((key) => (
             <div
               key={key}
@@ -121,7 +121,7 @@ export const PageHeader = ({
       ) : null}
 
       {statsSkeletonKeys.length === 0 && stats && stats.length > 0 ? (
-        <div className="relative ml-auto flex max-lg:ml-0 max-lg:w-full max-lg:justify-between max-sm:grid max-sm:grid-cols-2 max-sm:gap-x-4 max-sm:gap-y-3">
+        <div className="ml-auto flex max-lg:ml-0 max-lg:w-full max-lg:justify-between max-sm:grid max-sm:grid-cols-2 max-sm:gap-x-4 max-sm:gap-y-3">
           {stats.map((stat) => (
             <div
               key={stat.label}
@@ -142,8 +142,8 @@ export const PageHeader = ({
         <div
           className={
             stats && stats.length > 0
-              ? "relative flex shrink-0 items-center gap-2"
-              : "relative ml-auto flex shrink-0 items-center gap-2"
+              ? "flex shrink-0 items-center gap-2"
+              : "ml-auto flex shrink-0 items-center gap-2"
           }
         >
           {action}

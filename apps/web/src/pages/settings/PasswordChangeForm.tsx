@@ -9,12 +9,10 @@ import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Spinner } from "@/components/common/Spinner";
 import { Form } from "@/components/form/Form";
 import { PasswordPolicyHint } from "@/components/form/PasswordPolicyHint";
 import { Savebar } from "@/components/form/Savebar";
 import { TextInput } from "@/components/form/TextInput";
-import { Button } from "@/components/ui/Button";
 import { FieldGroup } from "@/components/ui/Field";
 import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
@@ -110,20 +108,7 @@ export const PasswordChangeForm = ({
           </FieldGroup>
         </SectionCard>
       </fieldset>
-      <Savebar>
-        <Button
-          variant="secondary"
-          type="button"
-          onClick={onCancel}
-          disabled={submitting}
-        >
-          {t("ui.common.action.cancel")}
-        </Button>
-        <Button type="submit" disabled={submitting}>
-          {submitting ? <Spinner data-icon="inline-start" /> : null}
-          {t("ui.common.action.save")}
-        </Button>
-      </Savebar>
+      <Savebar submitting={submitting} onCancel={onCancel} />
     </Form>
   );
 };

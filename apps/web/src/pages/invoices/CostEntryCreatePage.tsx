@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
@@ -14,6 +15,7 @@ import {
 } from "../../lib/aiExtraction";
 import { ApiError, api } from "../../lib/api";
 import { uploadCostEntryAttachment } from "../../lib/attachments";
+import { buildingsQueryOptions } from "../../lib/buildings";
 import { type CostEntry, costTypesQueryOptions } from "../../lib/costs";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
@@ -33,6 +35,8 @@ export const CostEntryCreatePage = () => {
   const queryClient = useQueryClient();
 
   const { buildingId } = useActiveBuilding();
+  const { data: buildings } = useQuery(buildingsQueryOptions);
+  const activeBuilding = buildings?.find((entry) => entry.id === buildingId);
   const { data: allCostTypes } = useQuery(costTypesQueryOptions);
   const { data: units } = useQuery(unitsQueryOptions);
   const { data: aiConfig } = useQuery(aiConfigQueryOptions);
@@ -153,6 +157,19 @@ export const CostEntryCreatePage = () => {
         />
       }
       title={t("ui.invoices.createTitle")}
+      aside={
+        <BuildingContextCard
+          building={activeBuilding}
+          extraRows={[
+            {
+              label: t("ui.navigation.costTypes"),
+              value: allCostTypes
+                ? costTypes.length
+                : t("ui.common.emptyValue"),
+            },
+          ]}
+        />
+      }
     >
       <CostEntryForm
         mode="create"

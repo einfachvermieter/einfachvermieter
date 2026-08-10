@@ -7,9 +7,10 @@ import {
 import { RiMoneyEuroCircleLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
+import { TenantContextCard } from "../../components/common/TenantContextCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Button } from "../../components/ui/Button";
 import {
@@ -54,6 +55,11 @@ export const PaymentCreatePage = () => {
     ? tenants.find(({ id }) => id === searchTenantId)
     : tenants[0];
   const initialTenantId = preselectedTenant?.id ?? "";
+
+  // Mieter-Auswahl aus dem Formular, für die Kontext-Karte
+  const [selectedTenantId, setSelectedTenantId] = useState<string>();
+  const contextTenant =
+    tenants.find(({ id }) => id === selectedTenantId) ?? preselectedTenant;
   const today = todayIso();
 
   // Wird aus dem Monatsraster heraus ein konkreter Monat gebucht, kommt er
@@ -148,6 +154,7 @@ export const PaymentCreatePage = () => {
         />
       }
       title={t("ui.payments.createTitle")}
+      aside={<TenantContextCard tenant={contextTenant} />}
     >
       {tenantsQuery.isPending ? (
         <FormSkeleton rows={6} />
@@ -163,6 +170,7 @@ export const PaymentCreatePage = () => {
             await createPayment.mutateAsync(paymentFormToDto(values));
           }}
           onCancel={goBack}
+          onTenantChange={setSelectedTenantId}
         />
       )}
     </FormPage>

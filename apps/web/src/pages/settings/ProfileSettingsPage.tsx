@@ -7,11 +7,9 @@ import { RiUserLine } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Spinner } from "@/components/common/Spinner";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
 import { TextInput } from "@/components/form/TextInput";
-import { Button } from "@/components/ui/Button";
 import { FieldGroup } from "@/components/ui/Field";
 import { useCurrentUser, useUpdateProfile } from "@/lib/auth";
 import { domainVisuals } from "@/lib/domainVisuals";
@@ -68,20 +66,7 @@ export const ProfileSettingsPage = () => {
             </FieldGroup>
           </SectionCard>
         </fieldset>
-        <Savebar>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={goHome}
-            disabled={submitting}
-          >
-            {t("ui.common.action.cancel")}
-          </Button>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? <Spinner data-icon="inline-start" /> : null}
-            {t("ui.common.action.save")}
-          </Button>
-        </Savebar>
+        <Savebar submitting={submitting} onCancel={goHome} />
       </Form>
     </SettingsLayout>
   );

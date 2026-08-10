@@ -4,12 +4,12 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useId, useMemo } from "react";
+import { useEffect, useId, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { DateInput } from "@/components/form/DateInput";
 import { MonthInput } from "@/components/form/MonthInput";
+import { Savebar } from "@/components/form/Savebar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
-import { Button } from "@/components/ui/Button";
 import {
   Field,
   FieldError,
@@ -39,6 +39,7 @@ export const StatementForm = ({
   onSubmit,
   onCancel,
   submitting = false,
+  onBuildingChange,
 }: {
   buildings: Building[];
   tenants: TenantOverviewRow[];
@@ -46,6 +47,12 @@ export const StatementForm = ({
   onSubmit: (values: StatementSubmitValues) => void;
   onCancel: () => void;
   submitting?: boolean;
+
+  /**
+   * Meldet die aktuelle Gebäude-Auswahl nach außen, damit die
+   * Kontext-Karte der Anlege-Seite dem Wechsel folgt
+   */
+  onBuildingChange?: (buildingId: string) => void;
 }) => {
   const formId = useId();
   const form = useForm<StatementFormValues>({
@@ -54,6 +61,9 @@ export const StatementForm = ({
   });
 
   const selectedBuildingId = form.watch("buildingId");
+  useEffect(() => {
+    onBuildingChange?.(selectedBuildingId);
+  }, [onBuildingChange, selectedBuildingId]);
 
   const scopedTenants = useMemo(
     () => tenants.filter((tenant) => tenant.buildingId === selectedBuildingId),
@@ -180,19 +190,11 @@ export const StatementForm = ({
           description={t("ui.statements.fields.documentDateHint")}
         />
       </FieldGroup>
-      <div className="flex justify-end gap-2">
-        <Button
-          variant="outline"
-          type="button"
-          onClick={onCancel}
-          disabled={submitting}
-        >
-          {t("ui.common.action.cancel")}
-        </Button>
-        <Button type="submit" disabled={submitting}>
-          {t("ui.common.action.generate")}
-        </Button>
-      </div>
+      <Savebar
+        submitting={submitting}
+        onCancel={onCancel}
+        submitLabel={t("ui.common.action.generate")}
+      />
     </form>
   );
 };

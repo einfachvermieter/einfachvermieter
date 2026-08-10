@@ -146,11 +146,13 @@
  * Verlauf-Wash des Seitenkopfs: zwei asymmetrische Radialverläufe, an den
  * Kanten weich maskiert. Negative Ränder + z-index -1 damit er oben über den
  * Content-Rand und unten hinter die folgende Box ragt. Kein Rahmen, keine Box.
+ * Der Content-Container der AppShell isoliert den Stapelkontext, sonst läge
+ * der Wash hinter dem undurchsichtigen Hintergrund des Seitenbereichs.
  */
 .page-header-wash::before {
   content: "";
   position: absolute;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   inset: -46px -44px -104px -44px;
   background:

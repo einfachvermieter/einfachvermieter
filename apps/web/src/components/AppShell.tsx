@@ -35,7 +35,10 @@ export const AppShell = ({ children }: { children?: ReactNode }) => (
         </header>
 
         <main className="flex-1 py-8 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] sm:pl-[max(2rem,env(safe-area-inset-left))] sm:pr-[max(2rem,env(safe-area-inset-right))]">
-          <div className="mx-auto w-full max-w-310">
+          {/* `isolate`: eigener Stapelkontext, damit der Verlauf-Wash des
+              Seitenkopfs (z-index -1) hinter den Karten, aber vor dem
+              Hintergrund des Seitenbereichs liegt. */}
+          <div className="isolate mx-auto w-full max-w-310">
             {children ?? <Outlet />}
           </div>
         </main>

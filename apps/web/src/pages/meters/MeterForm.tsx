@@ -6,13 +6,11 @@ import {
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiPriceTag3Line } from "@remixicon/react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Spinner } from "@/components/common/Spinner";
 import { Form } from "@/components/form/Form";
-import { FormActions } from "@/components/form/FormActions";
 import { Savebar } from "@/components/form/Savebar";
-import { Button } from "@/components/ui/Button";
 import type { Building } from "../../lib/buildings";
 import type { CostType } from "../../lib/costs";
 import { gradients } from "../../lib/domainVisuals";
@@ -36,6 +34,7 @@ export const MeterForm = ({
   onSubmit,
   onCancel,
   savedAt,
+  onBuildingChange,
 }: {
   mode: "create" | "edit";
   buildings: Building[];
@@ -46,8 +45,14 @@ export const MeterForm = ({
   currentMeterId?: string;
   onSubmit: (values: MeterCreateDto) => Promise<void>;
   onCancel: () => void;
-  /** Formatierter Speicherzeitpunkt; gesetzt = Savebar statt FormActions */
+  /** Formatierter Speicherzeitpunkt für die Savebar (nur mode="edit") */
   savedAt?: string;
+
+  /**
+   * Meldet die aktuelle Gebäude-Auswahl nach außen, damit die
+   * Kontext-Karte der Anlege-Seite dem Wechsel folgt
+   */
+  onBuildingChange?: (buildingId: string) => void;
 }) => {
   const form = useForm<MeterFormValues>({
     resolver: zodResolver(meterFormSchema),
@@ -56,6 +61,12 @@ export const MeterForm = ({
   });
 
   const submitting = form.formState.isSubmitting;
+
+  const selectedBuildingId = form.watch("buildingId");
+  useEffect(() => {
+    onBuildingChange?.(selectedBuildingId);
+  }, [onBuildingChange, selectedBuildingId]);
+
   const selectedType = form.watch("type");
   const selectedRole = form.watch("role");
   const costAllocationMode = form.watch("costAllocationMode");
@@ -121,32 +132,16 @@ export const MeterForm = ({
           )}
         </div>
       </fieldset>
-      {savedAt === undefined ? (
-        <FormActions
-          submitting={submitting}
-          onCancel={onCancel}
-          submitLabel={
-            mode === "create"
-              ? t("ui.common.action.add")
-              : t("ui.common.action.save")
-          }
-        />
-      ) : (
-        <Savebar savedAt={savedAt}>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={onCancel}
-            disabled={submitting}
-          >
-            {t("ui.common.action.cancel")}
-          </Button>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? <Spinner data-icon="inline-start" /> : null}
-            {t("ui.common.action.save")}
-          </Button>
-        </Savebar>
-      )}
+      <Savebar
+        savedAt={savedAt}
+        submitting={submitting}
+        onCancel={onCancel}
+        submitLabel={
+          mode === "create"
+            ? t("ui.common.action.add")
+            : t("ui.common.action.save")
+        }
+      />
     </Form>
   );
 };

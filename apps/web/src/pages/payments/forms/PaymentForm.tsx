@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { DateInput } from "@/components/form/DateInput";
 import { Form } from "@/components/form/Form";
-import { FormActions } from "@/components/form/FormActions";
+import { Savebar } from "@/components/form/Savebar";
 import { SelectInput, type SelectOption } from "@/components/form/SelectInput";
 import { SubformShell } from "@/components/form/SubformShell";
 import { TextInput } from "@/components/form/TextInput";
@@ -46,11 +46,17 @@ type Props = {
   onSubmit: (values: PaymentFormValues) => Promise<void>;
   onCancel: () => void;
   /**
-   * "page" (Standard): eigenes Formular mit Karte und FormActions.
+   * "page" (Standard): eigenes Formular mit Karte und Savebar.
    * "inline": getöntes Aufklapp-Subform (SubformShell) ohne eigene Karte,
    * z. B. eingebettet im Mieterkonto.
    */
   variant?: "page" | "inline";
+
+  /**
+   * Meldet die aktuelle Mieter-Auswahl nach außen, damit die
+   * Kontext-Karte der Anlege-Seite dem Wechsel folgt
+   */
+  onTenantChange?: (tenantId: string) => void;
 };
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: Markup
@@ -64,6 +70,7 @@ export const PaymentForm = ({
   onSubmit,
   onCancel,
   variant = "page",
+  onTenantChange,
 }: Props) => {
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
@@ -89,6 +96,10 @@ export const PaymentForm = ({
   const tenantId = form.watch("tenantId");
   const forMonth = form.watch("forMonth");
   const inputMode = form.watch("inputMode");
+
+  useEffect(() => {
+    onTenantChange?.(tenantId);
+  }, [onTenantChange, tenantId]);
 
   const monthQueryEnabled = purposeKind === "month" && tenantId.length > 0;
   const { data: monthRows } = useQuery({
@@ -431,7 +442,7 @@ export const PaymentForm = ({
           <CardContent>{fields}</CardContent>
         </Card>
       </fieldset>
-      <FormActions
+      <Savebar
         submitting={submitting}
         onCancel={onCancel}
         submitLabel={

@@ -6,11 +6,13 @@ import {
 import { RiInformationLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
 import { TextWithLink } from "../../components/TextWithLink";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
+import { buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { TenantAggregate } from "../../lib/tenants";
@@ -22,6 +24,8 @@ import { TenantForm } from "./TenantForm";
 export const TenantCreatePage = () => {
   const { buildingId } = useActiveBuilding();
   const { data: allUnits } = useQuery(unitsQueryOptions);
+  const { data: buildings } = useQuery(buildingsQueryOptions);
+  const activeBuilding = buildings?.find((entry) => entry.id === buildingId);
 
   const units = (allUnits ?? []).filter(
     (unit) => unit.buildingId === buildingId,
@@ -49,6 +53,7 @@ export const TenantCreatePage = () => {
         />
       }
       title={t("ui.tenants.createTitle")}
+      aside={<BuildingContextCard building={activeBuilding} />}
     >
       {hasUnits ? (
         <TenantForm

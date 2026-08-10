@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
+import { useState } from "react";
+import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
 import { api } from "../../lib/api";
@@ -23,6 +25,9 @@ export const CostTypeCreatePage = () => {
   const { data: buildings } = useQuery(buildingsQueryOptions);
   const { buildingId: preselectedBuildingId } = routeApi.useSearch();
 
+  // Gebäude-Auswahl aus dem Formular, für die Kontext-Karte
+  const [selectedBuildingId, setSelectedBuildingId] = useState<string>();
+
   const matchingBuilding = buildings?.find(
     (building) => building.id === preselectedBuildingId,
   );
@@ -35,6 +40,11 @@ export const CostTypeCreatePage = () => {
     co2Tracked: false,
     isMeteringServiceCost: false,
   };
+
+  const contextBuilding =
+    buildings?.find((building) => building.id === selectedBuildingId) ??
+    matchingBuilding ??
+    buildings?.[0];
 
   const goBack = useGoBack("/kostenarten");
 
@@ -55,6 +65,7 @@ export const CostTypeCreatePage = () => {
         />
       }
       title={t("ui.costs.typeCreateTitle")}
+      aside={<BuildingContextCard building={contextBuilding} />}
     >
       <CostTypeForm
         key={defaultValues.buildingId}
@@ -65,6 +76,7 @@ export const CostTypeCreatePage = () => {
           await createCostType.mutateAsync(values);
         }}
         onCancel={goBack}
+        onBuildingChange={setSelectedBuildingId}
       />
     </FormPage>
   );

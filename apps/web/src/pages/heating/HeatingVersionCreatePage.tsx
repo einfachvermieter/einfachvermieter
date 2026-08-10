@@ -8,8 +8,9 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
@@ -34,6 +35,13 @@ export const HeatingVersionCreatePage = () => {
   const matching = buildings?.find((building) => building.id === preselected);
   const initialBuildingId = matching?.id ?? buildings?.[0]?.id ?? "";
 
+  // Gebäude-Auswahl aus dem Formular, für die Kontext-Karte
+  const [selectedBuildingId, setSelectedBuildingId] = useState<string>();
+  const contextBuilding =
+    buildings?.find((building) => building.id === selectedBuildingId) ??
+    matching ??
+    buildings?.[0];
+
   return (
     <FormPage
       tile={
@@ -44,12 +52,14 @@ export const HeatingVersionCreatePage = () => {
         />
       }
       title={t("ui.heating.versions.createTitle")}
+      aside={<BuildingContextCard building={contextBuilding} />}
     >
       {buildings && buildings.length > 0 ? (
         <HeatingVersionCreateView
           key={initialBuildingId}
           buildings={buildings}
           initialBuildingId={initialBuildingId}
+          onBuildingChange={setSelectedBuildingId}
         />
       ) : (
         <FormSkeleton rows={4} />
@@ -61,9 +71,16 @@ export const HeatingVersionCreatePage = () => {
 const HeatingVersionCreateView = ({
   buildings,
   initialBuildingId,
+  onBuildingChange,
 }: {
   buildings: Building[];
   initialBuildingId: string;
+
+  /**
+   * Meldet die aktuelle Gebäude-Auswahl nach außen, damit die
+   * Kontext-Karte der Seite dem Wechsel folgt
+   */
+  onBuildingChange: (buildingId: string) => void;
 }) => {
   const form = useForm<HeatingFormValues>({
     resolver: zodResolver(heatingFormSchema),
@@ -72,6 +89,9 @@ const HeatingVersionCreateView = ({
   });
 
   const watchedBuildingId = form.watch("buildingId");
+  useEffect(() => {
+    onBuildingChange(watchedBuildingId);
+  }, [onBuildingChange, watchedBuildingId]);
 
   const { data: versions } = useQuery({
     ...heatingSettingsListQueryOptions(watchedBuildingId),

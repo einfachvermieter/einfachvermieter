@@ -1,6 +1,8 @@
 import { type MeterCreateDto, todayIso } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
+import { useState } from "react";
+import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
@@ -25,6 +27,17 @@ export const MeterCreatePage = () => {
   const { buildingId: preselectedBuildingId, type: preselectedType } =
     routeApi.useSearch();
 
+  // Gebäude-Auswahl aus dem Formular, für die Kontext-Karte
+  const [selectedBuildingId, setSelectedBuildingId] = useState<string>();
+
+  const matchingBuilding = buildings?.find(
+    (building) => building.id === preselectedBuildingId,
+  );
+  const contextBuilding =
+    buildings?.find((building) => building.id === selectedBuildingId) ??
+    matchingBuilding ??
+    buildings?.[0];
+
   const goBack = useGoBack("/zaehler", {
     search: { buildingId: undefined, type: undefined },
   });
@@ -45,12 +58,10 @@ export const MeterCreatePage = () => {
         />
       }
       title={t("ui.meters.createTitle")}
+      aside={<BuildingContextCard building={contextBuilding} />}
     >
       {buildings && units && costTypes ? (
         (() => {
-          const matchingBuilding = buildings.find(
-            (building) => building.id === preselectedBuildingId,
-          );
           const initialBuildingId =
             matchingBuilding?.id ?? buildings[0]?.id ?? "";
           const today = todayIso();
@@ -72,6 +83,7 @@ export const MeterCreatePage = () => {
                 await createMeter.mutateAsync(values);
               }}
               onCancel={goBack}
+              onBuildingChange={setSelectedBuildingId}
             />
           );
         })()

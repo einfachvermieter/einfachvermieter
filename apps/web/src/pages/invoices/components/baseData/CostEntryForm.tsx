@@ -1,11 +1,8 @@
 import { RiBillLine } from "@remixicon/react";
 import type { UseFormReturn } from "react-hook-form";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Spinner } from "@/components/common/Spinner";
 import { Form } from "@/components/form/Form";
-import { FormActions } from "@/components/form/FormActions";
 import { Savebar } from "@/components/form/Savebar";
-import { Button } from "@/components/ui/Button";
 import type { CostType } from "../../../../lib/costs";
 import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
@@ -33,7 +30,7 @@ export const CostEntryForm = ({
   units: Unit[];
   onSubmit: (values: CostEntrySubmitValues) => Promise<void>;
   onCancel: () => void;
-  /** Formatierter Speicherzeitpunkt; gesetzt = Savebar statt FormActions */
+  /** Formatierter Speicherzeitpunkt für die Savebar (nur mode="edit") */
   savedAt?: string;
 }) => {
   const submitting = form.formState.isSubmitting;
@@ -56,32 +53,16 @@ export const CostEntryForm = ({
           <CostEntryItems form={form} costTypes={costTypes} units={units} />
         </div>
       </fieldset>
-      {savedAt === undefined ? (
-        <FormActions
-          submitting={submitting}
-          onCancel={onCancel}
-          submitLabel={
-            mode === "create"
-              ? t("ui.common.action.record")
-              : t("ui.common.action.save")
-          }
-        />
-      ) : (
-        <Savebar savedAt={savedAt}>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={onCancel}
-            disabled={submitting}
-          >
-            {t("ui.common.action.cancel")}
-          </Button>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? <Spinner data-icon="inline-start" /> : null}
-            {t("ui.common.action.save")}
-          </Button>
-        </Savebar>
-      )}
+      <Savebar
+        savedAt={savedAt}
+        submitting={submitting}
+        onCancel={onCancel}
+        submitLabel={
+          mode === "create"
+            ? t("ui.common.action.record")
+            : t("ui.common.action.save")
+        }
+      />
     </Form>
   );
 };

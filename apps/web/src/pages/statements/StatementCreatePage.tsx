@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
 import { Card, CardContent } from "../../components/ui/Card";
@@ -25,6 +27,12 @@ export const StatementCreatePage = () => {
     tenantsOverviewQueryOptions({ page: 0, pageSize: 1000 }),
   );
   const tenants = tenantsResult?.items ?? [];
+
+  // Gebäude-Auswahl aus dem Formular, für die Kontext-Karte
+  const [selectedBuildingId, setSelectedBuildingId] = useState<string>();
+  const contextBuilding =
+    buildings?.find((building) => building.id === selectedBuildingId) ??
+    buildings?.[0];
 
   const currentYear = new Date().getFullYear();
   const defaultValues: StatementFormValues = {
@@ -58,6 +66,7 @@ export const StatementCreatePage = () => {
       }
       title={t("ui.statements.createTitle")}
       description={t("ui.statements.createDescription")}
+      aside={<BuildingContextCard building={contextBuilding} />}
     >
       <Card>
         <CardContent className="py-6">
@@ -69,6 +78,7 @@ export const StatementCreatePage = () => {
             onSubmit={(values) => createStatement.mutate(values)}
             onCancel={goBack}
             submitting={createStatement.isPending}
+            onBuildingChange={setSelectedBuildingId}
           />
         </CardContent>
       </Card>

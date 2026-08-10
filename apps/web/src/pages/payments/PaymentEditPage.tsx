@@ -14,6 +14,7 @@ import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
+import { TenantContextCard } from "../../components/common/TenantContextCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
 import { gradients } from "../../lib/domainVisuals";
@@ -111,6 +112,7 @@ export const PaymentEditPage = () => {
   }
 
   const editDefaults = payment ? buildPaymentDefaults(payment) : null;
+  const contextTenant = tenants.find(({ id }) => id === payment?.tenantId);
 
   return (
     <FormPage
@@ -127,6 +129,7 @@ export const PaymentEditPage = () => {
           loading={!payment}
         />
       }
+      aside={<TenantContextCard tenant={contextTenant} />}
     >
       {payment && editDefaults ? (
         <PaymentForm

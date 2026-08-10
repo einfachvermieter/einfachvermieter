@@ -1,17 +1,24 @@
 import { RiCheckLine } from "@remixicon/react";
-import type { ReactNode } from "react";
+import { Spinner } from "@/components/common/Spinner";
+import { Button } from "@/components/ui/Button";
 import { t } from "@/lib/i18n";
 
 /**
- * Fixe Speicherleiste am unteren Rand großer Formularseiten: links der
- * Speicherstatus, rechts Abbrechen + Speichern
+ * Fixe Speicherleiste am unteren Rand der Formularseiten: links der
+ * Speicherzeitpunkt (nur beim Bearbeiten), rechts Abbrechen + Speichern.
+ * Die Seite braucht dafür unten Platz (`pb-24`), damit die Leiste keinen
+ * Inhalt verdeckt.
  */
 export const Savebar = ({
   savedAt,
-  children,
+  submitting,
+  onCancel,
+  submitLabel = t("ui.common.action.save"),
 }: {
   savedAt?: string;
-  children: ReactNode;
+  submitting: boolean;
+  onCancel: () => void;
+  submitLabel?: string;
 }) => (
   <div className="fixed right-0 bottom-0 left-(--sidebar-width,0px) z-10 border-t border-border bg-background/70 py-3.5 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))] backdrop-blur-lg max-md:left-0 sm:pl-[max(2rem,env(safe-area-inset-left))] sm:pr-[max(2rem,env(safe-area-inset-right))]">
     {/* Content-Breite aus AppShell (max-w-310 + Safe-Area-Padding),
@@ -23,7 +30,20 @@ export const Savebar = ({
           {t("ui.common.savebar.lastSaved", { date: savedAt })}
         </span>
       ) : null}
-      <div className="ml-auto flex items-center gap-2">{children}</div>
+      <div className="ml-auto flex items-center gap-2">
+        <Button
+          variant="secondary"
+          type="button"
+          onClick={onCancel}
+          disabled={submitting}
+        >
+          {t("ui.common.action.cancel")}
+        </Button>
+        <Button type="submit" disabled={submitting}>
+          {submitting ? <Spinner data-icon="inline-start" /> : null}
+          {submitLabel}
+        </Button>
+      </div>
     </div>
   </div>
 );
