@@ -146,7 +146,12 @@ export class BuildingsService {
       throw new NotFoundException(notFoundMessage("building", id));
     }
 
-    return result;
+    const counts = (await this.countPerBuilding([id])).get(id);
+    return {
+      ...result,
+      unitsCount: counts?.units ?? 0,
+      activeTenantsCount: counts?.activeTenants ?? 0,
+    };
   }
 
   async create(dto: BuildingCreateDto) {
