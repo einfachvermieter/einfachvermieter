@@ -31,7 +31,7 @@ export const BuildingContextCard = ({
         value: building?.unitsCount ?? t("ui.common.emptyValue"),
       },
       {
-        label: t("ui.navigation.tenants"),
+        label: t("ui.buildings.activeTenants"),
         value: building?.activeTenantsCount ?? t("ui.common.emptyValue"),
       },
       ...extraRows,

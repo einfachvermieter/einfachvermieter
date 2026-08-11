@@ -605,6 +605,7 @@
     },
     "buildings": {
       "title": "Gebäude",
+      "activeTenants": "Aktive Mieter",
       "createTitle": "Neues Gebäude",
       "editEyebrow": "Gebäude bearbeiten",
       "add": "Gebäude hinzufügen",
@@ -1891,7 +1892,7 @@
       "buildingsCard": {
         "title": "Ihre Gebäude",
         "description": "Zum Verwalten ein Gebäude wählen.",
-        "tenantsCount": "{count, plural, one {# Mieter} other {# Mieter}}"
+        "tenantsCount": "{count, plural, one {# aktiver Mieter} other {# aktive Mieter}}"
       },
       "stats": {
         "buildings": "Gebäude",

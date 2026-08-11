@@ -80,7 +80,7 @@ export const BuildingEditPage = () => {
             value: `${formatNumber(totalArea, 2)}\u00A0m²`,
           },
           {
-            label: t("ui.navigation.tenants"),
+            label: t("ui.buildings.activeTenants"),
             value: building.activeTenantsCount,
           },
         ]}

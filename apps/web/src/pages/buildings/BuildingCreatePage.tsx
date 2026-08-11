@@ -55,7 +55,7 @@ export const BuildingCreatePage = () => {
                 : t("ui.common.emptyValue"),
             },
             {
-              label: t("ui.navigation.tenants"),
+              label: t("ui.buildings.activeTenants"),
               value: buildings
                 ? buildings.reduce(
                     (sum, entry) => sum + entry.activeTenantsCount,
