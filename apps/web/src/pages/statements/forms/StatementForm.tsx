@@ -6,6 +6,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useId, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { SectionCard } from "@/components/common/SectionCard";
 import { DateInput } from "@/components/form/DateInput";
 import { MonthInput } from "@/components/form/MonthInput";
 import { Savebar } from "@/components/form/Savebar";
@@ -23,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/Select";
+import { domainVisuals, gradients } from "../../../lib/domainVisuals";
 import { t } from "../../../lib/i18n";
 import type { TenantOverviewRow } from "../../../lib/tenants";
 import {
@@ -78,67 +80,74 @@ export const StatementForm = ({
           </AlertDescription>
         </Alert>
       ) : null}
-      <FieldGroup className="gap-4">
-        <Controller
-          name="tenantId"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={`${formId}-tenantId`}>
-                {t("ui.common.columns.tenant")}
-              </FieldLabel>
-              <Select
-                name={field.name}
-                value={field.value}
-                onValueChange={field.onChange}
-              >
-                <SelectTrigger
-                  id={`${formId}-tenantId`}
-                  aria-invalid={fieldState.invalid}
-                  className="w-full"
+      <SectionCard
+        icon={domainVisuals.statements.icon}
+        iconBackground={gradients.statements}
+        title={t("ui.statements.sections.baseData.title")}
+        description={t("ui.statements.sections.baseData.description")}
+      >
+        <FieldGroup className="gap-4">
+          <Controller
+            name="tenantId"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={`${formId}-tenantId`}>
+                  {t("ui.common.columns.tenant")}
+                </FieldLabel>
+                <Select
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={field.onChange}
                 >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  {scopedTenants.map((tenant) => (
-                    <SelectItem key={tenant.id} value={tenant.id}>
-                      {tenant.contractResidents.length > 0
-                        ? t("ui.tenants.summary", {
-                            unit: tenant.unitName,
-                            residents: tenant.contractResidents
-                              .map((r) => formatName(r.firstName, r.lastName))
-                              .join(", "),
-                          })
-                        : tenant.unitName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {fieldState.invalid ? (
-                <FieldError errors={[fieldState.error]} />
-              ) : null}
-            </Field>
-          )}
-        />
-        <MonthInput
-          control={form.control}
-          name="periodStart"
-          label={t("ui.costs.entryFields.periodFrom")}
-          boundary="start"
-        />
-        <MonthInput
-          control={form.control}
-          name="periodEnd"
-          label={t("ui.costs.entryFields.periodTo")}
-          boundary="end"
-        />
-        <DateInput
-          control={form.control}
-          name="documentDate"
-          label={t("ui.statements.fields.documentDate")}
-          description={t("ui.statements.fields.documentDateHint")}
-        />
-      </FieldGroup>
+                  <SelectTrigger
+                    id={`${formId}-tenantId`}
+                    aria-invalid={fieldState.invalid}
+                    className="w-full"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    {scopedTenants.map((tenant) => (
+                      <SelectItem key={tenant.id} value={tenant.id}>
+                        {tenant.contractResidents.length > 0
+                          ? t("ui.tenants.summary", {
+                              unit: tenant.unitName,
+                              residents: tenant.contractResidents
+                                .map((r) => formatName(r.firstName, r.lastName))
+                                .join(", "),
+                            })
+                          : tenant.unitName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {fieldState.invalid ? (
+                  <FieldError errors={[fieldState.error]} />
+                ) : null}
+              </Field>
+            )}
+          />
+          <MonthInput
+            control={form.control}
+            name="periodStart"
+            label={t("ui.costs.entryFields.periodFrom")}
+            boundary="start"
+          />
+          <MonthInput
+            control={form.control}
+            name="periodEnd"
+            label={t("ui.costs.entryFields.periodTo")}
+            boundary="end"
+          />
+          <DateInput
+            control={form.control}
+            name="documentDate"
+            label={t("ui.statements.fields.documentDate")}
+            description={t("ui.statements.fields.documentDateHint")}
+          />
+        </FieldGroup>
+      </SectionCard>
       <Savebar
         submitting={submitting}
         onCancel={onCancel}

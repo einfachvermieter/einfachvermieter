@@ -3,7 +3,6 @@ import { BuildingContextCard } from "../../components/common/BuildingContextCard
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
 import { FormSkeleton } from "../../components/FormSkeleton";
-import { Card, CardContent } from "../../components/ui/Card";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { dateToIso } from "../../lib/dateInput";
@@ -52,27 +51,23 @@ export const StatementCreatePage = () => {
       description={t("ui.statements.createDescription")}
       aside={<BuildingContextCard building={building} />}
     >
-      <Card>
-        <CardContent className="py-6">
-          {buildingId ? (
-            <StatementForm
-              tenants={tenants}
-              defaultValues={{
-                buildingId,
-                tenantId: "",
-                periodStart: `${currentYear - 1}-01-01`,
-                periodEnd: `${currentYear - 1}-12-31`,
-                documentDate: dateToIso(new Date()),
-              }}
-              onSubmit={(values) => createStatement.mutate(values)}
-              onCancel={goBack}
-              submitting={createStatement.isPending}
-            />
-          ) : (
-            <FormSkeleton rows={4} />
-          )}
-        </CardContent>
-      </Card>
+      {buildingId ? (
+        <StatementForm
+          tenants={tenants}
+          defaultValues={{
+            buildingId,
+            tenantId: "",
+            periodStart: `${currentYear - 1}-01-01`,
+            periodEnd: `${currentYear - 1}-12-31`,
+            documentDate: dateToIso(new Date()),
+          }}
+          onSubmit={(values) => createStatement.mutate(values)}
+          onCancel={goBack}
+          submitting={createStatement.isPending}
+        />
+      ) : (
+        <FormSkeleton rows={4} />
+      )}
     </FormPage>
   );
 };

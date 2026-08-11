@@ -1601,6 +1601,12 @@
         "occupancyLandlordPersonDays": "davon Vermieter (1 Basis-Person × Leerstandstage)",
         "occupancyLandlordDays": "Vermieter-Anteil Leerstand (Wohnungstage)",
         "occupancyPeriodTotal": "Periodentage gesamt ({units} × {days})"
+      },
+      "sections": {
+        "baseData": {
+          "title": "Stammdaten",
+          "description": "Mieter und Zeitraum der Abrechnung"
+        }
       }
     },
     "password": {
