@@ -189,7 +189,7 @@ export type CostEntryItemFormValues = {
    * Arten der enthaltenen Steuern und Abgaben. Gleiche Sichtbarkeitsregel
    * wie `containedTaxesInput`.
    */
-  containedTaxKinds: string[];
+  containedTaxKinds: ContainedTaxKind[];
   periodStart: string;
   periodEnd: string;
 };
@@ -411,7 +411,7 @@ type CostEntryItemSource = {
   co2AmountGrams?: number | null;
   co2CostCents?: number | null;
   containedTaxesCents?: number | null;
-  containedTaxKinds?: string[] | null;
+  containedTaxKinds?: ContainedTaxKind[] | null;
   periodStart: string;
   periodEnd: string;
 };

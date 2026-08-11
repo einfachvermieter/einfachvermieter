@@ -1,4 +1,4 @@
-import { formatDate } from "@einfachvermieter/shared";
+import { type ContainedTaxKind, formatDate } from "@einfachvermieter/shared";
 import { queryOptions } from "@tanstack/react-query";
 import { api } from "./api";
 import { t } from "./i18n";
@@ -85,7 +85,7 @@ export type CostEntryItem = {
   /**
    * Arten der enthaltenen Steuern und Abgaben
    */
-  containedTaxKinds: string[] | null;
+  containedTaxKinds: ContainedTaxKind[] | null;
 };
 
 export type CostEntryDetail = CostEntry & {

@@ -90,6 +90,9 @@ export const applyExtractionToForm = (
         // bereits im Bruttobetrag). Felder bleiben leer.
         co2AmountInput: "",
         co2CostInput: "",
+        // KI extrahiert keine Steuer-/Abgaben-Anteile; Felder bleiben leer.
+        containedTaxesInput: "",
+        containedTaxKinds: [],
         periodStart: isIsoDate(item.periodStart) ? item.periodStart : "",
         periodEnd: isIsoDate(item.periodEnd) ? item.periodEnd : "",
       };

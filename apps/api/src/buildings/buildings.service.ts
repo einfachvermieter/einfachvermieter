@@ -140,7 +140,9 @@ export class BuildingsService {
     return counts;
   }
 
-  async get(id: string) {
+  async get(
+    id: string,
+  ): Promise<Building & { unitsCount: number; activeTenantsCount: number }> {
     const result = await this.em.findOne(BuildingSchema, { id });
     if (!result) {
       throw new NotFoundException(notFoundMessage("building", id));
