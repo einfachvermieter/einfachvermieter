@@ -343,7 +343,7 @@ export const CostEntryEditPage = () => {
           </div>
         </div>
       ) : (
-        <FormSkeleton rows={4} />
+        <FormSkeleton rows={4} aside={true} />
       )}
 
       {deletion.dialog}

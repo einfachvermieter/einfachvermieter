@@ -303,6 +303,7 @@ const buildingEditRoute = createRoute({
       }
       statsSkeleton={3}
       rows={4}
+      aside={true}
     />
   ),
   pendingMs: 0,
@@ -370,6 +371,7 @@ const unitEditRoute = createRoute({
       }
       statsSkeleton={3}
       rows={3}
+      aside={true}
     />
   ),
   pendingMs: 0,
@@ -435,6 +437,8 @@ const tenantEditRoute = createRoute({
       }
       statsSkeleton={4}
       rows={6}
+      aside={true}
+      tabs="default"
     />
   ),
   pendingMs: 0,
@@ -774,6 +778,8 @@ const meterEditRoute = createRoute({
       }
       statsSkeleton={3}
       rows={4}
+      aside={true}
+      tabs="default"
     />
   ),
   pendingMs: 0,
@@ -820,6 +826,7 @@ const meterReadingsRoute = createRoute({
       }
       statsSkeleton={3}
       rows={4}
+      tabs="default"
     />
   ),
   pendingMs: 0,
@@ -1100,6 +1107,22 @@ const statementDetailRoute = createRoute({
   validateSearch: statementSearchSchema,
   loader: statementDetailLoader,
   component: StatementDetailPage,
+  pendingComponent: () => (
+    <DetailPending
+      tile={
+        <IconTile
+          icon={domainVisuals.statements.icon}
+          size={44}
+          background={gradients.statements}
+        />
+      }
+      statsSkeleton={3}
+      rows={8}
+      aside={true}
+      tabs="pills"
+    />
+  ),
+  pendingMs: 0,
   staticData: { crumb: statementDetailCrumb },
 });
 

@@ -141,7 +141,7 @@ export const HeatingVersionEditPage = () => {
           onDone={onDone}
         />
       ) : (
-        <FormSkeleton rows={4} />
+        <FormSkeleton rows={4} aside={true} />
       )}
     </div>
   );

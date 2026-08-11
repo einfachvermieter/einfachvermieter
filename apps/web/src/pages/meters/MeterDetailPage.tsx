@@ -185,7 +185,9 @@ export const MeterDetailPage = () => {
           );
         })()
       ) : (
-        <FormSkeleton rows={4} />
+        <div className="mt-6">
+          <FormSkeleton rows={4} aside={true} />
+        </div>
       )}
 
       {deletion.dialog}

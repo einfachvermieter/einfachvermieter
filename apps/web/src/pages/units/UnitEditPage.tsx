@@ -216,7 +216,7 @@ export const UnitEditPage = () => {
           </div>
         </div>
       ) : (
-        <FormSkeleton rows={3} />
+        <FormSkeleton rows={3} aside={true} />
       )}
 
       {deletion.dialog}

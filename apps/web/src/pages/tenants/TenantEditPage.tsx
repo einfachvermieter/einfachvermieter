@@ -163,7 +163,9 @@ export const TenantEditPage = () => {
           </div>
         </div>
       ) : (
-        <FormSkeleton rows={6} />
+        <div className="mt-6">
+          <FormSkeleton rows={6} aside={true} />
+        </div>
       )}
 
       {deletion.dialog}

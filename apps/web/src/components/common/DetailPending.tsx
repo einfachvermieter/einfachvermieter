@@ -12,6 +12,8 @@ export const DetailPending = ({
   tile,
   statsSkeleton,
   rows = 4,
+  aside = false,
+  tabs,
 }: {
   /**
    * Statische Domänen-Kachel (Name/Typ sind beim Laden noch unbekannt)
@@ -19,6 +21,16 @@ export const DetailPending = ({
   tile: ReactNode;
   statsSkeleton?: number;
   rows?: number;
+
+  /**
+   * Für Seiten mit rechter Infospalte
+   */
+  aside?: boolean;
+
+  /**
+   * Platzhalter für die Tab-Leiste der Detailseite
+   */
+  tabs?: "default" | "pills";
 }) => (
   <div className="pb-24">
     <PageHeader
@@ -27,6 +39,6 @@ export const DetailPending = ({
       loading={true}
       statsSkeleton={statsSkeleton}
     />
-    <FormSkeleton rows={rows} />
+    <FormSkeleton rows={rows} aside={aside} tabs={tabs} />
   </div>
 );

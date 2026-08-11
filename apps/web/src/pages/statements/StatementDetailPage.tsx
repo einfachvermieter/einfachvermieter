@@ -458,7 +458,7 @@ export const StatementDetailPage = () => {
           loading={true}
           statsSkeleton={3}
         />
-        <FormSkeleton rows={8} />
+        <FormSkeleton rows={8} aside={true} tabs="pills" />
       </div>
     );
   }
