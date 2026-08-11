@@ -548,9 +548,43 @@ const paymentCreateRoute = createRoute({
   path: "/zahlungen/neu",
   beforeLoad: requireAuth,
   validateSearch: paymentsSearchSchema,
+  loaderDeps: ({ search }) => ({ tenantId: search.tenantId }),
+  loader: async ({ context, deps }) => {
+    if (!deps.tenantId) {
+      return null;
+    }
+
+    try {
+      const [aggregate, units] = await Promise.all([
+        context.queryClient.ensureQueryData(tenantQueryOptions(deps.tenantId)),
+        context.queryClient.ensureQueryData(unitsQueryOptions),
+      ]);
+
+      return { aggregate, units, tenantId: deps.tenantId };
+    } catch {
+      return null;
+    }
+  },
   component: PaymentCreatePage,
   staticData: {
-    crumb: () => [{ label: t("ui.common.crumbs.paymentNew") }],
+    crumb: ({ loaderData }) => {
+      const data = loaderData as {
+        aggregate: TenantAggregate;
+        units: Unit[];
+        tenantId: string;
+      } | null;
+      if (!data) {
+        return [
+          { label: t("ui.common.crumbs.tenants"), to: "/mieter" },
+          { label: t("ui.common.crumbs.paymentNew") },
+        ];
+      }
+
+      return [
+        ...tenantAccountCrumbBase(data, data.tenantId),
+        { label: t("ui.common.crumbs.paymentNew") },
+      ];
+    },
   },
 });
 

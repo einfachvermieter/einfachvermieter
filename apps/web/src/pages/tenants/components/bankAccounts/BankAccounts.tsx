@@ -171,11 +171,19 @@ export const BankAccounts = ({
     <EditableListSection<BankAccountRowValues>
       title={t("ui.tenant.fields.bankAccount")}
       titleHelp={<HelpHint>{t("ui.tenant.bankAccountsHelp")}</HelpHint>}
+      description={t("ui.tenant.bankAccountsDescription")}
       emptyHint={t("ui.tenant.bankAccountsEmptyHint")}
       addLabel={t("ui.tenant.addBankAccount")}
       icon={RiBankCardLine}
       iconBackground={gradients.bank}
       defaultOpenAdd={openAdd}
+      onFormCancel={() => {
+        // Zurück zur einfachen Ansicht, solange es bei der einen Bankverbindung bleibt
+        if (watchedBankAccounts.length === 1) {
+          setHistoryOpen(false);
+          setOpenAdd(false);
+        }
+      }}
       fieldKeys={bankAccountsArray.fields}
       rows={watchedBankAccounts}
       renderRow={(row, index) => {

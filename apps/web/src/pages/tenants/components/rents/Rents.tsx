@@ -188,11 +188,19 @@ export const Rents = ({
     <EditableListSection<RentRowValues>
       title={t("ui.tenant.rentsTitle")}
       titleHelp={<HelpHint>{t("ui.tenant.rentsHelp")}</HelpHint>}
+      description={t("ui.tenant.rentsDescription")}
       emptyHint={t("ui.tenant.rentsEmptyHint")}
       addLabel={t("ui.tenant.addRent")}
       icon={RiMoneyEuroCircleLine}
       iconBackground={gradients.money}
       defaultOpenAdd={openAdd}
+      onFormCancel={() => {
+        // Zurück zur einfachen Ansicht, solange es beim einen Mietsatz bleibt
+        if (watchedRents.length === 1) {
+          setHistoryOpen(false);
+          setOpenAdd(false);
+        }
+      }}
       footer={
         <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
           <RiInformationLine

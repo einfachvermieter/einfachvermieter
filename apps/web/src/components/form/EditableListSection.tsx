@@ -101,6 +101,12 @@ export type EditableListSectionProps<T> = {
    */
   defaultOpenAdd?: boolean;
 
+  /**
+   * Wird nach dem Abbrechen des Aufklapp-Formulars aufgerufen, z.B. um
+   * eine zuvor aufgeklappte Verlaufsansicht wieder zu schließen
+   */
+  onFormCancel?: () => void;
+
   footer?: ReactNode;
 };
 
@@ -126,6 +132,7 @@ export const EditableListSection = <T,>({
   rowError,
   sortIndex,
   defaultOpenAdd = false,
+  onFormCancel,
   footer,
 }: EditableListSectionProps<T>) => {
   const [editTarget, setEditTarget] = useState<number | "new" | null>(
@@ -144,7 +151,8 @@ export const EditableListSection = <T,>({
     <InlineSubform>
       <SubformSubmitProvider
         value={{
-          label: editIndex !== null ? t("ui.common.action.save") : addLabel,
+          // Übernimmt nur in den Formular-State, gespeichert wird über die Savebar
+          label: editIndex !== null ? t("ui.common.action.apply") : addLabel,
           icon: editIndex !== null ? undefined : <RiAddLine />,
         }}
       >
@@ -159,7 +167,10 @@ export const EditableListSection = <T,>({
             }
             closeForm();
           },
-          onCancel: closeForm,
+          onCancel: () => {
+            closeForm();
+            onFormCancel?.();
+          },
         })}
       </SubformSubmitProvider>
     </InlineSubform>

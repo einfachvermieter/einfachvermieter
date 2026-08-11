@@ -382,6 +382,7 @@
         "viewDetails": "Details ansehen",
         "save": "Speichern",
         "saving": "Wird gespeichert …",
+        "apply": "Übernehmen",
         "cancel": "Abbrechen",
         "create": "Anlegen",
         "generate": "Erstellen",
@@ -1707,8 +1708,10 @@
       "editEyebrow": "Mieter bearbeiten",
       "addRentChange": "Mietänderung",
       "rentSimpleDescription": "Aktueller Mietsatz. Änderungen hier korrigieren den bestehenden Satz.",
+      "rentsDescription": "Kaltmiete und Nebenkosten im Zeitverlauf",
       "rentHistoryHint": "Frühere Sätze bleiben für die Abrechnung erhalten.",
       "bankSimpleDescription": "Aktuelle Bankverbindung des Mieters",
+      "bankAccountsDescription": "Bankverbindungen des Mieters im Zeitverlauf",
       "sections": {
         "contract": {
           "title": "Vertrag",
