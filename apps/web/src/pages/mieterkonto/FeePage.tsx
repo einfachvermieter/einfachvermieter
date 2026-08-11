@@ -2,6 +2,7 @@ import {
   type AccountFeeCreateDto,
   type AccountFeeUpdateDto,
   centsToEurInput,
+  formatDate,
   parseEurToCents,
   todayIso,
 } from "@einfachvermieter/shared";
@@ -204,6 +205,11 @@ export const FeePage = () => {
             </CardContent>
           </Card>
           <Savebar
+            savedAt={
+              existing?.updatedAt
+                ? formatDate(existing.updatedAt.slice(0, 10))
+                : undefined
+            }
             submitting={form.formState.isSubmitting}
             onCancel={goBack}
             submitLabel={

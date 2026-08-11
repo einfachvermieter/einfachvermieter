@@ -32,6 +32,7 @@ export type Payment = {
   baseRentCents: number | null;
   advanceCents: number | null;
   amountCents: number | null;
+  updatedAt?: string;
 };
 
 export type PaymentSortColumn = "date" | "amount" | "reference";

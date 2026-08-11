@@ -153,6 +153,7 @@ const buildFeeRows = (fees: AccountFee[], payments: Payment[]): FeeRow[] => {
       reason: fee.reason,
       pot: makePot(fee.amountCents, bucket?.amounts ?? []),
       paymentIds: bucket?.ids ?? [],
+      updatedAt: fee.updatedAt,
     };
   });
 };

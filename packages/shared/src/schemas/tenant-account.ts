@@ -97,6 +97,7 @@ export type FeeRow = {
   reason: string;
   pot: PotState;
   paymentIds: string[];
+  updatedAt: string;
 };
 
 export type DepositRow = {

@@ -45,6 +45,7 @@ type Props = {
   defaultValues: PaymentFormValues;
   onSubmit: (values: PaymentFormValues) => Promise<void>;
   onCancel: () => void;
+  savedAt?: string;
   /**
    * "page" (Standard): eigenes Formular mit Karte und Savebar.
    * "inline": getöntes Aufklapp-Subform (SubformShell) ohne eigene Karte,
@@ -69,6 +70,7 @@ export const PaymentForm = ({
   defaultValues,
   onSubmit,
   onCancel,
+  savedAt,
   variant = "page",
   onTenantChange,
 }: Props) => {
@@ -443,6 +445,7 @@ export const PaymentForm = ({
         </Card>
       </fieldset>
       <Savebar
+        savedAt={savedAt}
         submitting={submitting}
         onCancel={onCancel}
         submitLabel={

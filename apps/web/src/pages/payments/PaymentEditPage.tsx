@@ -5,6 +5,7 @@ import type {
 import {
   centsToEurInput,
   emptyPaymentFormValues,
+  formatDate,
   paymentFormToDto,
 } from "@einfachvermieter/shared";
 import { RiMoneyEuroCircleLine } from "@remixicon/react";
@@ -138,6 +139,11 @@ export const PaymentEditPage = () => {
           tenantFieldDisabled={true}
           lockedPurposeKind={editDefaults.purposeKind}
           defaultValues={editDefaults.defaults}
+          savedAt={
+            payment.updatedAt
+              ? formatDate(payment.updatedAt.slice(0, 10))
+              : undefined
+          }
           onSubmit={async (values) => {
             const dto = paymentFormToDto(values);
             const { tenantId: _omit, ...rest } = dto;
