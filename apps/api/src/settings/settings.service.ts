@@ -7,6 +7,8 @@ import type {
   AiProvider,
   AiSettingsDto,
   AiSettingsUpdateDto,
+  ClimateFactorsSettingsDto,
+  ClimateFactorsSettingsUpdateDto,
   SenderSettingsDto,
   SenderSettingsUpdateDto,
 } from "@einfachvermieter/shared";
@@ -207,6 +209,33 @@ export class SettingsService {
     await this.em.flush();
 
     return this.getAiSettings();
+  }
+
+  /**
+   * Stand der DWD-Abruf-Entscheidung (null = noch nicht entschieden).
+   */
+  async getClimateFactorsSettings(): Promise<ClimateFactorsSettingsDto> {
+    const row = await this.ensureRow();
+    return { autoFetch: row.climateFactorsAutoFetch };
+  }
+
+  /**
+   * Speichert die Entscheidung, ob Klimafaktoren automatisch von
+   * opendata.dwd.de geladen werden dürfen.
+   */
+  async updateClimateFactorsSettings(
+    dto: ClimateFactorsSettingsUpdateDto,
+  ): Promise<ClimateFactorsSettingsDto> {
+    const row = await this.ensureRow();
+
+    this.em.assign(row, {
+      climateFactorsAutoFetch: dto.autoFetch,
+      updatedAt: new Date().toISOString(),
+    });
+
+    await this.em.flush();
+
+    return { autoFetch: row.climateFactorsAutoFetch };
   }
 
   /**

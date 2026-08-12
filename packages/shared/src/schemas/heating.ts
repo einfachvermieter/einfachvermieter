@@ -816,3 +816,24 @@ export const climateFactorReloadSchema = z
   })
   .strict();
 export type ClimateFactorReloadDto = z.infer<typeof climateFactorReloadSchema>;
+
+/**
+ * Entscheidung, ob Klimafaktoren automatisch von opendata.dwd.de geladen
+ * werden dürfen. Einmal getroffen, ist sie nur noch umstellbar (an/aus),
+ * nicht wieder auf "unentschieden" zurücksetzbar.
+ */
+export const climateFactorsSettingsUpdateSchema = z
+  .object({
+    autoFetch: z.boolean(),
+  })
+  .strict();
+export type ClimateFactorsSettingsUpdateDto = z.infer<
+  typeof climateFactorsSettingsUpdateSchema
+>;
+
+/**
+ * Stand der DWD-Abruf-Entscheidung; null = noch nicht entschieden.
+ */
+export type ClimateFactorsSettingsDto = {
+  autoFetch: boolean | null;
+};

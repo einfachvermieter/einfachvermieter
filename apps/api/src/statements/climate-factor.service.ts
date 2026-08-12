@@ -1,4 +1,6 @@
 import {
+  APP_SETTINGS_ID,
+  AppSettingsSchema,
   BuildingSchema,
   type ClimateFactor,
   ClimateFactorSchema,
@@ -51,6 +53,7 @@ export type ClimateFactorRow = {
 export type ClimateFactorOverview = {
   buildingId: string;
   postalCode: string | null;
+  autoFetch: boolean | null;
   rows: ClimateFactorRow[];
 };
 
@@ -58,7 +61,9 @@ export type ClimateFactorOverview = {
  * Liefert DWD-Klimafaktoren für die Witterungsbereinigung des
  * Vorperiodenvergleichs (§ 6a Abs. 3 Nr. 5 HeizkostenV): erst aus dem
  * DB-Cache, sonst per Einmal-Abruf von opendata.dwd.de (danach offline
- * verfügbar). Manuell erfasste Werte liegen als `isManual`-Zeilen im
+ * verfügbar). Der automatische Abruf läuft nur, wenn der Nutzer ihn in den
+ * Einstellungen erlaubt hat (`climateFactorsAutoFetch`).
+ * Manuell erfasste Werte liegen als `isManual`-Zeilen im
  * selben Cache. Liefert null, wenn kein Faktor bestimmbar ist;
  * der Vergleich bleibt dann unbereinigt und sagt das im Anhang.
  */
@@ -85,6 +90,13 @@ export class ClimateFactorService {
     const cached = await this.findCached(postalCode, period);
     if (cached) {
       return { factor: cached.factor, isManual: cached.isManual };
+    }
+
+    // Ohne ausdrückliches Ja zum DWD-Abruf verlässt keine Anfrage das
+    // Gerät; der Vergleich bleibt dann unbereinigt. Explizites "Neu laden"
+    // (reloadFromDwd) bleibt davon unberührt.
+    if (!(await this.autoFetchAllowed())) {
+      return null;
     }
 
     const blockKey = `${postalCode}|${period.start}|${period.end}`;
@@ -148,7 +160,26 @@ export class ClimateFactorService {
       });
     }
 
-    return { buildingId: statement.buildingId, postalCode, rows };
+    return {
+      buildingId: statement.buildingId,
+      postalCode,
+      autoFetch: await this.autoFetchSetting(),
+      rows,
+    };
+  }
+
+  /**
+   * Gespeicherte DWD-Abruf-Entscheidung (null = noch nicht entschieden)
+   */
+  private async autoFetchSetting(): Promise<boolean | null> {
+    const settings = await this.em.findOne(AppSettingsSchema, {
+      id: APP_SETTINGS_ID,
+    });
+    return settings?.climateFactorsAutoFetch ?? null;
+  }
+
+  private async autoFetchAllowed(): Promise<boolean> {
+    return (await this.autoFetchSetting()) === true;
   }
 
   /**

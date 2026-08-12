@@ -1,6 +1,8 @@
 import {
   type AiSettingsUpdateDto,
   aiSettingsUpdateSchema,
+  type ClimateFactorsSettingsUpdateDto,
+  climateFactorsSettingsUpdateSchema,
   type SenderSettingsUpdateDto,
   senderSettingsUpdateSchema,
 } from "@einfachvermieter/shared";
@@ -59,6 +61,20 @@ export class SettingsController {
     dto: AiSettingsUpdateDto,
   ) {
     return this.settingsService.updateAiSettings(dto);
+  }
+
+  @Get("climate-factors")
+  getClimateFactors() {
+    return this.settingsService.getClimateFactorsSettings();
+  }
+
+  @Patch("climate-factors")
+  @Roles("admin")
+  updateClimateFactors(
+    @Body(new ZodValidationPipe(climateFactorsSettingsUpdateSchema))
+    dto: ClimateFactorsSettingsUpdateDto,
+  ) {
+    return this.settingsService.updateClimateFactorsSettings(dto);
   }
 
   @Post("sender/logo")

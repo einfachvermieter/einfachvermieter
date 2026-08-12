@@ -58,6 +58,7 @@ import {
 import { Textarea } from "../../components/ui/Textarea";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
+import { climateFactorsQueryOptions } from "../../lib/climateFactors";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import {
   heatingIdentityLabel,
@@ -386,6 +387,13 @@ export const StatementDetailPage = () => {
     staleTime: 0,
   });
 
+  // Für die Finalisieren-Warnung, solange die DWD-Abruf-Frage offen ist;
+  // gleicher Query-Cache wie die Klimafaktoren-Karte, kein Doppel-Fetch.
+  const { data: climateFactors } = useQuery({
+    ...climateFactorsQueryOptions(statementId),
+    enabled: Boolean(statement) && statement?.status === "draft",
+  });
+
   const invalidateStatementQueries = async () => {
     await queryClient.invalidateQueries({ queryKey: ["statement"] });
     await queryClient.invalidateQueries({ queryKey: ["statements"] });
@@ -554,6 +562,12 @@ export const StatementDetailPage = () => {
     result !== undefined &&
     result.balanceCents > 0 &&
     todayIso() > isoDatePlusOneYear(statement.periodEnd);
+  // Solange die DWD-Abruf-Frage unbeantwortet ist und deshalb Klimafaktoren
+  // fehlen, bliebe der Vorperiodenvergleich im Anhang unbereinigt.
+  const climateFactorQuestionOpen =
+    result?.heatingDetail?.energyComparison?.previous !== undefined &&
+    climateFactors?.autoFetch === null &&
+    climateFactors.rows.some((row) => row.factor === null);
   const balanceClass = isRefund
     ? "text-teal-700 dark:text-teal-400"
     : "text-rose-700 dark:text-rose-400";
@@ -800,6 +814,11 @@ export const StatementDetailPage = () => {
             {deadlineMissedWithArrears ? (
               <p className="mt-2">
                 {t("ui.statements.detail.finalizeDeadlineWarning")}
+              </p>
+            ) : null}
+            {climateFactorQuestionOpen ? (
+              <p className="mt-2">
+                {t("ui.statements.detail.finalizeClimateFactorWarning")}
               </p>
             ) : null}
           </>

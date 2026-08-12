@@ -26,6 +26,7 @@ export type AppSettings = {
   aiApiKey: string | null;
   aiBaseUrl: string | null;
   aiModel: string | null;
+  climateFactorsAutoFetch: boolean | null;
   createdAt: Opt<string>;
   updatedAt: Opt<string>;
 };
@@ -84,6 +85,11 @@ export const AppSettingsSchema = new EntitySchema<AppSettings>({
     aiApiKey: { type: "text", fieldName: "ai_api_key", nullable: true },
     aiBaseUrl: { type: "text", fieldName: "ai_base_url", nullable: true },
     aiModel: { type: "string", fieldName: "ai_model", nullable: true },
+    climateFactorsAutoFetch: {
+      type: "boolean",
+      fieldName: "climate_factors_auto_fetch",
+      nullable: true,
+    },
     createdAt: {
       type: "string",
       fieldName: "created_at",

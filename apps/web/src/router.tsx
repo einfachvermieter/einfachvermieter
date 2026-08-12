@@ -98,6 +98,7 @@ import { MieterkontoDetail } from "./pages/mieterkonto/MieterkontoDetail";
 import { PaymentCreatePage } from "./pages/payments/PaymentCreatePage";
 import { PaymentEditPage } from "./pages/payments/PaymentEditPage";
 import { AiSettingsPage } from "./pages/settings/AiSettingsPage";
+import { ClimateFactorsSettingsPage } from "./pages/settings/ClimateFactorsSettingsPage";
 import { PasswordSettingsPage } from "./pages/settings/PasswordSettingsPage";
 import { ProfileSettingsPage } from "./pages/settings/ProfileSettingsPage";
 import { SenderSettingsPage } from "./pages/settings/SenderSettingsPage";
@@ -1199,6 +1200,19 @@ const aiSettingsRoute = createRoute({
   },
 });
 
+const climateFactorsSettingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/einstellungen/klimafaktoren",
+  beforeLoad: requireAuth,
+  component: ClimateFactorsSettingsPage,
+  staticData: {
+    crumb: () => [
+      { label: t("ui.common.crumbs.settings") },
+      { label: t("ui.common.crumbs.settingsClimateFactors") },
+    ],
+  },
+});
+
 const passwordSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/einstellungen/passwort",
@@ -1250,6 +1264,7 @@ const routeTree = rootRoute.addChildren([
   profileSettingsRoute,
   senderSettingsRoute,
   aiSettingsRoute,
+  climateFactorsSettingsRoute,
   passwordSettingsRoute,
 ]);
 

@@ -352,6 +352,7 @@
         "settings": "Einstellungen",
         "settingsSender": "Absenderdaten",
         "settingsAi": "KI-Anbieter",
+        "settingsClimateFactors": "Klimafaktoren",
         "settingsPassword": "Passwort ändern",
         "settingsProfile": "Profil"
       },
@@ -1300,6 +1301,10 @@
         },
         "sourceDwd": "DWD",
         "sourceManual": "manuell",
+        "consentQuestion": "Dürfen Klimafaktoren automatisch von opendata.dwd.de geladen werden? Beim Abruf wird technisch bedingt die IP-Adresse an den Deutschen Wetterdienst übertragen. Die Postleitzahl verlässt das Gerät nicht.",
+        "consentEnable": "Automatisch laden",
+        "consentDecline": "Nicht laden",
+        "consentDeclinedHint": "Der automatische DWD-Abruf ist ausgeschaltet. Sie können ihn in den Einstellungen unter „Klimafaktoren“ wieder einschalten oder Faktoren manuell erfassen.",
         "missing": "nicht geladen",
         "editSwitch": "Manuell bearbeiten",
         "editSwitchDescription": "Nur nötig, wenn der automatische Abruf nicht möglich ist (z. B. ohne Internet)",
@@ -1499,6 +1504,7 @@
         "calculating": "wird berechnet …",
         "confirmFinalize": "Abrechnung wirklich finalisieren? Danach sind keine Änderungen mehr möglich.",
         "finalizeDeadlineWarning": "Der Abrechnungszeitraum endete vor mehr als zwölf Monaten. Die Nachzahlung ist nach § 556 Abs. 3 BGB nicht mehr durchsetzbar.",
+        "finalizeClimateFactorWarning": "Sie haben noch nicht entschieden, ob Klimafaktoren vom Deutschen Wetterdienst geladen werden dürfen. Ohne Klimafaktor bleibt der Verbrauchsvergleich im Anhang unbereinigt. Die Frage finden Sie im Tab „Heizkosten“.",
         "confirmFinalizeWithDataIssues": "Es {count, plural, one {liegt noch ein Hinweis} other {liegen noch # Hinweise}} zur Datenqualität vor (siehe „Hinweise zur Berechnung“). Trotzdem finalisieren? Danach sind keine Änderungen mehr möglich.",
         "finalizing": "Wird finalisiert …",
         "finalizeStatement": "Abrechnung finalisieren",
@@ -1916,8 +1922,18 @@
       "nav": {
         "sender": "Absenderdaten",
         "ai": "KI-Anbieter",
+        "climateFactors": "Klimafaktoren",
         "password": "Passwort",
         "profile": "Profil"
+      },
+      "climateFactors": {
+        "title": "Klimafaktoren",
+        "description": "Witterungsbereinigung des Verbrauchsvergleichs nach § 6a HeizkostenV mit Faktoren des Deutschen Wetterdienstes",
+        "cardTitle": "Automatischer Abruf",
+        "switchLabel": "Klimafaktoren automatisch vom DWD laden",
+        "switchDescription": "Die Faktoren kommen von opendata.dwd.de. Beim Abruf wird technisch bedingt die IP-Adresse an den Deutschen Wetterdienst übertragen. Die Postleitzahl verlässt das Gerät nicht; einmal geladene Faktoren bleiben lokal gespeichert.",
+        "undecidedNote": "Sie haben noch nicht entschieden. Bis dahin ruft die App keine Daten ab; Klimafaktoren können Sie weiterhin manuell an der jeweiligen Abrechnung erfassen.",
+        "saveSuccess": "Einstellung gespeichert."
       },
       "ai": {
         "title": "KI-Anbieter",

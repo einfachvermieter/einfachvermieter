@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Spinner } from "@/components/common/Spinner";
+import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -13,6 +14,8 @@ import { api } from "../../../../lib/api";
 import {
   type ClimateFactorRow,
   climateFactorsQueryOptions,
+  climateFactorsSettingsQueryOptions,
+  updateClimateFactorsAutoFetch,
 } from "../../../../lib/climateFactors";
 import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
@@ -86,6 +89,19 @@ export const ClimateFactorsCard = ({
     queryClient.invalidateQueries({ queryKey: ["statement-preview"] });
   };
 
+  const decideAutoFetch = useMutation({
+    mutationFn: (autoFetch: boolean) =>
+      updateClimateFactorsAutoFetch(autoFetch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: climateFactorsSettingsQueryOptions.queryKey,
+      });
+      // Bei "Automatisch laden" holt die nächste Berechnung die Faktoren.
+      invalidate();
+    },
+    onError: (error) => toast.error(error.message),
+  });
+
   const reload = useMutation({
     mutationFn: (row: ClimateFactorRow) =>
       api.post("/climate-factors/reload", {
@@ -148,6 +164,37 @@ export const ClimateFactorsCard = ({
       }
     >
       <div className="space-y-4">
+        {data.autoFetch === null && data.postalCode ? (
+          <Alert variant="info">
+            <AlertDescription>
+              <p>{t("ui.heating.climateFactors.consentQuestion")}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  disabled={decideAutoFetch.isPending}
+                  onClick={() => decideAutoFetch.mutate(true)}
+                >
+                  {t("ui.heating.climateFactors.consentEnable")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={decideAutoFetch.isPending}
+                  onClick={() => decideAutoFetch.mutate(false)}
+                >
+                  {t("ui.heating.climateFactors.consentDecline")}
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        ) : null}
+        {data.autoFetch === false ? (
+          <Alert variant="default">
+            <AlertDescription>
+              {t("ui.heating.climateFactors.consentDeclinedHint")}
+            </AlertDescription>
+          </Alert>
+        ) : null}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
