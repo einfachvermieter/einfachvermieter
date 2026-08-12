@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
 import { IconTile } from "../../components/common/IconTile";
@@ -7,6 +8,7 @@ import { api } from "../../lib/api";
 import type { CostType } from "../../lib/costs";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
+import { statsQueryOptions } from "../../lib/stats";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useGoBack } from "../../lib/useGoBack";
 import { CostTypeForm } from "./components/baseData/CostTypeForm";
@@ -18,6 +20,7 @@ import {
 
 export const CostTypeCreatePage = () => {
   const { buildingId, building } = useActiveBuilding();
+  const { data: stats } = useQuery(statsQueryOptions(buildingId));
 
   const goBack = useGoBack("/kostenarten");
 
@@ -38,7 +41,17 @@ export const CostTypeCreatePage = () => {
         />
       }
       title={t("ui.costs.typeCreateTitle")}
-      aside={<BuildingContextCard building={building} />}
+      aside={
+        <BuildingContextCard
+          building={building}
+          extraRows={[
+            {
+              label: t("ui.navigation.costTypes"),
+              value: stats?.costTypes ?? t("ui.common.emptyValue"),
+            },
+          ]}
+        />
+      }
     >
       {buildingId ? (
         <CostTypeForm

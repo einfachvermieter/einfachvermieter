@@ -366,6 +366,7 @@
         "estimated": "Geschätzt",
         "notes": "Notizen",
         "name": "Name",
+        "address": "Adresse",
         "allocation": "Umlageschlüssel",
         "amount": "Betrag",
         "invoiceDate": "Rechnungsdatum",
@@ -671,6 +672,7 @@
     "units": {
       "title": "Wohnungen",
       "createTitle": "Neue Wohnung",
+      "vacantCount": "Freie Wohnungen",
       "add": "Wohnung hinzufügen",
       "empty": "Noch keine Wohnungen angelegt",
       "emptyForBuilding": "Noch keine Wohnungen in Gebäude „{building}“ angelegt",

@@ -41,6 +41,14 @@ export const TenantCreatePage = () => {
   });
 
   const hasUnits = units.length > 0;
+
+  // "frei ab" zählt mit: für diese Wohnungen lässt sich bereits ein
+  // Mietverhältnis mit späterem Beginn anlegen
+  const vacantUnits = units.filter(
+    (unit) =>
+      unit.occupancy.status === "vacant" ||
+      unit.occupancy.status === "vacant_from",
+  ).length;
   const today = todayIso();
 
   return (
@@ -53,7 +61,17 @@ export const TenantCreatePage = () => {
         />
       }
       title={t("ui.tenants.createTitle")}
-      aside={<BuildingContextCard building={activeBuilding} />}
+      aside={
+        <BuildingContextCard
+          building={activeBuilding}
+          extraRows={[
+            {
+              label: t("ui.units.vacantCount"),
+              value: allUnits ? vacantUnits : t("ui.common.emptyValue"),
+            },
+          ]}
+        />
+      }
     >
       {hasUnits ? (
         <TenantForm

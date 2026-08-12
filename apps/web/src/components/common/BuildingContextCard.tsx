@@ -5,8 +5,10 @@ import { InfoCard } from "./InfoCard";
 
 /**
  * "Auf einen Blick"-Karte der Infospalte auf Anlege-Seiten: das Gebäude,
- * für das der Datensatz entsteht, samt Bestandszahlen. Solange die Daten
- * laden, stehen Platzhalter in den Zeilen.
+ * für das der Datensatz entsteht. Statt der Bestandszahlen steht hier die
+ * Adresse. Die Zahlen zeigt die Navigation bereits als Zähl-Badges, die
+ * Adresse steht sonst nirgends und sichert bei ähnlich benannten Gebäuden
+ * ab, dass der Datensatz im richtigen Haus landet.
  */
 export const BuildingContextCard = ({
   building,
@@ -15,7 +17,7 @@ export const BuildingContextCard = ({
   building: Building | undefined;
 
   /**
-   * Zusätzliche Zeilen unter den Gebäude-Zahlen, z.B. Kostenarten-Anzahl
+   * Zusätzliche Zeilen unter der Adresse, z.B. Kostenarten-Anzahl
    */
   extraRows?: { label: string; value: ReactNode }[];
 }) => (
@@ -27,12 +29,13 @@ export const BuildingContextCard = ({
         value: building?.name ?? t("ui.common.emptyValue"),
       },
       {
-        label: t("ui.navigation.units"),
-        value: building?.unitsCount ?? t("ui.common.emptyValue"),
-      },
-      {
-        label: t("ui.buildings.activeTenants"),
-        value: building?.activeTenantsCount ?? t("ui.common.emptyValue"),
+        label: t("ui.common.columns.address"),
+        value: building
+          ? [
+              building.addressStreet,
+              `${building.addressPostalCode} ${building.addressCity}`,
+            ].join(t("ui.common.separators.comma"))
+          : t("ui.common.emptyValue"),
       },
       ...extraRows,
     ]}
