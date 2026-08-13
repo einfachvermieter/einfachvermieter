@@ -27,6 +27,17 @@ import { runSeed, runSeedAsScript, schema } from "./engine.js";
 const nid = (): string => crypto.randomUUID();
 
 /**
+ * Monat als "YYYY-MM", `count` Monate vor dem laufenden Monat. Hält die
+ * Demo-Zahlungen relativ zum heutigen Datum, statt mit fixen Monaten zu
+ * veralten.
+ */
+const monthsAgo = (count: number): string => {
+  const today = new Date();
+  const month = new Date(today.getFullYear(), today.getMonth() - count, 1);
+  return `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`;
+};
+
+/**
  * Monatliche Kaltmiete + NK-Vorauszahlung von `fromMonth` bis `toMonth`
  * (je "YYYY-MM", inklusive). Bewusst nicht bis zum aktuellen Monat, damit
  * ein bis zwei jüngste Monate offen bleiben.
@@ -165,7 +176,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const aCtInsurance = nid();
   const aCtChimney = nid();
   const aCtCommonPower = nid();
-  const aCtCable = nid();
+  const aCtFiber = nid();
   insert(schema.costTypes, [
     {
       id: aCtGas,
@@ -233,9 +244,9 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       defaultAllocationKey: "per_living_area",
     },
     {
-      id: aCtCable,
+      id: aCtFiber,
       buildingId: aBuilding,
-      name: "Kabel-TV (Gruppenvertrag)",
+      name: "Glasfaser-Bereitstellungsentgelt",
       category: "operating",
       defaultAllocationKey: "fixed",
     },
@@ -706,15 +717,21 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     accountHolder: "Michael Schmidt",
   });
 
-  // Monatszahlungen: pro Mietverhältnis von Vertragsbeginn bis
-  // 2026-05 durchbezahlt, damit die Konten überwiegend grün sind. Juni 2026
-  // bleibt offen (amber), Juli 2026 ist der laufende Monat (neutral). Bei
-  // Krüger sind bewusst zwei Monate (Mai+Juni) offen. Kaution des
-  // langjährigen OG-Mieters ist eingegangen, die übrigen bleiben offen.
+  // Monatszahlungen: pro Mietverhältnis von Vertragsbeginn bis zum
+  // vorletzten Monat durchbezahlt, damit die Konten überwiegend grün sind.
+  // Der Vormonat bleibt offen (amber), der laufende Monat ist neutral. Bei
+  // Krüger ist bewusst ein Monat mehr offen. Kaution des langjährigen
+  // OG-Mieters ist eingegangen, die übrigen bleiben offen.
   insert(schema.payments, [
     ...monthlyRentPayments(aTenantEgOld, "2022-05", "2025-06", 68_000, 18_000),
-    ...monthlyRentPayments(aTenantEgNew, "2025-07", "2026-04", 74_000, 20_000),
-    ...monthlyRentPayments(aTenantOg, "2021-09", "2026-05", 92_000, 24_000),
+    ...monthlyRentPayments(
+      aTenantEgNew,
+      "2025-07",
+      monthsAgo(3),
+      74_000,
+      20_000,
+    ),
+    ...monthlyRentPayments(aTenantOg, "2021-09", monthsAgo(2), 92_000, 24_000),
     {
       id: nid(),
       tenantId: aTenantOg,
@@ -937,13 +954,14 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       periodEnd: "2025-12-31",
       position: 1,
     },
-    // Kabel-TV: fixed -> Direktzuordnung an die OG-Wohnung.
+    // Nur die OG-Wohnung hat einen Glasfaseranschluss: fixed -> Direktzuordnung.
+    // Umlagefähig sind höchstens 60 Euro je Wohnung und Jahr.
     {
       id: nid(),
       costEntryId: aMiscEntry,
-      costTypeId: aCtCable,
+      costTypeId: aCtFiber,
       unitId: aUnitOg,
-      amountCents: 18_000,
+      amountCents: 6000,
       periodStart: "2025-01-01",
       periodEnd: "2025-12-31",
       position: 2,
@@ -1771,14 +1789,15 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     monthlyAdvanceCents: 30_000,
   });
 
-  // Monatszahlungen B/C, gleiches Muster wie Gebäude A: bis 2026-05
-  // durchbezahlt, Juni offen. Kautionen der langjährigen OG-Mieter eingegangen.
+  // Monatszahlungen B/C, gleiches Muster wie Gebäude A: bis zum vorletzten
+  // Monat durchbezahlt, Vormonat offen. Kautionen der langjährigen
+  // OG-Mieter eingegangen.
   insert(schema.payments, [
-    ...monthlyRentPayments(bTenantEg, "2023-04", "2026-05", 60_000, 19_000),
-    ...monthlyRentPayments(bTenantOg, "2020-10", "2026-05", 61_000, 19_000),
-    ...monthlyRentPayments(bTenantDg, "2022-01", "2026-05", 95_000, 22_000),
-    ...monthlyRentPayments(cTenantEg, "2024-06", "2026-05", 99_000, 28_000),
-    ...monthlyRentPayments(cTenantOg, "2019-03", "2026-05", 99_000, 30_000),
+    ...monthlyRentPayments(bTenantEg, "2023-04", monthsAgo(2), 60_000, 19_000),
+    ...monthlyRentPayments(bTenantOg, "2020-10", monthsAgo(2), 61_000, 19_000),
+    ...monthlyRentPayments(bTenantDg, "2022-01", monthsAgo(2), 95_000, 22_000),
+    ...monthlyRentPayments(cTenantEg, "2024-06", monthsAgo(2), 99_000, 28_000),
+    ...monthlyRentPayments(cTenantOg, "2019-03", monthsAgo(2), 99_000, 30_000),
     {
       id: nid(),
       tenantId: bTenantOg,
