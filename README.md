@@ -15,9 +15,21 @@ Betriebskosten verwalten und daraus Nebenkostenabrechnungen als PDF erstellen.
 - Heizkosten nach HeizkostenV inkl. Warmwasser-Abspaltung und CO2-Kostenaufteilung
 - Optionales KI-Vorausfüllen von Lieferantenrechnungen (Mistral, OpenAI, Anthropic, Gemini oder lokal per Ollama)
 
-Die App unterstützt nur Wohnraumvermietung. Eine gewerbliche Vermietung wäre für
-dieses Projekt viel zu aufwändig. Brutto, Netto, Steuerausweis, andere Fristen,
-andere CO2-Verteilungen bei Heizkosten, etc.
+## Bekannte Grenzen
+
+- **Nur Wohnraumvermietung.** Eine gewerbliche Vermietung wäre für dieses Projekt
+  viel zu aufwändig: Brutto, Netto, Steuerausweis, andere Fristen, andere
+  CO2-Verteilungen bei Heizkosten, etc.
+- **Ersatzverfahren nach § 9a HeizkostenV nur als Flächen-Fallback.** Fällt die
+  Verbrauchserfassung aus, verteilt die App die betroffenen Kosten nach Fläche und
+  weist das in der Abrechnung samt Hinweis auf das Kürzungsrecht aus. Der vom
+  Gesetz vorgesehene Ersatzwert aus einem Vergleichszeitraum oder aus vergleichbaren
+  Räumen ist nicht geführt umgesetzt, ebenso wenig die 25-%-Grenze. Geschätzte
+  Ablesungen lassen sich von Hand erfassen; sie werden im PDF ausgewiesen.
+- **Keine unterjährige Verbrauchsinformation nach § 6a Abs. 1 und 2 HeizkostenV.**
+  Bei fernablesbaren Geräten sind Mieter monatlich über ihren Verbrauch zu
+  informieren. Die App erzeugt und versendet diese Mitteilungen nicht; sie deckt
+  nur die Jahresabrechnung ab.
 
 ## Stack
 
