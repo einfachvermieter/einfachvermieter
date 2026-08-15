@@ -50,6 +50,7 @@ export const BuildingForm = ({
         {fields}
       </SectionCard>
       <Savebar
+        dirty={form.formState.isDirty}
         savedAt={savedAt}
         submitting={submitting}
         onCancel={onCancel}

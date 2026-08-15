@@ -5,7 +5,6 @@ import {
   type MonthGridRow,
   type PaymentFormValues,
   type PaymentPurposeKind,
-  type PotState,
   pad2,
   pad4,
   paymentFormSchema,
@@ -29,6 +28,9 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { FieldGroup } from "@/components/ui/Field";
 import { formatForMonth } from "@/lib/dateInput";
 import {
+  type MonthStatus,
+  monthStatus,
+  tenantFeesQueryOptions,
   tenantMonthGridQueryOptions,
   tenantSettlementsQueryOptions,
 } from "../../../lib/accounts";
@@ -125,7 +127,7 @@ export const PaymentForm = ({
     const options = sorted.map((row) => ({
       value: row.forMonth,
       label: `${formatForMonth(row.forMonth)} – ${t(
-        `ui.account.status.${monthOverallStatus(row)}`,
+        `ui.account.status.${monthStatus(row.baseRent, row.advance, row.forMonth)}`,
       )}`,
     }));
 
@@ -169,6 +171,28 @@ export const PaymentForm = ({
 
     return options;
   }, [settlementRows, forStatementId]);
+
+  const forFeeId = form.watch("forFeeId");
+  const { data: feeRows } = useQuery({
+    ...tenantFeesQueryOptions(tenantId),
+    enabled: purposeKind === "fee" && tenantId.length > 0,
+  });
+
+  const feeOptions = useMemo<SelectOption[]>(() => {
+    const options = (feeRows ?? []).map((row) => ({
+      value: row.feeId,
+      label: t("ui.payments.fields.forFeeOption", {
+        reason: row.reason,
+        date: formatDate(row.date),
+      }),
+    }));
+
+    if (forFeeId && !options.some((option) => option.value === forFeeId)) {
+      options.unshift({ value: forFeeId, label: forFeeId });
+    }
+
+    return options;
+  }, [feeRows, forFeeId]);
 
   // Wechselt der User von "Summe" zu "Getrennt" und die Eingabe-Felder
   // sind noch leer, übernehmen wir das, was bisher in "sumInput" steht,
@@ -343,6 +367,16 @@ export const PaymentForm = ({
         />
       ) : null}
 
+      {purposeKind === "fee" ? (
+        <SelectInput
+          control={form.control}
+          name="forFeeId"
+          label={t("ui.payments.fields.forFee")}
+          options={feeOptions}
+          disabled={lockedPurposeKind === "fee"}
+        />
+      ) : null}
+
       {purposeKind !== "month" ? (
         <TextInput
           control={form.control}
@@ -445,6 +479,7 @@ export const PaymentForm = ({
         </Card>
       </fieldset>
       <Savebar
+        dirty={form.formState.isDirty}
         savedAt={savedAt}
         submitting={submitting}
         onCancel={onCancel}
@@ -458,23 +493,6 @@ export const PaymentForm = ({
   );
 };
 
-const monthOverallStatus = (row: MonthGridRow): PotState["status"] => {
-  const statuses: PotState["status"][] = [
-    row.baseRent.status,
-    row.advance.status,
-  ];
-
-  if (statuses.includes("open")) {
-    return "open";
-  }
-
-  if (statuses.includes("credit")) {
-    return "credit";
-  }
-
-  return "balanced";
-};
-
 const ContractInfo = ({
   row,
   mode,
@@ -485,7 +503,7 @@ const ContractInfo = ({
   const totalSoll = row.baseRent.sollCents + row.advance.sollCents;
   const totalIst = row.baseRent.istCents + row.advance.istCents;
   const recordedCount = row.paymentIds.length;
-  const status = monthOverallStatus(row);
+  const status = monthStatus(row.baseRent, row.advance, row.forMonth);
   const headingKey =
     mode === "edit"
       ? "ui.payments.contract.alreadyPaidHeadingInclCurrent"
@@ -523,7 +541,7 @@ const ContractInfo = ({
 };
 
 const alertVariantForStatus = (
-  status: PotState["status"],
+  status: MonthStatus,
 ): "success" | "warning" | "info" => {
   if (status === "balanced") {
     return "success";

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
+import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
@@ -138,17 +139,14 @@ const tenantColumns = (
         return t("common.loadingShort");
       }
 
+      // Kontosaldo ist aus Mietersicht signiert, die Anzeige aus Vermietersicht
       return (
         <Link
           to="/mieter/$tenantId/konto"
           params={{ tenantId: row.original.id }}
-          className={
-            summary.balanceCents < 0
-              ? "text-rose-600 underline-offset-4 hover:underline dark:text-rose-400"
-              : "underline-offset-4 hover:underline"
-          }
+          className="underline-offset-4 hover:underline"
         >
-          {formatEur(summary.balanceCents)}
+          <BalanceAmount receivableCents={-summary.balanceCents} />
         </Link>
       );
     },

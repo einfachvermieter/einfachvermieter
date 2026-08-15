@@ -163,7 +163,11 @@ export const PaymentCreatePage = () => {
           key={initialTenantId}
           mode="create"
           tenantOptions={tenantOptions}
-          allowedPurposeKinds={["month", "statement"]}
+          allowedPurposeKinds={
+            // Kaution und Gebühr kommen nur über den festen Zweck herein;
+            // ohne sie in der Liste bliebe das gesperrte Feld leer.
+            searchPurposeKind ? [searchPurposeKind] : ["month", "statement"]
+          }
           lockedPurposeKind={searchPurposeKind}
           defaultValues={defaultValues}
           onSubmit={async (values) => {

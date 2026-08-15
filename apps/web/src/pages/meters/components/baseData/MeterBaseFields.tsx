@@ -1,4 +1,5 @@
 import {
+  buildMeterLabel,
   isDifferenceCapableType,
   isRemoteReadableRelevantType,
   isUnitScopedRole,
@@ -41,7 +42,25 @@ export const MeterBaseFields = ({
   const selectedBuildingId = form.watch("buildingId");
   const selectedRole = form.watch("role");
   const selectedType = form.watch("type");
+  const selectedRoom = form.watch("room");
+  const selectedRadiator = form.watch("radiator");
   const isVirtual = selectedRole === "virtual_difference";
+
+  /**
+   * Vorschlag im Platzhalter: der Name, der ohne eigene Eingabe entsteht
+   */
+  const suggestedLabel = buildMeterLabel(
+    {
+      type: selectedType,
+      role: selectedRole,
+      room: selectedRoom === "" ? null : selectedRoom,
+      radiator:
+        selectedType === "heat_cost_allocator" && selectedRadiator !== ""
+          ? selectedRadiator
+          : null,
+    },
+    t,
+  );
   const showUnitField = isUnitScopedRole(selectedRole);
 
   const scopedUnits = units.filter(
@@ -85,6 +104,14 @@ export const MeterBaseFields = ({
     >
       <FieldGroup className="gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <TextInput
+            control={form.control}
+            name="label"
+            label={t("ui.meters.fields.label")}
+            optional={true}
+            placeholder={suggestedLabel}
+            description={t("ui.meters.fields.labelDescription")}
+          />
           <SelectInput
             control={form.control}
             name="type"

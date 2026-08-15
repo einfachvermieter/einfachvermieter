@@ -33,7 +33,12 @@ export const HeatingForm = ({
           hotWaterMeterCandidates={hotWaterMeterCandidates}
         />
       </fieldset>
-      <Savebar savedAt={savedAt} submitting={submitting} onCancel={onCancel} />
+      <Savebar
+        dirty={form.formState.isDirty}
+        savedAt={savedAt}
+        submitting={submitting}
+        onCancel={onCancel}
+      />
     </Form>
   );
 };

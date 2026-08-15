@@ -208,7 +208,11 @@ export const SenderSettingsForm = ({
           </SectionCard>
         </div>
       </fieldset>
-      <Savebar submitting={submitting} onCancel={onCancel} />
+      <Savebar
+        dirty={form.formState.isDirty}
+        submitting={submitting}
+        onCancel={onCancel}
+      />
     </Form>
   );
 };

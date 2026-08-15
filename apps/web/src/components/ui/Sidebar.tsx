@@ -321,8 +321,10 @@ const SidebarRail = ({ className, ...props }: ComponentProps<"button">) => {
   );
 };
 
-const SidebarInset = ({ className, ...props }: ComponentProps<"main">) => (
-  <main
+// Nur ein <main> je Seite: die Hauptlandmarke sitzt im AppShell-Inhalt, der
+// Inset ist bloß der Scroll-Container daneben.
+const SidebarInset = ({ className, ...props }: ComponentProps<"div">) => (
+  <div
     data-slot="sidebar-inset"
     className={cn(
       "relative flex w-full min-w-0 min-h-0 flex-1 flex-col overflow-y-auto bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",

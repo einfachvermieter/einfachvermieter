@@ -137,7 +137,7 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
       description={t("ui.statements.detail.operatingCostsDescription")}
     >
       <div className="space-y-4">
-        <div className="overflow-x-auto">
+        <div className="scroll-shadow-x overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className={QUIET_TABLE_HEAD_ROW}>

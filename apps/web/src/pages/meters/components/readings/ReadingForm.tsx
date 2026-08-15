@@ -28,6 +28,7 @@ export const ReadingForm = ({
   submitting = false,
   warnIfBefore = null,
   otherReadings = [],
+  settledPeriods = [],
 }: {
   defaultValues: ReadingFormValues;
   onSubmit: (values: ReadingSubmitValues) => Promise<void>;
@@ -38,6 +39,11 @@ export const ReadingForm = ({
    * Übrige Ablesungen desselben Zählers (ohne den gerade bearbeiteten)
    */
   otherReadings?: { readingDate: string; value: number }[];
+
+  /**
+   * Zeiträume festgeschriebener Abrechnungen
+   */
+  settledPeriods?: { start: string; end: string }[];
 }) => {
   const form = useForm<ReadingFormValues>({
     resolver: zodResolver(readingFormSchema),
@@ -61,6 +67,10 @@ export const ReadingForm = ({
     (reading) => reading.readingDate > watchedDate,
   );
 
+  const showSettledWarning = settledPeriods.some(
+    (period) => watchedDate >= period.start && watchedDate <= period.end,
+  );
+
   const showNonMonotonicWarning =
     watchedDate !== "" &&
     !Number.isNaN(parsedValue) &&
@@ -79,6 +89,14 @@ export const ReadingForm = ({
             {t("ui.reading.olderDateWarningDescription", {
               date: formatDate(warnIfBefore),
             })}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {showSettledWarning ? (
+        <Alert variant="warning">
+          <AlertTitle>{t("ui.reading.settledWarningTitle")}</AlertTitle>
+          <AlertDescription>
+            {t("ui.reading.settledWarningDescription")}
           </AlertDescription>
         </Alert>
       ) : null}

@@ -11,9 +11,7 @@ import {
   MeterReadingSchema,
   MeterSchema,
 } from "@einfachvermieter/db";
-import { createTranslate } from "@einfachvermieter/i18n";
 import {
-  buildMeterLabel,
   type GasFactorCreateDto,
   type MeterCreateDto,
   type MeterDifferenceConfigDto,
@@ -171,17 +169,8 @@ export class MetersService {
       differenceConfig ?? null,
     );
 
-    const label = buildMeterLabel(
-      {
-        type: meterValues.type,
-        role: meterValues.role,
-        room: meterValues.room ?? null,
-      },
-      createTranslate(getI18n()),
-    );
-
     return this.em.transactional(async (em) => {
-      const created = em.create(MeterSchema, { ...meterValues, label });
+      const created = em.create(MeterSchema, meterValues);
 
       em.persist(created);
       await em.flush();
@@ -258,14 +247,6 @@ export class MetersService {
     }
 
     const merged = { ...existing, ...meterPatch };
-    const label = buildMeterLabel(
-      {
-        type: merged.type,
-        role: merged.role,
-        room: merged.room ?? null,
-      },
-      createTranslate(getI18n()),
-    );
 
     if (gasFactors !== undefined) {
       this.assertGasFactorsValid(merged.type, gasFactors);
@@ -315,7 +296,6 @@ export class MetersService {
 
       em.assign(updated, {
         ...meterPatch,
-        label,
         updatedAt: new Date().toISOString(),
       });
       await em.flush();

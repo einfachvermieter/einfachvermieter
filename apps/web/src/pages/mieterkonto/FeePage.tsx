@@ -205,6 +205,7 @@ export const FeePage = () => {
             </CardContent>
           </Card>
           <Savebar
+            dirty={form.formState.isDirty}
             savedAt={
               existing?.updatedAt
                 ? formatDate(existing.updatedAt.slice(0, 10))

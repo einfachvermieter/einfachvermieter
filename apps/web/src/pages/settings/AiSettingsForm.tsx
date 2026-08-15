@@ -221,7 +221,11 @@ export const AiSettingsForm = ({
           </p>
         </div>
       </fieldset>
-      <Savebar submitting={submitting} onCancel={onCancel} />
+      <Savebar
+        dirty={form.formState.isDirty}
+        submitting={submitting}
+        onCancel={onCancel}
+      />
     </Form>
   );
 };

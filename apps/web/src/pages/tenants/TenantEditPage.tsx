@@ -7,6 +7,7 @@ import {
 import { RiDeleteBinLine, RiWallet3Line } from "@remixicon/react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { ActionLink } from "../../components/common/ActionLink";
 import { InfoCard } from "../../components/common/InfoCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
@@ -15,7 +16,11 @@ import { tenantBalanceQueryOptions } from "../../lib/accounts";
 import { api } from "../../lib/api";
 import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
-import { type TenantAggregate, tenantQueryOptions } from "../../lib/tenants";
+import {
+  currentResidentCount,
+  type TenantAggregate,
+  tenantQueryOptions,
+} from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useDeleteResource } from "../../lib/useDeleteResource";
@@ -63,13 +68,16 @@ export const TenantEditPage = () => {
   const { tenant } = aggregate;
   const unit = units?.find((entry) => entry.id === tenant.unitId);
 
+  // Bewohner-Stand aus dem Formular; null, solange nichts gemeldet wurde
+  const [formResidentCount, setFormResidentCount] = useState<number | null>(
+    null,
+  );
+
   const today = todayIso();
 
-  const currentOccupants = aggregate.residents.filter((resident) => {
-    const moveIn = resident.moveInDate ?? tenant.startDate;
-    const moveOut = resident.moveOutDate ?? tenant.endDate;
-    return moveIn <= today && (moveOut === null || moveOut >= today);
-  }).length;
+  const currentOccupants =
+    formResidentCount ??
+    currentResidentCount(aggregate.residents, tenant, today);
 
   const balanced = balance ? balance.balanceCents >= 0 : undefined;
 
@@ -95,6 +103,7 @@ export const TenantEditPage = () => {
               await updateTenant.mutateAsync(values);
             }}
             onCancel={goToList}
+            onResidentsChange={setFormResidentCount}
           />
 
           <div className="flex flex-col gap-4 xl:sticky xl:top-24">

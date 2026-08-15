@@ -6,6 +6,7 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
+import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { IconTile } from "../../components/common/IconTile";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -82,17 +83,7 @@ export const TenantHero = ({
     ? [
         {
           label: t("ui.account.balanceLabel"),
-          value: (
-            <span
-              className={
-                balance.balanceCents < 0
-                  ? "text-rose-600 dark:text-rose-400"
-                  : undefined
-              }
-            >
-              {formatEur(balance.balanceCents)}
-            </span>
-          ),
+          value: <BalanceAmount receivableCents={-balance.balanceCents} />,
         },
         {
           label: t("ui.account.depositLabel"),

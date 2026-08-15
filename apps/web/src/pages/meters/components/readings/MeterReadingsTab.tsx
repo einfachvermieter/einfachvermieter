@@ -9,6 +9,7 @@ import {
   ResponsiveDialogTitle,
 } from "@/components/common/ResponsiveDialog";
 import { RowActionButton, RowActions } from "@/components/RowActions";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -37,12 +38,19 @@ import type {
   ReadingFormValues,
   ReadingSubmitValues,
 } from "./readingForm.schema";
+import { isInSettledPeriod, useSettledPeriods } from "./useSettledPeriods";
 
 /**
  * Eine Zählerstands-Zeile inkl. berechnetem Verbrauch
  */
+const skeletonRowKeys = Array.from(
+  { length: 5 },
+  (_, index) => `reading-skeleton-${index}`,
+);
+
 const ReadingRow = ({
   reading,
+  settled,
   previous,
   valueDecimals,
   showConsumption,
@@ -52,6 +60,7 @@ const ReadingRow = ({
   onEdit,
 }: {
   reading: Reading;
+  settled: boolean;
   previous: Reading | undefined;
   valueDecimals: number;
   showConsumption: boolean;
@@ -84,13 +93,24 @@ const ReadingRow = ({
         />
       </TableCell>
       <TableCell className="px-4 py-3 tabular-nums">
-        {formatDate(reading.readingDate)}
+        <span className="flex items-center gap-2">
+          {formatDate(reading.readingDate)}
+          {settled ? (
+            <Badge variant="slate">{t("ui.reading.settledBadge")}</Badge>
+          ) : null}
+        </span>
       </TableCell>
       <TableCell className="px-4 py-3 text-right font-semibold tabular-nums">
         {numberFormat(reading.value, false)}
       </TableCell>
       {showConsumption ? (
-        <TableCell className="px-4 py-3 text-right tabular-nums text-muted-foreground">
+        <TableCell
+          className={
+            delta !== null && delta < 0
+              ? "px-4 py-3 text-right tabular-nums text-rose-600 dark:text-rose-400"
+              : "px-4 py-3 text-right tabular-nums text-muted-foreground"
+          }
+        >
           {delta === null
             ? t("ui.common.emptyValue")
             : numberFormat(delta, true)}
@@ -126,10 +146,12 @@ const decimalPlaces = (value: number): number => {
 
 export const MeterReadingsTab = ({
   meterId,
+  buildingId,
   measurementUnit,
   role,
 }: {
   meterId: string;
+  buildingId: string;
   measurementUnit: MeasurementUnit;
   role: MeterRole;
 }) => {
@@ -157,6 +179,10 @@ export const MeterReadingsTab = ({
 
   const latestReadingDate = sorted[0]?.readingDate;
 
+  const settledPeriods = useSettledPeriods(buildingId);
+  const isSettled = (date: string): boolean =>
+    isInSettledPeriod(settledPeriods, date);
+
   const createMutation = useCrudMutation({
     mutationFn: (dto: ReadingSubmitValues) =>
       api.post<Reading>("/meters/readings", { ...dto, meterId }),
@@ -176,9 +202,13 @@ export const MeterReadingsTab = ({
     invalidateKeys: [["readings", meterId]],
     title: t("ui.reading.confirmDelete"),
     describe: (reading) =>
-      t("ui.reading.confirmDeleteMessage", {
-        date: formatDate(reading.readingDate),
-      }),
+      isSettled(reading.readingDate)
+        ? t("ui.reading.confirmDeleteSettledMessage", {
+            date: formatDate(reading.readingDate),
+          })
+        : t("ui.reading.confirmDeleteMessage", {
+            date: formatDate(reading.readingDate),
+          }),
   });
 
   const dialogOpen = editTarget !== null;
@@ -210,11 +240,6 @@ export const MeterReadingsTab = ({
         readBy: "landlord",
         notes: "",
       };
-
-  const skeletonRowKeys = useMemo(
-    () => Array.from({ length: 5 }, (_, index) => `reading-skeleton-${index}`),
-    [],
-  );
 
   const renderBody = () => {
     if (isVirtual) {
@@ -297,6 +322,7 @@ export const MeterReadingsTab = ({
                 <ReadingRow
                   key={reading.id}
                   reading={reading}
+                  settled={isSettled(reading.readingDate)}
                   previous={sorted[index + 1]}
                   valueDecimals={valueDecimals}
                   showConsumption={showConsumption}
@@ -347,6 +373,7 @@ export const MeterReadingsTab = ({
             <ReadingForm
               defaultValues={defaultValues}
               warnIfBefore={dialogEntry ? null : (latestReadingDate ?? null)}
+              settledPeriods={settledPeriods}
               otherReadings={otherReadings}
               onSubmit={async (values) => {
                 if (dialogEntry) {

@@ -47,7 +47,7 @@ export const OccupancyCard = ({
       title={t("ui.statements.detail.occupancyTitle")}
       description={t("ui.statements.detail.occupancyDescription")}
     >
-      <div className="overflow-x-auto">
+      <div className="scroll-shadow-x overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className={QUIET_TABLE_HEAD_ROW}>

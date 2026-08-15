@@ -40,6 +40,21 @@ export type TenantResidentLink = {
 };
 
 /**
+ * Zahl der heute im Vertrag wohnenden Bewohner. Fehlende Ein-/Auszugsdaten
+ * gelten als Vertragsbeginn bzw. -ende.
+ */
+export const currentResidentCount = (
+  residents: { moveInDate: string | null; moveOutDate: string | null }[],
+  contract: { startDate: string; endDate: string | null },
+  today: string,
+): number =>
+  residents.filter((resident) => {
+    const moveIn = resident.moveInDate ?? contract.startDate;
+    const moveOut = resident.moveOutDate ?? contract.endDate;
+    return moveIn <= today && (moveOut === null || moveOut >= today);
+  }).length;
+
+/**
  * Namen der Vertragspartner eines Mietvertrags als kommaseparierte Liste,
  * die identifizierende Bezeichnung des Vertrags für Überschriften,
  * Breadcrumbs und Tab-Titel.

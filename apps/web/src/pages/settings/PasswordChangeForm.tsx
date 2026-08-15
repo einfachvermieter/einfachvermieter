@@ -108,7 +108,11 @@ export const PasswordChangeForm = ({
           </FieldGroup>
         </SectionCard>
       </fieldset>
-      <Savebar submitting={submitting} onCancel={onCancel} />
+      <Savebar
+        dirty={form.formState.isDirty}
+        submitting={submitting}
+        onCancel={onCancel}
+      />
     </Form>
   );
 };

@@ -54,6 +54,7 @@ export const CostEntryForm = ({
         </div>
       </fieldset>
       <Savebar
+        dirty={form.formState.isDirty}
         savedAt={savedAt}
         submitting={submitting}
         onCancel={onCancel}

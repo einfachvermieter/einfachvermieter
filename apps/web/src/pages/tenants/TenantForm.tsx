@@ -3,14 +3,17 @@ import {
   type TenantSaveDto,
   tenantFormSchemaRefined,
   tenantFormToDto,
+  todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Form } from "@/components/form/Form";
 import { FormSyncPrompt } from "@/components/form/FormSyncPrompt";
 import { Savebar } from "@/components/form/Savebar";
 import { useFormSync } from "@/components/form/useFormSync";
 import { t } from "../../lib/i18n";
+import { currentResidentCount } from "../../lib/tenants";
 import type { Unit } from "../../lib/units";
 import { Addresses } from "./components/addresses/Addresses";
 import { BankAccounts } from "./components/bankAccounts/BankAccounts";
@@ -27,6 +30,7 @@ export const TenantForm = ({
   onSubmit,
   onCancel,
   savedAt,
+  onResidentsChange,
 }: {
   mode: "create" | "edit";
   units: Unit[];
@@ -37,6 +41,12 @@ export const TenantForm = ({
 
   /** Formatierter Speicherzeitpunkt für die Savebar (nur mode="edit") */
   savedAt?: string;
+
+  /**
+   * Meldet den Bewohner-Stand des Formulars nach außen, damit die Infospalte
+   * nicht den älteren Serverstand neben der bearbeiteten Liste zeigt
+   */
+  onResidentsChange?: (count: number) => void;
 }) => {
   const form = useForm<TenantFormValues>({
     resolver: zodResolver(tenantFormSchemaRefined),
@@ -51,6 +61,32 @@ export const TenantForm = ({
   const tenantEndDate = form.watch("endDate");
   const kindValue = form.watch("kind");
   const showRentsAndBankAccounts = kindValue !== "owner";
+  const residents = form.watch("residents");
+
+  // Leere Datumsfelder sind im Formular "", außerhalb aber null
+  const residentCount = currentResidentCount(
+    residents.map((resident) => ({
+      moveInDate: resident.moveInDate === "" ? null : resident.moveInDate,
+      moveOutDate: resident.moveOutDate === "" ? null : resident.moveOutDate,
+    })),
+    {
+      startDate: tenantStartDate,
+      endDate: tenantEndDate === "" ? null : tenantEndDate,
+    },
+    todayIso(),
+  );
+
+  // Nur echte Änderungen melden: `residents` ist bei jedem Render ein neues
+  // Array, ein ungefiltertes Melden würde die Elternseite endlos neu rendern.
+  const reportedCount = useRef<number | null>(null);
+  useEffect(() => {
+    if (reportedCount.current === residentCount) {
+      return;
+    }
+
+    reportedCount.current = residentCount;
+    onResidentsChange?.(residentCount);
+  }, [onResidentsChange, residentCount]);
 
   return (
     <Form form={form} onSubmit={(values) => onSubmit(tenantFormToDto(values))}>
@@ -88,6 +124,7 @@ export const TenantForm = ({
         <NotesSection form={form} />
       </fieldset>
       <Savebar
+        dirty={form.formState.isDirty}
         savedAt={savedAt}
         submitting={submitting}
         onCancel={onCancel}

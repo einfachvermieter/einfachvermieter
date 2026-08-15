@@ -195,7 +195,7 @@ export const ClimateFactorsCard = ({
             </AlertDescription>
           </Alert>
         ) : null}
-        <div className="overflow-x-auto">
+        <div className="scroll-shadow-x overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-muted-foreground">

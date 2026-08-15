@@ -41,7 +41,7 @@ export const TaxableLaborCard = ({ detail }: { detail: TaxableLaborCosts }) => {
                 {categoryTitle(category)}
               </h3>
               {group ? (
-                <div className="overflow-x-auto">
+                <div className="scroll-shadow-x overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className={QUIET_TABLE_HEAD_ROW}>

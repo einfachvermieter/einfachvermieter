@@ -2,10 +2,11 @@ import type {
   DepositRow,
   FeeRow,
   MonthGridRow,
+  PotState,
   SettlementRow,
   TenantBalanceResult,
 } from "@einfachvermieter/shared";
-import { formatDate } from "@einfachvermieter/shared";
+import { formatDate, todayIso } from "@einfachvermieter/shared";
 import { queryOptions } from "@tanstack/react-query";
 import { api } from "./api";
 import { t } from "./i18n";
@@ -116,3 +117,52 @@ export const tenantFeesQueryOptions = (tenantId: string) =>
     queryKey: ["accounts", "fees", tenantId],
     queryFn: () => api.get<FeeRow[]>(`/accounts/${tenantId}/fees`),
   });
+
+export type MonthStatus =
+  | "balanced"
+  | "credit"
+  | "partial"
+  | "open"
+  | "upcoming";
+
+/**
+ * Die Miete ist nach § 556b BGB zu Monatsbeginn fällig. Bis zum dritten Tag
+ * des laufenden Monats gilt sie noch als "noch nicht fällig", danach als
+ * offen. Künftige Monate sind immer "noch nicht fällig".
+ */
+const isUpcomingMonth = (forMonth: string, today: string): boolean => {
+  const currentMonth = today.slice(0, 7);
+  if (forMonth > currentMonth) {
+    return true;
+  }
+
+  return forMonth === currentMonth && Number(today.slice(8, 10)) <= 3;
+};
+
+/**
+ * Zusammengefasster Status eines Mietmonats aus Kaltmiete und
+ * NK-Vorauszahlung. Ohne `forMonth` (Jahres-Summenzeile) entfällt die
+ * Fälligkeitsprüfung.
+ */
+export const monthStatus = (
+  baseRent: PotState,
+  advance: PotState,
+  forMonth?: string,
+): MonthStatus => {
+  const pots = [baseRent, advance];
+  if (pots.every((pot) => pot.status === "balanced")) {
+    return "balanced";
+  }
+
+  if (pots.some((pot) => pot.status === "open")) {
+    if (baseRent.istCents !== 0 || advance.istCents !== 0) {
+      return "partial";
+    }
+
+    return forMonth !== undefined && isUpcomingMonth(forMonth, todayIso())
+      ? "upcoming"
+      : "open";
+  }
+
+  return "credit";
+};

@@ -1,9 +1,10 @@
-import { formatDate, formatEur, formatName } from "@einfachvermieter/shared";
+import { formatDate, formatName } from "@einfachvermieter/shared";
 import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
+import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { IconTile } from "../../components/common/IconTile";
@@ -175,16 +176,7 @@ export const StatementsPage = () => {
             );
           }
           return (
-            <span
-              className={
-                balanceCents > 0
-                  ? "font-semibold text-rose-700"
-                  : "font-semibold text-teal-700"
-              }
-            >
-              {balanceCents > 0 ? "+" : ""}
-              {formatEur(balanceCents)}
-            </span>
+            <BalanceAmount receivableCents={balanceCents} wording="statement" />
           );
         },
         meta: {

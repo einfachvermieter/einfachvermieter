@@ -8,7 +8,7 @@ import { api } from "../../lib/api";
 import { dateToIso } from "../../lib/dateInput";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
-import type { Statement } from "../../lib/statements";
+import { type Statement, statementsQueryOptions } from "../../lib/statements";
 import { tenantsOverviewQueryOptions } from "../../lib/tenants";
 import { useGoBack } from "../../lib/useGoBack";
 import { StatementForm } from "./forms/StatementForm";
@@ -23,6 +23,10 @@ export const StatementCreatePage = () => {
     tenantsOverviewQueryOptions({ page: 0, pageSize: 1000 }),
   );
   const tenants = tenantsResult?.items ?? [];
+  const { data: statements } = useQuery(statementsQueryOptions);
+  const existingDrafts = (statements ?? []).filter(
+    (statement) => statement.status === "draft",
+  );
 
   const currentYear = new Date().getFullYear();
 
@@ -54,6 +58,7 @@ export const StatementCreatePage = () => {
       {buildingId ? (
         <StatementForm
           tenants={tenants}
+          existingDrafts={existingDrafts}
           defaultValues={{
             buildingId,
             tenantId: "",

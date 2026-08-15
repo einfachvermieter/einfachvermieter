@@ -359,6 +359,7 @@ export type MeterFormValues = {
   buildingId: string;
   type: MeterType;
   role: MeterRole;
+  label: string;
   serialNumber: string;
   unitId: string;
   room: string;
@@ -390,6 +391,7 @@ export const meterFormSchema = z
       .pipe(z.guid()),
     type: z.enum(meterTypes),
     role: z.enum(meterRoles),
+    label: z.string().max(200, messageKey("validation.tooLong", { max: 200 })),
     serialNumber: z
       .string()
       .max(100, messageKey("validation.tooLong", { max: 100 })),
@@ -569,15 +571,18 @@ export const meterFormToDto = (
   translate: TranslateFn,
 ): MeterCreateDto => {
   const isHkv = values.type === "heat_cost_allocator";
-  const label = buildMeterLabel(
-    {
-      type: values.type,
-      role: values.role,
-      room: values.room === "" ? null : values.room,
-      radiator: isHkv && values.radiator !== "" ? values.radiator : null,
-    },
-    translate,
-  );
+  const label =
+    values.label.trim() === ""
+      ? buildMeterLabel(
+          {
+            type: values.type,
+            role: values.role,
+            room: values.room === "" ? null : values.room,
+            radiator: isHkv && values.radiator !== "" ? values.radiator : null,
+          },
+          translate,
+        )
+      : values.label.trim();
 
   const isGas = values.type === "gas";
   const blank = (s: string) => (s === "" ? null : s);

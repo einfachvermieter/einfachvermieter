@@ -33,6 +33,7 @@ export const MeterReadingsPage = () => {
         <div className="mt-6">
           <MeterReadingsTab
             meterId={meterId}
+            buildingId={meter.buildingId}
             measurementUnit={meter.measurementUnit}
             role={meter.role}
           />

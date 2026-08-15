@@ -1,4 +1,4 @@
-import { RiCheckLine } from "@remixicon/react";
+import { RiCheckLine, RiEditLine } from "@remixicon/react";
 import { Spinner } from "@/components/common/Spinner";
 import { Button } from "@/components/ui/Button";
 import { t } from "@/lib/i18n";
@@ -11,11 +11,13 @@ import { t } from "@/lib/i18n";
  */
 export const Savebar = ({
   savedAt,
+  dirty = false,
   submitting,
   onCancel,
   submitLabel = t("ui.common.action.save"),
 }: {
   savedAt?: string;
+  dirty?: boolean;
   submitting: boolean;
   onCancel: () => void;
   submitLabel?: string;
@@ -24,7 +26,13 @@ export const Savebar = ({
     {/* Content-Breite aus AppShell (max-w-310 + Safe-Area-Padding),
         damit Status und Buttons mit den Cards ausgereichtet sind */}
     <div className="mx-auto flex w-full max-w-310 items-center gap-3.5">
-      {savedAt ? (
+      {dirty ? (
+        <span className="flex items-center gap-1.75 text-[12.5px] text-amber-700 dark:text-amber-400">
+          <RiEditLine aria-hidden={true} className="size-3.75" />
+          {t("ui.common.savebar.unsavedChanges")}
+        </span>
+      ) : null}
+      {savedAt && !dirty ? (
         <span className="flex items-center gap-1.75 text-[12.5px] text-slate-400">
           <RiCheckLine aria-hidden={true} className="size-3.75 text-teal-600" />
           {t("ui.common.savebar.lastSaved", { date: savedAt })}

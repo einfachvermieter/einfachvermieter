@@ -16,6 +16,14 @@ export const AccountStatusBadge = ({ pot }: { pot: PotState }) => {
     return <Badge variant="lightBlue">{t("ui.account.status.credit")}</Badge>;
   }
 
+  // Bei negativem Soll steht eine Erstattung an den Mieter aus, keine
+  // Forderung gegen ihn.
+  if (pot.sollCents < 0) {
+    return (
+      <Badge variant="lightBlue">{t("ui.account.status.refundOpen")}</Badge>
+    );
+  }
+
   // Offener Posten: teilweise gezahlt (Warnung) vs. gar nichts gezahlt.
   if (pot.istCents !== 0) {
     return (

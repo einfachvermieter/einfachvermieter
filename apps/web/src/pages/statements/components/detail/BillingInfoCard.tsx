@@ -51,7 +51,7 @@ export const BillingInfoCard = ({
             <h3 className="mb-2.5 font-semibold text-foreground">
               {t("statements.pdf.billingInfo.energyTitle")}
             </h3>
-            <div className="overflow-x-auto">
+            <div className="scroll-shadow-x overflow-x-auto">
               <table className="w-full text-sm">
                 <tbody>
                   {rows.map((row) => (
@@ -79,7 +79,7 @@ export const BillingInfoCard = ({
             <h3 className="mb-2.5 font-semibold text-foreground">
               {t("statements.pdf.billingInfo.costsTitle")}
             </h3>
-            <div className="overflow-x-auto">
+            <div className="scroll-shadow-x overflow-x-auto">
               <table className="w-full text-sm">
                 <tbody>
                   {costRows.map((row) => (
@@ -103,7 +103,7 @@ export const BillingInfoCard = ({
               {t("statements.pdf.billingInfo.comparisonTitle")}
               <sup>{FOOTNOTE_MARKER}</sup>
             </h3>
-            <div className="overflow-x-auto">
+            <div className="scroll-shadow-x overflow-x-auto">
               <table className="w-full text-sm">
                 <tbody>
                   {comparison.rows.map((row) => (

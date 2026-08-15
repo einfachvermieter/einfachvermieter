@@ -14,6 +14,7 @@ import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
 import {
+  allocationLabel,
   costTypeCategoryLabel,
   laborCostCategoryLabel,
 } from "../../../../lib/costs";
@@ -43,6 +44,7 @@ export const CostTypeBaseFields = ({
 }) => {
   const selectedCategory = form.watch("category");
   const isHeating = selectedCategory === "heating";
+  const watchedAllocationKey = form.watch("defaultAllocationKey");
   const buildingId = form.watch("buildingId");
   const co2Tracked = form.watch("co2Tracked");
   const hasLaborCategory =
@@ -72,14 +74,14 @@ export const CostTypeBaseFields = ({
     heatingConfigs.isSuccess &&
     !anyConfigUsesCo2;
 
-  useEffect(() => {
-    if (
-      isHeating &&
-      form.getValues("defaultAllocationKey") !== ALLOCATION_KEY_NONE
-    ) {
-      form.setValue("defaultAllocationKey", ALLOCATION_KEY_NONE);
-    }
+  // Heizkosten laufen über die HeizkostenV, der Umlageschlüssel entfällt dort.
+  // Er bleibt aber im Formular stehen, damit ein Wechsel zurück ihn behält.
+  const droppedAllocationKey =
+    isHeating && watchedAllocationKey !== ALLOCATION_KEY_NONE
+      ? watchedAllocationKey
+      : null;
 
+  useEffect(() => {
     // CO2-Erfassung und Erfassungsentgelt-Kennzeichen gibt es nur für
     // Heizkosten, bei Wechsel auf Betriebskosten die Flags zurücksetzen
     if (!isHeating && form.getValues("co2Tracked")) {
@@ -129,6 +131,16 @@ export const CostTypeBaseFields = ({
           control={form.control}
           name="defaultAllocationKey"
         />
+      )}
+
+      {droppedAllocationKey === null ? null : (
+        <Alert variant="warning">
+          <AlertDescription>
+            {t("ui.costs.typeFields.allocationKeyDroppedWarning", {
+              key: allocationLabel(droppedAllocationKey),
+            })}
+          </AlertDescription>
+        </Alert>
       )}
 
       <Disclose

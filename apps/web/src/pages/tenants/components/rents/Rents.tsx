@@ -1,6 +1,6 @@
 import type { TenantFormValues } from "@einfachvermieter/shared";
 import {
-  formatDate,
+  addDaysIso,
   formatEur,
   parseEurToCents,
 } from "@einfachvermieter/shared";
@@ -20,13 +20,12 @@ import {
 } from "@/components/form/EditableListSection";
 import { TextInput } from "@/components/form/TextInput";
 import { HelpHint } from "@/components/help/HelpHint";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { FieldGroup } from "@/components/ui/Field";
 import { gradients } from "../../../../lib/domainVisuals";
-import { getPeriodStatusToday } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { RentRowForm } from "./RentRowForm";
+import { RentRowSummary } from "./RentRowSummary";
 import { emptyRentRow, type RentRowValues } from "./rentRow";
 
 /**
@@ -65,6 +64,29 @@ const collectRentRowErrors = (
   return messages.length > 0 ? messages.join(" · ") : undefined;
 };
 
+/**
+ * Eine Mieterhöhung endet den bisherigen Satz automatisch am Vortag.
+ * Liefert je offenem Vorgänger dessen Index und neues Enddatum.
+ */
+const predecessorEnds = (
+  rows: RentRowValues[],
+  startDate: string,
+  tenantStartDate: string,
+): [number, string][] => {
+  if (startDate === "") {
+    return [];
+  }
+
+  return rows.flatMap((row, index) => {
+    const rowStart = row.startDate || tenantStartDate;
+    const isOpenPredecessor =
+      row.endDate === "" && rowStart !== "" && rowStart < startDate;
+    return isOpenPredecessor
+      ? [[index, addDaysIso(startDate, -1)] as [number, string]]
+      : [];
+  });
+};
+
 export const Rents = ({
   form,
   tenantStartDate,
@@ -93,6 +115,21 @@ export const Rents = ({
     // Beim Anlegen: erster Mietsatz startet am Vertragsbeginn, weitere
     // brauchen ein leeres Startdatum (Validation erzwingt Folgedatum +1).
     return emptyRentRow(watchedRents.length === 0 ? tenantStartDate || "" : "");
+  };
+
+  const appendRent = (values: RentRowValues) => {
+    for (const [index, endDate] of predecessorEnds(
+      watchedRents,
+      values.startDate,
+      tenantStartDate,
+    )) {
+      const row = watchedRents[index];
+      if (row) {
+        rentsArray.update(index, { ...row, endDate });
+      }
+    }
+
+    rentsArray.append(values);
   };
 
   const renderRowForm = ({
@@ -212,41 +249,15 @@ export const Rents = ({
       }
       fieldKeys={rentsArray.fields}
       rows={watchedRents}
-      renderRow={(row, index) => {
-        const effectiveStart = row.startDate || tenantStartDate;
-        const effectiveEnd = row.endDate || tenantEndDate;
-        const periodStatus = getPeriodStatusToday(
-          effectiveStart,
-          effectiveEnd,
-          tenantEndDate,
-        );
-        return (
-          <>
-            <div className="flex items-center gap-2">
-              <p className="truncate font-semibold tabular-nums">
-                {row.monthlyBaseRentEuros
-                  ? `${row.monthlyBaseRentEuros} € + ${row.monthlyAdvanceEuros || "0,00"} €`
-                  : t("ui.tenant.rentIndex", { index: index + 1 })}
-              </p>
-              {periodStatus === "active" ? (
-                <Badge variant="ok">{t("ui.tenant.rentCurrent")}</Badge>
-              ) : null}
-              {periodStatus === "last" ? (
-                <Badge variant="warn">{t("ui.tenant.lastRent")}</Badge>
-              ) : null}
-            </div>
-            <p className="text-sm text-muted-foreground tabular-nums">
-              {t("ui.common.periodLabel", {
-                start: effectiveStart ? formatDate(effectiveStart) : "?",
-                end: effectiveEnd
-                  ? formatDate(effectiveEnd)
-                  : t("ui.tenant.openEnded"),
-              })}
-            </p>
-          </>
-        );
-      }}
-      onAppend={(values) => rentsArray.append(values)}
+      renderRow={(row, index) => (
+        <RentRowSummary
+          row={row}
+          index={index}
+          tenantStartDate={tenantStartDate}
+          tenantEndDate={tenantEndDate}
+        />
+      )}
+      onAppend={appendRent}
       onUpdate={(index, values) => rentsArray.update(index, values)}
       onRemove={(index) => rentsArray.remove(index)}
       resolveDefaultValues={resolveDefaultValues}

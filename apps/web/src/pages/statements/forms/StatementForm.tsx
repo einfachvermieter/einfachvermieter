@@ -35,12 +35,20 @@ import {
 
 export const StatementForm = ({
   tenants,
+  existingDrafts = [],
   defaultValues,
   onSubmit,
   onCancel,
   submitting = false,
 }: {
   tenants: TenantOverviewRow[];
+
+  /** Vorhandene Entwürfe, um Dubletten schon im Formular zu melden */
+  existingDrafts?: {
+    tenantId: string;
+    periodStart: string;
+    periodEnd: string;
+  }[];
   defaultValues: StatementFormValues;
   onSubmit: (values: StatementSubmitValues) => void;
   onCancel: () => void;
@@ -64,6 +72,21 @@ export const StatementForm = ({
   const deadlineMissed =
     periodEnd.length > 0 && todayIso() > isoDatePlusOneYear(periodEnd);
 
+  // Nur Hinweis: ein zweiter Entwurf kann gewollt sein, ist aber i.d.R.
+  // ein Versehen.
+  const periodStart = form.watch("periodStart");
+  const selectedTenantId = form.watch("tenantId");
+  const duplicateDraft =
+    selectedTenantId !== "" &&
+    periodStart !== "" &&
+    periodEnd !== "" &&
+    existingDrafts.some(
+      (draft) =>
+        draft.tenantId === selectedTenantId &&
+        draft.periodStart <= periodEnd &&
+        draft.periodEnd >= periodStart,
+    );
+
   return (
     <form
       id={formId}
@@ -77,6 +100,14 @@ export const StatementForm = ({
           </AlertTitle>
           <AlertDescription>
             {t("ui.statements.fields.deadlineWarningDescription")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {duplicateDraft ? (
+        <Alert variant="warning">
+          <AlertTitle>{t("ui.statements.duplicateDraftTitle")}</AlertTitle>
+          <AlertDescription>
+            {t("ui.statements.duplicateDraftDescription")}
           </AlertDescription>
         </Alert>
       ) : null}

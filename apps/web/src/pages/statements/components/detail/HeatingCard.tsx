@@ -354,7 +354,7 @@ export const HeatingCard = ({
             })}
           />
         </div>
-        <div className="overflow-x-auto">
+        <div className="scroll-shadow-x overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className={QUIET_TABLE_HEAD_ROW}>
@@ -494,7 +494,7 @@ export const HeatingCard = ({
         ) : (
           <div className="mt-4">
             <Disclose label={t("ui.statements.detail.showMeters")}>
-              <div className="overflow-x-auto">
+              <div className="scroll-shadow-x overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className={QUIET_TABLE_HEAD_ROW}>
@@ -588,7 +588,7 @@ export const HeatingCard = ({
           iconBackground={gradients.water}
           title={t("statements.pdf.heating.hotWater.title")}
         >
-          <div className="mb-4 overflow-x-auto">
+          <div className="scroll-shadow-x mb-4 overflow-x-auto">
             <table className="w-full text-sm">
               <tbody>
                 {hotWaterFactRows(hw).map((factRow) => (
@@ -607,7 +607,7 @@ export const HeatingCard = ({
               </tbody>
             </table>
           </div>
-          <div className="overflow-x-auto">
+          <div className="scroll-shadow-x overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className={QUIET_TABLE_HEAD_ROW}>

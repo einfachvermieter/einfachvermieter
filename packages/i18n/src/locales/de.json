@@ -397,7 +397,8 @@
         "backToHome": "Zur Startseite"
       },
       "savebar": {
-        "lastSaved": "Zuletzt gespeichert: {date}"
+        "lastSaved": "Zuletzt gespeichert: {date}",
+        "unsavedChanges": "Nicht gespeicherte Änderungen"
       },
       "a11y": {
         "more": "Mehr",
@@ -499,6 +500,8 @@
       "fields": {
         "type": "Art",
         "role": "Rolle",
+        "label": "Bezeichnung",
+        "labelDescription": "Frei wählbar. Bleibt leer, wird der Name aus Art, Rolle und Raum gebildet",
         "serialNumber": "Seriennummer",
         "unit": "Wohnung",
         "unitOptional": "Wohnung (falls zugeordnet)",
@@ -720,7 +723,8 @@
         "heatingArea": "Heizfläche",
         "heatingAreaSqm": "Heizfläche (m², optional)",
         "heatingAreaDescription": "Wird für die Heizkostenabrechnung verwendet. Ohne Angabe wird die Wohnfläche verwendet.",
-        "heatingAreaPlaceholder": "Wohnfläche wird verwendet"
+        "heatingAreaPlaceholder": "Wohnfläche wird verwendet",
+        "heatingAreaLargerWarning": "Die Heizfläche ist größer als die Wohnfläche. Das ist möglich (z. B. beheizter Keller), verzerrt aber die Heizkostenverteilung, wenn es ein Tippfehler ist. Bitte prüfen Sie den Wert."
       },
       "validation": {
         "buildingRequired": "Gebäude erforderlich",
@@ -811,6 +815,7 @@
         "forMonthPlaceholder": "Monat auswählen …",
         "forStatement": "Abrechnung",
         "forFee": "Gebühr",
+        "forFeeOption": "{reason} vom {date}",
         "inputModeSum": "Gesamtsumme",
         "inputModeSumHint": "Eine Summe eingeben, Aufteilung in Kaltmiete und NK-Vorauszahlung erfolgt automatisch nach Vertrag.",
         "inputModeSplit": "Getrennt erfassen",
@@ -864,8 +869,14 @@
         "fees": "Gebühren"
       },
       "balanceLabel": "Saldo",
+      "balance": {
+        "open": "{amount} offen",
+        "credit": "{amount} Guthaben",
+        "balanced": "Ausgeglichen"
+      },
       "depositLabel": "Kaution (separat)",
       "sollLabel": "Soll: {amount}",
+      "creditLabel": "Guthaben: {amount}",
       "monthsHeading": "Mieteingänge pro Monat",
       "detail": {
         "mieteDescription": "Kaltmiete {base} + Nebenkosten {advance} je Monat",
@@ -910,7 +921,8 @@
         "arrears": "Rückstand",
         "partial": "Teilweise offen",
         "open": "Offen",
-        "upcoming": "Noch nicht fällig"
+        "upcoming": "Noch nicht fällig",
+        "refundOpen": "Erstattung offen"
       },
       "columns": {
         "balance": "Saldo",
@@ -1005,6 +1017,7 @@
         },
         "allocationKeyPlaceholder": "Umlageschlüssel wählen",
         "allocationKeyDescription": "Bestimmt, wie die Rechnungen dieser Kostenart auf die Mieter verteilt werden.",
+        "allocationKeyDroppedWarning": "Heizkosten werden nach der HeizkostenV verteilt. Der Umlageschlüssel „{key}“ wird beim Speichern entfernt. Wechseln Sie zurück auf Betriebskosten, bleibt er erhalten.",
         "allocationKeyHelp": "Der Schlüssel muss zu Ihrem Mietvertrag passen. Ist dort keiner vereinbart, wird nach Wohnfläche verteilt (§ 556a Abs. 1 BGB).\n\nKosten, die von einem erfassten Verbrauch abhängen, müssen nach einem Maßstab verteilt werden, der den Verbrauch berücksichtigt. Für Heizung und Warmwasser gilt zusätzlich die HeizkostenV; diese Kostenarten stellen Sie unter Heizkosten ein.",
         "laborCostCategory": "Steuerlich begünstigt (§ 35a EStG)",
         "laborCostCategoryDescription": "Wenn gesetzt, weisen Sie bei jeder Rechnung dieser Kostenart den Lohnkostenanteil aus. Er wird in der NK-Abrechnung als Bescheinigung für den Mieter ausgewiesen.",
@@ -1444,6 +1457,9 @@
       "columns": {
         "balance": "Saldo"
       },
+      "balanceArrears": "{amount} Nachzahlung",
+      "duplicateDraftTitle": "Entwurf existiert bereits",
+      "duplicateDraftDescription": "Für diesen Mieter gibt es schon einen Entwurf, dessen Zeitraum sich mit dem gewählten überschneidet. Bitte prüfen Sie, ob Sie den vorhandenen Entwurf öffnen wollen statt einen zweiten anzulegen.",
       "balanceDraftPending": "wird berechnet",
       "balanceDraftHint": "Der Saldo wird beim Öffnen der Abrechnung live berechnet.",
       "fields": {
@@ -1751,7 +1767,7 @@
         "contractPartyCoverage": "Zu jedem Zeitpunkt des Vertragsverhältnisses muss mindestens ein Bewohner Vertragspartner sein.",
         "residentOutsideTenant": "Bewohner-Zeitraum darf nicht vor dem Vertragsbeginn liegen und nicht nach dem Vertragsende enden.",
         "rentOutsideTenant": "Mietsatz-Zeitraum darf nicht vor dem Vertragsbeginn liegen und nicht nach dem Vertragsende enden.",
-        "rentOverlap": "Mietsätze dürfen sich nicht überlappen – es darf nur eine gültige Miete gleichzeitig geben.",
+        "rentOverlap": "Mietsätze dürfen sich nicht überlappen – es darf nur eine gültige Miete gleichzeitig geben. Setzen Sie beim vorherigen Satz ein „Gültig bis“ auf den Monat vor dem neuen Satz.",
         "rentCoverage": "Mietsätze müssen den gesamten Vertragszeitraum lückenlos abdecken (erster Mietsatz am Vertragsbeginn, weitere Mietsätze schließen tagesgenau an, letzter endet am Vertragsende).",
         "bankAccountOutsideTenant": "Bankverbindungs-Zeitraum darf nicht vor dem Vertragsbeginn liegen und nicht nach dem Vertragsende enden.",
         "bankAccountOverlap": "Bankverbindungen dürfen sich nicht überlappen – es darf maximal eine gleichzeitig gültig sein.",
@@ -1866,10 +1882,14 @@
       "editTitle": "Zählerstand bearbeiten",
       "confirmDelete": "Zählerstand löschen?",
       "confirmDeleteMessage": "Soll der Zählerstand vom {date} wirklich gelöscht werden?",
+      "confirmDeleteSettledMessage": "Der Zählerstand vom {date} liegt in einem bereits festgeschriebenen Abrechnungszeitraum. Löschen Sie ihn nur, wenn Sie anschließend eine Korrekturabrechnung erstellen. Wirklich löschen?",
       "olderDateWarningTitle": "Datum liegt vor letzter Ablesung",
       "olderDateWarningDescription": "Das eingegebene Datum liegt vor der zuletzt erfassten Ablesung am {date}. Bitte prüfen Sie, ob das beabsichtigt ist.",
+      "settledBadge": "abgerechnet",
+      "settledWarningTitle": "Zeitraum ist bereits abgerechnet",
+      "settledWarningDescription": "Zu diesem Datum gibt es eine festgeschriebene Abrechnung. Die Abrechnung selbst ändert sich nicht mehr; eine Abweichung müssen Sie über eine Korrekturabrechnung ausgleichen.",
       "nonMonotonicWarningTitle": "Zählerstand ist rückläufig",
-      "nonMonotonicWarningDescription": "Der Wert weicht von den benachbarten Ablesungen ab (z. B. niedriger als eine frühere oder höher als eine spätere Ablesung). Das ist bei einem fortlaufenden Zähler nur nach einem Zählertausch normal. Bitte prüfen Sie den Wert.",
+      "nonMonotonicWarningDescription": "Der Wert weicht von den benachbarten Ablesungen ab (z. B. niedriger als eine frühere oder höher als eine spätere Ablesung). Das ist bei einem fortlaufenden Zähler nur nach einem Zählertausch normal. Bitte prüfen Sie den Wert. Bei einem Zählertausch setzen Sie beim alten Zähler ein „Gültig bis“ und legen einen neuen Zähler an.",
       "fields": {
         "value": "Zählerstand",
         "valueWithUnit": "Zählerstand ({unit})",

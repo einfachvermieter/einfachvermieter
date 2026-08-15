@@ -66,7 +66,11 @@ export const ProfileSettingsPage = () => {
             </FieldGroup>
           </SectionCard>
         </fieldset>
-        <Savebar submitting={submitting} onCancel={goHome} />
+        <Savebar
+          dirty={form.formState.isDirty}
+          submitting={submitting}
+          onCancel={goHome}
+        />
       </Form>
     </SettingsLayout>
   );

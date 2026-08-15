@@ -3,7 +3,6 @@ import {
   formatEur,
   type MonthGridRow,
   type PotState,
-  todayIso,
 } from "@einfachvermieter/shared";
 import {
   RiAddLine,
@@ -23,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
+import { monthStatus } from "@/lib/accounts";
 import { formatForMonth } from "@/lib/dateInput";
 import { t } from "@/lib/i18n";
 import type { Payment } from "@/lib/payments";
@@ -50,23 +50,6 @@ const PotIstSollCell = ({ pot }: { pot: PotState }) => (
   </TableCell>
 );
 
-type MonthStatus = "balanced" | "credit" | "partial" | "open" | "upcoming";
-
-/**
- * Kombinierter Monatsstatus aus beiden Töpfen (Kaltmiete + NK-Voraus):
- * alle ausgeglichen -> ausgeglichen; ein offener Posten -> teilweise offen
- */
-const monthStatus = (base: PotState, advance: PotState): MonthStatus => {
-  const pots = [base, advance];
-  if (pots.every((pot) => pot.status === "balanced")) {
-    return "balanced";
-  }
-  if (pots.some((pot) => pot.status === "open")) {
-    return base.istCents !== 0 || advance.istCents !== 0 ? "partial" : "open";
-  }
-  return "credit";
-};
-
 const MONTH_STATUS_VARIANT = {
   balanced: "lightGreen",
   credit: "lightBlue",
@@ -89,10 +72,7 @@ const MonthStatusBadge = ({
    */
   forMonth?: string;
 }) => {
-  const computed = monthStatus(base, advance);
-  const isUpcoming =
-    forMonth !== undefined && forMonth >= todayIso().slice(0, 7);
-  const status = isUpcoming && computed === "open" ? "upcoming" : computed;
+  const status = monthStatus(base, advance, forMonth);
   return (
     <TableCell className="px-4 py-3 align-top">
       <Badge variant={MONTH_STATUS_VARIANT[status]}>

@@ -64,6 +64,16 @@ export const MeterHero = ({ meterId }: { meterId: string }) => {
   const consumptionText =
     consumption !== null ? `${formatNumber(consumption)} ${unitLabel}` : dash;
 
+  // Ein rückläufiger Verbrauch deutet auf Ablesefehler oder Zählertausch hin
+  const consumptionValue =
+    consumption !== null && consumption < 0 ? (
+      <span className="text-rose-600 dark:text-rose-400">
+        {consumptionText}
+      </span>
+    ) : (
+      consumptionText
+    );
+
   return (
     <PageHeader
       tile={
@@ -84,7 +94,7 @@ export const MeterHero = ({ meterId }: { meterId: string }) => {
         },
         {
           label: t("ui.meters.detail.statConsumption", { year }),
-          value: consumptionText,
+          value: consumptionValue,
         },
         {
           label: t("ui.meters.detail.statStatus"),
