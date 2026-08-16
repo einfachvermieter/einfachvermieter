@@ -45,11 +45,13 @@ export const MainNavigation = () => {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavGroup
-          label={t("ui.navigation.groups.general")}
-          items={dashboardNav}
-          currentPath={currentPath}
-        />
+        <div className="px-2.25">
+          <NavGroup
+            label={t("ui.navigation.groups.general")}
+            items={dashboardNav}
+            currentPath={currentPath}
+          />
+        </div>
 
         <div className="mx-2 mt-1 rounded-[14px] border border-sidebar-border bg-card pb-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
           <div className="border-b border-sidebar-border">

@@ -6,6 +6,7 @@ import {
 } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
 import { InitialsAvatar } from "@/components/common/InitialsAvatar";
+import { MenuIconTile } from "@/components/common/MenuIconTile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,7 +37,7 @@ export const BuildingSwitcher = () => {
             tooltip={
               building?.name ?? t("ui.navigation.buildingSwitcher.empty")
             }
-            className="h-auto rounded-t-[13px] rounded-b-none py-3 pr-3 pl-1.5 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            className="h-auto rounded-t-[13px] rounded-b-none py-3 pr-3 pl-3 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
             <DropdownMenuTrigger>
               <InitialsAvatar name={building?.name ?? "?"} size={29} />
@@ -52,13 +53,13 @@ export const BuildingSwitcher = () => {
             </DropdownMenuTrigger>
           </SidebarMenuButton>
           <DropdownMenuContent
-            className="w-[calc(var(--radix-dropdown-menu-trigger-width)-1rem)] rounded-lg"
+            className="w-[calc(var(--radix-dropdown-menu-trigger-width)-1rem)]"
             side="bottom"
             align="start"
             sideOffset={4}
             alignOffset={8}
           >
-            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+            <DropdownMenuLabel className="text-[10.5px] font-semibold tracking-[0.09em] text-muted-foreground uppercase">
               {t("ui.navigation.buildingSwitcher.switchLabel")}
             </DropdownMenuLabel>
             {buildings.map((item) => (
@@ -71,7 +72,7 @@ export const BuildingSwitcher = () => {
                   <span className="truncate text-[13px] font-semibold">
                     {item.name}
                   </span>
-                  <span className="text-[11.5px] text-muted-foreground">
+                  <span className="truncate text-[11.5px] text-muted-foreground">
                     {[
                       t("ui.navigation.buildingSwitcher.unitsCount", {
                         count: item.unitsCount,
@@ -82,21 +83,25 @@ export const BuildingSwitcher = () => {
                     ].join(t("ui.common.separators.bullet"))}
                   </span>
                 </span>
-                {item.id === buildingId ? (
-                  <RiCheckLine className="text-sky-700 dark:text-sky-400" />
-                ) : null}
+                <RiCheckLine
+                  className={
+                    item.id === buildingId
+                      ? "text-sky-700 dark:text-sky-400"
+                      : "invisible"
+                  }
+                />
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild={true}>
               <Link to="/gebaeude">
-                <RiCommunityLine />
+                <MenuIconTile icon={RiCommunityLine} />
                 {t("ui.navigation.buildingSwitcher.all")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild={true}>
               <Link to="/gebaeude/neu">
-                <RiAddLine />
+                <MenuIconTile icon={RiAddLine} />
                 {t("ui.navigation.buildingSwitcher.add")}
               </Link>
             </DropdownMenuItem>
