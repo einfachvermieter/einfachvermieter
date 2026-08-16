@@ -515,7 +515,7 @@
         "areaPlaceholder": "Keller, Treppenhaus, …",
         "energyFactor": "Umrechnungsfaktor kWh/m³",
         "energyFactorPlaceholder": "z. B. 11,22",
-        "energyFactorDescription": "Produkt aus Zustandszahl × Brennwert gemäß Gasrechnung. Wird benötigt, um m³ in kWh umzurechnen. Optional – leer lassen, wenn nur m³-Verteilung genügt.",
+        "energyFactorDescription": "Produkt aus Zustandszahl × Brennwert gemäß Gasrechnung. Der Wert wird nur zur Dokumentation gespeichert und fließt nicht in die Abrechnung ein. Verteilt wird in m³, eine Umrechnung in kWh findet nicht statt. Optional.",
         "validFrom": "Gültig ab",
         "validUntil": "Gültig bis",
         "isRemoteReadable": "Fernablesbar",
