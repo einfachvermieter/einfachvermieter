@@ -611,9 +611,10 @@ export const StatementDetailPage = () => {
               {[
                 tenantName,
                 unit?.name,
-                `${formatDate(statement.periodStart)} – ${formatDate(
-                  statement.periodEnd,
-                )}`,
+                t("ui.common.periodLabel", {
+                  start: formatDate(statement.periodStart),
+                  end: formatDate(statement.periodEnd),
+                }),
               ]
                 .filter(Boolean)
                 .join(t("ui.common.separators.bullet"))}

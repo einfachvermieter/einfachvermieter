@@ -95,7 +95,12 @@ export type StatementDocumentProps = {
  * Zeile fürs Adressfenster über dem Empfänger
  */
 const senderAddressLine = (meta: StatementDocumentProps["meta"]): string =>
-  `${meta.senderName} – ${meta.senderAddressStreet} – ${meta.senderAddressPostalCode} ${meta.senderAddressCity}`;
+  t("statements.pdf.senderLine", {
+    name: meta.senderName,
+    street: meta.senderAddressStreet,
+    postalCode: meta.senderAddressPostalCode,
+    city: meta.senderAddressCity,
+  });
 
 /**
  * Verarbeitet `**bold**`-Markierungen in einem i18n-Text und rendert die

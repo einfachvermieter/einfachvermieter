@@ -126,9 +126,12 @@ export const PaymentForm = ({
 
     const options = sorted.map((row) => ({
       value: row.forMonth,
-      label: `${formatForMonth(row.forMonth)} – ${t(
-        `ui.account.status.${monthStatus(row.baseRent, row.advance, row.forMonth)}`,
-      )}`,
+      label: [
+        formatForMonth(row.forMonth),
+        t(
+          `ui.account.status.${monthStatus(row.baseRent, row.advance, row.forMonth)}`,
+        ),
+      ].join(t("ui.common.separators.dash")),
     }));
 
     // Im Edit-Modus den bisher gewählten Monat ergänzen, falls er außerhalb
@@ -157,7 +160,9 @@ export const PaymentForm = ({
     const rows = settlementRows ?? [];
     const options = rows.map((row) => ({
       value: row.statementId,
-      label: `${formatDate(row.date)} – ${formatEur(row.pot.sollCents)}`,
+      label: [formatDate(row.date), formatEur(row.pot.sollCents)].join(
+        t("ui.common.separators.dash"),
+      ),
     }));
 
     // Im Edit-Modus die bisher gewählte Abrechnung ergänzen, falls sie nicht
@@ -529,7 +534,7 @@ const ContractInfo = ({
           {recordedCount === 0
             ? t("ui.payments.contract.alreadyPaidNone")
             : t("ui.payments.contract.alreadyPaidSummary", {
-                count: String(recordedCount),
+                count: recordedCount,
                 baseRent: formatEur(row.baseRent.istCents),
                 advance: formatEur(row.advance.istCents),
                 total: formatEur(totalIst),

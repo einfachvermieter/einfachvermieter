@@ -97,7 +97,10 @@ export const OccupancyAppendix = ({ detail, targetUnitId }: Props) => {
             g.count === 1
               ? t("statements.pdf.occupancy.personSingular")
               : t("statements.pdf.occupancy.personPlural", { count: g.count }),
-          span: `${formatDate(g.from)} – ${formatDate(g.to)}`,
+          span: t("ui.common.periodLabel", {
+            start: formatDate(g.from),
+            end: formatDate(g.to),
+          }),
           personDays: formatDays(g.count * g.days),
           emphasize: true,
         });

@@ -34,7 +34,10 @@ const COL_LABEL = { flex: 1.2 };
 const COL_VALUE = { flex: 1.8 };
 
 const formatPeriod = (period: Period): string =>
-  `${formatDate(period.start)} – ${formatDate(period.end)}`;
+  t("ui.common.periodLabel", {
+    start: formatDate(period.start),
+    end: formatDate(period.end),
+  });
 
 /**
  * Eckdaten-Tabelle auf Seite 1 des Anschreibens, kompakte umrahmte

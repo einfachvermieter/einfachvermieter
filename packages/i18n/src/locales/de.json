@@ -49,7 +49,7 @@
     "loadingShort": "Laden …",
     "yes": "Ja",
     "no": "Nein",
-    "none": "-",
+    "none": "—",
     "unknown": "?",
     "months": {
       "jan": "Januar",
@@ -174,13 +174,12 @@
     "statementNotCorrectable": "Zu dieser Abrechnung kann keine Korrektur erstellt werden (sie muss finalisiert oder storniert sein)",
     "statementPeriodOverlapsFinalized": "Für diesen Mieter existiert bereits eine finalisierte Abrechnung für den Zeitraum {periodStart} – {periodEnd}. Eine erneute Abrechnung dieser Periode ist nur als Korrektur der bestehenden möglich.",
     "statementFinalizeCalculationIncomplete": "Berechnungsergebnis ist unvollständig, Finalisierung abgebrochen: {message}",
-    "tenantNotBillable": "Mietvertrag „{tenantId}“ ist im Zeitraum {periodStart}–{periodEnd} nicht abrechnungsberechtigt (Vertragszeitraum überlappt nicht).",
+    "tenantNotBillable": "Mietvertrag „{tenantId}“ ist im Zeitraum {periodStart} – {periodEnd} nicht abrechnungsberechtigt (Vertragszeitraum überlappt nicht).",
     "tenantHasNoRent": "Mietvertrag „{tenantId}“ hat keinen Mietsatz, daher ist eine Anpassung der Vorauszahlung nicht möglich.",
     "statementAdjustmentValidFromBeforePeriodEnd": "Stichtag „{validFrom}“ liegt nicht nach dem Abrechnungsende „{periodEnd}“. Die Anpassung muss für einen späteren Zeitpunkt gelten.",
     "statementAdjustmentNoMatchingRent": "Es gibt keinen Mietsatz, der den Stichtag „{validFrom}“ abdeckt. Bitte Mietvertrag prüfen.",
     "tenantHasPayments": "Mietvertrag hat Zahlungen und kann nicht gelöscht werden",
     "tenantHasStatements": "Mietvertrag hat Abrechnungen und kann nicht gelöscht werden",
-    "residentHasTenant": "Bewohner ist noch einem Mietvertrag zugeordnet und kann nicht gelöscht werden",
     "meterVirtualReadonly": "Differenzzähler sind virtuell. Stände werden aus anderen Zählern berechnet und dürfen nicht direkt erfasst werden.",
     "costTypeHasEntries": "Kostenart mit erfassten Rechnungen kann nicht gelöscht werden",
     "meterHasReadings": "Zähler mit erfassten Ständen kann nicht gelöscht werden",
@@ -202,8 +201,6 @@
     "sessionUserMissing": "Ihr angemeldeter Benutzer existiert nicht mehr. Bitte melden Sie sich ab und erneut an.",
     "notAuthenticated": "Sie sind nicht angemeldet.",
     "insufficientPermission": "Sie haben keine Berechtigung für diese Aktion.",
-    "residentScopeMissing": "Es wurde kein Zugriffsbereich angegeben.",
-    "residentForbidden": "Sie dürfen nur auf Ihre eigenen Daten zugreifen.",
     "logoNotSet": "Es ist kein Logo hinterlegt.",
     "heatingNoConfigForDate": "Für den {date} existiert keine Heizkostenkonfiguration für dieses Gebäude. Frühestes „gültig ab“ ist der {earliest}. Bitte legen Sie eine Version an, deren „gültig ab“ auf oder vor dem {date} liegt.",
     "upload": {
@@ -252,24 +249,24 @@
     "readingMissingBefore": "Kein Zählerstand vor {date}, daher ist der Verbrauch davor unbekannt und die Abrechnung evtl. unvollständig.",
     "readingMissingAfter": "Kein Zählerstand nach {date}, daher ist der Verbrauch danach unbekannt und die Abrechnung evtl. unvollständig.",
     "readingEstimated": "Der Zählerstand vom {date} ist geschätzt, der ausgewiesene Verbrauch beruht daher teilweise auf Schätzwerten.",
-    "readingNonMonotonic": "Zählerstand rückläufig: Am {toDate} wurde {toValue} erfasst, niedriger als am {fromDate} mit {fromValue}. Bitte prüfen ob möglicher Zählertausch oder Ablesefehler.",
+    "readingNonMonotonic": "Zählerstand rückläufig: Am {toDate} wurde {toValue} erfasst, niedriger als am {fromDate} mit {fromValue}. Bitte prüfen Sie, ob ein Zählertausch oder ein Ablesefehler vorliegt.",
     "differenceMeterNegative": "Der Differenzzähler „{label}“ ergibt einen negativen Verbrauch: Die Summe der Subtraktionszähler übersteigt den Basiszähler. Der Verbrauch wurde auf 0 m³ gesetzt. Bitte prüfen Sie die Quellzähler und deren Zählerstände.",
     "commonConsumptionUnallocated": "Der Allgemeinzähler „{label}“ ist keiner Wohnung zugeordnet, sein Verbrauch wird deshalb nicht gesondert ausgewiesen, sondern anteilig auf alle Wohnungen mitverteilt. Bitte ordnen Sie ihn einer Wohnung zu oder prüfen Sie, ob ein Vorwegabzug gewünscht ist.",
     "waterNoConsumption": "Für diese Kostenart wurde kein Verbrauch gemessen (Summe 0 m³). Die Kosten lassen sich deshalb nicht verbrauchsabhängig verteilen und tauchen weder beim Mieter noch beim Vermieter auf. Bitte prüfen Sie die Zählerstände oder wählen Sie einen anderen Umlageschlüssel.",
-    "waterUnitSumMismatch": "Der Hauptzähler weist {total} m³ aus, die Summe der Wohnungsverbräuche (inkl. Vermieteranteil) ergibt aber {unitSum} m³. Vermutlich fehlt ein Differenzzähler, die Kosten werden nach der tatsächlichen Verbrauchssumme verteilt. Bitte prüfen Sie die Zählerzuordnung.",
-    "hotWaterTotalHeatMissing": "Zentrale Warmwasserbereitung erfasst, aber die Gesamt-Wärmemenge (kWh) fehlt, daher kann der Warmwasseranteil nicht nach § 9 Abs. 2 HeizkostenV herausgerechnet werden.",
+    "waterUnitSumMismatch": "Der Hauptzähler weist {total} m³ aus, die Summe der Wohnungsverbräuche (inkl. Vermieteranteil) ergibt aber {unitSum} m³. Vermutlich fehlt ein Differenzzähler; die Kosten werden nach der tatsächlichen Verbrauchssumme verteilt. Bitte prüfen Sie die Zählerzuordnung.",
+    "hotWaterTotalHeatMissing": "Zentrale Warmwasserbereitung erfasst, aber die Gesamt-Wärmemenge (kWh) fehlt, daher kann der Warmwasseranteil nicht nach § 9 Abs. 2 HeizkostenV herausgerechnet werden.",
     "hotWaterSourceMissing": "Zentrale Warmwasserbereitung erfasst, aber weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch vorhanden, daher konnte der Warmwasseranteil nicht ermittelt werden.",
-    "hotWaterFlatRateFallback": "Weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch erfasst. Der Warmwasseranteil wurde daher ersatzweise mit der Pauschalformel aus § 9 Abs. 2 Satz 5 HeizkostenV geschätzt (32 kWh je Quadratmeter Wohnfläche und Jahr). Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "hotWaterFlatRateFallback": "Weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch erfasst. Der Warmwasseranteil wurde daher ersatzweise mit der Pauschalformel aus § 9 Abs. 2 Satz 5 HeizkostenV geschätzt (32 kWh je Quadratmeter Wohnfläche und Jahr). Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
     "hotWaterShareCapped": "Die geschätzte Warmwasser-Wärmemenge übersteigt die erfasste Gesamt-Wärmemenge, der Warmwasseranteil wurde daher auf 100 % begrenzt. Bitte Gesamt-Wärmemenge prüfen.",
     "hotWaterTotalHeatPeriodMismatch": "Die Gesamt-Wärmemenge aus der Heizkosten-Konfiguration ist ein Jahreswert, die Abrechnungsperiode umfasst aber {periodDays} Tage. Die Warmwasser-Wärmemenge wird über die Periode gemessen, dadurch kann der Warmwasseranteil verzerrt sein. Bitte prüfen Sie, ob die Gesamt-Wärmemenge zur Periode passt.",
     "climateFactorMissing": "Für den Verbrauchsvergleich nach § 6a HeizkostenV liegt kein Klimafaktor vor, der Vergleich ist daher nicht witterungsbereinigt. Sie können ihn im Reiter „Heizkosten“ laden oder manuell erfassen.",
     "districtHeatInfoMissing": "Für die Fernwärme sind die jährlichen Treibhausgasemissionen oder der Primärenergiefaktor des Netzes nicht erfasst. Beide Angaben gehören nach § 6a HeizkostenV in die Abrechnung und stehen auf der Rechnung des Wärmelieferanten. Bitte tragen Sie die Werte in der Heizkosten-Konfiguration nach.",
     "co2SplitEnabledNoData": "Die CO₂-Kostenaufteilung ist aktiviert, aber keiner Kostenart sind CO₂-Kosten zugeordnet. Die Aufteilung nach CO2KostAufG entfällt.",
     "co2SplitMissingData": "CO₂-Kosten sind erfasst, aber CO₂-Menge oder Wohnfläche fehlt, daher ist eine Aufteilung nach CO2KostAufG nicht möglich.",
-    "consumptionFallbackZeroDelta": "Die Verbrauchsmessungen liefern für die Periode eine Differenz von 0. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
-    "consumptionFallbackNoAllocators": "Es sind keine Heizkostenverteiler erfasst. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
-    "consumptionFallbackNoHeatMeters": "Es sind keine Wärmemengenzähler erfasst. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
-    "hotWaterConsumptionFallbackArea": "Es ist kein Warmwasserverbrauch je Wohnung erfasst. Der Verbrauchsanteil der Warmwasserkosten wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "consumptionFallbackZeroDelta": "Die Verbrauchsmessungen liefern für die Periode eine Differenz von 0. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "consumptionFallbackNoAllocators": "Es sind keine Heizkostenverteiler erfasst. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "consumptionFallbackNoHeatMeters": "Es sind keine Wärmemengenzähler erfasst. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "hotWaterConsumptionFallbackArea": "Es ist kein Warmwasserverbrauch je Wohnung erfasst. Der Verbrauchsanteil der Warmwasserkosten wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
     "aiNoCostTypes": "Keine Kostenarten hinterlegt: Bitte zuerst Kostenarten anlegen, danach kann die KI eindeutig zuordnen.",
     "aiUnknownCostType": "Position {position}: Die KI hat eine unbekannte Kostenart vorgeschlagen. Bitte manuell wählen.",
     "aiGrossMismatch": "Brutto-Validierung fehlgeschlagen: Die Summe der Positionen weicht um {diffCents} ct vom Brutto-Endbetrag ab. Bitte Beträge manuell prüfen."
@@ -319,6 +316,7 @@
       },
       "emptyValue": "—",
       "periodLabel": "{start} – {end}",
+      "yearRangeLabel": "{start}–{end}",
       "periodSince": "ab {date}",
       "periodUntil": "bis {date}",
       "deductionAmount": "− {amount}",
@@ -449,7 +447,7 @@
       },
       "formSync": {
         "title": "Daten wurden zwischenzeitlich geändert",
-        "message": "Seit Sie das Formular geöffnet haben, wurden die Daten auf dem Server aktualisiert. Wenn Sie die neue Version laden, gehen Ihre Änderungen verloren. Alternativ machen Sie mit Ihren Änderungen weiter und überschreiben die serverseitigen Updates beim Speichern.",
+        "message": "Seit Sie das Formular geöffnet haben, wurden die Daten auf dem Server aktualisiert. Wenn Sie die neue Version laden, gehen Ihre Änderungen verloren. Alternativ machen Sie mit Ihren Änderungen weiter und überschreiben beim Speichern den Stand auf dem Server.",
         "actionReload": "Vom Server neu laden",
         "actionKeep": "Meine Änderungen behalten"
       }
@@ -505,7 +503,7 @@
         "type": "Art",
         "role": "Rolle",
         "label": "Bezeichnung",
-        "labelDescription": "Frei wählbar. Bleibt leer, wird der Name aus Art, Rolle und Raum gebildet",
+        "labelDescription": "Frei wählbar. Bleibt sie leer, wird der Name aus Art, Rolle und Raum gebildet",
         "serialNumber": "Seriennummer",
         "unit": "Wohnung",
         "unitOptional": "Wohnung (falls zugeordnet)",
@@ -530,7 +528,7 @@
         "radiatorType": "Heizkörpertyp",
         "radiatorTypePlaceholder": "z. B. Plattenheizkörper Typ 22",
         "radiatorDimensions": "Maße Heizkörper",
-        "radiatorDimensionsPlaceholder": "z. B. 600 × 1000 × 100 mm",
+        "radiatorDimensionsPlaceholder": "z. B. 600 × 1000 × 100 mm",
         "costTypes": "Verwendet für Kostenarten",
         "costTypesDescription": "Kostenarten, für die dieser Zähler als Verbrauchsquelle dient. Der Umlageschlüssel der Kostenart steht jeweils darunter.",
         "costTypesEmpty": "Keine verbrauchsbasierten Kostenarten mit Einheit {unit} für dieses Gebäude angelegt",
@@ -637,7 +635,7 @@
       "fields": {
         "name": "Bezeichnung",
         "namePlaceholder": "z. B. MFH Musterstraße",
-        "nameDescription": "Bitte vergeben Sie einen eindeutigen, prägnanten Namen für das Gebäude. Dies wird in den Übersichten verwendet.",
+        "nameDescription": "Bitte vergeben Sie einen eindeutigen Namen für das Gebäude. Er wird in den Übersichten verwendet.",
         "street": "Straße und Hausnummer",
         "postalCode": "PLZ",
         "city": "Ort"
@@ -850,7 +848,7 @@
         "alreadyPaidHeading": "Bisher erfasst:",
         "alreadyPaidHeadingInclCurrent": "Bisher erfasst (inkl. dieser Buchung):",
         "alreadyPaidNone": "Noch keine Zahlungen erfasst.",
-        "alreadyPaidSummary": "{count} Zahlung(en): {baseRent} Kaltmiete + {advance} NK-Voraus = {total}"
+        "alreadyPaidSummary": "{count, plural, one {# Zahlung} other {# Zahlungen}}: {baseRent} Kaltmiete + {advance} NK-Voraus = {total}"
       },
       "validation": {
         "monthRequired": "Bitte einen Mietmonat im Format YYYY-MM angeben.",
@@ -902,13 +900,12 @@
       },
       "monthsEmpty": "Noch keine Monate im Vertragszeitraum.",
       "recordPayment": "Zahlung erfassen",
-      "paymentsRecorded": "{count} Buchung(en) erfasst",
       "otherPaymentsHeading": "Sonstige Zahlungen",
       "otherPaymentsEmpty": "Keine weiteren Zahlungen erfasst",
       "settlementsHeading": "Abrechnungs-Salden",
       "settlementsEmpty": "Noch keine finalisierten NK-Abrechnungen für diesen Mieter.",
       "depositHeading": "Kaution",
-      "depositEmpty": "Kaution-Daten konnten nicht geladen werden.",
+      "depositEmpty": "Kautionsdaten konnten nicht geladen werden.",
       "depositNone": "Für diesen Mietvertrag ist keine Kaution vereinbart.",
       "depositSoll": "Vereinbart",
       "depositIst": "Eingegangen",
@@ -1022,19 +1019,19 @@
         "allocationKeyPlaceholder": "Umlageschlüssel wählen",
         "allocationKeyDescription": "Bestimmt, wie die Rechnungen dieser Kostenart auf die Mieter verteilt werden.",
         "allocationKeyDroppedWarning": "Heizkosten werden nach der HeizkostenV verteilt. Der Umlageschlüssel „{key}“ wird beim Speichern entfernt. Wechseln Sie zurück auf Betriebskosten, bleibt er erhalten.",
-        "allocationKeyHelp": "Der Schlüssel muss zu Ihrem Mietvertrag passen. Ist dort keiner vereinbart, wird nach Wohnfläche verteilt (§ 556a Abs. 1 BGB).\n\nKosten, die von einem erfassten Verbrauch abhängen, müssen nach einem Maßstab verteilt werden, der den Verbrauch berücksichtigt. Für Heizung und Warmwasser gilt zusätzlich die HeizkostenV; diese Kostenarten stellen Sie unter Heizkosten ein.",
+        "allocationKeyHelp": "Der Schlüssel muss zu Ihrem Mietvertrag passen. Ist dort keiner vereinbart, wird nach Wohnfläche verteilt (§ 556a Abs. 1 BGB).\n\nKosten, die von einem erfassten Verbrauch abhängen, müssen nach einem Maßstab verteilt werden, der den Verbrauch berücksichtigt. Für Heizung und Warmwasser gilt zusätzlich die HeizkostenV; diese Kostenarten stellen Sie unter Heizkosten ein.",
         "laborCostCategory": "Steuerlich begünstigt (§ 35a EStG)",
         "laborCostCategoryDescription": "Wenn gesetzt, weisen Sie bei jeder Rechnung dieser Kostenart den Lohnkostenanteil aus. Er wird in der NK-Abrechnung als Bescheinigung für den Mieter ausgewiesen.",
         "co2Tracked": "CO₂-Menge und -Kostenanteil auf den Rechnungen erfassen",
         "isMeteringServiceCost": "Erfassungs- oder Abrechnungsentgelt",
         "isMeteringServiceCostDescription": "Gerätemiete, Eichung, Ablesedienst oder Abrechnungsservice. Die Abrechnung weist diese Beträge nach § 6a HeizkostenV gesondert aus.",
         "co2TrackedNoConfigWarning": "Derzeit nutzt keine Heizkosten-Konfiguration dieses Gebäudes die CO₂-Kostenaufteilung mit einem CO₂-pflichtigen Brennstoff. Die erfassten CO₂-Werte bleiben ohne Wirkung, bis eine passende Konfiguration besteht.",
-        "betrkvWarning": "Nach § 1 Abs. 2 BetrKV sind Verwaltungs- und Instandhaltungskosten nicht umlagefähig. Der Name deutet auf solche Kosten hin. Prüfen Sie, ob Sie diese Kostenart wirklich auf die Mieter verteilen dürfen. Speichern können Sie sie trotzdem, es gibt Grenzfälle wie Wartungsverträge."
+        "betrkvWarning": "Nach § 1 Abs. 2 BetrKV sind Verwaltungs- und Instandhaltungskosten nicht umlagefähig. Der Name deutet auf solche Kosten hin. Prüfen Sie, ob Sie diese Kostenart wirklich auf die Mieter verteilen dürfen. Speichern können Sie sie trotzdem, es gibt Grenzfälle wie Wartungsverträge."
       },
       "laborCostCategoryOptions": {
         "__none__": "Nicht begünstigt",
-        "craftsman": "Handwerkerleistung (§ 35a Abs. 3 EStG)",
-        "household_service": "Haushaltsnahe Dienstleistung (§ 35a Abs. 2 EStG)"
+        "craftsman": "Handwerkerleistung (§ 35a Abs. 3 EStG)",
+        "household_service": "Haushaltsnahe Dienstleistung (§ 35a Abs. 2 EStG)"
       },
       "entryFields": {
         "costType": "Kostenart",
@@ -1192,7 +1189,7 @@
       "description": "Pro Gebäude eine Konfiguration, wie Heizkosten abgerechnet werden.",
       "remoteReadableNotice": {
         "title": "Fernablesbare Geräte vorhanden",
-        "text": "Mindestens ein Zähler dieses Gebäudes ist als fernablesbar markiert. Sie müssen Ihre Mieter dann monatlich über deren Verbrauch informieren (§ 6a Abs. 1 und 2 HeizkostenV). Diese unterjährigen Mitteilungen erstellt „EinfachVermieter“ nicht."
+        "text": "Mindestens ein Zähler dieses Gebäudes ist als fernablesbar markiert. Sie müssen Ihre Mieter dann monatlich über deren Verbrauch informieren (§ 6a Abs. 1 und 2 HeizkostenV). Diese unterjährigen Mitteilungen erstellt „EinfachVermieter“ nicht."
       },
       "editTitle": "Heizkosten bearbeiten",
       "detail": {
@@ -1208,7 +1205,7 @@
         "prorationChartLegendLinear": "Linear",
         "prorationChartRefLabel": "Ø {promille} ‰/Monat",
         "prorationChartBarTitle": "{month}: {promille} ‰ ({percent} %)",
-        "prorationChartNoteDegreeDays": "Bei einem Wechsel im Jahr trägt der Wintermieter den größeren Anteil: Januar zählt 170 ‰, Juli nur 14 ‰ der Jahresheizkosten (Gradtagszahlen nach § 9b Abs. 2 HeizkostenV).",
+        "prorationChartNoteDegreeDays": "Bei einem Wechsel im Jahr trägt der Wintermieter den größeren Anteil: Januar zählt 170 ‰, Juli nur 14 ‰ der Jahresheizkosten (Gradtagszahlen nach § 9b Abs. 2 HeizkostenV).",
         "prorationChartNoteLinear": "Bei einem Wechsel im Jahr zählt jeder Tag gleich viel: Die Jahresheizkosten werden tagesproportional aufgeteilt (Ø {promille} ‰ je Monat).",
         "statusInactive": "Inaktiv",
         "modeLabel": "Modus",
@@ -1224,7 +1221,7 @@
       },
       "identityTitle": "Gültig ab {validFrom}",
       "heroTitle": "Heizkosten-Konfiguration ab {validFrom}",
-      "empty": "Noch keine Heizkosten-Konfigurationen angelegt. Wählen Sie oben rechts ein Gebäude, um eine erste Konfiguration anzulegen.",
+      "empty": "Noch keine Heizkosten-Konfigurationen angelegt. Wählen Sie in der Seitenleiste ein Gebäude, um eine erste Konfiguration anzulegen.",
       "emptySearch": "Keine Konfigurationen gefunden für „{query}“",
       "emptyForBuilding": "Noch keine Heizkosten-Konfiguration für Gebäude „{building}“ angelegt.",
       "emptySearchForBuilding": "Keine Konfigurationen gefunden für „{query}“ in Gebäude „{building}“",
@@ -1251,7 +1248,7 @@
       "summary": {
         "split": "{base} % Grund / {consumption} % Verbrauch",
         "externalNoConfig": "Externe Abrechnung – keine interne Verteilung",
-        "none": "–"
+        "none": "—"
       },
       "fields": {
         "mode": "Abrechnungsmodus",
@@ -1265,8 +1262,8 @@
         "baseSharePercent": "Grundkostenanteil",
         "baseShareDescription": "Wird nach Fläche verteilt. Verbrauchs- und Grundkostenanteil ergeben zusammen 100 %.",
         "prorationMethod": "Aufteilung bei Mieter-/Leerstandswechsel",
-        "prorationMethodDescription": "Wie werden Heizkostenrechnungen aufgeteilt, deren Zeitraum nur teilweise in die Mietzeit fällt? Linear verteilt tagesproportional, ignoriert aber die Wintersaisonalität. Gradtagszahlen gewichten Wintertage stärker (Promille-Verteilung, Σ = 1.000). § 9b Abs. 2 HeizkostenV lässt diese Verteilung bei Mieterwechsel ausdrücklich zu.",
-        "prorationMethodDescriptionExternal": "Betrifft nur den Verbrauchskostenanteil der externen Abrechnung bei Mieter-/Leerstandswechsel. Grundkosten bleiben immer tagesproportional. Linear verteilt tagesproportional, ignoriert aber die Wintersaisonalität. Gradtagszahlen gewichten Wintertage stärker. § 9b Abs. 2 HeizkostenV lässt diese Verteilung bei Mieterwechsel ausdrücklich zu.",
+        "prorationMethodDescription": "Wie werden Heizkostenrechnungen aufgeteilt, deren Zeitraum nur teilweise in die Mietzeit fällt? Linear verteilt tagesproportional, ignoriert aber die Wintersaisonalität. Gradtagszahlen gewichten Wintertage stärker (Promille-Verteilung, Σ = 1.000). § 9b Abs. 2 HeizkostenV lässt diese Verteilung bei Mieterwechsel ausdrücklich zu.",
+        "prorationMethodDescriptionExternal": "Betrifft nur den Verbrauchskostenanteil der externen Abrechnung bei Mieter-/Leerstandswechsel. Grundkosten bleiben immer tagesproportional. Linear verteilt tagesproportional, ignoriert aber die Wintersaisonalität. Gradtagszahlen gewichten Wintertage stärker. § 9b Abs. 2 HeizkostenV lässt diese Verteilung bei Mieterwechsel ausdrücklich zu.",
         "validFrom": "Gültig ab",
         "validFromDescription": "Datum, ab dem diese Konfiguration für Abrechnungen gilt.",
         "validTo": "Gültig bis",
@@ -1276,21 +1273,21 @@
         "fuelType": "Brennstoff",
         "fuelTypeDescription": "Eingesetzter Energieträger. Pflichtangabe nach § 6a HeizkostenV gegenüber den Mietern.",
         "hotWaterMeter": "WMZ am Warmwasserboiler",
-        "hotWaterMeterDescription": "Zähler am Warmwasserboiler, der die für die Warmwasserbereitung verbrauchte Wärmemenge misst. Ohne Zähler wird die Schätzformel nach § 9 Abs. 2 HeizkostenV angewendet.",
+        "hotWaterMeterDescription": "Zähler am Warmwasserboiler, der die für die Warmwasserbereitung verbrauchte Wärmemenge misst. Ohne Zähler wird die Schätzformel nach § 9 Abs. 2 HeizkostenV angewendet.",
         "hotWaterMeterNone": "Kein Zähler (Schätzformel)",
-        "hotWaterMeterMissing": "Für dieses Gebäude ist noch kein gebäudezentraler Wärmemengenzähler angelegt. Bitte legen Sie zunächst einen WMZ als Hauptzähler an, damit Sie ihn hier auswählen können. Ohne Zähler wird die Schätzformel nach § 9 Abs. 2 HeizkostenV verwendet.",
+        "hotWaterMeterMissing": "Für dieses Gebäude ist noch kein gebäudezentraler Wärmemengenzähler angelegt. Bitte legen Sie zunächst einen WMZ als Hauptzähler an, damit Sie ihn hier auswählen können. Ohne Zähler wird die Schätzformel nach § 9 Abs. 2 HeizkostenV verwendet.",
         "hotWaterMeterMissingLink": "Wärmemengenzähler anlegen",
         "hotWaterSupplyTemperature": "Warmwasservorlauftemperatur",
         "hotWaterSupplyTemperatureDescription": "Üblich sind 60 °C. Wird in die Schätzformel und in die Mieter-Information übernommen.",
         "totalHeatEnergyKwh": "Gesamt-Wärmemenge (kWh)",
-        "totalHeatEnergyKwhDescription": "Jahres-Wärmemenge der gesamten Heizungsanlage in kWh. Damit rechnen Sie den Warmwasseranteil nach § 9 Abs. 2 HeizkostenV heraus. Entnehmen Sie den Wert Ihrer Energieabrechnung (Gas/Fernwärme weisen kWh aus). Rechnen Sie über einen kürzeren Zeitraum ab, tragen Sie den auf diesen Zeitraum entfallenden Anteil ein.",
+        "totalHeatEnergyKwhDescription": "Jahres-Wärmemenge der gesamten Heizungsanlage in kWh. Damit rechnen Sie den Warmwasseranteil nach § 9 Abs. 2 HeizkostenV heraus. Entnehmen Sie den Wert Ihrer Energieabrechnung (Gas/Fernwärme weisen kWh aus). Rechnen Sie über einen kürzeren Zeitraum ab, tragen Sie den auf diesen Zeitraum entfallenden Anteil ein.",
         "mandatorySeventyPercent": "70 % Verbrauchsanteil zwingend",
-        "mandatorySeventyPercentDescription": "Aktivieren, wenn alle drei Punkte zutreffen: Das Gebäude erfüllt das Anforderungsniveau der Wärmeschutzverordnung 1994 nicht, es wird mit einer Öl- oder Gas-Zentralheizung versorgt, und die freiliegenden Wärmeleitungen sind überwiegend gedämmt. Dann schreibt § 7 Abs. 1 Satz 2 HeizkostenV 70 % nach Verbrauch vor.",
+        "mandatorySeventyPercentDescription": "Aktivieren, wenn alle drei Punkte zutreffen: Das Gebäude erfüllt das Anforderungsniveau der Wärmeschutzverordnung 1994 nicht, es wird mit einer Öl- oder Gas-Zentralheizung versorgt, und die freiliegenden Wärmeleitungen sind überwiegend gedämmt. Dann schreibt § 7 Abs. 1 Satz 2 HeizkostenV 70 % nach Verbrauch vor.",
         "gasBillingByCalorificValue": "Erdgas brennwertbezogen abgerechnet",
-        "gasBillingByCalorificValueDescription": "Rechnet Ihr Versorger nach Brennwert ab, wird die Warmwasser-Wärmemenge mit 1,11 multipliziert (§ 9 Abs. 2 HeizkostenV). Steht auf Ihrer Gasrechnung.",
+        "gasBillingByCalorificValueDescription": "Rechnet Ihr Versorger nach Brennwert ab, wird die Warmwasser-Wärmemenge mit 1,11 multipliziert (§ 9 Abs. 2 HeizkostenV). Steht auf Ihrer Gasrechnung.",
         "heatPumpMonovalent": "Wärmepumpe monovalent betrieben",
-        "heatPumpMonovalentDescription": "Deckt die Wärmepumpe die Wärme allein, ohne zweiten Wärmeerzeuger, wird die Warmwasser-Wärmemenge mit 0,30 multipliziert (§ 9 Abs. 2 HeizkostenV).",
-        "districtHeatCorrectionNote": "Bei eigenständiger gewerblicher Wärmelieferung wird die Warmwasser-Wärmemenge durch 1,15 geteilt (§ 9 Abs. 2 HeizkostenV). Das ergibt sich aus dem Energieträger Fernwärme und ist automatisch berücksichtigt.",
+        "heatPumpMonovalentDescription": "Deckt die Wärmepumpe die Wärme allein, ohne zweiten Wärmeerzeuger, wird die Warmwasser-Wärmemenge mit 0,30 multipliziert (§ 9 Abs. 2 HeizkostenV).",
+        "districtHeatCorrectionNote": "Bei eigenständiger gewerblicher Wärmelieferung wird die Warmwasser-Wärmemenge durch 1,15 geteilt (§ 9 Abs. 2 HeizkostenV). Das ergibt sich aus dem Energieträger Fernwärme und ist automatisch berücksichtigt.",
         "districtHeatEmissionsKgPerYear": "Treibhausgasemissionen (kg/Jahr)",
         "districtHeatEmissionsKgPerYearDescription": "Jährliche Treibhausgasemissionen des Fernwärmenetzes in kg. Der Wert steht auf der Rechnung oder Jahresmitteilung Ihres Wärmelieferanten und gehört nach § 6a HeizkostenV in die Abrechnung.",
         "districtHeatPrimaryEnergyFactor": "Primärenergiefaktor",
@@ -1342,12 +1339,12 @@
       "validation": {
         "percentRange": "Wert zwischen 0 und 100",
         "percentSum": "Grund- und Verbrauchsanteil müssen zusammen 100 % ergeben",
-        "consumptionShareBandwidth": "Der Verbrauchsanteil muss zwischen 50 % und 70 % liegen (§ 7 Abs. 1 HeizkostenV)",
+        "consumptionShareBandwidth": "Der Verbrauchsanteil muss zwischen 50 % und 70 % liegen (§ 7 Abs. 1 HeizkostenV)",
         "tempRange": "Temperatur zwischen 20 und 95 °C",
         "totalHeatEnergyInvalid": "Bitte geben Sie eine gültige Gesamt-Wärmemenge in kWh an (größer 0)",
         "districtHeatEmissionsInvalid": "Bitte geben Sie die Treibhausgasemissionen als Zahl in kg an (z. B. 12500)",
         "districtHeatFactorInvalid": "Bitte geben Sie den Primärenergiefaktor als Zahl zwischen 0 und 10 an (z. B. 0,28)",
-        "seventyPercentMandatory": "Für dieses Gebäude sind 70 % Verbrauchsanteil zwingend (§ 7 Abs. 1 Satz 2 HeizkostenV)",
+        "seventyPercentMandatory": "Für dieses Gebäude sind 70 % Verbrauchsanteil zwingend (§ 7 Abs. 1 Satz 2 HeizkostenV)",
         "validToBeforeFrom": "Gültig-bis darf nicht vor Gültig-ab liegen"
       },
       "cards": {
@@ -1428,7 +1425,7 @@
           "notes": "Notizen"
         },
         "confirmDelete": "Eintrag wirklich löschen?",
-        "confirmDeleteMessage": "Heizkosten-Eintrag für {unit} im Zeitraum {start}–{end} wird gelöscht.",
+        "confirmDeleteMessage": "Heizkosten-Eintrag für {unit} im Zeitraum {start} – {end} wird gelöscht.",
         "validation": {
           "splitExceedsTotal": "Grund- und Verbrauchskosten dürfen zusammen den Endbetrag nicht überschreiten.",
           "periodRange": "Enddatum muss nach dem Startdatum liegen."
@@ -1446,8 +1443,6 @@
       },
       "createTitle": "Neue Abrechnung",
       "createDescription": "Zeitraum und Mieter für eine neue Nebenkostenabrechnung festlegen.",
-      "listTitle": "Abrechnungen",
-      "listDescription": "Draft-Abrechnungen werden live aus den aktuellen Stammdaten berechnet. Finalisierte Abrechnungen sind unveränderlich.",
       "addStatement": "Neue Abrechnung",
       "searchPlaceholder": "Nach Mieter oder Wohnung suchen …",
       "empty": "Noch keine Abrechnungen erstellt",
@@ -1463,14 +1458,14 @@
       },
       "balanceArrears": "{amount} Nachzahlung",
       "duplicateDraftTitle": "Entwurf existiert bereits",
-      "duplicateDraftDescription": "Für diesen Mieter gibt es schon einen Entwurf, dessen Zeitraum sich mit dem gewählten überschneidet. Bitte prüfen Sie, ob Sie den vorhandenen Entwurf öffnen wollen statt einen zweiten anzulegen.",
+      "duplicateDraftDescription": "Für diesen Mieter gibt es schon einen Entwurf, dessen Zeitraum sich mit dem gewählten überschneidet. Bitte prüfen Sie, ob Sie den vorhandenen Entwurf öffnen wollen, statt einen zweiten anzulegen.",
       "balanceDraftPending": "wird berechnet",
       "balanceDraftHint": "Der Saldo wird beim Öffnen der Abrechnung live berechnet.",
       "fields": {
         "documentDate": "Ausstellungsdatum",
         "documentDateHint": "Datum, das auf der Abrechnung erscheint. Standard ist heute, für vor- oder nachdatierte Dokumente anpassbar.",
         "deadlineWarningTitle": "Abrechnungsfrist abgelaufen",
-        "deadlineWarningDescription": "Der Abrechnungszeitraum endete vor mehr als zwölf Monaten. Nach § 556 Abs. 3 BGB können Sie danach keine Nachzahlung mehr fordern. Ein Guthaben müssen Sie dem Mieter trotzdem auszahlen."
+        "deadlineWarningDescription": "Der Abrechnungszeitraum endete vor mehr als zwölf Monaten. Nach § 556 Abs. 3 BGB können Sie danach keine Nachzahlung mehr fordern. Ein Guthaben müssen Sie dem Mieter trotzdem auszahlen."
       },
       "validation": {
         "tenantRequired": "Mieter wählen",
@@ -1488,7 +1483,7 @@
         "adjustedLabel": "Neue Vorauszahlung ab {date}",
         "noAdjustment": "Keine Anpassung festgelegt, die Vorauszahlung bleibt unverändert.",
         "amountLabel": "Neue monatliche Vorauszahlung",
-        "amountHelp": "Nach einer Abrechnung darf die Vorauszahlung auf eine angemessene Höhe angepasst werden (§ 560 Abs. 4 BGB). Angemessen heißt: am Ergebnis der letzten Abrechnung orientiert.\n\nEin pauschaler Sicherheitszuschlag darauf ist nicht zulässig. Erwartete Preissteigerungen dürfen Sie einrechnen, wenn Sie sie belegen können. Erfassen Sie dazu die neue Rechnung, dann berücksichtigt der Vorschlag sie.",
+        "amountHelp": "Nach einer Abrechnung darf die Vorauszahlung auf eine angemessene Höhe angepasst werden (§ 560 Abs. 4 BGB). Angemessen heißt: am Ergebnis der letzten Abrechnung orientiert.\n\nEin pauschaler Sicherheitszuschlag darauf ist nicht zulässig. Erwartete Preissteigerungen dürfen Sie einrechnen, wenn Sie sie belegen können. Erfassen Sie dazu die neue Rechnung, dann berücksichtigt der Vorschlag sie.",
         "amountBelowSuggestedWarning": "Der gewählte Betrag liegt unter dem Vorjahres-Vorschlag ({suggested}). Eine Senkung ist möglich, in der Regel wird die Vorauszahlung jedoch mindestens auf das auf 12 Monate hochgerechnete Vorjahres-Ist angepasst.",
         "amountCustomInfo": "Der Betrag weicht von den Standard-Vorschlägen ab (aktuell, Vorjahres-Ist auf 12 Monate hochgerechnet, mit Tarif-Erwartungen). Er muss auf konkret belegbaren Werten beruhen (Bescheid, Vertrag, Versorger-Mitteilung). Pauschale Sicherheitszuschläge sind nach BGH-Rechtsprechung unzulässig.",
         "applyCurrent": "Vertraglich beibehalten ({amount})",
@@ -1523,7 +1518,7 @@
         "finalizedAt": "Finalisiert am {date}",
         "calculating": "wird berechnet …",
         "confirmFinalize": "Abrechnung wirklich finalisieren? Danach sind keine Änderungen mehr möglich.",
-        "finalizeDeadlineWarning": "Der Abrechnungszeitraum endete vor mehr als zwölf Monaten. Die Nachzahlung ist nach § 556 Abs. 3 BGB nicht mehr durchsetzbar.",
+        "finalizeDeadlineWarning": "Der Abrechnungszeitraum endete vor mehr als zwölf Monaten. Die Nachzahlung ist nach § 556 Abs. 3 BGB nicht mehr durchsetzbar.",
         "finalizeClimateFactorWarning": "Sie haben noch nicht entschieden, ob Klimafaktoren vom Deutschen Wetterdienst geladen werden dürfen. Ohne Klimafaktor bleibt der Verbrauchsvergleich im Anhang unbereinigt. Die Frage finden Sie im Tab „Heizkosten“.",
         "confirmFinalizeWithDataIssues": "Es {count, plural, one {liegt noch ein Hinweis} other {liegen noch # Hinweise}} zur Datenqualität vor (siehe „Hinweise zur Berechnung“). Trotzdem finalisieren? Danach sind keine Änderungen mehr möglich.",
         "finalizing": "Wird finalisiert …",
@@ -1578,7 +1573,7 @@
         "additionalPayment": "Nachzahlung",
         "refund": "Rückzahlung",
         "pdfPreview": "PDF-Vorschau",
-        "pdfPreviewDescription": "Exakt wie das finale Dokument nach dem Finalisieren",
+        "pdfPreviewDescription": "Exakt wie das Dokument nach dem Finalisieren",
         "downloadPdf": "PDF herunterladen",
         "info": {
           "period": "Zeitraum",
@@ -1824,7 +1819,7 @@
         "end": "Vertragsende",
         "deposit": "Kaution",
         "depositHint": "Vereinbarte Kaution. 0 = keine Kaution.",
-        "interimReadingHint": "Mietbeginn oder Mietende liegt mitten im Jahr. Nach § 9b Abs. 1 HeizkostenV sind die Verbrauchszähler zum Ein- bzw. Auszug abzulesen. Erfassen Sie diese Zwischenablesung, sonst rechnet die Abrechnung den Stand aus den umliegenden Ablesungen hoch und weist ihn als rechnerisch ermittelt aus.",
+        "interimReadingHint": "Mietbeginn oder Mietende liegt mitten im Jahr. Nach § 9b Abs. 1 HeizkostenV sind die Verbrauchszähler zum Ein- bzw. Auszug abzulesen. Erfassen Sie diese Zwischenablesung, sonst rechnet die Abrechnung den Stand aus den umliegenden Ablesungen hoch und weist ihn als rechnerisch ermittelt aus.",
         "residents": "Bewohner",
         "coldRent": "Kaltmiete",
         "coldRentEuros": "Kaltmiete",
@@ -2016,12 +2011,10 @@
         "fields": {
           "current": "Aktuelles Passwort",
           "new": "Neues Passwort",
-          "newDescription": "Mindestens {min} Zeichen.",
           "confirm": "Neues Passwort wiederholen"
         },
         "validation": {
           "currentRequired": "Bitte geben Sie Ihr aktuelles Passwort ein.",
-          "tooShort": "Das neue Passwort muss mindestens {min} Zeichen lang sein.",
           "mustDiffer": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
           "confirmMismatch": "Die Wiederholung stimmt nicht mit dem neuen Passwort überein."
         },
@@ -2029,7 +2022,7 @@
       },
       "sender": {
         "title": "Absenderdaten",
-        "description": "Diese Angaben erscheinen im Briefkopf und im Footer Ihrer Nebenkostenabrechnungen.",
+        "description": "Diese Angaben erscheinen im Briefkopf und in der Fußzeile Ihrer Nebenkostenabrechnungen.",
         "saveSuccess": "Absenderdaten gespeichert.",
         "moreFields": "Weitere Angaben",
         "sections": {
@@ -2174,8 +2167,6 @@
   },
   "statements": {
     "pdf": {
-      "settlementOverview": "Übersicht der umgelegten Kosten",
-      "settlementBalance": "Abrechnungssaldo",
       "draftWatermark": "ENTWURF",
       "correctionNote": "Diese Abrechnung ersetzt die Abrechnung Nr. {reference} und tritt vollständig an deren Stelle.",
       "documentType": "Nebenkostenabrechnung",
@@ -2187,9 +2178,7 @@
         "reference": "Abrechnungs-Nr.",
         "unit": "Wohnung",
         "unitArea": "Wohnfläche",
-        "buildingArea": "Gesamtfläche Haus",
         "period": "Abrechnung",
-        "periodDays": "Abrechnungstage",
         "tenantPeriod": "Nutzung",
         "tenantPeriodDays": "Nutzungstage",
         "areaSqm": "{value} m²"
@@ -2242,7 +2231,7 @@
         "comparisonPrevCalculationNote": "Rechenweg: dieser Zeitraum {currentBase} \u00d7 Klimafaktor {currentFactor} = {currentResult}; vorheriger Zeitraum {previousBase} \u00d7 Klimafaktor {previousFactor} = {previousResult}.",
         "districtHeatValueMissing": "Hierzu liegen uns keine Angaben des Versorgers vor",
         "comparisonPrevMissing": "Für den vorhergehenden Abrechnungszeitraum liegen keine Daten vor.",
-        "externalReference": "Die Angaben nach § 6a Abs. 3 HeizkostenV (Energieträger, Emissionen, Verbrauchsvergleiche) entnehmen Sie der beigefügten Heizkostenabrechnung Ihres Wärmedienstleisters.",
+        "externalReference": "Die Angaben nach § 6a Abs. 3 HeizkostenV (Energieträger, Emissionen, Verbrauchsvergleiche) entnehmen Sie der beigefügten Heizkostenabrechnung Ihres Wärmedienstleisters.",
         "contactsTitle": "Informations- und Beratungsstellen",
         "contactsIntro": "Informationen über Maßnahmen zur Verbesserung der Energieeffizienz, Vergleichsprofile und technische Angaben zu energiebetriebenen Geräten erhalten Sie unter anderem hier:",
         "contact1": "Verbraucherzentrale Bundesverband – www.verbraucherzentrale.de",
@@ -2271,16 +2260,8 @@
       "advanceAdjustmentWithTariffsClosing": "Ab dem **{validFrom}** beträgt Ihre monatliche Zahlung insgesamt **{total}** ({baseRent} Kaltmiete + {advance} Nebenkostenvorauszahlung). Bitte passen Sie Ihren Dauerauftrag entsprechend an.",
       "advanceAdjustmentWithTariffsClosingSepa": "Ab dem **{validFrom}** beträgt Ihre monatliche Zahlung insgesamt **{total}** ({baseRent} Kaltmiete + {advance} Nebenkostenvorauszahlung). Der Betrag wird automatisch per SEPA-Lastschrift eingezogen.",
       "payments": {
-        "title": "Geleistete Vorauszahlungen",
         "intro": "Im Abrechnungszeitraum haben Sie für die Betriebs- und Heizkosten folgende Vorauszahlungen geleistet:",
         "empty": "Im Abrechnungszeitraum wurden keine Vorauszahlungen für Betriebs- und Heizkosten erfasst.",
-        "columnDate": "Datum",
-        "columnReference": "Verwendungszweck",
-        "columnPurpose": "Tilgung",
-        "columnAmount": "Betrag",
-        "purposeNone": "—",
-        "flagReversal": "(Storno)",
-        "flagReservation": "(Vorbehalt)",
         "total": "Summe Vorauszahlungen"
       },
       "categories": {
@@ -2292,24 +2273,14 @@
         "correction": "Korrektur"
       },
       "pagination": "Seite {page} von {total}",
-      "paginationLabel": "Seite",
-      "paginationOf": "von",
-      "statementLabel": "Abrechnung",
-      "appendixLabel": "Anhang",
-      "senderLine": "{name} – {address}",
+      "senderLine": "{name} – {street} – {postalCode} {city}",
       "senderContact": {
         "phone": "Tel. {value}",
         "fax": "Fax {value}"
       },
-      "footerAppendix": "{sender} – {statementLabel} {number} – {appendixLabel}",
-      "balanceCredit": "Der Rückzahlungsbetrag wird zeitnah auf Ihr hinterlegtes Konto überwiesen.",
-      "balanceDebit": "Bitte überweisen Sie den Nachzahlungsbetrag innerhalb von 30 Tagen.",
-      "balanceZero": "Vorauszahlungen und tatsächliche Kosten gleichen sich aus.",
       "balanceSettle": "Nachzahlung",
       "balanceRefund": "Rückzahlung",
       "balanceBalanced": "Ausgeglichen",
-      "totalPassThrough": "Summe umgelegte Kosten",
-      "totalAdvancesMade": "Geleistete Vorauszahlungen",
       "costTable": {
         "costTypeAllocation": "Kostenart und\nUmlageschlüssel",
         "totalCosts": "Gesamt-\nkosten",
@@ -2377,14 +2348,14 @@
           "methodLabel": "Ermittlung der Warmwasser-Wärmemenge",
           "method": {
             "boiler_meter": "Am Wärmemengenzähler des Warmwasserboilers gemessen",
-            "estimated": "Nach der Formel des § 9 Abs. 2 HeizkostenV aus Warmwassermenge und Vorlauftemperatur",
-            "flat_rate_fallback": "Nach der Pauschalformel des § 9 Abs. 2 HeizkostenV (32 kWh je m² und Jahr)"
+            "estimated": "Nach der Formel des § 9 Abs. 2 HeizkostenV aus Warmwassermenge und Vorlauftemperatur",
+            "flat_rate_fallback": "Nach der Pauschalformel des § 9 Abs. 2 HeizkostenV (32 kWh je m² und Jahr)"
           },
           "totalHeatEnergyLabel": "Gesamt-Wärmemenge der Anlage",
           "hotWaterHeatLabel": "davon für Warmwasser",
           "kwhValue": "{value} kWh",
-          "correctionFactorLabel": "Korrekturfaktor nach § 9 Abs. 2 HeizkostenV",
-          "correctionFactorValue": "x {value}"
+          "correctionFactorLabel": "Korrekturfaktor nach § 9 Abs. 2 HeizkostenV",
+          "correctionFactorValue": "× {value}"
         },
         "totalShareNote": "Insgesamt {percent} % der Heizkosten",
         "consumptionDistributionHeatingArea": "Verbrauchsanteil ersatzweise nach Heizfläche verteilt (keine bzw. Differenz von 0 bei den Verbrauchsmessern).",
@@ -2434,8 +2405,8 @@
       "taxableLabor": {
         "title": "Steuerlich begünstigte Lohnkosten nach § 35a EStG",
         "intro": "Folgende auf Sie umgelegte Lohnkostenanteile können Sie in Ihrer Einkommensteuererklärung gemäß § 35a EStG geltend machen. Die Beträge sind anteilig nach Ihrem Anteil an der jeweiligen Kostenart berechnet.",
-        "craftsman": "Handwerkerleistungen (§ 35a Abs. 3 EStG)",
-        "householdService": "Haushaltsnahe Dienstleistungen (§ 35a Abs. 2 EStG)",
+        "craftsman": "Handwerkerleistungen (§ 35a Abs. 3 EStG)",
+        "householdService": "Haushaltsnahe Dienstleistungen (§ 35a Abs. 2 EStG)",
         "position": "Kostenart",
         "tenantAmount": "Ihr Lohnkostenanteil",
         "subtotal": "Summe",

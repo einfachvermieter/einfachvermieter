@@ -215,7 +215,10 @@ export const ClimateFactorsCard = ({
               {data.rows.map((row) => (
                 <tr key={rowKey(row)} className="border-b border-border">
                   <td className="py-2.5">
-                    {`${formatDate(row.periodStart)} – ${formatDate(row.periodEnd)}`}
+                    {t("ui.common.periodLabel", {
+                      start: formatDate(row.periodStart),
+                      end: formatDate(row.periodEnd),
+                    })}
                   </td>
                   <td className="py-2.5 text-right tabular-nums">
                     {editMode ? (

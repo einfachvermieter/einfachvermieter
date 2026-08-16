@@ -171,7 +171,10 @@ export const CostEntryEditPage = () => {
   const hasYears = years.length > 0;
   const minYear = hasYears ? years.reduce((a, b) => (a < b ? a : b)) : "";
   const maxYear = hasYears ? years.reduce((a, b) => (a > b ? a : b)) : "";
-  const periodRange = minYear === maxYear ? minYear : `${minYear}–${maxYear}`;
+  const periodRange =
+    minYear === maxYear
+      ? minYear
+      : t("ui.common.yearRangeLabel", { start: minYear, end: maxYear });
   const periodText = hasYears ? periodRange : t("ui.common.emptyValue");
   // Kostenarten der Rechnung als Verknüpfungen (je Kostenart einmal)
   const linkedCostTypes = [
