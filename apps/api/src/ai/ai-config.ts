@@ -88,7 +88,7 @@ export const providersWithEnvApiKey = (env: NodeJS.ProcessEnv): AiProvider[] =>
  * tatsächlich genutzten Anbindung zusammen. Was in der Oberfläche gesetzt
  * ist, gewinnt; die Umgebung dient als Vorbelegung.
  *
- * @returns `null`, wenn kein gültiger Anbieter gewählt ist oder der nötige API-Key fehlt – dann bleibt die KI-Extraktion abgeschaltet.
+ * @returns `null`, wenn kein gültiger Anbieter gewählt ist oder der nötige API-Key fehlt, bleibt die KI-Extraktion abgeschaltet.
  */
 export const resolveAiRuntimeConfig = (
   stored: StoredAiSettings,

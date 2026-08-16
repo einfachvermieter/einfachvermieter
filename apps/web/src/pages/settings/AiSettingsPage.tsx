@@ -29,7 +29,7 @@ const toFormDefaults = (settings: AiSettings): AiSettingsFormValues => ({
 /**
  * Setzt die Formularwerte auf das API-Format um.
  *
- * @param keepStoredApiKey Zeigt das Formular den gespeicherten API-Key noch an, bleibt er unangetastet und wird nicht mitgeschickt. Andernfalls gilt der Feldinhalt – leer bedeutet dann löschen.
+ * @param keepStoredApiKey Zeigt das Formular den gespeicherten API-Key noch an, bleibt er unangetastet und wird nicht mitgeschickt. Andernfalls gilt der Feldinhalt; leer bedeutet dann löschen.
  */
 const toUpdateDto = (
   values: AiSettingsFormValues,
