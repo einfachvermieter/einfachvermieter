@@ -2195,6 +2195,7 @@
         "areaSqm": "{value} m²"
       },
       "appendixHint": "Die ausführliche Aufstellung der umgelegten Kosten und alle Details finden Sie auf den folgenden Seiten.",
+      "receiptsHint": "Die Originalrechnungen sind bei uns hinterlegt. Sie können sie nach Terminabsprache einsehen.",
       "appendixDetail": "Betriebskosten",
       "appendixConsumption": "Verbrauchsdetails",
       "appendixHeating": "Heizkostenabrechnung",
@@ -2324,7 +2325,8 @@
         "operatorDivide": "÷",
         "operatorMultiply": "×",
         "operatorEquals": "=",
-        "personDaysNote": "PT = Personentage. Berechnung siehe Tabelle „Belegung“."
+        "personDaysNote": "PT = Personentage. Berechnung siehe Tabelle „Belegung“.",
+        "roundingNote": "Die Bemessungswerte sind für die Anzeige gerundet. Gerechnet wird mit den ungerundeten Werten."
       },
       "heating": {
         "breakdown": {

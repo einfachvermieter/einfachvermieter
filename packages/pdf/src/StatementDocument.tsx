@@ -407,6 +407,12 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
           <Text style={styles.paragraph}>
             {t("statements.pdf.appendixHint")}
           </Text>
+
+          {/* Recht auf Belegeinsicht: im Anschreiben, weil der
+              Lohnkosten-Anhang nur bei begünstigten Positionen erscheint. */}
+          <Text style={styles.paragraph}>
+            {t("statements.pdf.receiptsHint")}
+          </Text>
         </View>
 
         <PageFooter statementReference={statementReference} />

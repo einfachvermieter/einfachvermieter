@@ -43,9 +43,14 @@ export const OverviewCard = ({ result }: { result: StatementResult }) => {
           },
           {
             label: t("ui.statements.detail.advances"),
-            value: t("ui.common.deductionAmount", {
-              amount: formatEur(result.totalAdvancesCents),
-            }),
+            // Ohne Vorauszahlungen gibt es nichts abzuziehen, das
+            // Minuszeichen entfällt dann.
+            value:
+              result.totalAdvancesCents === 0
+                ? formatEur(0)
+                : t("ui.common.deductionAmount", {
+                    amount: formatEur(result.totalAdvancesCents),
+                  }),
           },
         ]}
       />

@@ -129,6 +129,12 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
   });
   const footnotes = numberFootnotes(operatingLines, footnoteDefs);
 
+  // Die Bemessungsspalte zeigt gerundete Werte, gerechnet wird mit den
+  // ungerundeten. Ohne Bemessungswerte gibt es nichts zu erklären.
+  const hasAnyBemessung = operatingLines.some(
+    (line) => line.bemessungTotal !== null && line.bemessungTotal !== undefined,
+  );
+
   return (
     <SectionCard
       icon={RiHomeGearLine}
@@ -255,13 +261,18 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
             </tfoot>
           </table>
         </div>
-        {footnotes.length > 0 ? (
+        {footnotes.length > 0 || hasAnyBemessung ? (
           <div className="space-y-0.5">
             {footnotes.map((fn) => (
               <p key={fn.marker} className="text-xs text-muted-foreground">
                 <sup>{fn.marker}</sup> {fn.text}
               </p>
             ))}
+            {hasAnyBemessung ? (
+              <p className="text-xs text-muted-foreground">
+                {t("statements.pdf.costTable.roundingNote")}
+              </p>
+            ) : null}
           </div>
         ) : null}
       </div>

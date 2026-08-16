@@ -17,7 +17,12 @@ export const formatEur = (
     return opts.fallback ?? "-";
   }
 
-  return `${(cents / 100).toLocaleString("de-DE", {
+  // -0 entsteht, wo eine 0 mit umgekehrtem Vorzeichen ausgewiesen wird
+  // (etwa Vorauszahlungen von 0 in einer Abzugszeile), und würde sonst
+  // als "-0,00 €" erscheinen.
+  const value = cents === 0 ? 0 : cents / 100;
+
+  return `${value.toLocaleString("de-DE", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}\u00A0€`;

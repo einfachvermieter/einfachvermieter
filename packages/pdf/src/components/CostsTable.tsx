@@ -117,6 +117,11 @@ export const CostsTable = ({
     text: t("statements.pdf.costTable.personDaysNote"),
   });
   const footnotes = numberFootnotes(lines, footnoteDefs);
+  // Die Bemessungsspalte zeigt gerundete Werte, gerechnet wird mit den
+  // ungerundeten. Ohne Bemessungswerte gibt es nichts zu erklären.
+  const hasAnyBemessung = lines.some(
+    (line) => line.bemessungTotal !== null && line.bemessungTotal !== undefined,
+  );
 
   return (
     <View>
@@ -277,6 +282,11 @@ export const CostsTable = ({
           {renderSuperscripts(`${fn.marker} ${fn.text}`)}
         </Text>
       ))}
+      {hasAnyBemessung ? (
+        <Text style={styles.footnote}>
+          {t("statements.pdf.costTable.roundingNote")}
+        </Text>
+      ) : null}
     </View>
   );
 };

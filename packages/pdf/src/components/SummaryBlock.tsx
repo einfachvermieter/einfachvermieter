@@ -63,15 +63,16 @@ export const SummaryBlock = ({
     },
     {
       label: t("statements.pdf.summary.advances"),
-      // Vorauszahlungen reduzieren die Forderung, negatives Vorzeichen,
-      // damit die Summenzeile mathematisch eine echte Addition ist.
+      // Vorauszahlungen reduzieren die Forderung, deshalb negatives
+      // Vorzeichen.
       value: formatEur(-totalAdvancesCents),
     },
     {
       label: balanceLabel,
-      // Saldo mit korrektem Vorzeichen: positiv = Nachzahlung,
-      // negativ = Rückzahlung. Bezeichnung weist zusätzlich textuell aus.
-      value: formatEur(balanceCents),
+      // Die Richtung steckt in der Bezeichnung (Nachzahlung/Rückzahlung),
+      // der Betrag bleibt vorzeichenlos. "Rückzahlung -120,00 €" liest
+      // sich sonst wie eine Forderung.
+      value: formatEur(Math.abs(balanceCents)),
       isTotal: true,
     },
   ];
