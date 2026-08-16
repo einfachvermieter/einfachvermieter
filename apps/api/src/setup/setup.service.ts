@@ -12,8 +12,9 @@ import {
   ConflictException,
   Injectable,
 } from "@nestjs/common";
-import { authMode } from "../auth/auth-mode.js";
+import { authMode, recoveryMode } from "../auth/auth-mode.js";
 import { LocalAdminService } from "../auth/local-admin.service.js";
+import { isRecoveryUsed } from "../auth/recovery-state.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 
 @Injectable()
@@ -28,20 +29,48 @@ export class SetupService {
    *
    * Im `session`-Modus: eingerichtet, sobald ein Benutzer existiert
    * Im`local`-Modus: eingerichtet, wenn App-Einstellungen existieren
+   * `recovery` meldet den Rücksetz-Modus, in dem nur das Passwort-Formular
+   * erreichbar ist; `recoveryEmails` liefert dann die Administrator-Konten
+   * zur Auswahl, `recoveryUsed` das bereits erfolgte Zurücksetzen.
    *
    * @returns needsSetup:true, solange noch kein Benutzer existiert
    */
   async getStatus(): Promise<SetupStatus> {
     const mode = authMode();
+    const recovery = recoveryMode();
+    const recoveryEmails = recovery ? await this.findAdminEmails() : [];
+    const recoveryUsed = isRecoveryUsed();
     if (mode === "local") {
       const settingsCount = await this.em.count(AppSettingsSchema, {});
 
-      return { needsSetup: settingsCount === 0, authMode: mode };
+      return {
+        needsSetup: settingsCount === 0,
+        authMode: mode,
+        recovery,
+        recoveryEmails,
+        recoveryUsed,
+      };
     }
 
     const userCount = await this.em.count(UserSchema, {});
 
-    return { needsSetup: userCount === 0, authMode: mode };
+    return {
+      needsSetup: userCount === 0,
+      authMode: mode,
+      recovery,
+      recoveryEmails,
+      recoveryUsed,
+    };
+  }
+
+  private async findAdminEmails(): Promise<string[]> {
+    const admins = await this.em.find(
+      UserSchema,
+      { role: "admin" },
+      { fields: ["email"], orderBy: { email: "asc" } },
+    );
+
+    return admins.map((admin) => admin.email);
   }
 
   /**

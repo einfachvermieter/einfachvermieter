@@ -6,6 +6,7 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { AccountsModule } from "./accounts/accounts.module.js";
 import { AiExtractionModule } from "./ai/ai-extraction.module.js";
 import { AuthModule } from "./auth/auth.module.js";
+import { RecoveryGuard } from "./auth/recovery.guard.js";
 import { BuildingsModule } from "./buildings/buildings.module.js";
 import { CostsModule } from "./costs/costs.module.js";
 import { DatabaseModule } from "./database/database.module.js";
@@ -54,6 +55,9 @@ const webDistPath =
     SettingsModule,
     SetupModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    { provide: APP_GUARD, useClass: RecoveryGuard },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

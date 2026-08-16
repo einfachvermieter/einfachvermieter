@@ -38,6 +38,9 @@ export const useRunSetup = () => {
         (previous) => ({
           needsSetup: false,
           authMode: previous?.authMode ?? "session",
+          recovery: previous?.recovery ?? false,
+          recoveryEmails: previous?.recoveryEmails ?? [],
+          recoveryUsed: previous?.recoveryUsed ?? false,
         }),
       );
     },

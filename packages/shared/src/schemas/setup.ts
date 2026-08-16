@@ -7,10 +7,18 @@ import { type PasswordPolicy, passwordSchema } from "./password.js";
  * Antwort von `GET /api/setup/status`. `authMode` steuert im Frontend, ob
  * Login/Abmelden/Passwort sichtbar sind und ob der Assistent den
  * Admin-Konto-Schritt zeigt (`local` = Desktop-App ohne Login).
+ * `recovery` meldet den per Umgebungsvariable gestarteten Rücksetz-Modus:
+ * dann ist nur das Formular für ein neues Passwort erreichbar, und
+ * `recoveryEmails` nennt die Administrator-Konten zur Auswahl (sonst leer).
+ * `recoveryUsed` heißt: in diesem Prozess wurde bereits ein Passwort gesetzt,
+ * ein zweites Mal geht erst nach einem Neustart.
  */
 export type SetupStatus = {
   needsSetup: boolean;
   authMode: "session" | "local";
+  recovery: boolean;
+  recoveryEmails: string[];
+  recoveryUsed: boolean;
 };
 
 /**

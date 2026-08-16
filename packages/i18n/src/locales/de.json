@@ -195,6 +195,10 @@
     "residentLoginDisabled": "Die Anmeldung für Bewohner-Konten ist noch nicht freigeschaltet.",
     "setupAlreadyDone": "Die Anwendung ist bereits eingerichtet. Bitte melden Sie sich an.",
     "passwordCurrentWrong": "Das aktuelle Passwort ist nicht korrekt.",
+    "recoveryModeActive": "Die App läuft im Rücksetz-Modus und ist gesperrt. Setzen Sie das Passwort zurück und starten Sie den Container danach ohne die Variable PASSWORD_RESET neu.",
+    "recoveryUserUnknown": "Zu dieser E-Mail-Adresse gibt es kein Administrator-Konto.",
+    "recoveryCodeWrong": "Der Code stimmt nicht mit dem Wert der Variable PASSWORD_RESET überein.",
+    "recoveryAlreadyUsed": "Es wurde bereits ein Passwort gesetzt. Ein weiteres Zurücksetzen ist erst nach einem Neustart des Containers möglich.",
     "sessionUserMissing": "Ihr angemeldeter Benutzer existiert nicht mehr. Bitte melden Sie sich ab und erneut an.",
     "notAuthenticated": "Sie sind nicht angemeldet.",
     "insufficientPermission": "Sie haben keine Berechtigung für diese Aktion.",
@@ -1714,6 +1718,21 @@
       "rememberMe": "Angemeldet bleiben",
       "showPassword": "Passwort anzeigen",
       "hidePassword": "Passwort verbergen"
+    },
+    "recovery": {
+      "title": "Passwort zurücksetzen",
+      "description": "Die App läuft im Rücksetz-Modus. Wählen Sie das Konto, geben Sie den Code aus der Variable PASSWORD_RESET ein und vergeben Sie ein neues Passwort.",
+      "fields": {
+        "email": "Konto",
+        "code": "Code",
+        "codeDescription": "Der Wert, den Sie in die Variable PASSWORD_RESET eingetragen haben",
+        "new": "Neues Passwort",
+        "confirm": "Neues Passwort wiederholen"
+      },
+      "submit": "Passwort setzen",
+      "noAccounts": "Es gibt noch kein Administrator-Konto. Entfernen Sie die Variable PASSWORD_RESET aus den Einstellungen des Containers und starten Sie ihn neu, dann führt Sie der Einrichtungsassistent durch die Anmeldung.",
+      "successTitle": "Passwort geändert",
+      "successDescription": "Entfernen Sie jetzt die Variable PASSWORD_RESET aus den Einstellungen des Containers und starten Sie ihn neu. Danach melden Sie sich mit dem neuen Passwort an. Alle angemeldeten Benutzer müssen sich ebenfalls neu anmelden."
     },
     "form": {
       "dateFormat": "Datum im Format YYYY-MM-DD",

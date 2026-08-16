@@ -1,6 +1,8 @@
 import {
   makePasswordChangeSchema,
+  makePasswordRecoverySchema,
   type PasswordChangeDto,
+  type PasswordRecoveryDto,
   type ProfileUpdateDto,
   passwordPolicyFromEnv,
   profileUpdateSchema,
@@ -168,5 +170,22 @@ export class AuthController {
     setAuthCookie(response, token, expiresAt);
 
     return result;
+  }
+
+  // Ohne altes Passwort, dafür nur im Rücksetz-Modus: außerhalb davon weist
+  // der RecoveryGuard den Pfad mit 404 ab. Kein Cookie: der Betreiber soll
+  // den Container ohne die Variable neu starten und sich regulär anmelden.
+  @Throttle({ default: { ...PASSWORD_BRUTE_FORCE_LIMITS } })
+  @Post("recover")
+  @HttpCode(HttpStatus.OK)
+  recoverPassword(
+    @Body(
+      new ZodValidationPipe(
+        makePasswordRecoverySchema(passwordPolicyFromEnv(process.env)),
+      ),
+    )
+    dto: PasswordRecoveryDto,
+  ) {
+    return this.authService.resetPassword(dto);
   }
 }

@@ -28,6 +28,11 @@ services:
       - PASSWORD_REQUIRE_LOWERCASE=${PASSWORD_REQUIRE_LOWERCASE:-false}
       - PASSWORD_REQUIRE_DIGIT=${PASSWORD_REQUIRE_DIGIT:-false}
       - PASSWORD_REQUIRE_SPECIAL=${PASSWORD_REQUIRE_SPECIAL:-false}
+      # Passwort vergessen: naechste Zeile einkommentieren, Container neu
+      # starten, im Browser das neue Passwort setzen. Danach die Zeile wieder
+      # auskommentieren und erneut neu starten. Solange sie gesetzt ist, ist
+      # die App gesperrt.
+      # - PASSWORD_RESET=GeheimesKennwort!1234
       # Optional: internen Port aendern (dann in expose oben und im Caddyfile
       # nachziehen).
       # - PORT=7273

@@ -1,6 +1,7 @@
 import type {
   PasswordChangeDto,
   PasswordPolicy,
+  PasswordRecoveryDto,
   ProfileUpdateDto,
 } from "@einfachvermieter/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -55,6 +56,13 @@ export const useLogin = () => {
 
 export const changePassword = (dto: PasswordChangeDto) =>
   api.post<{ success: boolean }>("/auth/change-password", dto);
+
+/**
+ * Neues Passwort ohne Anmeldung setzen. Nur im Rücksetz-Modus vorhanden,
+ * sonst antwortet die API mit 404.
+ */
+export const recoverPassword = (dto: PasswordRecoveryDto) =>
+  api.post<{ success: boolean }>("/auth/recover", dto);
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();

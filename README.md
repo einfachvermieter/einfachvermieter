@@ -82,6 +82,29 @@ docker compose up -d
 Der Container legt die Datenbank an und wendet Migrationen beim Start an. Beim
 ersten Aufruf im Browser legt der Assistent das Administrator-Konto an.
 
+### Passwort vergessen
+
+Es gibt keinen Versand von Wiederherstellungs-Links (die App verschickt keine
+E-Mails). Stattdessen tragen Sie in die Umgebungsvariable `PASSWORD_RESET` einen
+selbst gewählten Code ein (in `docker-compose.yml` schon als Kommentar
+vorbereitet) und starten den Container neu:
+
+```yaml
+- PASSWORD_RESET=GeheimesKennwort!1234
+```
+
+Er läuft dann im Rücksetz-Modus: Der Browser zeigt nur noch ein Formular für ein
+neues Passwort, alles andere ist gesperrt. Im Formular wählen Sie das Konto,
+geben denselben Code ein und vergeben das neue Passwort. Danach entfernen Sie
+die Variable wieder und starten erneut neu, dann ist die Anmeldung mit dem
+neuen Passwort möglich. Alle angemeldeten Benutzer müssen sich neu anmelden.
+
+Der Code sorgt dafür, dass nicht jeder, der in diesem Zeitfenster die Adresse
+im Browser aufruft, das Passwort setzen kann. Nehmen Sie deshalb keinen kurzen
+Wert wie `1`, sondern etwas Zufälliges. Pro Start ist genau ein Zurücksetzen
+möglich, danach ist auch mit richtigem Code Schluss. Lassen Sie die Variable
+trotzdem nicht dauerhaft gesetzt.
+
 ### Desktop-App (Electron)
 
 Alternative zum Docker-Betrieb für den Einzelplatz: eine installierbare

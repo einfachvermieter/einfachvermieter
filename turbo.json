@@ -10,6 +10,7 @@
     "DB_DRIVER",
     "HOST",
     "LOOPBACK_TOKEN",
+    "PASSWORD_RESET",
     "PORT",
     "TRUST_PROXY",
     "WEB_ORIGIN",

@@ -1,13 +1,23 @@
 import { hashPassword, SessionSchema, UserSchema } from "@einfachvermieter/db";
 import type {
   PasswordChangeDto,
+  PasswordRecoveryDto,
   ProfileUpdateDto,
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import argon2 from "argon2";
 import { FieldValidationException } from "../common/field-validation.exception.js";
 import { getI18n } from "../i18n/i18n.registry.js";
+import {
+  isRecoveryCodeValid,
+  isRecoveryUsed,
+  markRecoveryUsed,
+} from "./recovery-state.js";
 
 export type AuthUser = {
   userId: string;
@@ -106,6 +116,50 @@ export class AuthService {
     await this.em.nativeDelete(SessionSchema, { userId });
 
     await this.em.flush();
+
+    return { success: true };
+  }
+
+  /**
+   * Setzt das Passwort ohne Kenntnis des alten. Nur aus dem Rücksetz-Modus
+   * heraus erreichbar (siehe RecoveryGuard), nur mit dem Code aus der
+   * Umgebungsvariable und nur einmal pro Prozess. Verworfen werden alle
+   * Sitzungen sämtlicher User.
+   */
+  async resetPassword(dto: PasswordRecoveryDto) {
+    if (isRecoveryUsed()) {
+      throw new ConflictException(getI18n().t("errors.recoveryAlreadyUsed"));
+    }
+
+    if (!isRecoveryCodeValid(dto.code)) {
+      throw new FieldValidationException([
+        {
+          path: ["code"],
+          message: getI18n().t("errors.recoveryCodeWrong"),
+        },
+      ]);
+    }
+
+    const user = await this.em.findOne(UserSchema, {
+      email: dto.email.toLowerCase(),
+      role: "admin",
+    });
+    if (!user) {
+      throw new FieldValidationException([
+        {
+          path: ["email"],
+          message: getI18n().t("errors.recoveryUserUnknown"),
+        },
+      ]);
+    }
+
+    this.em.assign(user, {
+      passwordHash: await hashPassword(dto.newPassword),
+      updatedAt: new Date().toISOString(),
+    });
+    await this.em.nativeDelete(SessionSchema, {});
+    await this.em.flush();
+    markRecoveryUsed();
 
     return { success: true };
   }

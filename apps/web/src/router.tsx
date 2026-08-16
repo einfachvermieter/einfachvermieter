@@ -3,6 +3,7 @@ import {
   meterTypes,
   type PaymentPurposeKind,
   paymentPurposeKinds,
+  type SetupStatus,
 } from "@einfachvermieter/shared";
 import { RiBuilding4Line, RiHome4Line } from "@remixicon/react";
 import type { QueryClient } from "@tanstack/react-query";
@@ -76,6 +77,7 @@ import { type Unit, unitQueryOptions, unitsQueryOptions } from "./lib/units";
 // gefaltet (kein Code-Splitting). Die App wird nur via Docker/Electron
 // vertrieben, wo Chunk-Splitting nur Blitzer beim Seitenwechsel bringt.
 import { LoginPage } from "./pages/auth/LoginPage";
+import { PasswordRecoveryPage } from "./pages/auth/PasswordRecoveryPage";
 import { BuildingCreatePage } from "./pages/buildings/BuildingCreatePage";
 import { BuildingEditPage } from "./pages/buildings/BuildingEditPage";
 import { BuildingsOverview } from "./pages/buildings/BuildingsOverview";
@@ -117,14 +119,29 @@ type RouterContext = {
   queryClient: QueryClient;
 };
 
+const loadSetupStatus = (context: RouterContext) =>
+  context.queryClient.ensureQueryData(setupStatusQueryOptions);
+
+/**
+ * Status für die Weichen unten. Meldet der Server den Rücksetz-Modus, ist das
+ * Passwort-Formular der einzige erreichbare Bildschirm. Die Umleitung gehört
+ * deshalb hierher, wo jede abgesicherte Route vorbeikommt.
+ */
 const getSetupStatus = async (context: RouterContext) => {
+  let status: SetupStatus | null = null;
   try {
-    return await context.queryClient.ensureQueryData(setupStatusQueryOptions);
+    status = await loadSetupStatus(context);
   } catch {
     // Status-Endpoint nicht erreichbar: nicht in den Assistenten umleiten,
     // sondern den regulären Auth-Pfad entscheiden lassen.
     return null;
   }
+
+  if (status.recovery) {
+    throw redirect({ to: "/passwort-zuruecksetzen" });
+  }
+
+  return status;
 };
 
 const isSetupNeeded = async (context: RouterContext): Promise<boolean> =>
@@ -205,6 +222,25 @@ const redirectAwayIfLocalAuth = async ({
 };
 
 /**
+ * Rücksetz-Formular: nur im Rücksetz-Modus erreichbar. Nutzt den Status
+ * direkt, sonst würde die Weiche in `getSetupStatus` auf sich selbst
+ * umleiten.
+ */
+const redirectAwayIfNotRecovering = async ({
+  context,
+}: {
+  context: RouterContext;
+}) => {
+  const recovering = await loadSetupStatus(context)
+    .then((status) => status.recovery)
+    .catch(() => false);
+
+  if (!recovering) {
+    throw redirect({ to: "/" });
+  }
+};
+
+/**
  * Assistent: ist die App bereits eingerichtet, gibt es nichts mehr zu tun.
  */
 const redirectAwayIfSetupDone = async ({
@@ -222,7 +258,11 @@ const RootComponent = () => {
     select: (state) => state.location.pathname,
   });
 
-  if (pathname === "/anmelden" || pathname === "/einrichtung") {
+  if (
+    pathname === "/anmelden" ||
+    pathname === "/einrichtung" ||
+    pathname === "/passwort-zuruecksetzen"
+  ) {
     return <Outlet />;
   }
 
@@ -245,6 +285,13 @@ const setupRoute = createRoute({
   path: "/einrichtung",
   beforeLoad: redirectAwayIfSetupDone,
   component: SetupPage,
+});
+
+const passwordRecoveryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/passwort-zuruecksetzen",
+  beforeLoad: redirectAwayIfNotRecovering,
+  component: PasswordRecoveryPage,
 });
 
 const dashboardRoute = createRoute({
@@ -1229,6 +1276,7 @@ const passwordSettingsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   loginRoute,
   setupRoute,
+  passwordRecoveryRoute,
   dashboardRoute,
   buildingsRoute,
   buildingCreateRoute,
