@@ -32,7 +32,7 @@ export const DestructiveConfirmDialog = ({
   onConfirm: () => void;
 }) => (
   <AlertDialog open={open} onOpenChange={onOpenChange}>
-    <AlertDialogContent size="sm">
+    <AlertDialogContent size="default">
       <AlertDialogHeader>
         <AlertDialogMedia className="mb-2 inline-flex size-10 items-center justify-center rounded-md sm:group-data-[size=default]/alert-dialog-content:row-span-2 *:[svg:not([class*='size-'])]:size-6 bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
           <RiDeleteBinLine />

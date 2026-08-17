@@ -30,6 +30,7 @@ import {
   domainVisuals,
   gradients,
 } from "../../lib/domainVisuals";
+import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { useServerTableState } from "../../lib/tableState";
@@ -101,10 +102,7 @@ const invoiceColumns = (
     accessorKey: "periodStart",
     header: t("ui.common.columns.period"),
     cell: ({ row }) =>
-      t("ui.common.periodLabel", {
-        start: formatDate(row.original.periodStart),
-        end: formatDate(row.original.periodEnd),
-      }),
+      formatPeriod(row.original.periodStart, row.original.periodEnd),
     meta: { cellClassName: "tabular-nums" },
   },
   {

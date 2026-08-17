@@ -1,6 +1,5 @@
-import { formatDate } from "@einfachvermieter/shared";
 import { Badge } from "@/components/ui/Badge";
-import { getPeriodStatusToday } from "../../../../lib/format";
+import { formatPeriod, getPeriodStatusToday } from "../../../../lib/format";
 import { t } from "../../../../lib/i18n";
 import type { RentRowValues } from "./rentRow";
 
@@ -43,12 +42,7 @@ export const RentRowSummary = ({
         ) : null}
       </div>
       <p className="text-sm text-muted-foreground tabular-nums">
-        {t("ui.common.periodLabel", {
-          start: effectiveStart ? formatDate(effectiveStart) : "?",
-          end: effectiveEnd
-            ? formatDate(effectiveEnd)
-            : t("ui.tenant.openEnded"),
-        })}
+        {formatPeriod(effectiveStart, effectiveEnd)}
       </p>
     </>
   );

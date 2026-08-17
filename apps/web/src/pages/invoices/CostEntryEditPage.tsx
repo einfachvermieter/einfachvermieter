@@ -30,6 +30,7 @@ import {
   costTypesQueryOptions,
 } from "../../lib/costs";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { statementsQueryOptions } from "../../lib/statements";
 import { unitsQueryOptions } from "../../lib/units";
@@ -119,7 +120,15 @@ export const CostEntryEditPage = () => {
     endpoint: (target) => `/costs/${target.id}`,
     invalidateKeys: [["costs"], ["statement-preview"]],
     title: t("ui.invoices.detail.deleteTitle"),
-    describe: () => t("ui.invoices.detail.deleteMessage"),
+    describe: (target) =>
+      target.vendor
+        ? t("ui.invoices.detail.deleteMessageWithVendor", {
+            vendor: target.vendor,
+            date: formatDate(target.invoiceDate),
+          })
+        : t("ui.invoices.detail.deleteMessage", {
+            date: formatDate(target.invoiceDate),
+          }),
     onDeleted: goBack,
   });
 
@@ -313,10 +322,10 @@ export const CostEntryEditPage = () => {
                   key={statement.id}
                   icon={domainVisuals.statements.icon}
                   iconBackground={domainVisuals.statements.accent}
-                  subtitle={t("ui.common.periodLabel", {
-                    start: formatDate(statement.periodStart),
-                    end: formatDate(statement.periodEnd),
-                  })}
+                  subtitle={formatPeriod(
+                    statement.periodStart,
+                    statement.periodEnd,
+                  )}
                   onClick={() =>
                     navigate({
                       to: "/abrechnungen/$statementId",

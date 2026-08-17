@@ -337,7 +337,7 @@ export type WaterDetail = {
 };
 
 /**
- * Belegungs-Anhang pro Wohnung. Bewohner anonym als "Person 1/2/…" (DSGVO);
+ * Belegungs-Anhang pro Wohnung. Bewohner anonym als "Person 1/2/..." (DSGVO);
  * macht die Personen-/Wohnungs-/Flächentage der CostsTable nachvollziehbar.
  */
 export type OccupancyDetail = {

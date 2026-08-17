@@ -1,4 +1,5 @@
-import { todayIso } from "@einfachvermieter/shared";
+import { formatDate, todayIso } from "@einfachvermieter/shared";
+import { t } from "./i18n";
 
 const isPeriodActiveOn = (
   start: string,
@@ -55,4 +56,31 @@ export const getPeriodStatusToday = (
   }
 
   return "none";
+};
+
+/**
+ * Zeitraum als Text. Fehlt eine Grenze, wird sie nicht als Platzhalter
+ * ausgewiesen, sondern die Formulierung wechselt: nur Anfang: "ab ...",
+ * nur Ende: "bis ...". Ohne beide Grenzen bleibt der Text leer.
+ */
+export const formatPeriod = (
+  start: string | null | undefined,
+  end: string | null | undefined,
+): string => {
+  if (start && end) {
+    return t("ui.common.periodLabel", {
+      start: formatDate(start),
+      end: formatDate(end),
+    });
+  }
+
+  if (start) {
+    return t("ui.common.periodSince", { date: formatDate(start) });
+  }
+
+  if (end) {
+    return t("ui.common.periodUntil", { date: formatDate(end) });
+  }
+
+  return "";
 };

@@ -1,4 +1,4 @@
-import { formatDate, formatEur, formatName } from "@einfachvermieter/shared";
+import { formatEur, formatName } from "@einfachvermieter/shared";
 import { RiAddLine, RiWallet3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -21,6 +21,7 @@ import {
 } from "../../lib/accounts";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { rowActionsColumn } from "../../lib/tableColumns";
@@ -94,14 +95,7 @@ const tenantColumns = (
     accessorKey: "startDate",
     header: t("ui.tenants.columns.term"),
     cell: ({ row }) =>
-      row.original.endDate
-        ? t("ui.common.periodLabel", {
-            start: formatDate(row.original.startDate),
-            end: formatDate(row.original.endDate),
-          })
-        : t("ui.tenants.termSince", {
-            date: formatDate(row.original.startDate),
-          }),
+      formatPeriod(row.original.startDate, row.original.endDate),
     meta: { cellClassName: "tabular-nums" },
   },
   {

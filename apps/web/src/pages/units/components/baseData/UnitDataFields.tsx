@@ -47,7 +47,7 @@ export const UnitDataFields = ({
           name="areaSqm"
           label={t("ui.units.fields.area")}
           inputMode="decimal"
-          placeholder="120,00"
+          placeholder={t("ui.units.fields.areaPlaceholder")}
           suffix="m²"
         />
         <TextInput

@@ -1,5 +1,5 @@
 import type { TenantFormValues } from "@einfachvermieter/shared";
-import { formatDate, formatIban } from "@einfachvermieter/shared";
+import { formatIban } from "@einfachvermieter/shared";
 import { RiAddLine, RiBankCardLine } from "@remixicon/react";
 import { useState } from "react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { FieldGroup } from "@/components/ui/Field";
 import { gradients } from "../../../../lib/domainVisuals";
-import { getPeriodStatusToday } from "../../../../lib/format";
+import { formatPeriod, getPeriodStatusToday } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { BankAccountRowForm } from "./BankAccountRowForm";
 import {
@@ -26,27 +26,6 @@ import {
 
 const today = new Date();
 const mandateCalendarStart = new Date(today.getFullYear() - 20, 0, 1);
-
-/**
- * Nur der explizit erfasste Zeitraum wird ausgewiesen: fehlt eine Grenze,
- * "ab"/"bis", fehlen beide, leere Angabe (gilt implizit für die gesamte
- * Mietdauer).
- */
-const bankPeriodText = (start: string, end: string): string => {
-  if (start && end) {
-    return t("ui.common.periodLabel", {
-      start: formatDate(start),
-      end: formatDate(end),
-    });
-  }
-  if (start) {
-    return t("ui.common.periodSince", { date: formatDate(start) });
-  }
-  if (end) {
-    return t("ui.common.periodUntil", { date: formatDate(end) });
-  }
-  return "";
-};
 
 export const BankAccounts = ({
   form,
@@ -199,7 +178,7 @@ export const BankAccounts = ({
           ? formatIban(row.iban)
           : t("ui.tenant.bankAccountIndex", { index: index + 1 });
 
-        const periodText = bankPeriodText(row.startDate, row.endDate);
+        const periodText = formatPeriod(row.startDate, row.endDate);
 
         return (
           <>

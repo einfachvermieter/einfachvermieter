@@ -332,7 +332,9 @@ export const HeatingSettingsFields = ({
                     "ui.heating.fields.districtHeatEmissionsKgPerYearDescription",
                   )}
                   inputMode="decimal"
-                  placeholder="12500"
+                  placeholder={t(
+                    "ui.heating.fields.districtHeatEmissionsKgPerYearPlaceholder",
+                  )}
                   suffix="kg"
                   optional={true}
                 />
@@ -344,7 +346,9 @@ export const HeatingSettingsFields = ({
                     "ui.heating.fields.districtHeatPrimaryEnergyFactorDescription",
                   )}
                   inputMode="decimal"
-                  placeholder="0,28"
+                  placeholder={t(
+                    "ui.heating.fields.districtHeatPrimaryEnergyFactorPlaceholder",
+                  )}
                   optional={true}
                 />
               </div>

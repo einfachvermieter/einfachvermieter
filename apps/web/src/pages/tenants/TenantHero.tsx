@@ -12,6 +12,7 @@ import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { tenantQueryOptions } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
@@ -129,7 +130,7 @@ export const TenantHero = ({
       sub={[
         building?.name,
         unit?.name,
-        t("ui.tenants.termSince", { date: formatDate(tenant.startDate) }),
+        formatPeriod(tenant.startDate, tenant.endDate),
       ]
         .filter(Boolean)
         .join(t("ui.common.separators.bullet"))}

@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
+import { formatPeriod } from "../../../../lib/format";
 import {
   createExternalHeatingEntry,
   externalHeatingEntriesQueryOptions,
@@ -171,10 +172,7 @@ export const ExternalHeatingEntriesSection = ({
                     />
                   </TableCell>
                   <TableCell className="tabular-nums">
-                    {t("ui.common.periodLabel", {
-                      start: formatDate(entry.periodStart),
-                      end: formatDate(entry.periodEnd),
-                    })}
+                    {formatPeriod(entry.periodStart, entry.periodEnd)}
                   </TableCell>
                   <TableCell>
                     {unitById.get(entry.unitId)?.name ?? t("common.unknown")}

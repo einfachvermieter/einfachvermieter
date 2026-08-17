@@ -1,4 +1,4 @@
-import { formatDate, formatNumber } from "@einfachvermieter/shared";
+import { formatNumber } from "@einfachvermieter/shared";
 import { RiCloudLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -18,6 +18,7 @@ import {
   updateClimateFactorsAutoFetch,
 } from "../../../../lib/climateFactors";
 import { gradients } from "../../../../lib/domainVisuals";
+import { formatPeriod } from "../../../../lib/format";
 import { t } from "../../../../lib/i18n";
 
 const decimalRegex = /^\d+([.,]\d+)?$/u;
@@ -215,17 +216,16 @@ export const ClimateFactorsCard = ({
               {data.rows.map((row) => (
                 <tr key={rowKey(row)} className="border-b border-border">
                   <td className="py-2.5">
-                    {t("ui.common.periodLabel", {
-                      start: formatDate(row.periodStart),
-                      end: formatDate(row.periodEnd),
-                    })}
+                    {formatPeriod(row.periodStart, row.periodEnd)}
                   </td>
                   <td className="py-2.5 text-right tabular-nums">
                     {editMode ? (
                       <div className="ml-auto w-24">
                         <Input
                           inputMode="decimal"
-                          placeholder="1,28"
+                          placeholder={t(
+                            "ui.heating.climateFactors.factorPlaceholder",
+                          )}
                           value={
                             drafts[rowKey(row)] ??
                             (row.factor === null

@@ -1,5 +1,5 @@
 import type { MeterFormValues } from "@einfachvermieter/shared";
-import { formatDate, formatNumber } from "@einfachvermieter/shared";
+import { formatNumber } from "@einfachvermieter/shared";
 import { RiFireLine } from "@remixicon/react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
 import {
@@ -7,6 +7,7 @@ import {
   type EditableListSectionRowFormProps,
 } from "@/components/form/EditableListSection";
 import { gradients } from "../../../../lib/domainVisuals";
+import { formatPeriod } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { GasFactorRowForm } from "./GasFactorRowForm";
 import { emptyGasFactorRow, type GasFactorRowValues } from "./gasFactorRow";
@@ -65,9 +66,6 @@ export const GasFactorsCard = ({
       fieldKeys={gasFactorsArray.fields}
       rows={watchedGasFactors}
       renderRow={(row) => {
-        const validUntilLabel = row.validUntil
-          ? formatDate(row.validUntil)
-          : t("ui.meters.gasFactors.openEnded");
         const factorLabel =
           row.energyFactor === ""
             ? t("ui.meters.gasFactors.noFactor")
@@ -80,10 +78,7 @@ export const GasFactorsCard = ({
           <>
             <p className="truncate font-semibold tabular-nums">{factorLabel}</p>
             <p className="text-sm text-muted-foreground tabular-nums">
-              {t("ui.common.periodLabel", {
-                start: row.validFrom ? formatDate(row.validFrom) : "?",
-                end: validUntilLabel,
-              })}
+              {formatPeriod(row.validFrom, row.validUntil)}
             </p>
             {row.notes ? (
               <p className="truncate text-sm text-muted-foreground">

@@ -15,8 +15,10 @@ import { Badge } from "../../components/ui/Badge";
 import { tenantBalanceQueryOptions } from "../../lib/accounts";
 import { api } from "../../lib/api";
 import { domainVisuals } from "../../lib/domainVisuals";
+import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import {
+  contractPartyNames,
   currentResidentCount,
   type TenantAggregate,
   tenantQueryOptions,
@@ -49,24 +51,28 @@ export const TenantEditPage = () => {
     onSuccess: goToList,
   });
 
+  const { tenant } = aggregate;
+  const unit = units?.find((entry) => entry.id === tenant.unitId);
+  const contractParties = contractPartyNames(aggregate.residents);
+
   const deletion = useDeleteResource<{ id: string }>({
     endpoint: (target) => `/tenants/${target.id}`,
     invalidateKeys: [["tenants"]],
     title: t("ui.tenants.confirmDeleteTenant"),
     describe: () =>
-      t("ui.tenants.confirmDeleteTenantMessage", {
-        unit: unit?.name ?? "",
-        start: formatDate(tenant.startDate),
-        end: tenant.endDate
-          ? formatDate(tenant.endDate)
-          : t("errors.tenantOpenEnd"),
-      }),
+      contractParties
+        ? t("ui.tenants.confirmDeleteTenantMessage", {
+            residents: contractParties,
+            unit: unit?.name ?? "",
+            period: formatPeriod(tenant.startDate, tenant.endDate),
+          })
+        : t("ui.tenants.confirmDeleteTenantMessageNoResidents", {
+            unit: unit?.name ?? "",
+            period: formatPeriod(tenant.startDate, tenant.endDate),
+          }),
     onDeleted: () =>
       navigate({ to: "/mieter", search: { buildingId: undefined } }),
   });
-
-  const { tenant } = aggregate;
-  const unit = units?.find((entry) => entry.id === tenant.unitId);
 
   // Bewohner-Stand aus dem Formular; null, solange nichts gemeldet wurde
   const [formResidentCount, setFormResidentCount] = useState<number | null>(

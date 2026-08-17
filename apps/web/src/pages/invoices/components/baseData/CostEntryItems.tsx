@@ -247,7 +247,7 @@ const CostEntryItemFields = ({
           name={`items.${index}.amountInput`}
           label={t("ui.costs.entryFields.amountGross")}
           inputMode="decimal"
-          placeholder="0,00"
+          placeholder={t("ui.common.placeholders.amount")}
           suffix="€"
           inputClassName="max-w-xs"
         />
@@ -300,7 +300,7 @@ const CostEntryItemFields = ({
                     label={t("ui.costs.entryFields.unitPrice")}
                     description={t("ui.costs.entryFields.unitPriceDescription")}
                     inputMode="decimal"
-                    placeholder="0,0000"
+                    placeholder={t("ui.common.placeholders.unitPrice")}
                     suffix={unitSuffix}
                     inputClassName="max-w-xs"
                   />
@@ -332,7 +332,7 @@ const CostEntryItemFields = ({
               description={t("ui.costs.entryFields.co2AmountDescription")}
               optional={true}
               inputMode="decimal"
-              placeholder="0,000"
+              placeholder={t("ui.common.placeholders.quantity")}
               suffix="kg"
               inputClassName="max-w-xs"
             />
@@ -343,7 +343,7 @@ const CostEntryItemFields = ({
               description={t("ui.costs.entryFields.co2CostDescription")}
               optional={true}
               inputMode="decimal"
-              placeholder="0,00"
+              placeholder={t("ui.common.placeholders.amount")}
               suffix="€"
               inputClassName="max-w-xs"
             />
@@ -361,7 +361,7 @@ const CostEntryItemFields = ({
                 )}
                 optional={true}
                 inputMode="decimal"
-                placeholder="0,00"
+                placeholder={t("ui.common.placeholders.amount")}
                 suffix="€"
                 inputClassName="max-w-xs"
               />

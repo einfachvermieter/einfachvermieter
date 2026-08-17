@@ -1,5 +1,4 @@
 import {
-  formatDate,
   formatName,
   type TenantFormValues,
   todayIso,
@@ -15,6 +14,7 @@ import { HelpHint } from "@/components/help/HelpHint";
 import { Badge } from "@/components/ui/Badge";
 import { gradients } from "../../../../lib/domainVisuals";
 import {
+  formatPeriod,
   getPeriodStatusToday,
   isPeriodActiveToday,
 } from "../../../../lib/format";
@@ -209,12 +209,7 @@ export const Residents = ({
               ) : null}
             </div>
             <p className="text-sm text-muted-foreground tabular-nums">
-              {t("ui.common.periodLabel", {
-                start: effectiveMoveIn ? formatDate(effectiveMoveIn) : "?",
-                end: effectiveMoveOut
-                  ? formatDate(effectiveMoveOut)
-                  : t("ui.tenant.openEnded"),
-              })}
+              {formatPeriod(effectiveMoveIn, effectiveMoveOut)}
             </p>
           </>
         );

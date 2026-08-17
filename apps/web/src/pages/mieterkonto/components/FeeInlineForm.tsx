@@ -114,7 +114,7 @@ export const FeeInlineForm = ({
             name="amountInput"
             label={t("ui.account.fee.amountLabel")}
             inputMode="decimal"
-            placeholder="0,00"
+            placeholder={t("ui.common.placeholders.amount")}
             suffix="€"
           />
           <TextInput

@@ -191,7 +191,7 @@ export const FeePage = () => {
                   control={form.control}
                   name="amountInput"
                   inputMode="decimal"
-                  placeholder="0,00"
+                  placeholder={t("ui.common.placeholders.amount")}
                   label={t("ui.account.fee.amountLabel")}
                   suffix="€"
                 />

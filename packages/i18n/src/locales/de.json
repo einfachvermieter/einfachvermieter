@@ -320,6 +320,11 @@
       "periodSince": "ab {date}",
       "periodUntil": "bis {date}",
       "deductionAmount": "− {amount}",
+      "placeholders": {
+        "amount": "0,00",
+        "quantity": "0,000",
+        "unitPrice": "0,0000"
+      },
       "crumbs": {
         "dashboard": "Übersicht",
         "buildings": "Gebäude",
@@ -561,7 +566,6 @@
         "validFrom": "Gültig ab",
         "validUntil": "Gültig bis",
         "lastValidUntilHint": "Leer lassen, wenn der Faktor bis auf Weiteres gilt.",
-        "openEnded": "offen",
         "noFactor": "Ohne Umrechnungsfaktor",
         "factorValue": "{value} kWh/m³",
         "notes": "Notiz",
@@ -722,6 +726,7 @@
         "unitNumberPlaceholder": "z. B. 3.07",
         "area": "Wohnfläche",
         "areaSqm": "Wohnfläche (m²)",
+        "areaPlaceholder": "120,00",
         "heatingArea": "Heizfläche",
         "heatingAreaSqm": "Heizfläche (m², optional)",
         "heatingAreaDescription": "Wird für die Heizkostenabrechnung verwendet. Ohne Angabe wird die Wohnfläche verwendet.",
@@ -755,7 +760,8 @@
       "summary": "{unit} – {residents}",
       "addTenant": "Mieter anlegen",
       "confirmDeleteTenant": "Mietvertrag löschen?",
-      "confirmDeleteTenantMessage": "Vertrag für „{unit}“ ({start} – {end}) wirklich löschen?",
+      "confirmDeleteTenantMessage": "Soll der Mietvertrag von {residents} für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht.",
+      "confirmDeleteTenantMessageNoResidents": "Soll der Mietvertrag für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht.",
       "empty": "Keine Mietverträge vorhanden",
       "emptyForBuilding": "Noch keine Mietverträge in Gebäude „{building}“ angelegt",
       "emptySearch": "Keine Mietverträge gefunden für „{query}“",
@@ -768,7 +774,6 @@
         "active": "{count} aktiv",
         "allActive": "alle aktiv"
       },
-      "termSince": "seit {date}",
       "columns": {
         "kind": "Art",
         "term": "Laufzeit",
@@ -1124,7 +1129,8 @@
         "costTypesLabel": "Kostenarten",
         "deleteAction": "Rechnung löschen",
         "deleteTitle": "Rechnung löschen?",
-        "deleteMessage": "Soll diese Rechnung mit allen Positionen wirklich gelöscht werden?"
+        "deleteMessage": "Soll die Rechnung vom {date} mit allen Positionen wirklich gelöscht werden?",
+        "deleteMessageWithVendor": "Soll die Rechnung von {vendor} vom {date} mit allen Positionen wirklich gelöscht werden?"
       },
       "identityTitleNoVendor": "Rechnung vom {date}",
       "empty": "Noch keine Rechnungen erfasst",
@@ -1289,8 +1295,10 @@
         "heatPumpMonovalentDescription": "Deckt die Wärmepumpe die Wärme allein, ohne zweiten Wärmeerzeuger, wird die Warmwasser-Wärmemenge mit 0,30 multipliziert (§ 9 Abs. 2 HeizkostenV).",
         "districtHeatCorrectionNote": "Bei eigenständiger gewerblicher Wärmelieferung wird die Warmwasser-Wärmemenge durch 1,15 geteilt (§ 9 Abs. 2 HeizkostenV). Das ergibt sich aus dem Energieträger Fernwärme und ist automatisch berücksichtigt.",
         "districtHeatEmissionsKgPerYear": "Treibhausgasemissionen (kg/Jahr)",
+        "districtHeatEmissionsKgPerYearPlaceholder": "12500",
         "districtHeatEmissionsKgPerYearDescription": "Jährliche Treibhausgasemissionen des Fernwärmenetzes in kg. Der Wert steht auf der Rechnung oder Jahresmitteilung Ihres Wärmelieferanten und gehört nach § 6a HeizkostenV in die Abrechnung.",
         "districtHeatPrimaryEnergyFactor": "Primärenergiefaktor",
+        "districtHeatPrimaryEnergyFactorPlaceholder": "0,28",
         "districtHeatPrimaryEnergyFactorDescription": "Primärenergiefaktor des Fernwärmenetzes (z. B. 0,28). Der Wert steht auf der Rechnung Ihres Wärmelieferanten und gehört nach § 6a HeizkostenV in die Abrechnung.",
         "includeBillingInfo": "§ 6a-Informationsseite beilegen",
         "includeBillingInfoDescription": "Druckt die Seite „Abrechnungsinformationen nach § 6a Heizkostenverordnung“ (Beratungsstellen, Streitbeilegung) mit jeder Abrechnung.",
@@ -1308,6 +1316,7 @@
         "title": "Klimafaktoren (Witterungsbereinigung)",
         "description": "Faktoren des Deutschen Wetterdienstes für Postleitzahl {postalCode}. Sie bereinigen den Verbrauchsvergleich nach § 6a HeizkostenV um das Wetter und werden beim Berechnen automatisch geladen.",
         "descriptionNoPostalCode": "Das Gebäude hat keine Postleitzahl, daher können Klimafaktoren nicht geladen werden.",
+        "factorPlaceholder": "1,28",
         "columns": {
           "period": "Abrechnungszeitraum",
           "factor": "Klimafaktor",
@@ -1374,7 +1383,7 @@
           "status": "Status"
         },
         "confirmDelete": "Konfiguration wirklich löschen?",
-        "confirmDeleteMessage": "Heizkosten-Konfiguration ({from} – {to}) wird gelöscht."
+        "confirmDeleteMessage": "Soll die Heizkosten-Konfiguration für {building} ({period}) wirklich gelöscht werden?"
       },
       "errors": {
         "hotWaterMeterBuildingMismatch": "Der gewählte Zähler gehört nicht zu diesem Gebäude.",
@@ -1585,7 +1594,8 @@
           "resultCredit": "{amount} Guthaben",
           "deleteDraft": "Entwurf löschen",
           "confirmDeleteTitle": "Entwurf löschen?",
-          "confirmDeleteMessage": "Soll dieser Abrechnungs-Entwurf wirklich gelöscht werden?",
+          "confirmDeleteMessage": "Soll der Abrechnungs-Entwurf für den Zeitraum {period} wirklich gelöscht werden?",
+          "confirmDeleteMessageWithTenant": "Soll der Abrechnungs-Entwurf für {tenant}, „{unit}“ ({period}) wirklich gelöscht werden?",
           "hintTitle": "Hinweis",
           "hintText": "Nach dem Finalisieren sind keine Änderungen mehr möglich. Danach stehen „Stornieren“ und „Korrekturabrechnung“ zur Verfügung."
         },
@@ -1840,6 +1850,7 @@
         "validFromContractStart": "Gültig ab (Vertragsbeginn)",
         "validTo": "Gültig bis",
         "iban": "IBAN",
+        "ibanPlaceholder": "DE…",
         "bic": "BIC",
         "sepaEnabled": "SEPA-Lastschriftmandat erfassen",
         "mandateReference": "SEPA-Mandatsreferenz",
@@ -1861,7 +1872,6 @@
       "residentsHelp": "Mindestens ein Bewohner muss als Vertragspartner geführt sein. Vertragspartner müssen den gesamten Vertragszeitraum lückenlos abdecken. Bei einem Wechsel können sich mehrere Vertragspartner nahtlos ablösen.\n\nEinzug und Auszug liegen innerhalb des Vertragszeitraums. Ohne Einzug gilt der Vertragsbeginn, ohne Auszug das Vertragsende.",
       "active": "aktiv",
       "lastResident": "zuletzt",
-      "openEnded": "unbefristet",
       "rentsTitle": "Mietsätze",
       "rentsHelp": "Mietsätze decken den gesamten Vertragszeitraum lückenlos ab. Der erste Mietsatz beginnt am Vertragsbeginn, der letzte endet am Vertragsende.\n\nZeiträume dürfen sich nicht überlappen, Folgemietsätze starten daher am Tag nach dem Ende des vorherigen.\n\nOhne Startdatum gilt ein Mietsatz ab Vertragsbeginn, ohne Enddatum bis zum Vertragsende.",
       "addRent": "Mietsatz hinzufügen",

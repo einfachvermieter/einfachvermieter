@@ -1,4 +1,4 @@
-import { formatDate, formatName } from "@einfachvermieter/shared";
+import { formatName } from "@einfachvermieter/shared";
 import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -21,6 +21,7 @@ import {
 } from "../../components/ui/Tooltip";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import {
@@ -134,10 +135,7 @@ export const StatementsPage = () => {
         accessorKey: "periodStart",
         header: t("ui.common.columns.period"),
         cell: ({ row }) =>
-          t("ui.common.periodLabel", {
-            start: formatDate(row.original.periodStart),
-            end: formatDate(row.original.periodEnd),
-          }),
+          formatPeriod(row.original.periodStart, row.original.periodEnd),
         meta: { cellClassName: "tabular-nums" },
       },
       {

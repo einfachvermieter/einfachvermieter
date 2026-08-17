@@ -18,6 +18,7 @@ import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { formatPeriod } from "../../lib/format";
 import {
   type HeatingOverviewRow,
   type HeatingSortColumn,
@@ -185,11 +186,8 @@ export const HeatingOverviewPage = () => {
     title: t("ui.heating.versions.confirmDelete"),
     describe: (row) =>
       t("ui.heating.versions.confirmDeleteMessage", {
-        from: formatDate(row.settings.validFrom),
-        to:
-          row.settings.validTo === null
-            ? t("ui.heating.versions.openEnd")
-            : formatDate(row.settings.validTo),
+        building: row.building.name,
+        period: formatPeriod(row.settings.validFrom, row.settings.validTo),
       }),
   });
 

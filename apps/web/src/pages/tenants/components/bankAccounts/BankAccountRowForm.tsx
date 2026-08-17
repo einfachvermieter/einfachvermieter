@@ -83,7 +83,7 @@ export const BankAccountRowForm = ({
           control={form.control}
           name="iban"
           label={t("ui.tenant.fields.iban")}
-          placeholder="DE…"
+          placeholder={t("ui.tenant.fields.ibanPlaceholder")}
           inputClassName="sm:col-span-2 tabular-nums"
           description={
             bankData

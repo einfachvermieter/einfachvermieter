@@ -60,6 +60,7 @@ import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { climateFactorsQueryOptions } from "../../lib/climateFactors";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { formatPeriod } from "../../lib/format";
 import {
   heatingIdentityLabel,
   heatingSettingsListQueryOptions,
@@ -611,10 +612,7 @@ export const StatementDetailPage = () => {
               {[
                 tenantName,
                 unit?.name,
-                t("ui.common.periodLabel", {
-                  start: formatDate(statement.periodStart),
-                  end: formatDate(statement.periodEnd),
-                }),
+                formatPeriod(statement.periodStart, statement.periodEnd),
               ]
                 .filter(Boolean)
                 .join(t("ui.common.separators.bullet"))}
@@ -871,7 +869,23 @@ export const StatementDetailPage = () => {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title={t("ui.statements.detail.info.confirmDeleteTitle")}
-        description={t("ui.statements.detail.info.confirmDeleteMessage")}
+        description={
+          tenantName
+            ? t("ui.statements.detail.info.confirmDeleteMessageWithTenant", {
+                tenant: tenantName,
+                unit: unit?.name ?? "",
+                period: formatPeriod(
+                  statement.periodStart,
+                  statement.periodEnd,
+                ),
+              })
+            : t("ui.statements.detail.info.confirmDeleteMessage", {
+                period: formatPeriod(
+                  statement.periodStart,
+                  statement.periodEnd,
+                ),
+              })
+        }
         confirmLabel={t("ui.statements.detail.info.deleteDraft")}
         onConfirm={() => {
           setDeleteOpen(false);

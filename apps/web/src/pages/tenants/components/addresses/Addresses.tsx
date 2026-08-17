@@ -1,5 +1,4 @@
 import type { TenantFormValues } from "@einfachvermieter/shared";
-import { formatDate } from "@einfachvermieter/shared";
 import { RiMapPinLine } from "@remixicon/react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
 import {
@@ -9,7 +8,7 @@ import {
 import { HelpHint } from "@/components/help/HelpHint";
 import { Badge } from "@/components/ui/Badge";
 import { gradients } from "../../../../lib/domainVisuals";
-import { getPeriodStatusToday } from "../../../../lib/format";
+import { formatPeriod, getPeriodStatusToday } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { AddressRowForm } from "./AddressRowForm";
 import { type AddressRowValues, emptyAddressRow } from "./addressRow";
@@ -82,12 +81,7 @@ export const Addresses = ({
               ) : null}
             </div>
             <p className="text-sm text-muted-foreground tabular-nums">
-              {t("ui.common.periodLabel", {
-                start: effectiveStart ? formatDate(effectiveStart) : "?",
-                end: effectiveEnd
-                  ? formatDate(effectiveEnd)
-                  : t("ui.tenant.openEnded"),
-              })}
+              {formatPeriod(effectiveStart, effectiveEnd)}
             </p>
           </>
         );
