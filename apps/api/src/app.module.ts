@@ -19,8 +19,10 @@ import { SettingsModule } from "./settings/settings.module.js";
 import { SetupModule } from "./setup/setup.module.js";
 import { StatementsModule } from "./statements/statements.module.js";
 import { StatsModule } from "./stats/stats.module.js";
+import { TelemetryModule } from "./telemetry/telemetry.module.js";
 import { TenantsModule } from "./tenants/tenants.module.js";
 import { UnitsModule } from "./units/units.module.js";
+import { UpdatesModule } from "./updates/updates.module.js";
 
 const webDistPath =
   process.env.WEB_DIST_PATH ?? join(process.cwd(), "apps/web/dist");
@@ -50,6 +52,8 @@ const webDistPath =
     HeatingModule,
     StatementsModule,
     StatsModule,
+    UpdatesModule,
+    TelemetryModule,
     AccountsModule,
     AiExtractionModule,
     SettingsModule,

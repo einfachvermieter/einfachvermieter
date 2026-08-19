@@ -3,6 +3,8 @@ import {
   aiSettingsUpdateSchema,
   type ClimateFactorsSettingsUpdateDto,
   climateFactorsSettingsUpdateSchema,
+  type InternetSettingsUpdateDto,
+  internetSettingsUpdateSchema,
   type SenderSettingsUpdateDto,
   senderSettingsUpdateSchema,
 } from "@einfachvermieter/shared";
@@ -75,6 +77,19 @@ export class SettingsController {
     dto: ClimateFactorsSettingsUpdateDto,
   ) {
     return this.settingsService.updateClimateFactorsSettings(dto);
+  }
+
+  @Get("internet")
+  getInternet() {
+    return this.settingsService.getInternetSettings();
+  }
+
+  @Patch("internet")
+  updateInternet(
+    @Body(new ZodValidationPipe(internetSettingsUpdateSchema))
+    dto: InternetSettingsUpdateDto,
+  ) {
+    return this.settingsService.updateInternetSettings(dto);
   }
 
   @Post("sender/logo")

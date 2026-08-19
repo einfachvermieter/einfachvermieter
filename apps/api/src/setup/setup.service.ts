@@ -75,7 +75,8 @@ export class SetupService {
 
   /**
    * Legt beim Erststart den ersten Admin (Pflicht, außer im `local`-Modus),
-   * optional die Absender-Einstellungen und ein erstes Gebäude an. Ist die
+   * optional die Absender-Einstellungen, die Internet-Einwilligungen und ein
+   * erstes Gebäude an. Ist die
    * Einrichtung bereits erledigt, wird abgewiesen. Der öffentliche Endpoint
    * darf nach der Einrichtung keine weiteren Admins anlegen können.
    */
@@ -114,6 +115,13 @@ export class SetupService {
           senderAddressStreet: dto.sender.senderAddressStreet,
           senderAddressPostalCode: dto.sender.senderAddressPostalCode,
           senderAddressCity: dto.sender.senderAddressCity,
+        });
+      }
+      if (dto.internet) {
+        em.assign(settings, {
+          climateFactorsAutoFetch: dto.internet.climateFactorsAutoFetch,
+          updateCheckEnabled: dto.internet.updateCheckEnabled,
+          telemetryEnabled: dto.internet.telemetryEnabled,
         });
       }
       em.persist(settings);

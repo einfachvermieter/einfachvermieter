@@ -1,6 +1,6 @@
 import {
-  RiCloudLine,
   RiContactsBook2Line,
+  RiGlobalLine,
   RiLockPasswordLine,
   RiSparkling2Line,
   RiUserLine,
@@ -14,13 +14,13 @@ import { domainVisuals, gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import { useAuthMode } from "@/lib/setup";
 
-type SettingsTab = "profile" | "sender" | "ai" | "climate" | "password";
+type SettingsTab = "profile" | "sender" | "ai" | "internet" | "password";
 
 const TAB_ROUTES: Record<SettingsTab, string> = {
   profile: "/einstellungen/profil",
   sender: "/einstellungen/absender",
   ai: "/einstellungen/ki",
-  climate: "/einstellungen/klimafaktoren",
+  internet: "/einstellungen/internet",
   password: "/einstellungen/passwort",
 };
 
@@ -81,9 +81,9 @@ export const SettingsLayout = ({
               <RiSparkling2Line />
               {t("ui.settings.nav.ai")}
             </TabsTrigger>
-            <TabsTrigger value="climate">
-              <RiCloudLine />
-              {t("ui.settings.nav.climateFactors")}
+            <TabsTrigger value="internet">
+              <RiGlobalLine />
+              {t("ui.settings.nav.internet")}
             </TabsTrigger>
             {authMode !== "local" ? (
               <TabsTrigger value="password">

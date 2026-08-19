@@ -3,3 +3,4 @@ export * from "./date.js";
 export * from "./format.js";
 export * from "./schemas/index.js";
 export * from "./types/index.js";
+export * from "./version.js";

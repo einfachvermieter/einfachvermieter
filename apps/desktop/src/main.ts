@@ -120,6 +120,7 @@ const startApi = async (): Promise<{ port: number; token: string }> => {
       DATA_DIR: dataDir(),
       DATABASE_URL: dbPath(),
       LOOPBACK_TOKEN: token,
+      APP_PLATFORM: process.platform === "darwin" ? "macos" : "win",
     },
   });
 

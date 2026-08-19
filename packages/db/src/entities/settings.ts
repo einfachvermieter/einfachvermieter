@@ -27,6 +27,10 @@ export type AppSettings = {
   aiBaseUrl: string | null;
   aiModel: string | null;
   climateFactorsAutoFetch: boolean | null;
+  updateCheckEnabled: boolean | null;
+  telemetryEnabled: boolean | null;
+  installationId: string | null;
+  telemetryLastSentAt: string | null;
   createdAt: Opt<string>;
   updatedAt: Opt<string>;
 };
@@ -88,6 +92,26 @@ export const AppSettingsSchema = new EntitySchema<AppSettings>({
     climateFactorsAutoFetch: {
       type: "boolean",
       fieldName: "climate_factors_auto_fetch",
+      nullable: true,
+    },
+    updateCheckEnabled: {
+      type: "boolean",
+      fieldName: "update_check_enabled",
+      nullable: true,
+    },
+    telemetryEnabled: {
+      type: "boolean",
+      fieldName: "telemetry_enabled",
+      nullable: true,
+    },
+    installationId: {
+      type: "string",
+      fieldName: "installation_id",
+      nullable: true,
+    },
+    telemetryLastSentAt: {
+      type: "string",
+      fieldName: "telemetry_last_sent_at",
       nullable: true,
     },
     createdAt: {

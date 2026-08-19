@@ -272,7 +272,16 @@
     "aiGrossMismatch": "Brutto-Validierung fehlgeschlagen: Die Summe der Positionen weicht um {diffCents} ct vom Brutto-Endbetrag ab. Bitte Beträge manuell prüfen."
   },
   "ui": {
+    "updates": {
+      "version": "v{version}",
+      "versionWithDate": "v{version} ({date})",
+      "download": "Herunterladen",
+      "store": "Im Store öffnen",
+      "instructions": "Anleitung",
+      "releaseNotes": "Was ist neu"
+    },
     "navigation": {
+      "updateAvailable": "Neue Version verfügbar:",
       "groups": {
         "general": "Allgemein",
         "masterData": "Stammdaten",
@@ -359,7 +368,7 @@
         "settings": "Einstellungen",
         "settingsSender": "Absenderdaten",
         "settingsAi": "KI-Anbieter",
-        "settingsClimateFactors": "Klimafaktoren",
+        "settingsInternet": "Internetzugriffe",
         "settingsPassword": "Passwort ändern",
         "settingsProfile": "Profil"
       },
@@ -1660,6 +1669,24 @@
         "special": "Es fehlt ein Sonderzeichen."
       }
     },
+    "internetAccess": {
+      "recommended": "Empfohlen",
+      "climateFactors": {
+        "label": "Klimafaktoren automatisch laden",
+        "description": "Für die Witterungsbereinigung nach § 6a HeizkostenV. Ohne sie tragen Sie die Faktoren je Abrechnung von Hand ein.",
+        "details": "Die App lädt die für die Nebenkostenabrechnung relevanten Klimafaktoren vom Server des Deutschen Wetterdienstes (opendata.dwd.de)."
+      },
+      "updateCheck": {
+        "label": "Auf neue Versionen hinweisen",
+        "description": "Für Sicherheit, Stabilität und den aktuellen rechtlichen Stand der Abrechnung.",
+        "details": "Die App überprüft regelmäßig api.einfachvermieter.de, ob eine neue Version vorliegt."
+      },
+      "telemetry": {
+        "label": "Anonyme Nutzungsstatistik senden",
+        "description": "Zeigt, welche Versionen und Betriebssysteme genutzt werden. So können Support und Entwicklung dort ansetzen, wo es am meisten hilft.",
+        "details": "Die App übermittelt an api.einfachvermieter.de: eine zufällige Kennung dieser Installation, die Versionsnummer, die Plattform (Server, macOS, Windows), den Datenbank-Typ sowie die Anzahl der Gebäude, Wohnungen, Mieter und Abrechnungen, sowie allgemeine Einstellungen zur Nutzung wie z. B. Heizkostenabrechnung (intern, extern), etc. Es werden keine Namen, Adressen oder Beträge übertragen."
+      }
+    },
     "setup": {
       "title": "Einrichtung",
       "description": "Willkommen! Richten Sie hier Ihr Administrator-Konto ein. Absender und erstes Gebäude können Sie überspringen und später ergänzen.",
@@ -1690,6 +1717,11 @@
         "street": "Straße und Hausnummer",
         "postalCode": "Postleitzahl",
         "city": "Ort"
+      },
+      "internet": {
+        "heading": "Internetzugriffe",
+        "enableRecommended": "Empfehlungen aktivieren",
+        "hint": "Die App braucht keinen Internetzugriff. Wir empfehlen jedoch, die folgenden drei Optionen zu aktivieren."
       },
       "action": {
         "back": "Zurück",
@@ -1966,18 +1998,28 @@
       "nav": {
         "sender": "Absenderdaten",
         "ai": "KI-Anbieter",
-        "climateFactors": "Klimafaktoren",
+        "internet": "Internetzugriffe",
         "password": "Passwort",
         "profile": "Profil"
       },
-      "climateFactors": {
-        "title": "Klimafaktoren",
-        "description": "Witterungsbereinigung des Verbrauchsvergleichs nach § 6a HeizkostenV mit Faktoren des Deutschen Wetterdienstes",
-        "cardTitle": "Automatischer Abruf",
-        "switchLabel": "Klimafaktoren automatisch vom DWD laden",
-        "switchDescription": "Die Faktoren kommen von opendata.dwd.de. Beim Abruf wird technisch bedingt die IP-Adresse an den Deutschen Wetterdienst übertragen. Die Postleitzahl verlässt das Gerät nicht; einmal geladene Faktoren bleiben lokal gespeichert.",
-        "undecidedNote": "Sie haben noch nicht entschieden. Bis dahin ruft die App keine Daten ab; Klimafaktoren können Sie weiterhin manuell an der jeweiligen Abrechnung erfassen.",
-        "saveSuccess": "Einstellung gespeichert."
+      "internet": {
+        "title": "Internetzugriffe",
+        "description": "Zugriff auf externe Server erlauben.",
+        "saveSuccess": "Einstellung gespeichert.",
+        "climateFactors": {
+          "cardTitle": "Klimafaktoren vom Deutschen Wetterdienst",
+          "undecidedNote": "Sie haben noch nicht entschieden. Bis dahin ruft die App keine Daten ab; Klimafaktoren können Sie weiterhin manuell an der jeweiligen Abrechnung erfassen."
+        },
+        "updateCheck": {
+          "cardTitle": "Neue Versionen",
+          "undecidedNote": "Sie haben noch nicht entschieden. Bis dahin prüft die App nicht, ob eine neue Version vorliegt.",
+          "currentVersion": "Installierte Version:",
+          "noneKnown": "Keine neuere Version bekannt."
+        },
+        "telemetry": {
+          "cardTitle": "Anonyme Nutzungsstatistik",
+          "undecidedNote": "Sie haben noch nicht entschieden. Bis dahin sendet die App nichts."
+        }
       },
       "ai": {
         "title": "KI-Anbieter",

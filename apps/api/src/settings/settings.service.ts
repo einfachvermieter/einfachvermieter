@@ -9,6 +9,8 @@ import type {
   AiSettingsUpdateDto,
   ClimateFactorsSettingsDto,
   ClimateFactorsSettingsUpdateDto,
+  InternetSettingsDto,
+  InternetSettingsUpdateDto,
   SenderSettingsDto,
   SenderSettingsUpdateDto,
 } from "@einfachvermieter/shared";
@@ -236,6 +238,46 @@ export class SettingsService {
     await this.em.flush();
 
     return { autoFetch: row.climateFactorsAutoFetch };
+  }
+
+  /**
+   * Stand der Einwilligungen für Internetzugriffe (null = noch nicht
+   * entschieden).
+   */
+  async getInternetSettings(): Promise<InternetSettingsDto> {
+    const row = await this.ensureRow();
+    return {
+      climateFactorsAutoFetch: row.climateFactorsAutoFetch,
+      updateCheckEnabled: row.updateCheckEnabled,
+      telemetryEnabled: row.telemetryEnabled,
+    };
+  }
+
+  /**
+   * Setzt nur die übergebenen Einwilligungen, die anderen bleiben wie sie
+   * sind.
+   */
+  async updateInternetSettings(
+    dto: InternetSettingsUpdateDto,
+  ): Promise<InternetSettingsDto> {
+    const row = await this.ensureRow();
+
+    this.em.assign(row, {
+      ...(dto.climateFactorsAutoFetch !== undefined && {
+        climateFactorsAutoFetch: dto.climateFactorsAutoFetch,
+      }),
+      ...(dto.updateCheckEnabled !== undefined && {
+        updateCheckEnabled: dto.updateCheckEnabled,
+      }),
+      ...(dto.telemetryEnabled !== undefined && {
+        telemetryEnabled: dto.telemetryEnabled,
+      }),
+      updatedAt: new Date().toISOString(),
+    });
+
+    await this.em.flush();
+
+    return this.getInternetSettings();
   }
 
   /**

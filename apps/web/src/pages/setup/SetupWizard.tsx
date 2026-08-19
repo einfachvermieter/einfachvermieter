@@ -5,11 +5,12 @@ import {
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, type ReactNode, useMemo, useState } from "react";
 import { type FieldPath, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Description } from "@/components/common/Description";
 import { PasswordPolicyHint } from "@/components/form/PasswordPolicyHint";
+import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -54,6 +55,9 @@ const makeSetupFormSchema = (policy: PasswordPolicy, withAdmin: boolean) =>
       buildingStreet: z.string(),
       buildingPostalCode: z.string(),
       buildingCity: z.string(),
+      climateFactorsAutoFetch: z.boolean(),
+      updateCheckEnabled: z.boolean(),
+      telemetryEnabled: z.boolean(),
     })
     .superRefine((values, ctx) => {
       const required = t("ui.setup.validation.required");
@@ -126,7 +130,7 @@ const makeSetupFormSchema = (policy: PasswordPolicy, withAdmin: boolean) =>
 
 type SetupFormValues = z.infer<ReturnType<typeof makeSetupFormSchema>>;
 
-type StepKey = "admin" | "sender" | "building";
+type StepKey = "admin" | "sender" | "building" | "internet";
 
 const STEP_FIELDS: Record<StepKey, FieldPath<SetupFormValues>[]> = {
   admin: [
@@ -142,6 +146,11 @@ const STEP_FIELDS: Record<StepKey, FieldPath<SetupFormValues>[]> = {
     "buildingStreet",
     "buildingPostalCode",
     "buildingCity",
+  ],
+  internet: [
+    "climateFactorsAutoFetch",
+    "updateCheckEnabled",
+    "telemetryEnabled",
   ],
 };
 
@@ -170,6 +179,11 @@ const toDto = (values: SetupFormValues, withAdmin: boolean): SetupDto => ({
         addressPostalCode: values.buildingPostalCode.trim(),
         addressCity: values.buildingCity.trim(),
       },
+  internet: {
+    climateFactorsAutoFetch: values.climateFactorsAutoFetch,
+    updateCheckEnabled: values.updateCheckEnabled,
+    telemetryEnabled: values.telemetryEnabled,
+  },
 });
 
 /**
@@ -209,10 +223,10 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   // Desktop-App (`local`): kein Login, also auch kein Admin-Konto-Schritt
   const withAdmin = useAuthMode() !== "local";
   const stepKeys: StepKey[] = withAdmin
-    ? ["admin", "sender", "building"]
-    : ["sender", "building"];
+    ? ["admin", "sender", "building", "internet"]
+    : ["sender", "building", "internet"];
   const [step, setStep] = useState(0);
-  const stepKey: StepKey = stepKeys[step] ?? "building";
+  const stepKey: StepKey = stepKeys[step] ?? "internet";
   const schema = useMemo(
     () => makeSetupFormSchema(policy, withAdmin),
     [policy, withAdmin],
@@ -235,6 +249,10 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
       buildingStreet: "",
       buildingPostalCode: "",
       buildingCity: "",
+      // Internetzugriffe sind Opt-in: standardmäßig aus
+      climateFactorsAutoFetch: false,
+      updateCheckEnabled: false,
+      telemetryEnabled: false,
     },
   });
 
@@ -284,6 +302,32 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
     (value) => String(value ?? "").trim().length === 0,
   );
 
+  const recommendedBadge = (
+    <Badge variant="secondary">{t("ui.internetAccess.recommended")}</Badge>
+  );
+
+  // Der Internet-Schritt hat Schalter statt Pflicht-/Leerfeldern: dort wird
+  // immer entschieden (an oder aus), also weder "Optional" noch "Erforderlich"
+  let stepHint = t("ui.setup.requiredHint");
+  let stepBadge: ReactNode = (
+    <Badge variant="outline">{t("ui.setup.requiredBadge")}</Badge>
+  );
+  if (stepKey === "internet") {
+    stepHint = t("ui.setup.internet.hint");
+    stepBadge = null;
+  } else if (isOptionalStep) {
+    stepHint = t("ui.setup.optionalHint");
+    stepBadge = (
+      <Badge variant="secondary">{t("ui.setup.optionalBadge")}</Badge>
+    );
+  }
+
+  const enableRecommended = () => {
+    for (const field of STEP_FIELDS.internet) {
+      form.setValue(field, true, { shouldDirty: true });
+    }
+  };
+
   const primaryLabel = primaryButtonLabel({
     isOptionalStep,
     isLastStep,
@@ -306,17 +350,9 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
         </p>
         <h3 className="text-base font-heading font-semibold text-foreground flex items-center gap-2">
           {t(`ui.setup.${stepKey}.heading`)}
-          {isOptionalStep ? (
-            <Badge variant="secondary">{t("ui.setup.optionalBadge")}</Badge>
-          ) : (
-            <Badge variant="outline">{t("ui.setup.requiredBadge")}</Badge>
-          )}
+          {stepBadge}
         </h3>
-        <Description>
-          {isOptionalStep
-            ? t("ui.setup.optionalHint")
-            : t("ui.setup.requiredHint")}
-        </Description>
+        <Description>{stepHint}</Description>
       </div>
 
       {stepKey === "admin" ? (
@@ -418,6 +454,45 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
             label={t("ui.setup.building.city")}
             required={true}
           />
+        </div>
+      ) : null}
+
+      {stepKey === "internet" ? (
+        <div className="flex flex-col gap-4">
+          <SwitchInput
+            control={form.control}
+            name="climateFactorsAutoFetch"
+            label={t("ui.internetAccess.climateFactors.label")}
+            labelBadge={recommendedBadge}
+            labelHelp={t("ui.internetAccess.climateFactors.details")}
+            description={t("ui.internetAccess.climateFactors.description")}
+          />
+          <SwitchInput
+            control={form.control}
+            name="updateCheckEnabled"
+            label={t("ui.internetAccess.updateCheck.label")}
+            labelBadge={recommendedBadge}
+            labelHelp={t("ui.internetAccess.updateCheck.details")}
+            description={t("ui.internetAccess.updateCheck.description")}
+          />
+          <SwitchInput
+            control={form.control}
+            name="telemetryEnabled"
+            label={t("ui.internetAccess.telemetry.label")}
+            labelBadge={recommendedBadge}
+            labelHelp={t("ui.internetAccess.telemetry.details")}
+            description={t("ui.internetAccess.telemetry.description")}
+          />
+          <div>
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              onClick={enableRecommended}
+            >
+              {t("ui.setup.internet.enableRecommended")}
+            </Button>
+          </div>
         </div>
       ) : null}
 

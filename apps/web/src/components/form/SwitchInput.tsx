@@ -13,22 +13,29 @@ type SwitchInputProps<T extends FieldValues> = {
   control: Control<T>;
   name: FieldPath<T>;
   label: string;
-  /** Erklärtext unter dem Label */
+  /**
+   * Erklärtext unter dem Label
+   */
   description?: string;
-  /** Ausführlichere Hilfe hinter einem Fragezeichen neben dem Label */
+  /**
+   * Ausführlichere Hilfe hinter einem Fragezeichen neben dem Label
+   */
   labelHelp?: ReactNode;
+  labelBadge?: ReactNode;
   disabled?: boolean;
   fieldClassName?: string;
 };
 
 /**
- * react-hook-form-Anbindung für den shadcn-Switch (Toggle-Zeile) */
+ * react-hook-form-Anbindung für den shadcn-Switch (Toggle-Zeile)
+ */
 export const SwitchInput = <T extends FieldValues>({
   control,
   name,
   label,
   description,
   labelHelp,
+  labelBadge,
   disabled = false,
   fieldClassName,
 }: SwitchInputProps<T>) => {
@@ -48,6 +55,7 @@ export const SwitchInput = <T extends FieldValues>({
           <div className="min-w-0">
             <FieldLabel htmlFor={id}>
               {label}
+              {labelBadge}
               {labelHelp ? <HelpHint>{labelHelp}</HelpHint> : null}
             </FieldLabel>
             {description ? (

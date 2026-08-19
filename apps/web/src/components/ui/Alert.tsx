@@ -8,7 +8,7 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 const alertVariants = cva(
-  "group/alert relative grid w-full gap-0.5 rounded-lg border px-4 py-3 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2.5 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
+  "group/alert relative grid w-full gap-0.5 rounded-lg border text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2.5 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -21,9 +21,14 @@ const alertVariants = cva(
         error:
           "border-rose-200 bg-rose-50 text-rose-900 *:data-[slot=alert-description]:text-rose-900/80 *:[svg]:text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-100 dark:*:data-[slot=alert-description]:text-rose-100/80 dark:*:[svg]:text-rose-300",
       },
+      size: {
+        default: "px-4 py-3",
+        sm: "px-3 py-2",
+      },
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   },
 );
@@ -39,6 +44,7 @@ const variantIcon = {
 const Alert = ({
   className,
   variant,
+  size,
   children,
   ...props
 }: ComponentProps<"div"> & VariantProps<typeof alertVariants>) => {
@@ -47,7 +53,7 @@ const Alert = ({
     <div
       data-slot="alert"
       role="alert"
-      className={cn(alertVariants({ variant }), className)}
+      className={cn(alertVariants({ variant, size }), className)}
       {...props}
     >
       {Icon ? <Icon /> : null}

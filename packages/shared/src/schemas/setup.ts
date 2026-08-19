@@ -24,10 +24,10 @@ export type SetupStatus = {
 /**
  * Eingabe des Erststart-Assistenten. Schritt 1 (Admin-Konto) ist Pflicht,
  * außer im `local`-Auth-Modus (`requireAdmin: false`, die Desktop-App hat
- * keinen Login); Absender und erstes Gebäude sind überspringbar. Der
- * Endpoint ist serverseitig hart gesperrt, sobald die Einrichtung erledigt
- * ist. Das Admin-Passwort wird gegen die (per ENV konfigurierbare) Policy
- * geprüft.
+ * keinen Login); Absender, erstes Gebäude und die Internet-Einwilligungen
+ * sind überspringbar. Der Endpoint ist serverseitig hart gesperrt,
+ * sobald die Einrichtung erledigt ist.
+ * Das Admin-Passwort wird gegen die (per ENV konfigurierbare) Policy geprüft.
  */
 export const makeSetupSchema = (
   policy: PasswordPolicy,
@@ -71,6 +71,14 @@ export const makeSetupSchema = (
       })
       .optional(),
     building: buildingCreateSchema.optional(),
+    // Einwilligungen für Internetzugriffe (Opt-in).
+    internet: z
+      .object({
+        climateFactorsAutoFetch: z.boolean(),
+        updateCheckEnabled: z.boolean(),
+        telemetryEnabled: z.boolean(),
+      })
+      .optional(),
   });
 
 export type SetupDto = z.infer<ReturnType<typeof makeSetupSchema>>;

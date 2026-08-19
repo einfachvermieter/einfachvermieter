@@ -16,6 +16,7 @@ import { BuildingSwitcher } from "./BuildingSwitcher";
 import { MainNavigationUser } from "./MainNavigationUser";
 import { NavGroup } from "./NavGroup";
 import { dashboardNav, kostenAbrechnungNav, stammdatenNav } from "./navConfig";
+import { UpdateHint } from "./UpdateHint";
 
 export const MainNavigation = () => {
   const { data: user } = useCurrentUser();
@@ -45,6 +46,7 @@ export const MainNavigation = () => {
       </SidebarHeader>
 
       <SidebarContent>
+        <UpdateHint />
         <div className="px-2.25">
           <NavGroup
             label={t("ui.navigation.groups.general")}
