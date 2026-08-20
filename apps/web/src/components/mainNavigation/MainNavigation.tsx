@@ -15,6 +15,7 @@ import { useAuthMode } from "../../lib/setup";
 import { BuildingSwitcher } from "./BuildingSwitcher";
 import { MainNavigationUser } from "./MainNavigationUser";
 import { NavGroup } from "./NavGroup";
+import { NewBuildingButton } from "./NewBuildingButton";
 import { dashboardNav, kostenAbrechnungNav, stammdatenNav } from "./navConfig";
 import { UpdateHint } from "./UpdateHint";
 
@@ -24,7 +25,7 @@ export const MainNavigation = () => {
   const authMode = useAuthMode();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
-  const { buildingId } = useActiveBuilding();
+  const { buildingId, isPending: buildingsPending } = useActiveBuilding();
   // Zähl-Badges der Stammdaten-Gruppe (Anzahl im aktiven Gebäude)
   const { data: stats } = useQuery({
     ...statsQueryOptions(buildingId),
@@ -55,28 +56,35 @@ export const MainNavigation = () => {
           />
         </div>
 
-        <div className="mx-2 mt-1 rounded-[14px] border border-sidebar-border bg-card pb-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-          <div className="border-b border-sidebar-border">
-            <BuildingSwitcher />
+        {buildingId === undefined && !buildingsPending ? (
+          <div className="mx-2 mt-1 rounded-[14px] border border-sidebar-border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+            <NewBuildingButton />
           </div>
-          <NavGroup
-            label={t("ui.navigation.groups.masterData")}
-            items={stammdatenNav}
-            currentPath={currentPath}
-            buildingId={buildingId}
-            counts={{
-              units: stats?.units,
-              meters: stats?.meters,
-              tenants: stats?.tenants,
-            }}
-          />
-          <NavGroup
-            label={t("ui.navigation.groups.costsBilling")}
-            items={kostenAbrechnungNav}
-            currentPath={currentPath}
-            buildingId={buildingId}
-          />
-        </div>
+        ) : null}
+        {buildingId !== undefined ? (
+          <div className="mx-2 mt-1 rounded-[14px] border border-sidebar-border bg-card pb-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+            <div className="border-b border-sidebar-border">
+              <BuildingSwitcher />
+            </div>
+            <NavGroup
+              label={t("ui.navigation.groups.masterData")}
+              items={stammdatenNav}
+              currentPath={currentPath}
+              buildingId={buildingId}
+              counts={{
+                units: stats?.units,
+                meters: stats?.meters,
+                tenants: stats?.tenants,
+              }}
+            />
+            <NavGroup
+              label={t("ui.navigation.groups.costsBilling")}
+              items={kostenAbrechnungNav}
+              currentPath={currentPath}
+              buildingId={buildingId}
+            />
+          </div>
+        ) : null}
       </SidebarContent>
 
       <SidebarFooter>

@@ -1990,7 +1990,10 @@
         "newStatement": "Neue Abrechnung erstellen",
         "recordCost": "Kostenrechnung erfassen",
         "recordReading": "Zählerstand eintragen",
-        "recordPayment": "Zahlung erfassen"
+        "recordPayment": "Zahlung erfassen",
+        "addBuilding": "Erstes Gebäude anlegen",
+        "addUnit": "Erste Wohnung anlegen",
+        "addTenant": "Ersten Mieter anlegen"
       }
     },
     "settings": {

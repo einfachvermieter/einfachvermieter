@@ -25,7 +25,7 @@ import { statsQueryOptions } from "../../lib/stats";
  * Klasse der KPI-Kacheln
  */
 const KPI_CARD_CLASS =
-  "block rounded-[18px] border border-border bg-card p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-sky-200 hover:bg-sky-50/40";
+  "block rounded-[18px] border border-border bg-card p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-sky-200 hover:bg-sky-50/40 aria-disabled:pointer-events-none aria-disabled:opacity-50";
 
 /**
  * Innenleben einer KPI-Kachel
@@ -83,6 +83,8 @@ export const DashboardPage = () => {
   const { data: buildings } = useQuery(buildingsQueryOptions);
   const navigate = useNavigate();
 
+  const noBuildings = stats?.buildings === 0;
+
   const sub = stats
     ? [
         t("ui.dashboard.sub.buildings", { count: stats.buildings }),
@@ -118,6 +120,7 @@ export const DashboardPage = () => {
         <Link
           to="/wohnungen"
           search={{ buildingId: undefined }}
+          disabled={noBuildings}
           className={KPI_CARD_CLASS}
         >
           <KpiCardBody
@@ -130,6 +133,7 @@ export const DashboardPage = () => {
         <Link
           to="/mieter"
           search={{ buildingId: undefined }}
+          disabled={noBuildings}
           className={KPI_CARD_CLASS}
         >
           <KpiCardBody
@@ -139,7 +143,11 @@ export const DashboardPage = () => {
             label={t("ui.dashboard.stats.tenants")}
           />
         </Link>
-        <Link to="/abrechnungen" className={KPI_CARD_CLASS}>
+        <Link
+          to="/abrechnungen"
+          disabled={noBuildings}
+          className={KPI_CARD_CLASS}
+        >
           <KpiCardBody
             icon={RiFileList3Line}
             gradient={gradients.statements}
@@ -158,48 +166,97 @@ export const DashboardPage = () => {
             {t("ui.dashboard.quickstart.description")}
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Link to="/abrechnungen" className={QUICK_TILE_CLASS}>
-              <QuickTileContent
-                icon={RiFileAddLine}
-                gradient={gradients.statements}
+            {stats && stats.buildings === 0 ? (
+              <Link to="/gebaeude/neu" className={QUICK_TILE_CLASS}>
+                <QuickTileContent
+                  icon={RiBuildingLine}
+                  gradient={gradients.buildings}
+                >
+                  {t("ui.dashboard.quickstart.addBuilding")}
+                </QuickTileContent>
+              </Link>
+            ) : null}
+            {stats && stats.buildings > 0 && stats.units === 0 ? (
+              <Link
+                to="/wohnungen/neu"
+                search={{ buildingId: undefined }}
+                className={QUICK_TILE_CLASS}
               >
-                {t("ui.dashboard.quickstart.newStatement")}
-              </QuickTileContent>
-            </Link>
-            <Link
-              to="/kostenarten"
-              search={{ buildingId: undefined }}
-              className={QUICK_TILE_CLASS}
-            >
-              <QuickTileContent icon={RiBillLine} gradient={gradients.invoices}>
-                {t("ui.dashboard.quickstart.recordCost")}
-              </QuickTileContent>
-            </Link>
-            <Link
-              to="/zaehler"
-              search={{
-                buildingId: undefined,
-                type: undefined,
-                unitId: undefined,
-              }}
-              className={QUICK_TILE_CLASS}
-            >
-              <QuickTileContent icon={RiSpeedUpLine} gradient={gradients.water}>
-                {t("ui.dashboard.quickstart.recordReading")}
-              </QuickTileContent>
-            </Link>
-            <Link
-              to="/zahlungen/neu"
-              search={{ tenantId: undefined }}
-              className={QUICK_TILE_CLASS}
-            >
-              <QuickTileContent
-                icon={RiMoneyEuroCircleLine}
-                gradient={gradients.money}
+                <QuickTileContent icon={RiHome4Line} gradient={gradients.units}>
+                  {t("ui.dashboard.quickstart.addUnit")}
+                </QuickTileContent>
+              </Link>
+            ) : null}
+            {stats && stats.units > 0 && stats.tenants === 0 ? (
+              <Link
+                to="/mieter/neu"
+                search={{ buildingId: undefined }}
+                className={QUICK_TILE_CLASS}
               >
-                {t("ui.dashboard.quickstart.recordPayment")}
-              </QuickTileContent>
-            </Link>
+                <QuickTileContent
+                  icon={RiGroupLine}
+                  gradient={gradients.tenants}
+                >
+                  {t("ui.dashboard.quickstart.addTenant")}
+                </QuickTileContent>
+              </Link>
+            ) : null}
+            {stats && stats.tenants > 0 ? (
+              <Link to="/abrechnungen" className={QUICK_TILE_CLASS}>
+                <QuickTileContent
+                  icon={RiFileAddLine}
+                  gradient={gradients.statements}
+                >
+                  {t("ui.dashboard.quickstart.newStatement")}
+                </QuickTileContent>
+              </Link>
+            ) : null}
+            {stats && stats.buildings > 0 ? (
+              <Link
+                to="/kostenarten"
+                search={{ buildingId: undefined }}
+                className={QUICK_TILE_CLASS}
+              >
+                <QuickTileContent
+                  icon={RiBillLine}
+                  gradient={gradients.invoices}
+                >
+                  {t("ui.dashboard.quickstart.recordCost")}
+                </QuickTileContent>
+              </Link>
+            ) : null}
+            {stats && stats.meters > 0 ? (
+              <Link
+                to="/zaehler"
+                search={{
+                  buildingId: undefined,
+                  type: undefined,
+                  unitId: undefined,
+                }}
+                className={QUICK_TILE_CLASS}
+              >
+                <QuickTileContent
+                  icon={RiSpeedUpLine}
+                  gradient={gradients.water}
+                >
+                  {t("ui.dashboard.quickstart.recordReading")}
+                </QuickTileContent>
+              </Link>
+            ) : null}
+            {stats && stats.tenants > 0 ? (
+              <Link
+                to="/zahlungen/neu"
+                search={{ tenantId: undefined }}
+                className={QUICK_TILE_CLASS}
+              >
+                <QuickTileContent
+                  icon={RiMoneyEuroCircleLine}
+                  gradient={gradients.money}
+                >
+                  {t("ui.dashboard.quickstart.recordPayment")}
+                </QuickTileContent>
+              </Link>
+            ) : null}
           </div>
         </section>
 
