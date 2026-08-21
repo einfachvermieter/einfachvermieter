@@ -18,11 +18,9 @@ const bootstrap = async (): Promise<void> => {
     await orm.migrator.up();
   }
 
-  // Hinter einem Reverse-Proxy (Compose: Caddy) markiert TRUST_PROXY die
-  // Hop-Anzahl als vertrauenswürdig, damit `req.ip` (und damit das
-  // Rate-Limiting) die echte Client-IP aus X-Forwarded-For nutzt. Default 0:
-  // ohne Proxy dürfte sonst jeder Client seine IP per Header selbst bestimmen
-  // und das Login-Rate-Limit umgehen.
+  // TRUST_PROXY = Anzahl vertrauenswürdiger Proxy-Hops: `req.ip` (Rate-Limit)
+  // und `req.secure` (Secure-Cookie) kommen dann aus X-Forwarded-*. Default 0,
+  // sonst könnte jeder Client seine IP per Header setzen.
   const trustProxy = Number(process.env.TRUST_PROXY ?? 0);
   if (trustProxy > 0) {
     app.getHttpAdapter().getInstance().set("trust proxy", trustProxy);
@@ -66,14 +64,13 @@ const bootstrap = async (): Promise<void> => {
     });
   }
 
+  // CORS nur, wenn das Frontend von einem anderen Origin kommt (Dev: Vite auf
+  // :7272). In Produktion liefert die API das Web-Build selbst aus, alle
+  // Requests sind same-origin, CORS bleibt dann aus.
   const webOrigin = process.env.WEB_ORIGIN;
-  if (process.env.NODE_ENV === "production" && !webOrigin) {
-    throw new Error("WEB_ORIGIN muss in Produktion gesetzt sein.");
+  if (webOrigin) {
+    app.enableCors({ origin: webOrigin, credentials: true });
   }
-  app.enableCors({
-    origin: webOrigin ?? "http://localhost:7272",
-    credentials: true,
-  });
 
   // HOST erlaubt der Desktop-App, die API strikt an 127.0.0.1 zu binden;
   // ohne Angabe wie bisher alle Interfaces (Container-Betrieb).

@@ -15,6 +15,7 @@
     "PORT",
     "TELEMETRY_URL",
     "TRUST_PROXY",
+    "COOKIE_SECURE",
     "UPDATE_FEED_URL",
     "WEB_ORIGIN",
     "WEB_DIST_PATH",
