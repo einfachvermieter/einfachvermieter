@@ -7,6 +7,18 @@ const POLL_INTERVAL_MS = 500;
 const TOTAL_BUDGET_MS = 10_000;
 const REQUEST_TIMEOUT_MS = 1500;
 
+// Nach Ablauf des Budgets: 5 Minuten alle 10 s, danach dauerhaft jede Minute.
+const SLOW_RETRY_MS = 10_000;
+const SLOW_RETRY_UNTIL_MS = 5 * 60_000;
+const IDLE_RETRY_MS = 60_000;
+
+const retryDelay = (elapsedMs: number): number => {
+  if (elapsedMs < TOTAL_BUDGET_MS) {
+    return POLL_INTERVAL_MS;
+  }
+  return elapsedMs < SLOW_RETRY_UNTIL_MS ? SLOW_RETRY_MS : IDLE_RETRY_MS;
+};
+
 type Status = "checking" | "ready" | "unavailable";
 
 const checkHealth = async (signal: AbortSignal): Promise<boolean> => {
@@ -55,11 +67,13 @@ const BackendReadyChecker = ({
         if (controller.signal.aborted) {
           return;
         }
-        if (Date.now() - startedAt >= TOTAL_BUDGET_MS) {
+        const elapsedMs = Date.now() - startedAt;
+        if (elapsedMs >= TOTAL_BUDGET_MS) {
           setStatus("unavailable");
-          return;
         }
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+        await new Promise((resolve) =>
+          setTimeout(resolve, retryDelay(elapsedMs)),
+        );
       }
     };
 
