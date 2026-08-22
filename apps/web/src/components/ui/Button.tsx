@@ -32,7 +32,9 @@ const buttonVariants = cva(
         ghostRed:
           "text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/30 dark:hover:text-rose-300",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40 ",
+        success:
+          "bg-teal-600/10 text-teal-600 hover:bg-teal-600/20 focus-visible:border-teal-600/40 focus-visible:ring-teal-600/20 dark:bg-teal-600/20 dark:hover:bg-teal-600/30 dark:focus-visible:ring-teal-600/40",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

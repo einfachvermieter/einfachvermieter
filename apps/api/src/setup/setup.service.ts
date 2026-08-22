@@ -1,7 +1,6 @@
 import {
   APP_SETTINGS_ID,
   AppSettingsSchema,
-  BuildingSchema,
   hashPassword,
   UserSchema,
 } from "@einfachvermieter/db";
@@ -75,9 +74,8 @@ export class SetupService {
 
   /**
    * Legt beim Erststart den ersten Admin (Pflicht, außer im `local`-Modus),
-   * optional die Absender-Einstellungen, die Internet-Einwilligungen und ein
-   * erstes Gebäude an. Ist die
-   * Einrichtung bereits erledigt, wird abgewiesen. Der öffentliche Endpoint
+   * optional die Absender-Einstellungen und die Internet-Einwilligungen an.
+   * Ist die Einrichtung bereits erledigt, wird abgewiesen. Der öffentliche Endpoint
    * darf nach der Einrichtung keine weiteren Admins anlegen können.
    */
   runSetup(dto: SetupDto) {
@@ -125,10 +123,6 @@ export class SetupService {
         });
       }
       em.persist(settings);
-
-      if (dto.building) {
-        em.persist(em.create(BuildingSchema, dto.building));
-      }
 
       if (local) {
         // Kein neues Konto: der automatisch angelegte lokale Admin ist die

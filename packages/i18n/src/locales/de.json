@@ -1689,16 +1689,18 @@
     },
     "setup": {
       "title": "Einrichtung",
-      "description": "Willkommen! Richten Sie hier Ihr Administrator-Konto ein. Absender und erstes Gebäude können Sie überspringen und später ergänzen.",
-      "descriptionLocal": "Willkommen! Hinterlegen Sie Ihren Absender und Ihr erstes Gebäude. Beides können Sie überspringen und später ergänzen.",
       "stepIndicator": "Schritt {current} von {total}",
       "requiredBadge": "Erforderlich",
       "optionalBadge": "Optional",
-      "requiredHint": "Bitte füllen Sie alle Pflichtfelder (mit *) aus.",
       "optionalHint": "Dieser Schritt ist optional. Lassen Sie alle Felder leer, um ihn zu überspringen, oder füllen Sie sie vollständig aus.",
+      "welcome": {
+        "heading": "Willkommen",
+        "hint": "In drei Schritten richten Sie Ihr Administrator-Konto ein, legen die Absenderdaten für die Nebenkostenabrechnung fest und stellen ein, ob die App auf das Internet zugreifen darf, z. B. für das Überprüfen auf neue Versionen.",
+        "hintLocal": "In zwei Schritten legen Sie die Absenderdaten für die Nebenkostenabrechnung fest und stellen ein, ob die App auf das Internet zugreifen darf, z. B. für das Überprüfen auf neue Versionen."
+      },
       "admin": {
         "heading": "Administrator-Konto",
-        "email": "E-Mail-Adresse des Administrators",
+        "email": "E-Mail-Adresse",
         "password": "Passwort",
         "passwordConfirm": "Passwort bestätigen",
         "firstName": "Vorname",
@@ -1711,19 +1713,13 @@
         "postalCode": "Postleitzahl",
         "city": "Ort"
       },
-      "building": {
-        "heading": "Erstes Gebäude",
-        "name": "Bezeichnung des Gebäudes",
-        "street": "Straße und Hausnummer",
-        "postalCode": "Postleitzahl",
-        "city": "Ort"
-      },
       "internet": {
         "heading": "Internetzugriffe",
         "enableRecommended": "Empfehlungen aktivieren",
         "hint": "Die App braucht keinen Internetzugriff. Wir empfehlen jedoch, die folgenden drei Optionen zu aktivieren."
       },
       "action": {
+        "start": "Los geht’s",
         "back": "Zurück",
         "next": "Weiter",
         "skip": "Überspringen",
@@ -1734,8 +1730,7 @@
       "validation": {
         "emailFormat": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
         "passwordMismatch": "Die Passwörter stimmen nicht überein.",
-        "required": "Dieses Feld ist erforderlich.",
-        "postalCodeFormat": "Bitte geben Sie eine fünfstellige Postleitzahl ein."
+        "required": "Dieses Feld ist erforderlich."
       },
       "error": {
         "alreadyDone": "Die Anwendung ist bereits eingerichtet. Bitte melden Sie sich an.",

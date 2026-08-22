@@ -4,6 +4,7 @@ import {
   type SetupDto,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RiToggleFill } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
 import { type FormEvent, type ReactNode, useMemo, useState } from "react";
 import { type FieldPath, useForm } from "react-hook-form";
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { ApiError } from "@/lib/api";
 import { t } from "@/lib/i18n";
 import { useAuthMode, useRunSetup } from "@/lib/setup";
+import { SetupStepper } from "./SetupStepper";
 
 /**
  * Fügt eine "custom"-Validierungsmeldung für `path` hinzu, wenn `invalid`.
@@ -50,11 +52,6 @@ const makeSetupFormSchema = (policy: PasswordPolicy, withAdmin: boolean) =>
       senderStreet: z.string(),
       senderPostalCode: z.string(),
       senderCity: z.string(),
-      buildingSkipped: z.boolean(),
-      buildingName: z.string(),
-      buildingStreet: z.string(),
-      buildingPostalCode: z.string(),
-      buildingCity: z.string(),
       climateFactorsAutoFetch: z.boolean(),
       updateCheckEnabled: z.boolean(),
       telemetryEnabled: z.boolean(),
@@ -100,39 +97,14 @@ const makeSetupFormSchema = (policy: PasswordPolicy, withAdmin: boolean) =>
           addIssueIf(ctx, value.trim().length === 0, field, required);
         }
       }
-      if (!values.buildingSkipped) {
-        addIssueIf(
-          ctx,
-          values.buildingName.trim().length === 0,
-          "buildingName",
-          required,
-        );
-        addIssueIf(
-          ctx,
-          values.buildingStreet.trim().length === 0,
-          "buildingStreet",
-          required,
-        );
-        addIssueIf(
-          ctx,
-          !/^\d{5}$/u.test(values.buildingPostalCode),
-          "buildingPostalCode",
-          t("ui.setup.validation.postalCodeFormat"),
-        );
-        addIssueIf(
-          ctx,
-          values.buildingCity.trim().length === 0,
-          "buildingCity",
-          required,
-        );
-      }
     });
 
 type SetupFormValues = z.infer<ReturnType<typeof makeSetupFormSchema>>;
 
-type StepKey = "admin" | "sender" | "building" | "internet";
+type StepKey = "welcome" | "admin" | "sender" | "internet";
 
 const STEP_FIELDS: Record<StepKey, FieldPath<SetupFormValues>[]> = {
+  welcome: [],
   admin: [
     "adminFirstName",
     "adminLastName",
@@ -141,12 +113,6 @@ const STEP_FIELDS: Record<StepKey, FieldPath<SetupFormValues>[]> = {
     "adminPasswordConfirm",
   ],
   sender: ["senderName", "senderStreet", "senderPostalCode", "senderCity"],
-  building: [
-    "buildingName",
-    "buildingStreet",
-    "buildingPostalCode",
-    "buildingCity",
-  ],
   internet: [
     "climateFactorsAutoFetch",
     "updateCheckEnabled",
@@ -171,14 +137,6 @@ const toDto = (values: SetupFormValues, withAdmin: boolean): SetupDto => ({
         senderAddressPostalCode: values.senderPostalCode.trim(),
         senderAddressCity: values.senderCity.trim(),
       },
-  building: values.buildingSkipped
-    ? undefined
-    : {
-        name: values.buildingName.trim(),
-        addressStreet: values.buildingStreet.trim(),
-        addressPostalCode: values.buildingPostalCode.trim(),
-        addressCity: values.buildingCity.trim(),
-      },
   internet: {
     climateFactorsAutoFetch: values.climateFactorsAutoFetch,
     updateCheckEnabled: values.updateCheckEnabled,
@@ -190,14 +148,17 @@ const toDto = (values: SetupFormValues, withAdmin: boolean): SetupDto => ({
  * Label des Primär-Buttons je nach Schritt, Datenlage und Ladezustand.
  */
 const primaryButtonLabel = (params: {
-  isOptionalStep: boolean;
+  stepKey: StepKey;
   isLastStep: boolean;
   isPending: boolean;
   currentStepEmpty: boolean;
 }): string => {
-  const { isOptionalStep, isLastStep, isPending, currentStepEmpty } = params;
+  const { stepKey, isLastStep, isPending, currentStepEmpty } = params;
 
-  if (!isOptionalStep) {
+  if (stepKey === "welcome") {
+    return t("ui.setup.action.start");
+  }
+  if (stepKey === "admin") {
     return t("ui.setup.action.next");
   }
 
@@ -223,8 +184,8 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   // Desktop-App (`local`): kein Login, also auch kein Admin-Konto-Schritt
   const withAdmin = useAuthMode() !== "local";
   const stepKeys: StepKey[] = withAdmin
-    ? ["admin", "sender", "building", "internet"]
-    : ["sender", "building", "internet"];
+    ? ["welcome", "admin", "sender", "internet"]
+    : ["welcome", "sender", "internet"];
   const [step, setStep] = useState(0);
   const stepKey: StepKey = stepKeys[step] ?? "internet";
   const schema = useMemo(
@@ -244,11 +205,6 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
       senderStreet: "",
       senderPostalCode: "",
       senderCity: "",
-      buildingSkipped: false,
-      buildingName: "",
-      buildingStreet: "",
-      buildingPostalCode: "",
-      buildingCity: "",
       // Internetzugriffe sind Opt-in: standardmäßig aus
       climateFactorsAutoFetch: false,
       updateCheckEnabled: false,
@@ -264,13 +220,11 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   const isStepEmpty = (fields: FieldPath<SetupFormValues>[] = []): boolean =>
     fields.every((field) => String(form.getValues(field)).trim().length === 0);
 
-  // Optionale Schritte (Absender/Gebäude) gelten als übersprungen, wenn alle
-  // Felder leer sind. Sobald eines ausgefüllt ist, müssen alle ausgefüllt sein.
+  // Der Absender gilt als übersprungen, wenn alle Felder leer sind. Sobald
+  // eines ausgefüllt ist, müssen alle ausgefüllt sein.
   const syncOptionalSkip = () => {
     if (stepKey === "sender") {
       form.setValue("senderSkipped", isStepEmpty(STEP_FIELDS.sender));
-    } else if (stepKey === "building") {
-      form.setValue("buildingSkipped", isStepEmpty(STEP_FIELDS.building));
     }
   };
 
@@ -293,8 +247,6 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
 
   const alreadyDone =
     runSetup.error instanceof ApiError && runSetup.error.status === 409;
-  const isOptionalStep = stepKey !== "admin";
-
   // Reaktiv (watch), damit das Button-Label sofort umschlägt, sobald in einem
   // optionalen Schritt etwas eingegeben wird.
   const watchedValues = form.watch(STEP_FIELDS[stepKey]);
@@ -306,21 +258,21 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
     <Badge variant="secondary">{t("ui.internetAccess.recommended")}</Badge>
   );
 
-  // Der Internet-Schritt hat Schalter statt Pflicht-/Leerfeldern: dort wird
-  // immer entschieden (an oder aus), also weder "Optional" noch "Erforderlich"
-  let stepHint = t("ui.setup.requiredHint");
-  let stepBadge: ReactNode = (
-    <Badge variant="outline">{t("ui.setup.requiredBadge")}</Badge>
-  );
-  if (stepKey === "internet") {
-    stepHint = t("ui.setup.internet.hint");
-    stepBadge = null;
-  } else if (isOptionalStep) {
-    stepHint = t("ui.setup.optionalHint");
-    stepBadge = (
-      <Badge variant="secondary">{t("ui.setup.optionalBadge")}</Badge>
-    );
-  }
+  // Badge nur bei Schritten mit Feldern: Admin Pflicht, Absender optional.
+  // Der Internet-Schritt hat Schalter, dort wird immer entschieden.
+  const stepHints: Partial<Record<StepKey, string>> = {
+    welcome: withAdmin
+      ? t("ui.setup.welcome.hint")
+      : t("ui.setup.welcome.hintLocal"),
+    sender: t("ui.setup.optionalHint"),
+    internet: t("ui.setup.internet.hint"),
+  };
+  const stepBadges: Partial<Record<StepKey, ReactNode>> = {
+    admin: <Badge variant="outline">{t("ui.setup.requiredBadge")}</Badge>,
+    sender: <Badge variant="secondary">{t("ui.setup.optionalBadge")}</Badge>,
+  };
+  const stepHint = stepHints[stepKey];
+  const stepBadge = stepBadges[stepKey] ?? null;
 
   const enableRecommended = () => {
     for (const field of STEP_FIELDS.internet) {
@@ -329,7 +281,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   };
 
   const primaryLabel = primaryButtonLabel({
-    isOptionalStep,
+    stepKey,
     isLastStep,
     isPending: runSetup.isPending,
     currentStepEmpty,
@@ -341,22 +293,25 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
       noValidate={true}
       className="flex flex-col gap-6"
     >
+      <SetupStepper
+        labels={stepKeys.map((key) => t(`ui.setup.${key}.heading`))}
+        current={step}
+        srLabel={t("ui.setup.stepIndicator", {
+          current: step + 1,
+          total: stepKeys.length,
+        })}
+      />
+
       <div className="flex flex-col gap-1">
-        <p className="text-sm text-muted-foreground">
-          {t("ui.setup.stepIndicator", {
-            current: step + 1,
-            total: stepKeys.length,
-          })}
-        </p>
         <h3 className="text-base font-heading font-semibold text-foreground flex items-center gap-2">
           {t(`ui.setup.${stepKey}.heading`)}
           {stepBadge}
         </h3>
-        <Description>{stepHint}</Description>
+        {stepHint ? <Description>{stepHint}</Description> : null}
       </div>
 
       {stepKey === "admin" ? (
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <TextInput
             control={form.control}
             name="adminFirstName"
@@ -371,14 +326,16 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
             required={true}
             autoComplete="family-name"
           />
-          <TextInput
-            control={form.control}
-            name="adminEmail"
-            label={t("ui.setup.admin.email")}
-            required={true}
-            type="email"
-            autoComplete="username"
-          />
+          <div className="sm:col-span-2">
+            <TextInput
+              control={form.control}
+              name="adminEmail"
+              label={t("ui.setup.admin.email")}
+              required={true}
+              type="email"
+              autoComplete="username"
+            />
+          </div>
           <TextInput
             control={form.control}
             name="adminPassword"
@@ -400,7 +357,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
       ) : null}
 
       {stepKey === "sender" ? (
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <TextInput
             control={form.control}
             name="senderName"
@@ -423,35 +380,6 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
             control={form.control}
             name="senderCity"
             label={t("ui.setup.sender.city")}
-            required={true}
-          />
-        </div>
-      ) : null}
-
-      {stepKey === "building" ? (
-        <div className="flex flex-col gap-4">
-          <TextInput
-            control={form.control}
-            name="buildingName"
-            label={t("ui.setup.building.name")}
-            required={true}
-          />
-          <TextInput
-            control={form.control}
-            name="buildingStreet"
-            label={t("ui.setup.building.street")}
-            required={true}
-          />
-          <TextInput
-            control={form.control}
-            name="buildingPostalCode"
-            label={t("ui.setup.building.postalCode")}
-            required={true}
-          />
-          <TextInput
-            control={form.control}
-            name="buildingCity"
-            label={t("ui.setup.building.city")}
             required={true}
           />
         </div>
@@ -483,13 +411,9 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
             labelHelp={t("ui.internetAccess.telemetry.details")}
             description={t("ui.internetAccess.telemetry.description")}
           />
-          <div>
-            <Button
-              type="button"
-              variant="link"
-              size="sm"
-              onClick={enableRecommended}
-            >
+          <div className="flex justify-center pt-2">
+            <Button type="button" variant="success" onClick={enableRecommended}>
+              <RiToggleFill />
               {t("ui.setup.internet.enableRecommended")}
             </Button>
           </div>
@@ -504,7 +428,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
         {step > 0 ? (
           <Button
             type="button"
@@ -515,9 +439,11 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
             {t("ui.setup.action.back")}
           </Button>
         ) : null}
-        <Button type="submit" disabled={runSetup.isPending}>
-          {primaryLabel}
-        </Button>
+        <div className="flex flex-col sm:ml-auto">
+          <Button type="submit" disabled={runSetup.isPending}>
+            {primaryLabel}
+          </Button>
+        </div>
       </div>
     </form>
   );

@@ -1,6 +1,5 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import { z } from "zod";
-import { buildingCreateSchema } from "./buildings.js";
 import { type PasswordPolicy, passwordSchema } from "./password.js";
 
 /**
@@ -24,8 +23,7 @@ export type SetupStatus = {
 /**
  * Eingabe des Erststart-Assistenten. Schritt 1 (Admin-Konto) ist Pflicht,
  * außer im `local`-Auth-Modus (`requireAdmin: false`, die Desktop-App hat
- * keinen Login); Absender, erstes Gebäude und die Internet-Einwilligungen
- * sind überspringbar. Der Endpoint ist serverseitig hart gesperrt,
+ * keinen Login); Absender und Internet-Einwilligungen sind überspringbar. Der Endpoint ist serverseitig hart gesperrt,
  * sobald die Einrichtung erledigt ist.
  * Das Admin-Passwort wird gegen die (per ENV konfigurierbare) Policy geprüft.
  */
@@ -70,7 +68,6 @@ export const makeSetupSchema = (
           .max(100, messageKey("validation.tooLong", { max: 100 })),
       })
       .optional(),
-    building: buildingCreateSchema.optional(),
     // Einwilligungen für Internetzugriffe (Opt-in).
     internet: z
       .object({
