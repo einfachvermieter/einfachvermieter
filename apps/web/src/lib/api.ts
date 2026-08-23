@@ -57,12 +57,13 @@ const throwIfNotOk = async (response: Response): Promise<void> => {
     return;
   }
 
+  const raw = await response.text();
   let details: unknown;
 
   try {
-    details = await response.json();
+    details = JSON.parse(raw);
   } catch {
-    details = await response.text();
+    details = raw;
   }
 
   const fieldErrors = isFieldValidationErrorResponse(details)
