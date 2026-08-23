@@ -62,7 +62,7 @@ export const LoginForm = ({
       id={formId}
       onSubmit={onSubmit}
       noValidate={true}
-      className={cn("flex flex-col gap-6", className)}
+      className={cn("flex flex-col gap-6 pt-8", className)}
       {...props}
     >
       <FieldGroup>

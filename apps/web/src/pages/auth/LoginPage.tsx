@@ -11,10 +11,7 @@ export const LoginPage = () => {
       <div className="w-full max-w-sm">
         <Card>
           <CardHeader>
-            <div className="flex flex-col items-center gap-3 text-center">
-              <AppBrand />
-              <CardTitle>{t("ui.auth.welcome")}</CardTitle>
-            </div>
+            <AppBrand />
           </CardHeader>
           <CardContent>
             <LoginForm />

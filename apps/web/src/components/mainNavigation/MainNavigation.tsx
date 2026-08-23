@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
+import { AppBrand } from "@/components/common/AppBrand";
 import {
   Sidebar,
   SidebarContent,
@@ -7,7 +8,6 @@ import {
   SidebarHeader,
 } from "@/components/ui/Sidebar";
 import { statsQueryOptions } from "@/lib/stats";
-import logoUrl from "../../img/logo/logo.svg";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { useCurrentUser, useLogout } from "../../lib/auth";
 import { t } from "../../lib/i18n";
@@ -35,15 +35,7 @@ export const MainNavigation = () => {
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader>
-        <div className="flex h-12 items-center gap-2 px-2">
-          <img src={logoUrl} alt="" className="size-7 shrink-0" />
-          <span className="max-w-48 truncate text-xl font-heading font-bold">
-            <span className="text-sky-700">{t("common.appName.Einfach")}</span>
-            <span className="text-teal-600">
-              {t("common.appName.Vermieter")}
-            </span>
-          </span>
-        </div>
+        <AppBrand size="sm" />
       </SidebarHeader>
 
       <SidebarContent>
