@@ -77,6 +77,7 @@ import { type Unit, unitQueryOptions, unitsQueryOptions } from "./lib/units";
 // gefaltet (kein Code-Splitting). Die App wird nur via Docker/Electron
 // vertrieben, wo Chunk-Splitting nur Blitzer beim Seitenwechsel bringt.
 import { LoginPage } from "./pages/auth/LoginPage";
+import { OutdatedVersionPage } from "./pages/auth/OutdatedVersionPage";
 import { PasswordRecoveryPage } from "./pages/auth/PasswordRecoveryPage";
 import { BuildingCreatePage } from "./pages/buildings/BuildingCreatePage";
 import { BuildingEditPage } from "./pages/buildings/BuildingEditPage";
@@ -135,6 +136,10 @@ const getSetupStatus = async (context: RouterContext) => {
     // Status-Endpoint nicht erreichbar: nicht in den Assistenten umleiten,
     // sondern den regulären Auth-Pfad entscheiden lassen.
     return null;
+  }
+
+  if (status.databaseNewerThanApp) {
+    throw redirect({ to: "/version-veraltet" });
   }
 
   if (status.recovery) {
@@ -241,6 +246,25 @@ const redirectAwayIfNotRecovering = async ({
 };
 
 /**
+ * Sperrseite für den Versionskonflikt: nur erreichbar, solange die Datenbank
+ * von einer neueren App stammt. Nutzt den Status direkt, sonst würde die
+ * Weiche in `getSetupStatus` auf sich selbst umleiten.
+ */
+const redirectAwayIfVersionCurrent = async ({
+  context,
+}: {
+  context: RouterContext;
+}) => {
+  const locked = await loadSetupStatus(context)
+    .then((status) => status.databaseNewerThanApp !== null)
+    .catch(() => false);
+
+  if (!locked) {
+    throw redirect({ to: "/" });
+  }
+};
+
+/**
  * Assistent: ist die App bereits eingerichtet, gibt es nichts mehr zu tun.
  */
 const redirectAwayIfSetupDone = async ({
@@ -261,7 +285,8 @@ const RootComponent = () => {
   if (
     pathname === "/anmelden" ||
     pathname === "/einrichtung" ||
-    pathname === "/passwort-zuruecksetzen"
+    pathname === "/passwort-zuruecksetzen" ||
+    pathname === "/version-veraltet"
   ) {
     return <Outlet />;
   }
@@ -292,6 +317,13 @@ const passwordRecoveryRoute = createRoute({
   path: "/passwort-zuruecksetzen",
   beforeLoad: redirectAwayIfNotRecovering,
   component: PasswordRecoveryPage,
+});
+
+const outdatedVersionRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/version-veraltet",
+  beforeLoad: redirectAwayIfVersionCurrent,
+  component: OutdatedVersionPage,
 });
 
 const dashboardRoute = createRoute({
@@ -1295,6 +1327,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   setupRoute,
   passwordRecoveryRoute,
+  outdatedVersionRoute,
   dashboardRoute,
   buildingsRoute,
   buildingCreateRoute,

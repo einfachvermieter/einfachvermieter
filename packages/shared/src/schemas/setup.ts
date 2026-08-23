@@ -11,6 +11,9 @@ import { type PasswordPolicy, passwordSchema } from "./password.js";
  * `recoveryEmails` nennt die Administrator-Konten zur Auswahl (sonst leer).
  * `recoveryUsed` heißt: in diesem Prozess wurde bereits ein Passwort gesetzt,
  * ein zweites Mal geht erst nach einem Neustart.
+ * `databaseNewerThanApp` ist gesetzt, wenn die Datenbank zuletzt von einer
+ * neueren App-Version benutzt wurde: die App ist dann gesperrt und zeigt nur
+ * den Hinweis, die aktuelle Version zu installieren.
  */
 export type SetupStatus = {
   needsSetup: boolean;
@@ -18,6 +21,7 @@ export type SetupStatus = {
   recovery: boolean;
   recoveryEmails: string[];
   recoveryUsed: boolean;
+  databaseNewerThanApp: { lastVersion: string; currentVersion: string } | null;
 };
 
 /**

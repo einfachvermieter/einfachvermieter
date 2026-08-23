@@ -31,6 +31,7 @@ export type AppSettings = {
   telemetryEnabled: boolean | null;
   installationId: string | null;
   telemetryLastSentAt: string | null;
+  lastAppVersion: string | null;
   createdAt: Opt<string>;
   updatedAt: Opt<string>;
 };
@@ -112,6 +113,11 @@ export const AppSettingsSchema = new EntitySchema<AppSettings>({
     telemetryLastSentAt: {
       type: "string",
       fieldName: "telemetry_last_sent_at",
+      nullable: true,
+    },
+    lastAppVersion: {
+      type: "string",
+      fieldName: "last_app_version",
       nullable: true,
     },
     createdAt: {

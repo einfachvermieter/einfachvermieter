@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { Spinner } from "@/components/common/Spinner";
+import { StartupNotice } from "@/components/common/StartupNotice";
 import { Button } from "@/components/ui/Button";
 import { t } from "@/lib/i18n";
 
@@ -89,29 +90,19 @@ const BackendReadyChecker = ({
 
   if (status === "unavailable") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="w-full max-w-md space-y-6 text-center">
-          <h1 className="text-2xl font-semibold text-foreground">
-            {t("startup.stillUnavailableTitle")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("startup.stillUnavailable")}
-          </p>
-          <Button onClick={onRetry}>{t("startup.retry")}</Button>
-        </div>
-      </div>
+      <StartupNotice
+        title={t("startup.stillUnavailableTitle")}
+        description={t("startup.stillUnavailable")}
+      >
+        <Button onClick={onRetry}>{t("startup.retry")}</Button>
+      </StartupNotice>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <Spinner className="size-8 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
-          {t("startup.connecting")}
-        </p>
-      </div>
-    </div>
+    <StartupNotice title={t("startup.connecting")}>
+      <Spinner className="size-6 text-muted-foreground" />
+    </StartupNotice>
   );
 };
 

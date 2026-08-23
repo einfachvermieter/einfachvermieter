@@ -153,13 +153,14 @@
     }
   },
   "startup": {
-    "connecting": "Verbindung zum Server wird aufgebaut …",
-    "stillUnavailableTitle": "Server nicht erreichbar",
-    "stillUnavailable": "Der Server hat innerhalb der erwarteten Zeit nicht geantwortet. Bitte später erneut versuchen.",
+    "connecting": "Verbindung wird aufgebaut …",
+    "stillUnavailableTitle": "Keine Verbindung",
+    "stillUnavailable": "Die Anwendung hat innerhalb der erwarteten Zeit nicht geantwortet. Bitte später erneut versuchen.",
     "retry": "Erneut versuchen"
   },
   "errors": {
     "notFound": "{entity} „{id}“ nicht gefunden",
+    "databaseNewerThanApp": "Die Datenbank wurde zuletzt mit Version {lastVersion} benutzt, diese App ist Version {currentVersion}. Die App ist gesperrt, bis die aktuelle Version läuft.",
     "fileRequired": "Es wurde keine Datei übermittelt.",
     "logoSvgText": "Das SVG enthält Text bzw. Schriftverweise. Bitte wandeln Sie die Schrift vor dem Hochladen in Pfade (Kurven) um.",
     "logoSvgInvalid": "Die SVG-Datei konnte nicht verarbeitet werden. Bitte prüfen Sie, ob es sich um eine gültige SVG-Grafik handelt.",
@@ -232,8 +233,8 @@
     },
     "boundary": {
       "title": "Etwas ist schiefgelaufen",
-      "backendUnavailable": "Der Server ist nicht erreichbar. Falls die Anwendung gerade gestartet wurde, dauert es einen Moment.",
-      "serverError": "Der Server konnte die Anfrage nicht verarbeiten (Fehler {status}).",
+      "backendUnavailable": "Keine Verbindung. Falls die Anwendung gerade gestartet wurde, dauert es einen Moment.",
+      "serverError": "Die Anfrage konnte nicht verarbeitet werden (Fehler {status}).",
       "generic": "Ein unerwarteter Fehler ist aufgetreten.",
       "detailsLabel": "Fehlermeldung",
       "retry": "Erneut versuchen",
@@ -462,8 +463,8 @@
       },
       "formSync": {
         "title": "Daten wurden zwischenzeitlich geändert",
-        "message": "Seit Sie das Formular geöffnet haben, wurden die Daten auf dem Server aktualisiert. Wenn Sie die neue Version laden, gehen Ihre Änderungen verloren. Alternativ machen Sie mit Ihren Änderungen weiter und überschreiben beim Speichern den Stand auf dem Server.",
-        "actionReload": "Vom Server neu laden",
+        "message": "Seit Sie das Formular geöffnet haben, wurden die Daten an anderer Stelle geändert. Wenn Sie die neue Version laden, gehen Ihre Änderungen verloren. Alternativ machen Sie mit Ihren Änderungen weiter und überschreiben beim Speichern den gespeicherten Stand.",
+        "actionReload": "Neu laden",
         "actionKeep": "Meine Änderungen behalten"
       }
     },
@@ -1751,6 +1752,10 @@
       "showPassword": "Passwort anzeigen",
       "hidePassword": "Passwort verbergen"
     },
+    "outdatedVersion": {
+      "title": "Diese Version ist zu alt",
+      "description": "Ihre Daten wurden zuletzt mit Version {lastVersion} bearbeitet, diese App ist Version {currentVersion}. Bitte installieren Sie die aktuelle Version. Bis dahin bleibt die App gesperrt."
+    },
     "recovery": {
       "title": "Passwort zurücksetzen",
       "description": "Die App läuft im Rücksetz-Modus. Wählen Sie das Konto, geben Sie den Code aus der Variable PASSWORD_RESET ein und vergeben Sie ein neues Passwort.",
@@ -2025,7 +2030,7 @@
         "saveSuccess": "KI-Einstellungen gespeichert.",
         "advanced": "Erweiterte Einstellungen",
         "keyLink": "API-Key erstellen auf {domain}",
-        "envKeyAvailable": "Für diesen Anbieter liegt bereits ein API-Key in der Umgebung des Servers. Sie können das Feld leer lassen; ein Eintrag hier hat Vorrang.",
+        "envKeyAvailable": "Für diesen Anbieter ist bereits ein API-Key als Umgebungsvariable hinterlegt. Sie können das Feld leer lassen; ein Eintrag hier hat Vorrang.",
         "trademarkNotice": "Google und Gemini sind Marken von Google LLC. OpenAI, Claude, Mistral und Ollama sind Marken ihrer jeweiligen Eigentümer. Die Logos dienen ausschließlich zur Kennzeichnung der unterstützten KI-Anbieter und bedeuten weder eine Zusammenarbeit mit ihnen noch deren Empfehlung.",
         "imagesOnlyNotice": "Dieser Anbieter liest nur Bilddateien. PDF-Rechnungen müssen Sie vorher als Bild speichern oder abfotografieren.",
         "dataTransferNotice": "Beim Auslesen wird der Beleg an diesen Anbieter übertragen, zusammen mit technischen Verbindungsdaten wie der IP-Adresse. Was der Anbieter mit den Daten macht, liegt außerhalb von „EinfachVermieter“. Bitte prüfen Sie dessen Bedingungen, bevor Sie Belege mit personenbezogenen Daten auslesen lassen.",

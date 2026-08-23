@@ -54,7 +54,9 @@ export const PasswordRecoveryPage = () => {
         <Card>
           <CardHeader>
             <div className="flex flex-col items-center gap-3 text-center">
-              <AppBrand />
+              <div className="pb-3">
+                <AppBrand />
+              </div>
               <CardTitle>
                 {done ? t("ui.recovery.successTitle") : t("ui.recovery.title")}
               </CardTitle>

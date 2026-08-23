@@ -6,17 +6,19 @@ import cookieParser from "cookie-parser";
 import type { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import { AppModule } from "./app.module.js";
+import { checkDatabaseVersion } from "./updates/database-version-guard.js";
 
 const bootstrap = async (): Promise<void> => {
   const app = await NestFactory.create(AppModule);
 
   // Produktion provisioniert sich beim Start selbst: Datenbank anlegen (falls
   // nötig) und ausstehende Migrationen anwenden.
+  const orm = app.get(MikroORM);
   if (process.env.NODE_ENV === "production") {
-    const orm = app.get(MikroORM);
     await orm.schema.ensureDatabase();
     await orm.migrator.up();
   }
+  await checkDatabaseVersion(orm.em);
 
   // TRUST_PROXY = Anzahl vertrauenswürdiger Proxy-Hops: `req.ip` (Rate-Limit)
   // und `req.secure` (Secure-Cookie) kommen dann aus X-Forwarded-*. Default 0,

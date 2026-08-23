@@ -1,5 +1,5 @@
 import { AppBrand } from "@/components/common/AppBrand";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { useDocumentTitle } from "../../lib/documentTitle";
 import { t } from "../../lib/i18n";
 import { LoginForm } from "./LoginForm";
@@ -11,7 +11,9 @@ export const LoginPage = () => {
       <div className="w-full max-w-sm">
         <Card>
           <CardHeader>
-            <AppBrand />
+            <div className="flex justify-center">
+              <AppBrand />
+            </div>
           </CardHeader>
           <CardContent>
             <LoginForm />

@@ -133,7 +133,7 @@ export class AuthService {
 
   /**
    * Setzt das Passwort ohne Kenntnis des alten. Nur aus dem Rücksetz-Modus
-   * heraus erreichbar (siehe RecoveryGuard), nur mit dem Code aus der
+   * heraus erreichbar (siehe AppLockGuard), nur mit dem Code aus der
    * Umgebungsvariable und nur einmal pro Prozess. Verworfen werden alle
    * Sitzungen sämtlicher User.
    */

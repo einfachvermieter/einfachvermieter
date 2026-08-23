@@ -35,7 +35,9 @@ export const MainNavigation = () => {
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader>
-        <AppBrand size="sm" />
+        <div className="flex h-12 items-center px-2 pl-3.5">
+          <AppBrand />
+        </div>
       </SidebarHeader>
 
       <SidebarContent>

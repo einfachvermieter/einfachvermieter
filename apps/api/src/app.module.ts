@@ -5,8 +5,8 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { AccountsModule } from "./accounts/accounts.module.js";
 import { AiExtractionModule } from "./ai/ai-extraction.module.js";
+import { AppLockGuard } from "./auth/app-lock.guard.js";
 import { AuthModule } from "./auth/auth.module.js";
-import { RecoveryGuard } from "./auth/recovery.guard.js";
 import { BuildingsModule } from "./buildings/buildings.module.js";
 import { CostsModule } from "./costs/costs.module.js";
 import { DatabaseModule } from "./database/database.module.js";
@@ -60,7 +60,7 @@ const webDistPath =
     SetupModule,
   ],
   providers: [
-    { provide: APP_GUARD, useClass: RecoveryGuard },
+    { provide: APP_GUARD, useClass: AppLockGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })

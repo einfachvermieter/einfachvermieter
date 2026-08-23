@@ -173,7 +173,7 @@ export class AuthController {
   }
 
   // Ohne altes Passwort, dafür nur im Rücksetz-Modus: außerhalb davon weist
-  // der RecoveryGuard den Pfad mit 404 ab. Kein Cookie: der Betreiber soll
+  // der AppLockGuard den Pfad mit 404 ab. Kein Cookie: der Betreiber soll
   // den Container ohne die Variable neu starten und sich regulär anmelden.
   @Throttle({ default: { ...PASSWORD_BRUTE_FORCE_LIMITS } })
   @Post("recover")

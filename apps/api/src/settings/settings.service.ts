@@ -28,6 +28,7 @@ import {
 import { assertUploadAllowed } from "../common/upload-guard.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { StorageService } from "../storage/storage.service.js";
+import { currentAppVersion } from "../updates/app-version.js";
 import { SvgSanitizeError } from "./sanitize-svg.js";
 
 export const ALLOWED_LOGO_MIME_TYPES = new Set([
@@ -449,6 +450,7 @@ export class SettingsService {
       senderAddressPostalCode: "",
       senderAddressCity: "",
       useLogo: true,
+      lastAppVersion: currentAppVersion,
     });
 
     this.em.persist(created);

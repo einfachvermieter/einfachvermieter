@@ -15,6 +15,8 @@ import { authMode, recoveryMode } from "../auth/auth-mode.js";
 import { LocalAdminService } from "../auth/local-admin.service.js";
 import { isRecoveryUsed } from "../auth/recovery-state.js";
 import { getI18n } from "../i18n/i18n.registry.js";
+import { currentAppVersion } from "../updates/app-version.js";
+import { databaseNewerThanApp } from "../updates/database-version-guard.js";
 
 @Injectable()
 export class SetupService {
@@ -31,6 +33,8 @@ export class SetupService {
    * `recovery` meldet den Rücksetz-Modus, in dem nur das Passwort-Formular
    * erreichbar ist; `recoveryEmails` liefert dann die Administrator-Konten
    * zur Auswahl, `recoveryUsed` das bereits erfolgte Zurücksetzen.
+   * `databaseNewerThanApp` nennt die Versionen, wenn die Datenbank zuletzt
+   * von einer neueren App benutzt wurde und die App deshalb gesperrt ist.
    *
    * @returns needsSetup:true, solange noch kein Benutzer existiert
    */
@@ -39,6 +43,7 @@ export class SetupService {
     const recovery = recoveryMode();
     const recoveryEmails = recovery ? await this.findAdminEmails() : [];
     const recoveryUsed = isRecoveryUsed();
+    const versionLock = databaseNewerThanApp();
     if (mode === "local") {
       const settingsCount = await this.em.count(AppSettingsSchema, {});
 
@@ -48,6 +53,7 @@ export class SetupService {
         recovery,
         recoveryEmails,
         recoveryUsed,
+        databaseNewerThanApp: versionLock,
       };
     }
 
@@ -59,6 +65,7 @@ export class SetupService {
       recovery,
       recoveryEmails,
       recoveryUsed,
+      databaseNewerThanApp: versionLock,
     };
   }
 
@@ -105,6 +112,7 @@ export class SetupService {
           senderAddressPostalCode: "",
           senderAddressCity: "",
           useLogo: false,
+          lastAppVersion: currentAppVersion,
         });
 
       if (dto.sender) {
