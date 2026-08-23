@@ -194,6 +194,7 @@
     "residentLoginDisabled": "Die Anmeldung für Bewohner-Konten ist noch nicht freigeschaltet.",
     "setupAlreadyDone": "Die Anwendung ist bereits eingerichtet. Bitte melden Sie sich an.",
     "passwordCurrentWrong": "Das aktuelle Passwort ist nicht korrekt.",
+    "emailTaken": "Diese E-Mail-Adresse wird bereits verwendet.",
     "recoveryModeActive": "Die App läuft im Rücksetz-Modus und ist gesperrt. Setzen Sie das Passwort zurück und starten Sie den Container danach ohne die Variable PASSWORD_RESET neu.",
     "recoveryUserUnknown": "Zu dieser E-Mail-Adresse gibt es kein Administrator-Konto.",
     "recoveryCodeWrong": "Der Code stimmt nicht mit dem Wert der Variable PASSWORD_RESET überein.",
@@ -2121,9 +2122,10 @@
       },
       "profile": {
         "title": "Profil",
-        "description": "Ändern Sie Ihren angezeigten Namen.",
-        "sectionTitle": "Ihr Name",
+        "description": "Ändern Sie Ihren Namen und Ihre Anmelde-E-Mail.",
+        "sectionTitle": "Ihr Konto",
         "fields": {
+          "email": "E-Mail-Adresse",
           "firstName": "Vorname",
           "lastName": "Nachname"
         },

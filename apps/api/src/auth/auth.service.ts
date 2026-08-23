@@ -74,7 +74,18 @@ export class AuthService {
       throw new UnauthorizedException(getI18n().t("errors.sessionUserMissing"));
     }
 
+    const email = dto.email.toLowerCase();
+    if (email !== user.email) {
+      const taken = await this.em.findOne(UserSchema, { email });
+      if (taken) {
+        throw new FieldValidationException([
+          { path: ["email"], message: getI18n().t("errors.emailTaken") },
+        ]);
+      }
+    }
+
     this.em.assign(user, {
+      email,
       firstName: dto.firstName.trim(),
       lastName: dto.lastName.trim(),
       updatedAt: new Date().toISOString(),

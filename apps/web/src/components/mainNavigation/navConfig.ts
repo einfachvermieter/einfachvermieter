@@ -15,7 +15,7 @@ export const dashboardNav: NavItem[] = [
     exact: true,
   },
   {
-    to: "/einstellungen/absender",
+    to: "/einstellungen",
     labelKey: "ui.navigation.configuration",
     domain: "configuration",
   },

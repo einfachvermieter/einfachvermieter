@@ -1208,6 +1208,24 @@ const statementDetailRoute = createRoute({
   staticData: { crumb: statementDetailCrumb },
 });
 
+/**
+ * Einstiegspunkt der Einstellungen (Ziel der Breadcrumb): leitet auf den
+ * ersten sichtbaren Reiter weiter.
+ */
+const settingsIndexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/einstellungen",
+  beforeLoad: async ({ context }) => {
+    await requireAuth({ context });
+    throw redirect({
+      to:
+        (await getSetupStatus(context))?.authMode === "local"
+          ? "/einstellungen/absender"
+          : "/einstellungen/profil",
+    });
+  },
+});
+
 const profileSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/einstellungen/profil",
@@ -1215,7 +1233,7 @@ const profileSettingsRoute = createRoute({
   component: ProfileSettingsPage,
   staticData: {
     crumb: () => [
-      { label: t("ui.common.crumbs.settings") },
+      { label: t("ui.common.crumbs.settings"), to: "/einstellungen" },
       { label: t("ui.common.crumbs.settingsProfile") },
     ],
   },
@@ -1228,7 +1246,7 @@ const senderSettingsRoute = createRoute({
   component: SenderSettingsPage,
   staticData: {
     crumb: () => [
-      { label: t("ui.common.crumbs.settings") },
+      { label: t("ui.common.crumbs.settings"), to: "/einstellungen" },
       { label: t("ui.common.crumbs.settingsSender") },
     ],
   },
@@ -1241,7 +1259,7 @@ const aiSettingsRoute = createRoute({
   component: AiSettingsPage,
   staticData: {
     crumb: () => [
-      { label: t("ui.common.crumbs.settings") },
+      { label: t("ui.common.crumbs.settings"), to: "/einstellungen" },
       { label: t("ui.common.crumbs.settingsAi") },
     ],
   },
@@ -1254,7 +1272,7 @@ const internetSettingsRoute = createRoute({
   component: InternetSettingsPage,
   staticData: {
     crumb: () => [
-      { label: t("ui.common.crumbs.settings") },
+      { label: t("ui.common.crumbs.settings"), to: "/einstellungen" },
       { label: t("ui.common.crumbs.settingsInternet") },
     ],
   },
@@ -1267,7 +1285,7 @@ const passwordSettingsRoute = createRoute({
   component: PasswordSettingsPage,
   staticData: {
     crumb: () => [
-      { label: t("ui.common.crumbs.settings") },
+      { label: t("ui.common.crumbs.settings"), to: "/einstellungen" },
       { label: t("ui.common.crumbs.settingsPassword") },
     ],
   },
@@ -1309,6 +1327,7 @@ const routeTree = rootRoute.addChildren([
   statementsRoute,
   statementCreateRoute,
   statementDetailRoute,
+  settingsIndexRoute,
   profileSettingsRoute,
   senderSettingsRoute,
   aiSettingsRoute,

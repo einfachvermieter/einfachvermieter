@@ -25,6 +25,7 @@ export const ProfileSettingsPage = () => {
   const form = useForm<ProfileUpdateDto>({
     resolver: zodResolver(profileUpdateSchema),
     values: {
+      email: user?.email ?? "",
       firstName: user?.firstName ?? "",
       lastName: user?.lastName ?? "",
     },
@@ -51,6 +52,13 @@ export const ProfileSettingsPage = () => {
             title={t("ui.settings.profile.sectionTitle")}
           >
             <FieldGroup className="gap-4">
+              <TextInput
+                control={form.control}
+                name="email"
+                type="email"
+                label={t("ui.settings.profile.fields.email")}
+                autoComplete="email"
+              />
               <TextInput
                 control={form.control}
                 name="firstName"
