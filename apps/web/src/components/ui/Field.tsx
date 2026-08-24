@@ -93,7 +93,7 @@ const FieldLabel = ({ className, ...props }: ComponentProps<typeof Label>) => (
   <Label
     data-slot="field-label"
     className={cn(
-      "text-[12.5px] text-slate-600 dark:text-slate-300",
+      "text-sm text-slate-600 dark:text-slate-300",
       "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-3 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10",
       "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
       "has-[[data-state=unchecked]:disabled]:cursor-not-allowed has-[[data-state=unchecked]:disabled]:opacity-50",

@@ -121,7 +121,7 @@ export const ChoiceTilesInput = <T extends FieldValues>({
                     {option.title}
                   </span>
                   {option.description ? (
-                    <span className="mt-1 block text-[12.5px] leading-normal text-slate-400">
+                    <span className="mt-1 block text-sm leading-normal text-slate-400">
                       {option.description}
                     </span>
                   ) : null}

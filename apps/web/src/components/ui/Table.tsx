@@ -56,7 +56,7 @@ const TableHead = ({ className, ...props }: ComponentProps<"th">) => (
   <th
     data-slot="table-head"
     className={cn(
-      "px-4.5 py-3.75 text-left align-middle text-[11.5px] font-semibold tracking-wider whitespace-nowrap text-slate-400 uppercase has-[[role=checkbox]]:pr-0",
+      "px-4.5 py-3.75 text-left align-middle text-xs font-semibold tracking-wider whitespace-nowrap text-slate-400 uppercase has-[[role=checkbox]]:pr-0",
       className,
     )}
     {...props}

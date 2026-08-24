@@ -64,7 +64,7 @@ const numberFootnotes = (
  * Bruchstrich, gedämpfter Nenner darunter.
  */
 const Fraction = ({ top, bottom }: { top: string; bottom: string }) => (
-  <span className="inline-flex flex-col items-center text-[12.5px] leading-tight">
+  <span className="inline-flex flex-col items-center text-xs leading-tight">
     <span className="border-b border-muted-foreground/40 px-1.5 pb-px font-semibold text-foreground">
       {top}
     </span>

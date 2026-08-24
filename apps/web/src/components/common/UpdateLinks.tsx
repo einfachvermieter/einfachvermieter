@@ -30,7 +30,7 @@ export const UpdateLinks = ({ status }: { status: UpdateStatus }) => {
   }[status.platform];
 
   return (
-    <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px]">
+    <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
       <ExternalLink href={status.downloadUrl} label={downloadLabel} />
       {status.releaseNotesUrl ? (
         <ExternalLink

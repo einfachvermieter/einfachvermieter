@@ -22,7 +22,7 @@ export const Disclose = ({
         aria-expanded={open}
         aria-controls={contentId}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex items-center gap-1.25 text-[12.5px] font-semibold text-sky-700"
+        className="inline-flex items-center gap-1.25 text-sm font-semibold text-sky-700"
       >
         <RiArrowDownSLine
           className={`size-[15px] transition-transform ${open ? "rotate-180" : ""}`}

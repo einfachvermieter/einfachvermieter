@@ -67,7 +67,7 @@ export const PageHeader = ({
       )}
     >
       {ancestors.length > 0 ? (
-        <nav className="mb-4 flex flex-wrap items-center gap-1.75 text-[12.5px] leading-4 font-semibold tracking-[0.005em] text-slate-400">
+        <nav className="mb-4 flex flex-wrap items-center gap-1.75 text-xs leading-4 font-semibold tracking-[0.005em] text-slate-400">
           {ancestors.map((entry, index) => (
             <Fragment key={entry.to ?? entry.label}>
               {index > 0 ? (
@@ -103,7 +103,7 @@ export const PageHeader = ({
           )}
           {/* Zeile immer reservieren, damit nachladende Unterzeilen die
               Kopfhöhe nicht springen lassen */}
-          <div className="mt-0.75 flex min-h-4 items-center text-[12.5px] leading-4 font-medium text-slate-400">
+          <div className="mt-0.75 flex min-h-4 items-center text-xs leading-4 font-medium text-slate-400">
             {loading || subLoading ? (
               <Skeleton className="h-3.5 w-56 bg-slate-400/15" />
             ) : (

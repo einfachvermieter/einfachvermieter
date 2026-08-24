@@ -216,7 +216,7 @@ export const AiSettingsForm = ({
               </div>
             </SectionCard>
           ) : null}
-          <p className="px-1 text-[12.5px] leading-relaxed text-slate-400 dark:text-slate-500">
+          <p className="px-1 text-xs leading-relaxed text-slate-400 dark:text-slate-500">
             {t("ui.settings.ai.trademarkNotice")}
           </p>
         </div>

@@ -33,7 +33,7 @@ export const SectionCard = ({
           {titleExtra}
         </h2>
         {description ? (
-          <p className="mt-0.5 text-[12.5px] text-slate-400">{description}</p>
+          <p className="mt-0.5 text-xs text-slate-400">{description}</p>
         ) : null}
       </div>
       {action}

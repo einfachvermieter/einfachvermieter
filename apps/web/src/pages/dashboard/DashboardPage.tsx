@@ -162,7 +162,7 @@ export const DashboardPage = () => {
           <h2 className="text-[17px] font-semibold">
             {t("ui.dashboard.quickstart.title")}
           </h2>
-          <p className="mt-0.5 mb-4 text-[12.5px] text-slate-400">
+          <p className="mt-0.5 mb-4 text-sm text-slate-400">
             {t("ui.dashboard.quickstart.description")}
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -264,7 +264,7 @@ export const DashboardPage = () => {
           <h2 className="text-[17px] font-semibold">
             {t("ui.dashboard.buildingsCard.title")}
           </h2>
-          <p className="mt-0.5 mb-2 text-[12.5px] text-slate-400">
+          <p className="mt-0.5 mb-2 text-sm text-slate-400">
             {t("ui.dashboard.buildingsCard.description")}
           </p>
           {(buildings ?? []).map((building) => (
