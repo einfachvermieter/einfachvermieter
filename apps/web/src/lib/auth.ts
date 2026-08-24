@@ -17,6 +17,10 @@ export type AuthUser = {
   residentId: string | null;
 };
 
+/**
+ * Angemeldete Identität. Wird minütlich und beim Zurückkehren ins Fenster
+ * nachgeladen, damit eine abgelaufene Session spätestens nach 60s auffällt.
+ */
 export const authMeQueryOptions = {
   queryKey: ["auth", "me"],
   queryFn: async () => {
@@ -25,6 +29,8 @@ export const authMeQueryOptions = {
   },
   retry: false,
   staleTime: 60_000,
+  refetchInterval: 60_000,
+  refetchOnWindowFocus: true,
 } as const;
 
 export const useCurrentUser = () => useQuery(authMeQueryOptions);

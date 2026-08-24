@@ -1,4 +1,9 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  MutationCache,
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
@@ -42,7 +47,25 @@ const shouldRetry = (failureCount: number, error: Error): boolean => {
   return failureCount < 1;
 };
 
+/**
+ * Abgelaufene Session: 401 der API zentral abfangen
+ */
+const handleUnauthorized = (error: Error): void => {
+  if (!(error instanceof ApiError) || error.status !== 401) {
+    return;
+  }
+
+  if (router.state.location.pathname === "/anmelden") {
+    return;
+  }
+
+  queryClient.clear();
+  router.navigate({ to: "/anmelden" });
+};
+
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({ onError: handleUnauthorized }),
+  mutationCache: new MutationCache({ onError: handleUnauthorized }),
   defaultOptions: {
     queries: {
       staleTime: 30_000,
