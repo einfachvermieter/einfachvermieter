@@ -7,10 +7,10 @@ import {
 } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { IconTile } from "@/components/common/IconTile";
 import { PageHeader } from "@/components/common/PageHeader";
+import { PageHeaderIcon } from "@/components/common/PageHeaderIcon";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { domainVisuals, gradients } from "@/lib/domainVisuals";
+import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import { useAuthMode } from "@/lib/setup";
 
@@ -46,15 +46,10 @@ export const SettingsLayout = ({
     <div className="space-y-6 pb-24">
       <div className="space-y-4">
         <PageHeader
-          tile={
-            <IconTile
-              icon={domainVisuals.configuration.icon}
-              size={44}
-              background={gradients.slate}
-            />
-          }
+          tile={<PageHeaderIcon icon={domainVisuals.configuration.icon} />}
           title={title}
           sub={description}
+          breadcrumb={false}
         />
         <Tabs
           value={active}

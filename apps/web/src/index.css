@@ -50,7 +50,7 @@
 }
 
 :root {
-    --background: var(--color-slate-50);
+    --background: var(--color-white);
     --foreground: var(--color-slate-900);
     --card: var(--color-white);
     --card-foreground: var(--color-slate-900);
@@ -74,7 +74,7 @@
     --chart-4: var(--color-teal-700);
     --chart-5: var(--color-teal-800);
     --radius: 0.7rem;
-    --sidebar: var(--color-white);
+    --sidebar: var(--color-slate-50);
     --sidebar-foreground: var(--color-slate-600);
     --sidebar-primary: var(--color-sky-600);
     --sidebar-primary-foreground: var(--color-sky-50);
@@ -95,7 +95,7 @@
 }
 
 .dark {
-    --background: var(--color-slate-950);
+    --background: var(--color-slate-900);
     --foreground: var(--color-slate-50);
     --card: var(--color-slate-900);
     --card-foreground: var(--color-slate-50);
@@ -118,7 +118,7 @@
     --chart-3: var(--color-teal-600);
     --chart-4: var(--color-teal-700);
     --chart-5: var(--color-teal-800);
-    --sidebar: var(--color-slate-900);
+    --sidebar: var(--color-slate-950);
     --sidebar-foreground: var(--color-slate-50);
     --sidebar-primary: var(--color-sky-500);
     --sidebar-primary-foreground: var(--color-sky-950);
@@ -142,35 +142,6 @@
   html {
     @apply font-sans;
     }
-}
-
-/*
- * Verlauf-Wash des Seitenkopfs: zwei asymmetrische Radialverläufe, an den
- * Kanten weich maskiert. Negative Ränder + z-index -1 damit er oben über den
- * Content-Rand und unten hinter die folgende Box ragt. Kein Rahmen, keine Box.
- * Der Content-Container der AppShell isoliert den Stapelkontext, sonst läge
- * der Wash hinter dem undurchsichtigen Hintergrund des Seitenbereichs.
- */
-.page-header-wash::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  pointer-events: none;
-  inset: -46px -44px -104px -44px;
-  background:
-    radial-gradient(68rem 16rem at -5% -18%, color-mix(in oklab, var(--color-sky-600) 26%, transparent), transparent 64%),
-    radial-gradient(44rem 30rem at 102% 115%, color-mix(in oklab, var(--color-sky-600) 20%, transparent), transparent 62%);
-  -webkit-mask-image:
-    linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent),
-    linear-gradient(180deg, #000 0, #000 72%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent),
-    linear-gradient(180deg, #000 0, #000 72%, transparent 100%);
-  mask-composite: intersect;
-}
-.dark .page-header-wash::before {
-  opacity: 0.4;
 }
 
 /*

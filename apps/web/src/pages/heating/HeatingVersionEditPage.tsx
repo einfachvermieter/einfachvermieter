@@ -13,13 +13,13 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Badge } from "../../components/ui/Badge";
 import { type Building, buildingsQueryOptions } from "../../lib/buildings";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import {
   heatingSettingsByIdQueryOptions,
   updateHeatingSettings,
@@ -114,13 +114,7 @@ export const HeatingVersionEditPage = () => {
   return (
     <div className="pb-24">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.heating.icon}
-            size={44}
-            background={gradients.heating}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.heating.icon} />}
         title={
           version
             ? t("ui.heating.heroTitle", {

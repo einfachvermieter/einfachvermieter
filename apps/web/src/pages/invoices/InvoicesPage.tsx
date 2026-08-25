@@ -6,8 +6,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
@@ -25,14 +25,11 @@ import {
   costEntriesOverviewQueryOptions,
   costTypesQueryOptions,
 } from "../../lib/costs";
-import {
-  costTypeVisual,
-  domainVisuals,
-  gradients,
-} from "../../lib/domainVisuals";
+import { costTypeVisual, domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
+import { rowIconColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 
 const SORTABLE_COLUMNS: ReadonlySet<CostEntrySortColumn> = new Set([
@@ -45,6 +42,14 @@ const SORTABLE_COLUMNS: ReadonlySet<CostEntrySortColumn> = new Set([
 const invoiceColumns = (
   costTypeByName: Map<string, CostType>,
 ): ColumnDef<CostEntryOverviewRow>[] => [
+  // Icon nach der ersten Kostenart der Rechnung
+  rowIconColumn<CostEntryOverviewRow>((entry) => {
+    const [firstName] = entry.costTypeNames;
+    const firstCostType = firstName ? costTypeByName.get(firstName) : undefined;
+    return costTypeVisual(
+      firstCostType ?? { category: "operating", defaultAllocationKey: null },
+    ).icon;
+  }),
   {
     id: "costType",
     accessorKey: "costTypeNames",
@@ -52,15 +57,8 @@ const invoiceColumns = (
     header: t("ui.invoices.columns.invoice"),
     cell: ({ row }) => {
       const [firstName, ...moreNames] = row.original.costTypeNames;
-      const firstCostType = firstName
-        ? costTypeByName.get(firstName)
-        : undefined;
-      const visual = costTypeVisual(
-        firstCostType ?? { category: "operating", defaultAllocationKey: null },
-      );
       return (
         <EntityCell
-          tile={<IconTile icon={visual.icon} background={visual.gradient} />}
           name={
             <span className="flex items-center gap-1.5">
               <Link
@@ -208,13 +206,7 @@ export const InvoicesPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.invoices.icon}
-            size={44}
-            background={gradients.invoices}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.invoices.icon} />}
         title={t("ui.invoices.title")}
         sub={sub}
         subLoading={!data}

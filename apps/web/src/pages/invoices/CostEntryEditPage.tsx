@@ -5,16 +5,16 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiBillLine, RiDeleteBinLine } from "@remixicon/react";
+import { RiDeleteBinLine, RiReceiptLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
 import {
@@ -29,7 +29,7 @@ import {
   costEntryQueryOptions,
   costTypesQueryOptions,
 } from "../../lib/costs";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { statementsQueryOptions } from "../../lib/statements";
@@ -222,13 +222,7 @@ export const CostEntryEditPage = () => {
       <PageHeader
         loading={!entry}
         statsSkeleton={3}
-        tile={
-          <IconTile
-            icon={RiBillLine}
-            size={44}
-            background={gradients.invoices}
-          />
-        }
+        tile={<PageHeaderIcon icon={RiReceiptLine} />}
         title={entry ? costEntryIdentityLabel(entry) : ""}
         sub={
           entry

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useBreadcrumbTrail } from "../useBreadcrumbTrail";
 
 /**
- * Einheitlicher Seitenkopf für Listen- und Detailseiten: Icon-Kachel,
+ * Einheitlicher Seitenkopf für Listen- und Detailseiten: Icon bzw. Avatar,
  * Breadcrumb-Eyebrow, Titel, Unterzeile und rechts entweder ein
  * Primärbutton (Listen) oder Kennzahlen (Detail).
  */
@@ -19,9 +19,10 @@ export const PageHeader = ({
   stats,
   statsSkeleton,
   action,
+  breadcrumb = true,
 }: {
   /**
-   * IconTile oder InitialsAvatar in Größe 44
+   * PageHeaderIcon oder InitialsAvatar in Größe 44
    */
   tile: ReactNode;
   title: string;
@@ -48,12 +49,18 @@ export const PageHeader = ({
    * Aktions-Buttons rechts (z. B. Hinzufügen/Finalisieren)
    */
   action?: ReactNode;
+
+  /**
+   * Breadcrumb-Eyebrow ausblenden (z. B. Einstellungen mit eigener Reiter-Navigation)
+   */
+  breadcrumb?: boolean;
 }) => {
   // Der Eyebrow ist Breadcrumb: die volle Kette ohne die aktuelle Seite,
   // die selbst als Titel erscheint.
-  const ancestors = useBreadcrumbTrail()
-    .slice(0, -1)
-    .filter((entry) => entry.label.length > 0);
+  const trail = useBreadcrumbTrail();
+  const ancestors = breadcrumb
+    ? trail.slice(0, -1).filter((entry) => entry.label.length > 0)
+    : [];
   const statsSkeletonKeys = Array.from(
     { length: loading ? (statsSkeleton ?? 0) : 0 },
     (_, index) => `stat-skeleton-${index}`,
@@ -62,7 +69,7 @@ export const PageHeader = ({
   return (
     <header
       className={cn(
-        "page-header-wash relative mb-5.5 px-5 pb-6.5",
+        "mb-5.5 pb-6.5",
         ancestors.length > 0 ? "pt-0.5" : "pt-3.5",
       )}
     >
@@ -76,7 +83,7 @@ export const PageHeader = ({
               {entry.to ? (
                 <Link
                   to={entry.to}
-                  className="text-teal-600 transition-colors hover:text-teal-700"
+                  className="text-sky-700 transition-colors hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
                 >
                   {entry.label}
                 </Link>
@@ -146,11 +153,10 @@ export const PageHeader = ({
 
         {action ? (
           <div
-            className={
-              stats && stats.length > 0
-                ? "flex shrink-0 items-center gap-2"
-                : "ml-auto flex shrink-0 items-center gap-2"
-            }
+            className={cn(
+              "flex shrink-0 items-center gap-2 **:data-[slot=button]:shadow-none",
+              !(stats && stats.length > 0) && "ml-auto",
+            )}
           >
             {action}
           </div>

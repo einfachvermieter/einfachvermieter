@@ -1,12 +1,11 @@
 import type { UnitCreateDto } from "@einfachvermieter/shared";
-import { RiHome4Line } from "@remixicon/react";
+import { RiHome6Line } from "@remixicon/react";
 import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
-import { IconTile } from "../../components/common/IconTile";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
-import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { Unit } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
@@ -26,9 +25,7 @@ export const UnitCreatePage = () => {
 
   return (
     <FormPage
-      tile={
-        <IconTile icon={RiHome4Line} size={44} background={gradients.units} />
-      }
+      tile={<PageHeaderIcon icon={RiHome6Line} />}
       title={t("ui.units.createTitle")}
       aside={<BuildingContextCard building={building} />}
     >

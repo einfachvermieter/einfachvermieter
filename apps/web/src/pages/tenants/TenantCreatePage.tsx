@@ -8,12 +8,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
-import { IconTile } from "../../components/common/IconTile";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { TextWithLink } from "../../components/TextWithLink";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { TenantAggregate } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
@@ -53,13 +53,7 @@ export const TenantCreatePage = () => {
 
   return (
     <FormPage
-      tile={
-        <IconTile
-          icon={domainVisuals.tenants.icon}
-          size={44}
-          background={gradients.tenants}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.tenants.icon} />}
       title={t("ui.tenants.createTitle")}
       aside={
         <BuildingContextCard

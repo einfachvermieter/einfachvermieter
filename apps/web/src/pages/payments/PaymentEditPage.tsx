@@ -13,12 +13,11 @@ import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { FormPage } from "../../components/common/FormPage";
-import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { TenantContextCard } from "../../components/common/TenantContextCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
-import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   type Payment,
@@ -119,13 +118,7 @@ export const PaymentEditPage = () => {
     <FormPage
       head={
         <PageHeader
-          tile={
-            <IconTile
-              icon={RiMoneyEuroCircleLine}
-              size={44}
-              background={gradients.money}
-            />
-          }
+          tile={<PageHeaderIcon icon={RiMoneyEuroCircleLine} />}
           title={payment ? paymentIdentityLabel(payment) : ""}
           loading={!payment}
         />

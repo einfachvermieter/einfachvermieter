@@ -1,4 +1,4 @@
-import { RiBillLine } from "@remixicon/react";
+import { RiReceiptLine } from "@remixicon/react";
 import type { UseFormReturn } from "react-hook-form";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Form } from "@/components/form/Form";
@@ -43,7 +43,7 @@ export const CostEntryForm = ({
       <fieldset disabled={submitting} className="contents">
         <div className="space-y-5">
           <SectionCard
-            icon={RiBillLine}
+            icon={RiReceiptLine}
             iconBackground={gradients.invoices}
             title={t("ui.invoices.detail.basicsSection")}
             description={t("ui.invoices.detail.basicsDescription")}

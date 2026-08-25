@@ -1,19 +1,18 @@
 import { formatNumber, pad2 } from "@einfachvermieter/shared";
-import { RiAddLine, RiHome4Line } from "@remixicon/react";
+import { RiAddLine, RiHome6Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
+import { CELL_LINK, ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
@@ -104,7 +103,6 @@ export const UnitsOverview = () => {
         header: t("ui.units.fields.name"),
         cell: ({ row }) => (
           <EntityCell
-            tile={<IconTile icon={RiHome4Line} background={gradients.units} />}
             name={
               <Link
                 to="/wohnungen/$unitId"
@@ -140,10 +138,22 @@ export const UnitsOverview = () => {
       {
         id: "tenant",
         header: t("ui.units.fields.tenant"),
-        cell: ({ row }) =>
-          row.original.occupancy.tenantNames.join(
-            t("ui.common.separators.comma"),
-          ) || t("ui.common.emptyValue"),
+        cell: ({ row }) => {
+          const { tenantId, tenantNames } = row.original.occupancy;
+          const names = tenantNames.join(t("ui.common.separators.comma"));
+          if (!tenantId || !names) {
+            return t("ui.common.emptyValue");
+          }
+          return (
+            <Link
+              to="/mieter/$tenantId"
+              params={{ tenantId }}
+              className={CELL_LINK}
+            >
+              {names}
+            </Link>
+          );
+        },
       },
     ],
     [],
@@ -172,9 +182,7 @@ export const UnitsOverview = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile icon={RiHome4Line} size={44} background={gradients.units} />
-        }
+        tile={<PageHeaderIcon icon={RiHome6Line} />}
         title={t("ui.units.title")}
         sub={sub}
         subLoading={!data}

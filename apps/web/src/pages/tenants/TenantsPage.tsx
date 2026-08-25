@@ -7,11 +7,10 @@ import { useMemo } from "react";
 import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
-import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
+import { CELL_LINK, ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { RowActionButton } from "../../components/RowActions";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -20,7 +19,7 @@ import {
   type TenantBalanceSummary,
 } from "../../lib/accounts";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
@@ -59,7 +58,6 @@ const tenantColumns = (
       const names = contractPartyNames(row.original);
       return (
         <EntityCell
-          tile={<InitialsAvatar name={names || row.original.unitName} />}
           name={
             <Link
               to="/mieter/$tenantId"
@@ -69,10 +67,23 @@ const tenantColumns = (
               {names || t("common.none")}
             </Link>
           }
-          subline={row.original.unitName}
         />
       );
     },
+  },
+  {
+    id: "unit",
+    accessorKey: "unitName",
+    header: t("ui.common.columns.unit"),
+    cell: ({ row }) => (
+      <Link
+        to="/wohnungen/$unitId"
+        params={{ unitId: row.original.unitId }}
+        className={CELL_LINK}
+      >
+        {row.original.unitName}
+      </Link>
+    ),
   },
   {
     id: "kind",
@@ -233,13 +244,7 @@ export const TenantsPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.tenants.icon}
-            size={44}
-            background={gradients.tenants}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.tenants.icon} />}
         title={t("ui.tenants.title")}
         sub={sub}
         subLoading={!data}

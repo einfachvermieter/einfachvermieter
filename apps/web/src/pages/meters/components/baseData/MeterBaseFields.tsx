@@ -11,7 +11,7 @@ import {
   roleRequiresUnit,
   UNIT_NONE,
 } from "@einfachvermieter/shared";
-import { RiSpeedUpLine } from "@remixicon/react";
+import { RiDashboard2Line } from "@remixicon/react";
 import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
@@ -97,7 +97,7 @@ export const MeterBaseFields = ({
 
   return (
     <SectionCard
-      icon={RiSpeedUpLine}
+      icon={RiDashboard2Line}
       iconBackground={gradients.water}
       title={t("ui.meters.detail.baseSection")}
       description={t("ui.meters.detail.baseDescription")}

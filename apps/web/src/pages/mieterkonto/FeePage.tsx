@@ -15,8 +15,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { EntityNotFound } from "@/components/common/EntityNotFound";
 import { FormPage } from "@/components/common/FormPage";
-import { IconTile } from "@/components/common/IconTile";
 import { PageHeader } from "@/components/common/PageHeader";
+import { PageHeaderIcon } from "@/components/common/PageHeaderIcon";
 import { TenantContextCard } from "@/components/common/TenantContextCard";
 import { FormSkeleton } from "@/components/FormSkeleton";
 import { DateInput } from "@/components/form/DateInput";
@@ -29,7 +29,6 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { FieldGroup } from "@/components/ui/Field";
 import { feeIdentityLabel, tenantFeesQueryOptions } from "@/lib/accounts";
 import { api } from "@/lib/api";
-import { gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import { tenantsOverviewQueryOptions } from "@/lib/tenants";
 import { useCrudMutation } from "@/lib/useCrudMutation";
@@ -149,13 +148,7 @@ export const FeePage = () => {
     <FormPage
       head={
         <PageHeader
-          tile={
-            <IconTile
-              icon={RiMoneyEuroCircleLine}
-              size={44}
-              background={gradients.money}
-            />
-          }
+          tile={<PageHeaderIcon icon={RiMoneyEuroCircleLine} />}
           title={
             existing ? feeIdentityLabel(existing) : t("ui.account.fee.title")
           }

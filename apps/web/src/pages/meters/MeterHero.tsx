@@ -1,12 +1,8 @@
 import { formatNumber } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
-import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
-import {
-  domainVisuals,
-  gradients,
-  meterTypeVisual,
-} from "../../lib/domainVisuals";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
+import { domainVisuals, meterTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   measurementUnitLabel,
@@ -26,13 +22,7 @@ export const MeterHero = ({ meterId }: { meterId: string }) => {
   if (!meter) {
     return (
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.meters.icon}
-            size={44}
-            background={gradients.water}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
         title=""
         loading={true}
         statsSkeleton={3}
@@ -76,13 +66,7 @@ export const MeterHero = ({ meterId }: { meterId: string }) => {
 
   return (
     <PageHeader
-      tile={
-        <IconTile
-          icon={meterTypeVisual(meter.type).icon}
-          size={44}
-          background={meterTypeVisual(meter.type).gradient}
-        />
-      }
+      tile={<PageHeaderIcon icon={meterTypeVisual(meter.type).icon} />}
       title={meter.label}
       sub={[meterTypeLabel(meter.type), meterRoleLabel(meter.role)].join(
         t("ui.common.separators.bullet"),

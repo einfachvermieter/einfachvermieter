@@ -5,8 +5,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
@@ -24,14 +24,11 @@ import {
   costTypeCategoryLabel,
   costTypesOverviewQueryOptions,
 } from "../../lib/costs";
-import {
-  costTypeVisual,
-  domainVisuals,
-  gradients,
-} from "../../lib/domainVisuals";
+import { costTypeVisual, domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
+import { rowIconColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 
 const SORTABLE_COLUMNS: ReadonlySet<CostTypeSortColumn> = new Set([
@@ -65,28 +62,23 @@ export const CostsOverview = () => {
 
   const columns = useMemo<ColumnDef<CostType>[]>(
     () => [
+      rowIconColumn<CostType>((costType) => costTypeVisual(costType).icon),
       {
         accessorKey: "name",
         header: t("ui.common.columns.name"),
-        cell: ({ row }) => {
-          const visual = costTypeVisual(row.original);
-          return (
-            <EntityCell
-              tile={
-                <IconTile icon={visual.icon} background={visual.gradient} />
-              }
-              name={
-                <Link
-                  to="/kostenarten/$costTypeId"
-                  params={{ costTypeId: row.original.id }}
-                  className={ROW_TITLE_LINK}
-                >
-                  {row.original.name}
-                </Link>
-              }
-            />
-          );
-        },
+        cell: ({ row }) => (
+          <EntityCell
+            name={
+              <Link
+                to="/kostenarten/$costTypeId"
+                params={{ costTypeId: row.original.id }}
+                className={ROW_TITLE_LINK}
+              >
+                {row.original.name}
+              </Link>
+            }
+          />
+        ),
       },
       {
         accessorKey: "category",
@@ -155,13 +147,7 @@ export const CostsOverview = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.costTypes.icon}
-            size={44}
-            background={gradients.notes}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.costTypes.icon} />}
         title={t("ui.costs.title")}
         sub={sub}
         subLoading={!data}

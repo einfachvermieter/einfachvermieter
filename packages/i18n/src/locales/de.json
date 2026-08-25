@@ -511,7 +511,6 @@
         "label": "Bezeichnung",
         "serialNumber": "Seriennummer"
       },
-      "serialNumberShort": "SN: {value}",
       "sub": {
         "count": "{count, plural, one {# Zähler} other {# Zähler}}"
       },
@@ -636,7 +635,9 @@
       "empty": "Noch keine Gebäude angelegt",
       "emptySearch": "Keine Gebäude gefunden für „{query}“",
       "columns": {
-        "street": "Straße"
+        "street": "Straße",
+        "units": "Wohnungen",
+        "activeTenants": "Aktive Mieter"
       },
       "sections": {
         "baseData": {

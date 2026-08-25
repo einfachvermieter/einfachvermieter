@@ -5,7 +5,6 @@ import {
 } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
 import { InitialsAvatar } from "@/components/common/InitialsAvatar";
-import { MenuIconTile } from "@/components/common/MenuIconTile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,13 +80,13 @@ export const MainNavigationUser = ({
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild={true}>
                 <Link to="/einstellungen/passwort">
-                  <MenuIconTile icon={RiLockPasswordLine} />
+                  <RiLockPasswordLine />
                   {t("ui.navigation.password")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={onLogout}>
-                <MenuIconTile icon={RiLogoutBoxRLine} />
+                <RiLogoutBoxRLine />
                 {t("ui.common.action.logout")}
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -3,12 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
-import { IconTile } from "../../components/common/IconTile";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { costTypesQueryOptions } from "../../lib/costs";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { Meter } from "../../lib/meters";
 import { unitsQueryOptions } from "../../lib/units";
@@ -37,13 +37,7 @@ export const MeterCreatePage = () => {
 
   return (
     <FormPage
-      tile={
-        <IconTile
-          icon={domainVisuals.meters.icon}
-          size={44}
-          background={gradients.water}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
       title={t("ui.meters.createTitle")}
       aside={<BuildingContextCard building={building} />}
     >

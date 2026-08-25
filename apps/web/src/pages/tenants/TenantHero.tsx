@@ -7,11 +7,11 @@ import {
 } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { BalanceAmount } from "../../components/common/BalanceAmount";
-import { IconTile } from "../../components/common/IconTile";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { buildingsQueryOptions } from "../../lib/buildings";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { tenantQueryOptions } from "../../lib/tenants";
@@ -41,13 +41,7 @@ export const TenantHero = ({
   if (!aggregate) {
     return (
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.tenants.icon}
-            size={44}
-            background={gradients.tenants}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.tenants.icon} />}
         title=""
         loading={true}
         statsSkeleton={balance ? 3 : 4}

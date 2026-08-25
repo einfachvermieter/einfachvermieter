@@ -1,17 +1,17 @@
 import type { MeterType } from "@einfachvermieter/shared";
 import {
   type RemixiconComponentType,
-  RiBillLine,
-  RiDashboard3Line,
+  RiDashboard2Line,
+  RiDashboardLine,
   RiDropLine,
   RiFileList3Line,
   RiFireLine,
   RiFlashlightLine,
   RiGroupLine,
-  RiHome4Line,
+  RiHome6Line,
   RiPriceTag3Line,
+  RiReceiptLine,
   RiSettings3Line,
-  RiSpeedUpLine,
 } from "@remixicon/react";
 
 export type DomainKey =
@@ -35,13 +35,13 @@ export type DomainVisual = {
  * Tabellenzeilen und Sektionsköpfen.
  */
 export const domainVisuals: Record<DomainKey, DomainVisual> = {
-  dashboard: { icon: RiDashboard3Line, accent: "var(--i-blue)" },
+  dashboard: { icon: RiDashboardLine, accent: "var(--i-blue)" },
   configuration: { icon: RiSettings3Line, accent: "var(--i-slate)" },
-  units: { icon: RiHome4Line, accent: "var(--i-green)" },
-  meters: { icon: RiSpeedUpLine, accent: "var(--i-cyan)" },
+  units: { icon: RiHome6Line, accent: "var(--i-green)" },
+  meters: { icon: RiDashboard2Line, accent: "var(--i-cyan)" },
   tenants: { icon: RiGroupLine, accent: "var(--i-amber)" },
   costTypes: { icon: RiPriceTag3Line, accent: "var(--i-indigo)" },
-  invoices: { icon: RiBillLine, accent: "var(--i-pink)" },
+  invoices: { icon: RiReceiptLine, accent: "var(--i-pink)" },
   heating: { icon: RiFireLine, accent: "var(--i-orange)" },
   statements: { icon: RiFileList3Line, accent: "var(--i-violet)" },
 };

@@ -15,3 +15,9 @@ export const QUIET_TABLE_GROUP_HEAD =
  */
 export const ROW_TITLE_LINK =
   "rounded-sm underline-offset-4 outline-none hover:underline focus-visible:underline";
+
+/**
+ * Querverweis in einer Tabellenzelle auf eine andere Entität
+ */
+export const CELL_LINK =
+  "rounded-sm text-sky-700 underline-offset-4 outline-none hover:underline focus-visible:underline dark:text-sky-400";

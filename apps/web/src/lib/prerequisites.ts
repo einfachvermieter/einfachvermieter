@@ -2,7 +2,7 @@ import {
   type RemixiconComponentType,
   RiBuilding2Line,
   RiGroupLine,
-  RiHome4Line,
+  RiHome6Line,
   RiPriceTag3Line,
 } from "@remixicon/react";
 import { type QueryClient, useQuery } from "@tanstack/react-query";
@@ -23,7 +23,7 @@ type Prerequisite = "building" | "units" | "costTypes" | "tenants";
  */
 export const NEEDS_META = {
   building: { linkTo: "/gebaeude", icon: RiBuilding2Line },
-  units: { linkTo: "/wohnungen", icon: RiHome4Line },
+  units: { linkTo: "/wohnungen", icon: RiHome6Line },
   costTypes: { linkTo: "/kostenarten", icon: RiPriceTag3Line },
   tenants: { linkTo: "/mieter", icon: RiGroupLine },
 } as const satisfies Record<

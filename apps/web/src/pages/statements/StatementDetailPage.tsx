@@ -24,9 +24,9 @@ import { ActionLink } from "../../components/common/ActionLink";
 import { Description } from "../../components/common/Description";
 import { EmptyNote } from "../../components/common/EmptyNote";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { DestructiveConfirmDialog } from "../../components/DestructiveConfirmDialog";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
@@ -59,7 +59,7 @@ import { Textarea } from "../../components/ui/Textarea";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { climateFactorsQueryOptions } from "../../lib/climateFactors";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import {
   heatingIdentityLabel,
@@ -456,13 +456,7 @@ export const StatementDetailPage = () => {
     return (
       <div className="pb-6">
         <PageHeader
-          tile={
-            <IconTile
-              icon={domainVisuals.statements.icon}
-              size={44}
-              background={gradients.statements}
-            />
-          }
+          tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
           title=""
           loading={true}
           statsSkeleton={3}
@@ -598,13 +592,7 @@ export const StatementDetailPage = () => {
   return (
     <div className="pb-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.statements.icon}
-            size={44}
-            background={gradients.statements}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
         title={identity}
         sub={
           <span className="flex flex-wrap items-center gap-2">

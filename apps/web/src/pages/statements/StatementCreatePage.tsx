@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
-import { IconTile } from "../../components/common/IconTile";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { dateToIso } from "../../lib/dateInput";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { type Statement, statementsQueryOptions } from "../../lib/statements";
 import { tenantsOverviewQueryOptions } from "../../lib/tenants";
@@ -44,13 +44,7 @@ export const StatementCreatePage = () => {
 
   return (
     <FormPage
-      tile={
-        <IconTile
-          icon={domainVisuals.statements.icon}
-          size={44}
-          background={gradients.statements}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
       title={t("ui.statements.createTitle")}
       description={t("ui.statements.createDescription")}
       aside={<BuildingContextCard building={building} />}

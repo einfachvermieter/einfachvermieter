@@ -9,13 +9,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   type TenantOverviewRow,
@@ -114,13 +114,7 @@ export const UnitEditPage = () => {
   return (
     <div className="pb-24">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.units.icon}
-            size={44}
-            background={gradients.units}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.units.icon} />}
         title={unit.name}
         sub={[
           building?.name,

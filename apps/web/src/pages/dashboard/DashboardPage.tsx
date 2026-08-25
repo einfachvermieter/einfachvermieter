@@ -1,14 +1,14 @@
 import {
   type RemixiconComponentType,
   RiArrowRightSLine,
-  RiBillLine,
   RiBuildingLine,
+  RiDashboard2Line,
   RiFileAddLine,
   RiFileList3Line,
   RiGroupLine,
-  RiHome4Line,
+  RiHome6Line,
   RiMoneyEuroCircleLine,
-  RiSpeedUpLine,
+  RiReceiptLine,
 } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -16,6 +16,7 @@ import type { ReactNode } from "react";
 import { IconTile } from "../../components/common/IconTile";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals, gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
@@ -96,13 +97,7 @@ export const DashboardPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.dashboard.icon}
-            size={44}
-            background={gradients.brand}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.dashboard.icon} />}
         title={t("ui.dashboard.title")}
         sub={sub}
         subLoading={!stats}
@@ -124,7 +119,7 @@ export const DashboardPage = () => {
           className={KPI_CARD_CLASS}
         >
           <KpiCardBody
-            icon={RiHome4Line}
+            icon={RiHome6Line}
             gradient={gradients.units}
             value={stats?.units}
             label={t("ui.dashboard.stats.units")}
@@ -182,7 +177,7 @@ export const DashboardPage = () => {
                 search={{ buildingId: undefined }}
                 className={QUICK_TILE_CLASS}
               >
-                <QuickTileContent icon={RiHome4Line} gradient={gradients.units}>
+                <QuickTileContent icon={RiHome6Line} gradient={gradients.units}>
                   {t("ui.dashboard.quickstart.addUnit")}
                 </QuickTileContent>
               </Link>
@@ -218,7 +213,7 @@ export const DashboardPage = () => {
                 className={QUICK_TILE_CLASS}
               >
                 <QuickTileContent
-                  icon={RiBillLine}
+                  icon={RiReceiptLine}
                   gradient={gradients.invoices}
                 >
                   {t("ui.dashboard.quickstart.recordCost")}
@@ -236,7 +231,7 @@ export const DashboardPage = () => {
                 className={QUICK_TILE_CLASS}
               >
                 <QuickTileContent
-                  icon={RiSpeedUpLine}
+                  icon={RiDashboard2Line}
                   gradient={gradients.water}
                 >
                   {t("ui.dashboard.quickstart.recordReading")}

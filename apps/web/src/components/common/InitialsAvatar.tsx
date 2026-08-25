@@ -2,6 +2,7 @@ import { gradients } from "@/lib/domainVisuals";
 import { cn } from "@/lib/utils";
 
 const SIZE_CLASSES = {
+  24: "size-6 rounded-md text-xs",
   29: "size-[29px] rounded-[9px] text-xs",
   34: "size-[34px] rounded-[10px] text-[13px]",
   36: "size-9 rounded-[10px] text-[13px]",

@@ -5,7 +5,7 @@ import {
   paymentPurposeKinds,
   type SetupStatus,
 } from "@einfachvermieter/shared";
-import { RiBuilding4Line, RiHome4Line } from "@remixicon/react";
+import { RiBuilding4Line, RiHome6Line } from "@remixicon/react";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
@@ -18,7 +18,7 @@ import {
 } from "@tanstack/react-router";
 import { AppShell } from "./components/AppShell";
 import { DetailPending } from "./components/common/DetailPending";
-import { IconTile } from "./components/common/IconTile";
+import { PageHeaderIcon } from "./components/common/PageHeaderIcon";
 import { TenantScopedNotFound } from "./components/common/TenantScopedNotFound";
 import { ErrorFallback } from "./components/ErrorBoundary";
 import { NotFound } from "./components/NotFound";
@@ -41,7 +41,7 @@ import {
   costTypeQueryOptions,
 } from "./lib/costs";
 import { useDocumentTitle } from "./lib/documentTitle";
-import { domainVisuals, gradients } from "./lib/domainVisuals";
+import { domainVisuals } from "./lib/domainVisuals";
 import {
   type HeatingSettings,
   heatingIdentityLabel,
@@ -374,13 +374,7 @@ const buildingEditRoute = createRoute({
   component: BuildingEditPage,
   pendingComponent: () => (
     <DetailPending
-      tile={
-        <IconTile
-          icon={RiBuilding4Line}
-          size={44}
-          background={gradients.buildings}
-        />
-      }
+      tile={<PageHeaderIcon icon={RiBuilding4Line} />}
       statsSkeleton={3}
       rows={4}
       aside={true}
@@ -446,9 +440,7 @@ const unitEditRoute = createRoute({
   component: UnitEditPage,
   pendingComponent: () => (
     <DetailPending
-      tile={
-        <IconTile icon={RiHome4Line} size={44} background={gradients.units} />
-      }
+      tile={<PageHeaderIcon icon={RiHome6Line} />}
       statsSkeleton={3}
       rows={3}
       aside={true}
@@ -508,13 +500,7 @@ const tenantEditRoute = createRoute({
   component: TenantEditPage,
   pendingComponent: () => (
     <DetailPending
-      tile={
-        <IconTile
-          icon={domainVisuals.tenants.icon}
-          size={44}
-          background={gradients.tenants}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.tenants.icon} />}
       statsSkeleton={4}
       rows={6}
       aside={true}
@@ -883,13 +869,7 @@ const meterEditRoute = createRoute({
   component: MeterDetailPage,
   pendingComponent: () => (
     <DetailPending
-      tile={
-        <IconTile
-          icon={domainVisuals.meters.icon}
-          size={44}
-          background={gradients.water}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
       statsSkeleton={3}
       rows={4}
       aside={true}
@@ -931,13 +911,7 @@ const meterReadingsRoute = createRoute({
   component: MeterReadingsPage,
   pendingComponent: () => (
     <DetailPending
-      tile={
-        <IconTile
-          icon={domainVisuals.meters.icon}
-          size={44}
-          background={gradients.water}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
       statsSkeleton={3}
       rows={4}
       tabs="default"
@@ -1223,13 +1197,7 @@ const statementDetailRoute = createRoute({
   component: StatementDetailPage,
   pendingComponent: () => (
     <DetailPending
-      tile={
-        <IconTile
-          icon={domainVisuals.statements.icon}
-          size={44}
-          background={gradients.statements}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
       statsSkeleton={3}
       rows={8}
       aside={true}

@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
-import { IconTile } from "../../components/common/IconTile";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import type { CostType } from "../../lib/costs";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
 import { useCrudMutation } from "../../lib/useCrudMutation";
@@ -33,13 +33,7 @@ export const CostTypeCreatePage = () => {
 
   return (
     <FormPage
-      tile={
-        <IconTile
-          icon={domainVisuals.costTypes.icon}
-          size={44}
-          background={gradients.notes}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.costTypes.icon} />}
       title={t("ui.costs.typeCreateTitle")}
       aside={
         <BuildingContextCard

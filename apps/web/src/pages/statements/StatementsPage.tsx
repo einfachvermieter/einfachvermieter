@@ -7,9 +7,8 @@ import { useMemo } from "react";
 import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
-import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
@@ -20,7 +19,7 @@ import {
   TooltipTrigger,
 } from "../../components/ui/Tooltip";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
@@ -115,7 +114,6 @@ export const StatementsPage = () => {
           const names = residentNames(row.original);
           return (
             <EntityCell
-              tile={<InitialsAvatar name={names || row.original.unitName} />}
               name={
                 <Link
                   to="/abrechnungen/$statementId"
@@ -207,13 +205,7 @@ export const StatementsPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.statements.icon}
-            size={44}
-            background={gradients.statements}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
         title={t("ui.statements.pageTitle")}
         sub={sub}
         subLoading={!data}

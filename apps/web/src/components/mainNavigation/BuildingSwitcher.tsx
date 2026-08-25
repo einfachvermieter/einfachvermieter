@@ -6,7 +6,6 @@ import {
 } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
 import { InitialsAvatar } from "@/components/common/InitialsAvatar";
-import { MenuIconTile } from "@/components/common/MenuIconTile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -95,13 +94,13 @@ export const BuildingSwitcher = () => {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild={true}>
               <Link to="/gebaeude">
-                <MenuIconTile icon={RiCommunityLine} />
+                <RiCommunityLine />
                 {t("ui.navigation.buildingSwitcher.all")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild={true}>
               <Link to="/gebaeude/neu">
-                <MenuIconTile icon={RiAddLine} />
+                <RiAddLine />
                 {t("ui.navigation.buildingSwitcher.add")}
               </Link>
             </DropdownMenuItem>

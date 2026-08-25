@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { IconTile } from "@/components/common/IconTile";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -52,11 +51,7 @@ export const NavGroup = ({
                 to={item.to}
                 search={buildingId ? { buildingId } : undefined}
               >
-                <IconTile
-                  icon={visual.icon}
-                  size={26}
-                  background={visual.accent}
-                />
+                <visual.icon aria-hidden={true} />
                 <span>{itemLabel}</span>
               </Link>
             </SidebarMenuButton>

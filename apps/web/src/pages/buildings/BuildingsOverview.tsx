@@ -1,23 +1,22 @@
-import { RiAddLine, RiBuilding4Line } from "@remixicon/react";
+import { RiAddLine, RiCommunityLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
 import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { Button } from "../../components/ui/Button";
 import {
   type Building,
   type BuildingSortColumn,
   buildingsOverviewQueryOptions,
 } from "../../lib/buildings";
-import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
-import { rowActionsColumn } from "../../lib/tableColumns";
+import { rowActionsColumn, rowTileColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 import { useDeleteResource } from "../../lib/useDeleteResource";
 
@@ -53,23 +52,13 @@ export const BuildingsOverview = () => {
 
   const columns = useMemo<ColumnDef<Building>[]>(
     () => [
+      rowTileColumn<Building>((building) => (
+        <InitialsAvatar name={building.name} size={24} />
+      )),
       {
         accessorKey: "name",
         header: t("ui.buildings.fields.name"),
-        cell: ({ row }) => (
-          <EntityCell
-            tile={<InitialsAvatar name={row.original.name} />}
-            name={row.original.name}
-            subline={[
-              t("ui.navigation.buildingSwitcher.unitsCount", {
-                count: row.original.unitsCount,
-              }),
-              t("ui.dashboard.buildingsCard.tenantsCount", {
-                count: row.original.activeTenantsCount,
-              }),
-            ].join(t("ui.common.separators.bullet"))}
-          />
-        ),
+        cell: ({ row }) => <EntityCell name={row.original.name} />,
       },
       {
         accessorKey: "addressStreet",
@@ -81,6 +70,24 @@ export const BuildingsOverview = () => {
         meta: { cellClassName: "tabular-nums" },
       },
       { accessorKey: "addressCity", header: t("ui.buildings.fields.city") },
+      {
+        accessorKey: "unitsCount",
+        enableSorting: false,
+        header: t("ui.buildings.columns.units"),
+        meta: {
+          cellClassName: "text-right tabular-nums",
+          headerClassName: "text-right",
+        },
+      },
+      {
+        accessorKey: "activeTenantsCount",
+        enableSorting: false,
+        header: t("ui.buildings.columns.activeTenants"),
+        meta: {
+          cellClassName: "text-right tabular-nums",
+          headerClassName: "text-right",
+        },
+      },
       // @todo: Löschen bleibt hier, bis die Gebäude-Detailseite eine Aktionen-Karte hat
       rowActionsColumn<Building>({ deletion }),
     ],
@@ -94,13 +101,7 @@ export const BuildingsOverview = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={RiBuilding4Line}
-            size={44}
-            background={gradients.buildings}
-          />
-        }
+        tile={<PageHeaderIcon icon={RiCommunityLine} />}
         title={t("ui.buildings.title")}
         sub={sub}
         subLoading={!data}

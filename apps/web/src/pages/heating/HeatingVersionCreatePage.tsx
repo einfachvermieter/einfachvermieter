@@ -10,10 +10,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { BuildingContextCard } from "../../components/common/BuildingContextCard";
 import { FormPage } from "../../components/common/FormPage";
-import { IconTile } from "../../components/common/IconTile";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import {
   createHeatingSettings,
   heatingSettingsListQueryOptions,
@@ -29,13 +29,7 @@ export const HeatingVersionCreatePage = () => {
 
   return (
     <FormPage
-      tile={
-        <IconTile
-          icon={domainVisuals.heating.icon}
-          size={44}
-          background={gradients.heating}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.heating.icon} />}
       title={t("ui.heating.versions.createTitle")}
       aside={<BuildingContextCard building={building} />}
     >

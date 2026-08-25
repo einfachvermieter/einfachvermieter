@@ -1,7 +1,35 @@
+import type { RemixiconComponentType } from "@remixicon/react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 import { RowActions } from "@/components/RowActions";
 import type { DeleteResource } from "./useDeleteResource";
+
+/**
+ * Schmale erste Spalte mit einer freistehenden Kachel je Zeile
+ */
+export const rowTileColumn = <T,>(
+  tile: (row: T) => ReactNode,
+): ColumnDef<T> => ({
+  id: "tile",
+  enableSorting: false,
+  header: () => null,
+  cell: ({ row }) => tile(row.original),
+  meta: {
+    cellClassName: "w-0 pr-0",
+    headerClassName: "w-0 pr-0",
+  },
+});
+
+/**
+ * Kachel-Spalte mit einem Icon je Zeile
+ */
+export const rowIconColumn = <T,>(
+  icon: (row: T) => RemixiconComponentType,
+): ColumnDef<T> =>
+  rowTileColumn<T>((row) => {
+    const Icon = icon(row);
+    return <Icon aria-hidden={true} className="size-5 text-muted-foreground" />;
+  });
 
 export const rowActionsColumn = <T,>({
   deletion,

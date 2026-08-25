@@ -2,11 +2,10 @@ import type { BuildingCreateDto } from "@einfachvermieter/shared";
 import { RiBuilding4Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { FormPage } from "../../components/common/FormPage";
-import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { api } from "../../lib/api";
 import { type Building, buildingsQueryOptions } from "../../lib/buildings";
-import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useGoBack } from "../../lib/useGoBack";
@@ -32,13 +31,7 @@ export const BuildingCreatePage = () => {
 
   return (
     <FormPage
-      tile={
-        <IconTile
-          icon={RiBuilding4Line}
-          size={44}
-          background={gradients.buildings}
-        />
-      }
+      tile={<PageHeaderIcon icon={RiBuilding4Line} />}
       title={t("ui.buildings.createTitle")}
       aside={
         <InfoCard

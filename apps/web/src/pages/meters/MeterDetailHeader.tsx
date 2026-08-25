@@ -1,4 +1,4 @@
-import { RiListOrdered2, RiSpeedUpLine } from "@remixicon/react";
+import { RiDashboard2Line, RiListOrdered2 } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 import { t } from "../../lib/i18n";
@@ -27,7 +27,7 @@ export const MeterDetailHeader = ({
     >
       <TabsList variant="default">
         <TabsTrigger value="stammdaten">
-          <RiSpeedUpLine />
+          <RiDashboard2Line />
           {t("ui.meters.tabs.master")}
         </TabsTrigger>
         <TabsTrigger value="zaehlerstaende">

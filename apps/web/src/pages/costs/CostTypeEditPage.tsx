@@ -1,12 +1,12 @@
 import { formatDate, formatEur } from "@einfachvermieter/shared";
-import { RiBillLine, RiDeleteBinLine } from "@remixicon/react";
+import { RiDeleteBinLine, RiReceiptLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { IconTile } from "../../components/common/IconTile";
 import { InfoCard } from "../../components/common/InfoCard";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { api } from "../../lib/api";
 import {
@@ -112,9 +112,7 @@ export const CostTypeEditPage = () => {
       <PageHeader
         loading={!costType}
         statsSkeleton={3}
-        tile={
-          <IconTile icon={visual.icon} size={44} background={visual.gradient} />
-        }
+        tile={<PageHeaderIcon icon={visual.icon} />}
         title={costType?.name ?? ""}
         sub={costType ? costTypeCategoryLabel(costType.category) : undefined}
         stats={
@@ -160,7 +158,7 @@ export const CostTypeEditPage = () => {
           <div className="flex flex-col gap-4 xl:sticky xl:top-24">
             <InfoCard title={t("ui.common.infoCards.links")}>
               <ActionLink
-                icon={RiBillLine}
+                icon={RiReceiptLine}
                 iconBackground={domainVisuals.invoices.accent}
                 onClick={() =>
                   navigate({
