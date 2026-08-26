@@ -37,21 +37,21 @@ import { t } from "../../../../lib/i18n";
 const AttachmentTile = ({ att }: { att: CostEntryAttachment }) => {
   if (isPdfAttachment(att)) {
     return (
-      <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400">
-        <RiFilePdf2Line className="size-[18px]" aria-hidden={true} />
+      <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-himbeere-50 text-himbeere-500">
+        <RiFilePdf2Line className="size-4.5" aria-hidden={true} />
       </div>
     );
   }
   if (isImageAttachment(att)) {
     return (
-      <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-400">
-        <RiImageLine className="size-[18px]" aria-hidden={true} />
+      <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-limette-50 text-limette-700">
+        <RiImageLine className="size-4.5" aria-hidden={true} />
       </div>
     );
   }
   return (
-    <div className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-      <RiFileLine className="size-[18px]" aria-hidden={true} />
+    <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
+      <RiFileLine className="size-4.5" aria-hidden={true} />
     </div>
   );
 };
@@ -208,7 +208,7 @@ export const CostEntryAttachments = ({
                       >
                         {att.originalFilename}
                       </button>
-                      <div className="mt-0.5 text-xs text-slate-400">
+                      <div className="mt-0.5 text-xs text-muted-foreground">
                         {t("ui.invoices.attachments.fileMeta", {
                           size: formatBytes(att.sizeBytes),
                           date: formatDate(att.createdAt.slice(0, 10)),
@@ -315,7 +315,7 @@ const AttachmentPreview = ({
 
   if (isPdfAttachment(attachment)) {
     return (
-      <div className="border-t border-foreground/10 bg-slate-50 p-3">
+      <div className="border-t border-foreground/10 bg-muted p-3">
         <iframe
           src={url}
           title={attachment.originalFilename}
@@ -327,7 +327,7 @@ const AttachmentPreview = ({
 
   if (isImageAttachment(attachment)) {
     return (
-      <div className="flex justify-center border-t border-foreground/10 bg-slate-50 p-3">
+      <div className="flex justify-center border-t border-foreground/10 bg-muted p-3">
         <img
           src={url}
           alt={attachment.originalFilename}

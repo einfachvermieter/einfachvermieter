@@ -7,12 +7,12 @@ import { LoginForm } from "./LoginForm";
 export const LoginPage = () => {
   useDocumentTitle(t("ui.auth.login"));
   return (
-    <div className="auth-wash flex min-h-dvh items-center justify-center p-6">
+    <div className="flex min-h-dvh items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <Card>
           <CardHeader>
             <div className="flex justify-center">
-              <AppBrand />
+              <AppBrand tone="light" />
             </div>
           </CardHeader>
           <CardContent>

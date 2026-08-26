@@ -5,11 +5,11 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
+import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { CELL_LINK, ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
@@ -42,14 +42,10 @@ const vacantFromMonth = (vacantFrom: string): string => {
 const occupancyBadge = (occupancy: UnitOverviewRow["occupancy"]) => {
   switch (occupancy.status) {
     case "rented":
-      return (
-        <Badge variant="ok" dot={true}>
-          {t("ui.units.status.rented")}
-        </Badge>
-      );
+      return <Badge variant="ok">{t("ui.units.status.rented")}</Badge>;
     case "vacant_from":
       return (
-        <Badge variant="warn" dot={true}>
+        <Badge variant="warn">
           {t("ui.units.status.vacantFrom", {
             month: occupancy.vacantFrom
               ? vacantFromMonth(occupancy.vacantFrom)
@@ -58,17 +54,9 @@ const occupancyBadge = (occupancy: UnitOverviewRow["occupancy"]) => {
         </Badge>
       );
     case "owner":
-      return (
-        <Badge variant="slate" dot={true}>
-          {t("ui.units.status.owner")}
-        </Badge>
-      );
+      return <Badge variant="neutral">{t("ui.units.status.owner")}</Badge>;
     default:
-      return (
-        <Badge variant="warn" dot={true}>
-          {t("ui.units.status.vacant")}
-        </Badge>
-      );
+      return <Badge variant="warn">{t("ui.units.status.vacant")}</Badge>;
   }
 };
 
@@ -101,19 +89,7 @@ export const UnitsOverview = () => {
       {
         accessorKey: "name",
         header: t("ui.units.fields.name"),
-        cell: ({ row }) => (
-          <EntityCell
-            name={
-              <Link
-                to="/wohnungen/$unitId"
-                params={{ unitId: row.original.id }}
-                className={ROW_TITLE_LINK}
-              >
-                {row.original.name}
-              </Link>
-            }
-          />
-        ),
+        cell: ({ row }) => <EntityCell name={row.original.name} />,
       },
       {
         accessorKey: "unitNumber",
@@ -145,13 +121,9 @@ export const UnitsOverview = () => {
             return t("ui.common.emptyValue");
           }
           return (
-            <Link
-              to="/mieter/$tenantId"
-              params={{ tenantId }}
-              className={CELL_LINK}
-            >
+            <DomainLink to="/mieter/$tenantId" params={{ tenantId }}>
               {names}
-            </Link>
+            </DomainLink>
           );
         },
       },

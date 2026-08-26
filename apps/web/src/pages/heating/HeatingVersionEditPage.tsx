@@ -202,11 +202,10 @@ const HeatingVersionEditView = ({
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+        <div className="flex flex-col gap-6 xl:sticky xl:top-24">
           <InfoCard title={t("ui.common.infoCards.links")}>
             <ActionLink
               icon={domainVisuals.meters.icon}
-              iconBackground={domainVisuals.meters.accent}
               onClick={() =>
                 navigate({
                   to: "/zaehler",
@@ -222,7 +221,6 @@ const HeatingVersionEditView = ({
             </ActionLink>
             <ActionLink
               icon={domainVisuals.statements.icon}
-              iconBackground={domainVisuals.statements.accent}
               onClick={() => navigate({ to: "/abrechnungen" })}
             >
               {t("ui.heating.detail.openStatements")}
@@ -235,7 +233,9 @@ const HeatingVersionEditView = ({
               {
                 label: t("ui.heating.detail.co2Pill"),
                 value: isInternal ? (
-                  <Badge variant={version.co2CostShareEnabled ? "ok" : "slate"}>
+                  <Badge
+                    variant={version.co2CostShareEnabled ? "ok" : "neutral"}
+                  >
                     {version.co2CostShareEnabled
                       ? t("ui.heating.detail.co2Active")
                       : t("ui.heating.detail.co2Off")}
@@ -250,7 +250,6 @@ const HeatingVersionEditView = ({
           <InfoCard title={t("ui.common.infoCards.actions")}>
             <ActionLink
               icon={RiDeleteBinLine}
-              iconBackground="var(--color-rose-400)"
               danger={true}
               onClick={() => deletion.request(version)}
             >

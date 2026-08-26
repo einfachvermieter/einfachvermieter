@@ -16,7 +16,7 @@ export const FormPage = ({
   children,
 }: {
   /**
-   * IconTile oder InitialsAvatar in Größe 44
+   * PageHeaderIcon mit dem Icon des Menüpunkts
    */
   tile?: ReactNode;
 
@@ -46,7 +46,7 @@ export const FormPage = ({
     {aside ? (
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
         <div className="space-y-5">{children}</div>
-        <div className="flex flex-col gap-4 xl:sticky xl:top-24">{aside}</div>
+        <div className="flex flex-col gap-6 xl:sticky xl:top-24">{aside}</div>
       </div>
     ) : (
       <div className="space-y-5">{children}</div>

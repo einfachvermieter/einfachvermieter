@@ -11,7 +11,6 @@ import { SectionCard } from "@/components/common/SectionCard";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
 import type { CostType } from "../../lib/costs";
-import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import type { Unit } from "../../lib/units";
 import { MeterBaseFields } from "./components/baseData/MeterBaseFields";
@@ -97,7 +96,6 @@ export const MeterForm = ({
           {isHkv ? null : (
             <SectionCard
               icon={RiPriceTag3Line}
-              iconBackground={gradients.notes}
               title={t("ui.meters.detail.assignmentSection")}
               description={t("ui.meters.detail.assignmentDescription")}
             >

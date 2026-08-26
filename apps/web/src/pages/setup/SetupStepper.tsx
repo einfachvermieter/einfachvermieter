@@ -32,9 +32,9 @@ export const SetupStepper = ({
             className={cn(
               "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
               done || active
-                ? "bg-sky-700 text-white"
-                : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
-              active && "ring-4 ring-sky-100 dark:ring-sky-950",
+                ? "bg-limette-500 text-limette-1000"
+                : "bg-schiefer-100 text-muted-foreground",
+              active && "ring-4 ring-limette-200",
             )}
           >
             {done ? <RiCheckLine className="size-3.5" /> : index + 1}
@@ -53,7 +53,7 @@ export const SetupStepper = ({
             <span
               className={cn(
                 "h-px min-w-4 flex-1",
-                done ? "bg-sky-700" : "bg-border",
+                done ? "bg-limette-500" : "bg-border",
               )}
             />
           ) : null}

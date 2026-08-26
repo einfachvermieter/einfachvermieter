@@ -12,11 +12,11 @@ export const SetupPage = () => {
   const { data: policy } = useQuery(passwordPolicyQueryOptions);
 
   return (
-    <div className="auth-wash flex min-h-dvh items-center justify-center p-6">
+    <div className="flex min-h-dvh items-center justify-center p-6">
       <div className="w-full max-w-2xl">
         <Card>
           <CardHeader>
-            <AppBrand />
+            <AppBrand tone="light" />
           </CardHeader>
           <CardContent>
             {policy ? (

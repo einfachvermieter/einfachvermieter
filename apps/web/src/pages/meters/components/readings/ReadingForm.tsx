@@ -1,11 +1,11 @@
 import { formatDate, meterReadBySources } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { CheckboxInput } from "@/components/form/CheckboxInput";
 import { DateInput } from "@/components/form/DateInput";
 import { Form } from "@/components/form/Form";
 import { FormActions } from "@/components/form/FormActions";
 import { SelectInput } from "@/components/form/SelectInput";
+import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextareaInput } from "@/components/form/TextareaInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
@@ -141,7 +141,7 @@ export const ReadingForm = ({
             fieldClassName="sm:col-span-2"
             textareaClassName="field-sizing-fixed min-h-0 resize-y"
           />
-          <CheckboxInput
+          <SwitchInput
             control={form.control}
             name="isEstimated"
             label={t("ui.reading.fields.estimatedHint")}

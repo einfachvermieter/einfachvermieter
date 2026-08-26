@@ -5,7 +5,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { Button } from "../../components/ui/Button";
@@ -16,7 +15,7 @@ import {
 } from "../../lib/buildings";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
-import { rowActionsColumn, rowTileColumn } from "../../lib/tableColumns";
+import { rowActionsColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 import { useDeleteResource } from "../../lib/useDeleteResource";
 
@@ -52,9 +51,6 @@ export const BuildingsOverview = () => {
 
   const columns = useMemo<ColumnDef<Building>[]>(
     () => [
-      rowTileColumn<Building>((building) => (
-        <InitialsAvatar name={building.name} size={24} />
-      )),
       {
         accessorKey: "name",
         header: t("ui.buildings.fields.name"),

@@ -25,7 +25,7 @@ const FieldLegend = ({
     data-slot="field-legend"
     data-variant={variant}
     className={cn(
-      "mb-3 font-semibold data-[variant=label]:text-sm data-[variant=legend]:text-base",
+      "mb-3 font-medium data-[variant=label]:text-xs data-[variant=legend]:text-base data-[variant=legend]:font-semibold",
       className,
     )}
     {...props}
@@ -93,8 +93,8 @@ const FieldLabel = ({ className, ...props }: ComponentProps<typeof Label>) => (
   <Label
     data-slot="field-label"
     className={cn(
-      "text-sm text-slate-600 dark:text-slate-300",
-      "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-3 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10",
+      "text-xs font-medium text-foreground",
+      "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-3",
       "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
       "has-[[data-state=unchecked]:disabled]:cursor-not-allowed has-[[data-state=unchecked]:disabled]:opacity-50",
       className,
@@ -107,7 +107,7 @@ const FieldTitle = ({ className, ...props }: ComponentProps<"div">) => (
   <div
     data-slot="field-label"
     className={cn(
-      "flex w-fit items-center gap-2 text-sm font-semibold group-data-[disabled=true]/field:opacity-50",
+      "flex w-fit items-center gap-2 text-sm font-medium group-data-[disabled=true]/field:opacity-50",
       className,
     )}
     {...props}
@@ -118,7 +118,7 @@ const FieldDescription = ({ className, ...props }: ComponentProps<"p">) => (
   <p
     data-slot="field-description"
     className={cn(
-      "text-left text-sm leading-normal font-normal text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-1.5",
+      "text-left text-xs leading-normal font-normal text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-1.5",
       "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
       className,
     )}
@@ -201,7 +201,7 @@ const FieldError = ({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn("text-sm font-normal text-destructive", className)}
+      className={cn("text-xs font-normal text-himbeere-500", className)}
       {...props}
     >
       {content}

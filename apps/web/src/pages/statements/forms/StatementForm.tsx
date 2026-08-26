@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/Select";
-import { domainVisuals, gradients } from "../../../lib/domainVisuals";
+import { domainVisuals } from "../../../lib/domainVisuals";
 import { t } from "../../../lib/i18n";
 import type { TenantOverviewRow } from "../../../lib/tenants";
 import {
@@ -113,9 +113,7 @@ export const StatementForm = ({
       ) : null}
       <SectionCard
         icon={domainVisuals.statements.icon}
-        iconBackground={gradients.statements}
         title={t("ui.statements.sections.baseData.title")}
-        description={t("ui.statements.sections.baseData.description")}
       >
         <FieldGroup className="gap-4">
           <Controller

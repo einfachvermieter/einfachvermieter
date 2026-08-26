@@ -230,7 +230,7 @@ export const SenderLogoSection = ({
         {hasVisibleLogo ? (
           <Button
             type="button"
-            variant="ghostRed"
+            variant="ghostDestructive"
             onClick={() => onPendingLogoChange({ kind: "delete" })}
           >
             <RiDeleteBinLine aria-hidden={true} />

@@ -27,7 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/Select";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import type { Meter } from "../../../../lib/meters";
 import { ExternalBillingInfoToggle } from "./ExternalBillingInfoToggle";
@@ -174,9 +173,7 @@ export const HeatingSettingsFields = ({
     <div className="space-y-5">
       <SectionCard
         icon={RiCalendarLine}
-        iconBackground={gradients.heating}
         title={t("ui.heating.detail.validitySection")}
-        description={t("ui.heating.detail.validityDescription")}
       >
         <FieldGroup className="gap-4">
           <div className="grid grid-cols-2 gap-4">
@@ -199,12 +196,7 @@ export const HeatingSettingsFields = ({
         </FieldGroup>
       </SectionCard>
 
-      <SectionCard
-        icon={RiPercentLine}
-        iconBackground={gradients.bank}
-        title={t("ui.heating.cards.billing")}
-        description={t("ui.heating.detail.billingDescription")}
-      >
+      <SectionCard icon={RiPercentLine} title={t("ui.heating.cards.billing")}>
         <FieldGroup className="gap-4">
           <Field>
             <FieldLabel htmlFor={billingTypeFieldId}>
@@ -301,9 +293,7 @@ export const HeatingSettingsFields = ({
       {mode === "external" ? null : (
         <SectionCard
           icon={RiFireLine}
-          iconBackground={gradients.heating}
           title={t("ui.heating.detail.installationSection")}
-          description={t("ui.heating.detail.installationDescription")}
         >
           <FieldGroup className="gap-4">
             <SelectInput

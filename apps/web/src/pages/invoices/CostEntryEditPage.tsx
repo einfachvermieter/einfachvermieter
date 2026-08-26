@@ -294,13 +294,12 @@ export const CostEntryEditPage = () => {
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+          <div className="flex flex-col gap-6 xl:sticky xl:top-24">
             <InfoCard title={t("ui.common.infoCards.links")}>
               {linkedCostTypes.map((costType) => (
                 <ActionLink
                   key={costType.id}
                   icon={domainVisuals.costTypes.icon}
-                  iconBackground={domainVisuals.costTypes.accent}
                   onClick={() =>
                     navigate({
                       to: "/kostenarten/$costTypeId",
@@ -315,7 +314,6 @@ export const CostEntryEditPage = () => {
                 <ActionLink
                   key={statement.id}
                   icon={domainVisuals.statements.icon}
-                  iconBackground={domainVisuals.statements.accent}
                   subtitle={formatPeriod(
                     statement.periodStart,
                     statement.periodEnd,
@@ -339,7 +337,6 @@ export const CostEntryEditPage = () => {
             <InfoCard title={t("ui.common.infoCards.actions")}>
               <ActionLink
                 icon={RiDeleteBinLine}
-                iconBackground="var(--color-rose-400)"
                 danger={true}
                 onClick={() => deletion.request(entry)}
               >

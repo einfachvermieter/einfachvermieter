@@ -1,15 +1,14 @@
-import { RiAddLine, RiArrowRightUpLine } from "@remixicon/react";
+import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { DataTable } from "../../components/common/DataTable";
+import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
-import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import {
   Tooltip,
@@ -66,30 +65,12 @@ export const CostsOverview = () => {
       {
         accessorKey: "name",
         header: t("ui.common.columns.name"),
-        cell: ({ row }) => (
-          <EntityCell
-            name={
-              <Link
-                to="/kostenarten/$costTypeId"
-                params={{ costTypeId: row.original.id }}
-                className={ROW_TITLE_LINK}
-              >
-                {row.original.name}
-              </Link>
-            }
-          />
-        ),
+        cell: ({ row }) => <EntityCell name={row.original.name} />,
       },
       {
         accessorKey: "category",
         header: t("ui.costs.columns.category"),
-        cell: ({ row }) => (
-          <Badge
-            variant={row.original.category === "heating" ? "warn" : "blue"}
-          >
-            {costTypeCategoryLabel(row.original.category)}
-          </Badge>
-        ),
+        cell: ({ row }) => costTypeCategoryLabel(row.original.category),
       },
       {
         id: "allocation",
@@ -103,17 +84,9 @@ export const CostsOverview = () => {
             return (
               <Tooltip>
                 <TooltipTrigger asChild={true}>
-                  <Link
-                    to="/heizkosten"
-                    search={{ buildingId }}
-                    className="inline-flex items-center gap-0.5 text-sky-700 underline-offset-4 hover:underline dark:text-sky-400"
-                  >
+                  <DomainLink to="/heizkosten" search={{ buildingId }}>
                     {t("ui.costs.allocationHeatingSettlement")}
-                    <RiArrowRightUpLine
-                      className="size-3.5"
-                      aria-hidden={true}
-                    />
-                  </Link>
+                  </DomainLink>
                 </TooltipTrigger>
                 <TooltipContent>
                   {t("ui.costs.allocationHeatingSettlementTooltip")}

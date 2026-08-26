@@ -12,7 +12,6 @@ import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Switch } from "@/components/ui/Switch";
 import { climateFactorsSettingsQueryOptions } from "@/lib/climateFactors";
-import { gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import {
   internetSettingsQueryOptions,
@@ -48,7 +47,7 @@ const ConsentCard = ({
   onChange: (checked: boolean) => void;
   children?: ReactNode;
 }) => (
-  <SectionCard icon={icon} iconBackground={gradients.slate} title={title}>
+  <SectionCard icon={icon} title={title}>
     <div className="space-y-4">
       {value === null ? (
         <Alert variant="info">
@@ -64,9 +63,7 @@ const ConsentCard = ({
         <div>
           <p className="flex items-center gap-2 text-sm font-medium">
             {label}
-            <Badge variant="secondary">
-              {t("ui.internetAccess.recommended")}
-            </Badge>
+            <Badge variant="ok">{t("ui.internetAccess.recommended")}</Badge>
             <HelpHint>{details}</HelpHint>
           </p>
           <p className="text-xs text-muted-foreground">{description}</p>

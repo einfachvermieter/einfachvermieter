@@ -1,12 +1,10 @@
 import { RiAddLine } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
-import { IconTile } from "@/components/common/IconTile";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/Sidebar";
-import { gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 
 /**
@@ -20,11 +18,11 @@ export const NewBuildingButton = () => (
         asChild={true}
         size="lg"
         tooltip={t("ui.navigation.buildingSwitcher.add")}
-        className="h-auto rounded-[13px] py-3 pr-3 pl-3"
+        className="h-auto rounded-lg border border-sidebar-border bg-white/8 px-2.5 py-2.5 text-sidebar-accent-foreground hover:border-sidebar-foreground hover:bg-white/8"
       >
         <Link to="/gebaeude/neu">
-          <IconTile icon={RiAddLine} size={30} background={gradients.brand} />
-          <span className="truncate text-[13.5px] font-semibold text-slate-900 dark:text-slate-100">
+          <RiAddLine className="text-sidebar-primary" />
+          <span className="truncate text-sm font-semibold">
             {t("ui.navigation.buildingSwitcher.add")}
           </span>
         </Link>

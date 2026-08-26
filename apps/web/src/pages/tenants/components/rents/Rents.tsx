@@ -22,7 +22,6 @@ import { TextInput } from "@/components/form/TextInput";
 import { HelpHint } from "@/components/help/HelpHint";
 import { Button } from "@/components/ui/Button";
 import { FieldGroup } from "@/components/ui/Field";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t, translateKey } from "../../../../lib/i18n";
 import { RentRowForm } from "./RentRowForm";
 import { RentRowSummary } from "./RentRowSummary";
@@ -158,7 +157,6 @@ export const Rents = ({
     return (
       <SectionCard
         icon={RiMoneyEuroCircleLine}
-        iconBackground={gradients.money}
         title={t("ui.tenant.rentsTitle")}
         titleExtra={<HelpHint>{t("ui.tenant.rentsHelp")}</HelpHint>}
         description={t("ui.tenant.rentSimpleDescription")}
@@ -225,11 +223,9 @@ export const Rents = ({
     <EditableListSection<RentRowValues>
       title={t("ui.tenant.rentsTitle")}
       titleHelp={<HelpHint>{t("ui.tenant.rentsHelp")}</HelpHint>}
-      description={t("ui.tenant.rentsDescription")}
       emptyHint={t("ui.tenant.rentsEmptyHint")}
       addLabel={t("ui.tenant.addRent")}
       icon={RiMoneyEuroCircleLine}
-      iconBackground={gradients.money}
       defaultOpenAdd={openAdd}
       onFormCancel={() => {
         // Zurück zur einfachen Ansicht, solange es beim einen Mietsatz bleibt
@@ -239,7 +235,7 @@ export const Rents = ({
         }
       }}
       footer={
-        <p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400">
+        <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
           <RiInformationLine
             aria-hidden={true}
             className="size-3.75 shrink-0"

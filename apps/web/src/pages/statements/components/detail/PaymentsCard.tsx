@@ -11,7 +11,6 @@ import { MonthTileGrid } from "../../../../components/common/MonthTileGrid";
 import { SectionCard } from "../../../../components/common/SectionCard";
 import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
 import { ComputedValueRow } from "../../../../components/form/ComputedValueRow";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 
 const PAYMENT_MONTH_KEYS = [
@@ -133,7 +132,6 @@ export const PaymentsCard = ({
   return (
     <SectionCard
       icon={RiBankCardLine}
-      iconBackground={gradients.money}
       title={t("ui.statements.detail.paymentsTitle")}
       description={t("ui.statements.detail.paymentsDescription")}
     >
@@ -156,18 +154,18 @@ export const PaymentsCard = ({
               state: tileState(b),
             }))}
           />
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <span
                 aria-hidden={true}
-                className="size-2 rounded-full bg-teal-400"
+                className="size-2 rounded-full bg-limette-400"
               />
               {t("ui.statements.detail.legendReceived")}
             </span>
             <span className="flex items-center gap-1.5">
               <span
                 aria-hidden={true}
-                className="size-2 rounded-full bg-amber-400"
+                className="size-2 rounded-full bg-honig-400"
               />
               {t("ui.statements.detail.legendOpen")}
             </span>

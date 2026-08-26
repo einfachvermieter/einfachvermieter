@@ -96,7 +96,7 @@ const ReadingRow = ({
         <span className="flex items-center gap-2">
           {formatDate(reading.readingDate)}
           {settled ? (
-            <Badge variant="slate">{t("ui.reading.settledBadge")}</Badge>
+            <Badge variant="neutral">{t("ui.reading.settledBadge")}</Badge>
           ) : null}
         </span>
       </TableCell>
@@ -107,7 +107,7 @@ const ReadingRow = ({
         <TableCell
           className={
             delta !== null && delta < 0
-              ? "px-4 py-3 text-right tabular-nums text-rose-600 dark:text-rose-400"
+              ? "px-4 py-3 text-right tabular-nums text-himbeere-500"
               : "px-4 py-3 text-right tabular-nums text-muted-foreground"
           }
         >

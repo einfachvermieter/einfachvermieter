@@ -29,13 +29,7 @@ export const BalanceAmount = ({
   const key = owed ? owedKey : "ui.account.balance.credit";
 
   return (
-    <span
-      className={
-        owed
-          ? "text-rose-600 dark:text-rose-400"
-          : "text-teal-700 dark:text-teal-400"
-      }
-    >
+    <span className={owed ? "text-himbeere-500" : "text-limette-700"}>
       {t(key, { amount })}
     </span>
   );

@@ -21,7 +21,6 @@ import { SelectInput } from "@/components/form/SelectInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import { measurementUnitLabel } from "../../../../lib/meters";
 import type { Unit } from "../../../../lib/units";
@@ -98,9 +97,7 @@ export const MeterBaseFields = ({
   return (
     <SectionCard
       icon={RiDashboard2Line}
-      iconBackground={gradients.water}
       title={t("ui.meters.detail.baseSection")}
-      description={t("ui.meters.detail.baseDescription")}
     >
       <FieldGroup className="gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

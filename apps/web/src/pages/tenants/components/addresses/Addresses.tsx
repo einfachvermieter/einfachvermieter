@@ -7,7 +7,6 @@ import {
 } from "@/components/form/EditableListSection";
 import { HelpHint } from "@/components/help/HelpHint";
 import { Badge } from "@/components/ui/Badge";
-import { gradients } from "../../../../lib/domainVisuals";
 import { formatPeriod, getPeriodStatusToday } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { AddressRowForm } from "./AddressRowForm";
@@ -50,7 +49,6 @@ export const Addresses = ({
       emptyHint={t("ui.tenant.addressesEmptyHint")}
       addLabel={t("ui.tenant.addAddress")}
       icon={RiMapPinLine}
-      iconBackground={gradients.address}
       fieldKeys={addressesArray.fields}
       rows={watchedAddresses}
       renderRow={(row, index) => {
@@ -70,14 +68,10 @@ export const Addresses = ({
             <div className="flex items-center gap-2">
               <p className="truncate font-semibold">{title}</p>
               {periodStatus === "active" ? (
-                <Badge variant="lightGreen">
-                  {t("ui.tenant.addressCurrent")}
-                </Badge>
+                <Badge variant="ok">{t("ui.tenant.addressCurrent")}</Badge>
               ) : null}
               {periodStatus === "last" ? (
-                <Badge variant="lightYellow">
-                  {t("ui.tenant.lastAddress")}
-                </Badge>
+                <Badge variant="warn">{t("ui.tenant.lastAddress")}</Badge>
               ) : null}
             </div>
             <p className="text-sm text-muted-foreground tabular-nums">

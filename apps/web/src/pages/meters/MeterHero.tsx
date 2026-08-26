@@ -2,7 +2,7 @@ import { formatNumber } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
-import { domainVisuals, meterTypeVisual } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   measurementUnitLabel,
@@ -57,16 +57,14 @@ export const MeterHero = ({ meterId }: { meterId: string }) => {
   // Ein rückläufiger Verbrauch deutet auf Ablesefehler oder Zählertausch hin
   const consumptionValue =
     consumption !== null && consumption < 0 ? (
-      <span className="text-rose-600 dark:text-rose-400">
-        {consumptionText}
-      </span>
+      <span className="text-himbeere-500">{consumptionText}</span>
     ) : (
       consumptionText
     );
 
   return (
     <PageHeader
-      tile={<PageHeaderIcon icon={meterTypeVisual(meter.type).icon} />}
+      tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
       title={meter.label}
       sub={[meterTypeLabel(meter.type), meterRoleLabel(meter.role)].join(
         t("ui.common.separators.bullet"),

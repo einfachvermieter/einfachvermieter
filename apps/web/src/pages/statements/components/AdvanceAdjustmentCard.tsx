@@ -24,7 +24,6 @@ import { TextInput } from "../../../components/form/TextInput";
 import { Alert, AlertDescription } from "../../../components/ui/Alert";
 import { Button } from "../../../components/ui/Button";
 import { api } from "../../../lib/api";
-import { gradients } from "../../../lib/domainVisuals";
 import { t } from "../../../lib/i18n";
 
 type AdvanceAdjustmentCardProps = {
@@ -292,7 +291,6 @@ export const AdvanceAdjustmentCard = ({
   return (
     <SectionCard
       icon={RiCalendarScheduleLine}
-      iconBackground={gradients.money}
       title={t("ui.statements.advanceAdjustment.title")}
       description={t("ui.statements.advanceAdjustment.description")}
     >

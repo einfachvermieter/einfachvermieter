@@ -68,7 +68,7 @@ export const FormSkeleton = ({
 
   return (
     <div>
-      <Skeleton className="h-11 w-64 rounded-[13px]" />
+      <Skeleton className="h-11 w-64 rounded-lg" />
       <div className="mt-6">{content}</div>
     </div>
   );

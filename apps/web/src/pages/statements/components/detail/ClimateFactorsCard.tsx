@@ -17,7 +17,6 @@ import {
   climateFactorsSettingsQueryOptions,
   updateClimateFactorsAutoFetch,
 } from "../../../../lib/climateFactors";
-import { gradients } from "../../../../lib/domainVisuals";
 import { formatPeriod } from "../../../../lib/format";
 import { t } from "../../../../lib/i18n";
 
@@ -47,7 +46,7 @@ const sourceBadge = (row: ClimateFactorRow) => {
     );
   }
   return (
-    <Badge variant="slate">{t("ui.heating.climateFactors.sourceDwd")}</Badge>
+    <Badge variant="neutral">{t("ui.heating.climateFactors.sourceDwd")}</Badge>
   );
 };
 
@@ -154,7 +153,6 @@ export const ClimateFactorsCard = ({
   return (
     <SectionCard
       icon={RiCloudLine}
-      iconBackground={gradients.slate}
       title={t("ui.heating.climateFactors.title")}
       description={
         data.postalCode

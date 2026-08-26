@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
-import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { BuildingDataFields } from "./components/baseData/BuildingDataFields";
 
@@ -43,9 +42,7 @@ export const BuildingForm = ({
     <Form form={form} onSubmit={onSubmit}>
       <SectionCard
         icon={RiBuildingLine}
-        iconBackground={gradients.buildings}
         title={t("ui.buildings.sections.baseData.title")}
-        description={t("ui.buildings.sections.baseData.description")}
       >
         {fields}
       </SectionCard>

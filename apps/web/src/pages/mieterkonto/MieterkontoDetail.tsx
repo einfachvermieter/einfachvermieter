@@ -46,7 +46,7 @@ import {
   tenantSettlementsQueryOptions,
 } from "../../lib/accounts";
 import { api } from "../../lib/api";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   type Payment,
@@ -302,7 +302,6 @@ export const MieterkontoDetail = () => {
             <TabsContent value="miete">
               <SectionCard
                 icon={RiMoneyEuroCircleLine}
-                iconBackground={gradients.money}
                 title={t("ui.account.monthsHeading")}
                 description={mieteDescription}
                 action={addLink(t("ui.payments.add"), () =>
@@ -344,7 +343,6 @@ export const MieterkontoDetail = () => {
             <TabsContent value="zahlungen">
               <SectionCard
                 icon={RiBankCard2Line}
-                iconBackground={gradients.bank}
                 title={t("ui.account.otherPaymentsHeading")}
                 description={t("ui.account.detail.paymentsDescription")}
                 action={addLink(t("ui.payments.add"), () =>
@@ -385,7 +383,6 @@ export const MieterkontoDetail = () => {
             <TabsContent value="abrechnungen">
               <SectionCard
                 icon={RiFileList3Line}
-                iconBackground={gradients.statements}
                 title={t("ui.account.settlementsHeading")}
                 description={t("ui.account.detail.settlementsDescription")}
               >
@@ -404,7 +401,6 @@ export const MieterkontoDetail = () => {
             <TabsContent value="kaution">
               <SectionCard
                 icon={RiSafe2Line}
-                iconBackground={gradients.tenants}
                 title={t("ui.account.depositHeading")}
                 description={t("ui.account.detail.depositDescription")}
                 action={addLink(t("ui.account.deposit.record"), () =>
@@ -421,7 +417,6 @@ export const MieterkontoDetail = () => {
             <TabsContent value="gebuehren">
               <SectionCard
                 icon={RiReceiptLine}
-                iconBackground={gradients.invoices}
                 title={t("ui.account.feesHeading")}
                 description={t("ui.account.detail.feesDescription")}
                 action={addLink(t("ui.account.fee.add"), () =>
@@ -451,11 +446,10 @@ export const MieterkontoDetail = () => {
             </TabsContent>
           </Tabs>
 
-          <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+          <div className="flex flex-col gap-6 xl:sticky xl:top-24">
             <InfoCard title={t("ui.common.infoCards.links")}>
               <ActionLink
                 icon={domainVisuals.tenants.icon}
-                iconBackground={domainVisuals.tenants.accent}
                 onClick={() =>
                   navigate({
                     to: "/mieter/$tenantId",
@@ -468,7 +462,6 @@ export const MieterkontoDetail = () => {
               {unit ? (
                 <ActionLink
                   icon={domainVisuals.units.icon}
-                  iconBackground={domainVisuals.units.accent}
                   onClick={() =>
                     navigate({
                       to: "/wohnungen/$unitId",
@@ -487,7 +480,7 @@ export const MieterkontoDetail = () => {
                 {
                   label: t("ui.account.detail.sepaLabel"),
                   value: (
-                    <Badge variant={sepaGranted ? "ok" : "slate"}>
+                    <Badge variant={sepaGranted ? "ok" : "neutral"}>
                       {sepaGranted
                         ? t("ui.account.detail.sepaGranted")
                         : t("ui.account.detail.sepaMissing")}
@@ -500,7 +493,6 @@ export const MieterkontoDetail = () => {
             <InfoCard title={t("ui.common.infoCards.actions")}>
               <ActionLink
                 icon={RiMoneyEuroCircleLine}
-                iconBackground={domainVisuals.units.accent}
                 onClick={recordPaymentFromAction}
               >
                 {t("ui.payments.add")}
@@ -508,7 +500,6 @@ export const MieterkontoDetail = () => {
               {latestSettlement ? (
                 <ActionLink
                   icon={RiFileList3Line}
-                  iconBackground={domainVisuals.statements.accent}
                   onClick={() =>
                     navigate({
                       to: "/abrechnungen/$statementId",

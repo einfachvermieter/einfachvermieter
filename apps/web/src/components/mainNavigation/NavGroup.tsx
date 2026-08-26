@@ -18,7 +18,10 @@ export const NavGroup = ({
   buildingId,
   counts,
 }: {
-  label: string;
+  /**
+   * Ohne Label entfällt die Gruppenüberschrift
+   */
+  label?: string;
   items: NavItem[];
   currentPath: string;
 
@@ -32,7 +35,7 @@ export const NavGroup = ({
   counts?: Partial<Record<NavItem["domain"], number>>;
 }) => (
   <SidebarGroup>
-    <SidebarGroupLabel>{label}</SidebarGroupLabel>
+    {label ? <SidebarGroupLabel>{label}</SidebarGroupLabel> : null}
     <SidebarMenu>
       {items.map((item) => {
         const active = isNavActive(item, currentPath);

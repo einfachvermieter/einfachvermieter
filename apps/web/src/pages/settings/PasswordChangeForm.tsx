@@ -14,7 +14,6 @@ import { PasswordPolicyHint } from "@/components/form/PasswordPolicyHint";
 import { Savebar } from "@/components/form/Savebar";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
-import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 
 /**
@@ -79,7 +78,6 @@ export const PasswordChangeForm = ({
       <fieldset disabled={submitting} className="contents">
         <SectionCard
           icon={RiLockPasswordLine}
-          iconBackground={domainVisuals.configuration.accent}
           title={t("ui.settings.password.credentialsTitle")}
         >
           <FieldGroup className="gap-4">

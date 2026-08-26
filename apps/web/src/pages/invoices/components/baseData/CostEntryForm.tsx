@@ -4,7 +4,6 @@ import { SectionCard } from "@/components/common/SectionCard";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
 import type { CostType } from "../../../../lib/costs";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import type { Unit } from "../../../../lib/units";
 import { CostEntryBaseFields } from "./CostEntryBaseFields";
@@ -44,9 +43,7 @@ export const CostEntryForm = ({
         <div className="space-y-5">
           <SectionCard
             icon={RiReceiptLine}
-            iconBackground={gradients.invoices}
             title={t("ui.invoices.detail.basicsSection")}
-            description={t("ui.invoices.detail.basicsDescription")}
           >
             <CostEntryBaseFields form={form} />
           </SectionCard>

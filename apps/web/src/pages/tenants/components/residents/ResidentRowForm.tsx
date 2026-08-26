@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { CheckboxInput } from "@/components/form/CheckboxInput";
 import { DateInput } from "@/components/form/DateInput";
 import { SubformShell } from "@/components/form/SubformShell";
+import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
 import { t } from "../../../../lib/i18n";
@@ -71,7 +71,7 @@ export const ResidentRowForm = ({
           endMonth={calendarEnd}
         />
       </FieldGroup>
-      <CheckboxInput
+      <SwitchInput
         control={form.control}
         name="isContractParty"
         label={t("ui.tenant.fields.isContractParty")}

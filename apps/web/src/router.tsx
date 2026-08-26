@@ -5,7 +5,7 @@ import {
   paymentPurposeKinds,
   type SetupStatus,
 } from "@einfachvermieter/shared";
-import { RiBuilding4Line, RiHome6Line } from "@remixicon/react";
+import { RiHome6Line } from "@remixicon/react";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
@@ -374,7 +374,7 @@ const buildingEditRoute = createRoute({
   component: BuildingEditPage,
   pendingComponent: () => (
     <DetailPending
-      tile={<PageHeaderIcon icon={RiBuilding4Line} />}
+      tile={<PageHeaderIcon icon={domainVisuals.buildings.icon} />}
       statsSkeleton={3}
       rows={4}
       aside={true}

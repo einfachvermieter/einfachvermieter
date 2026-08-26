@@ -15,7 +15,6 @@ import { HelpHint } from "@/components/help/HelpHint";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { FieldGroup } from "@/components/ui/Field";
-import { gradients } from "../../../../lib/domainVisuals";
 import { formatPeriod, getPeriodStatusToday } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { BankAccountRowForm } from "./BankAccountRowForm";
@@ -82,10 +81,8 @@ export const BankAccounts = ({
     return (
       <SectionCard
         icon={RiBankCardLine}
-        iconBackground={gradients.bank}
         title={t("ui.tenant.fields.bankAccount")}
         titleExtra={<HelpHint>{t("ui.tenant.bankAccountsHelp")}</HelpHint>}
-        description={t("ui.tenant.bankSimpleDescription")}
         action={
           <Button
             type="button"
@@ -150,11 +147,9 @@ export const BankAccounts = ({
     <EditableListSection<BankAccountRowValues>
       title={t("ui.tenant.fields.bankAccount")}
       titleHelp={<HelpHint>{t("ui.tenant.bankAccountsHelp")}</HelpHint>}
-      description={t("ui.tenant.bankAccountsDescription")}
       emptyHint={t("ui.tenant.bankAccountsEmptyHint")}
       addLabel={t("ui.tenant.addBankAccount")}
       icon={RiBankCardLine}
-      iconBackground={gradients.bank}
       defaultOpenAdd={openAdd}
       onFormCancel={() => {
         // Zurück zur einfachen Ansicht, solange es bei der einen Bankverbindung bleibt
@@ -187,17 +182,13 @@ export const BankAccounts = ({
                 {title}
               </p>
               {periodStatus === "active" ? (
-                <Badge variant="lightGreen">
-                  {t("ui.tenant.bankAccountCurrent")}
-                </Badge>
+                <Badge variant="ok">{t("ui.tenant.bankAccountCurrent")}</Badge>
               ) : null}
               {periodStatus === "last" ? (
-                <Badge variant="lightYellow">
-                  {t("ui.tenant.lastBankAccount")}
-                </Badge>
+                <Badge variant="warn">{t("ui.tenant.lastBankAccount")}</Badge>
               ) : null}
               {row.mandateReference ? (
-                <Badge variant="lightBlue">{t("ui.tenant.mandateBadge")}</Badge>
+                <Badge variant="info">{t("ui.tenant.mandateBadge")}</Badge>
               ) : null}
             </div>
             {row.accountHolder || periodText ? (

@@ -111,12 +111,11 @@ export const MeterDetailPage = () => {
                 onCancel={goBack}
               />
 
-              <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+              <div className="flex flex-col gap-6 xl:sticky xl:top-24">
                 <InfoCard title={t("ui.common.infoCards.links")}>
                   {unit ? (
                     <ActionLink
                       icon={domainVisuals.units.icon}
-                      iconBackground={domainVisuals.units.accent}
                       onClick={() =>
                         navigate({
                           to: "/wohnungen/$unitId",
@@ -131,7 +130,6 @@ export const MeterDetailPage = () => {
                     ? heatingVersion && (
                         <ActionLink
                           icon={domainVisuals.heating.icon}
-                          iconBackground={domainVisuals.heating.accent}
                           subtitle={heatingIdentityLabel(heatingVersion)}
                           onClick={() =>
                             navigate({
@@ -147,7 +145,6 @@ export const MeterDetailPage = () => {
                         <ActionLink
                           key={costType.id}
                           icon={domainVisuals.costTypes.icon}
-                          iconBackground={domainVisuals.costTypes.accent}
                           onClick={() =>
                             navigate({
                               to: "/kostenarten/$costTypeId",
@@ -173,7 +170,6 @@ export const MeterDetailPage = () => {
                 <InfoCard title={t("ui.common.infoCards.actions")}>
                   <ActionLink
                     icon={RiDeleteBinLine}
-                    iconBackground="var(--color-rose-400)"
                     danger={true}
                     onClick={() => deletion.request(meter)}
                   >

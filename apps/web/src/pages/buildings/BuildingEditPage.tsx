@@ -9,8 +9,8 @@ import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { ActionLink } from "../../components/common/ActionLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { InfoCard } from "../../components/common/InfoCard";
-import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { api } from "../../lib/api";
 import type { Building } from "../../lib/buildings";
 import { domainVisuals } from "../../lib/domainVisuals";
@@ -67,7 +67,7 @@ export const BuildingEditPage = () => {
   return (
     <div className="pb-24">
       <PageHeader
-        tile={<InitialsAvatar name={building.name} size={44} />}
+        tile={<PageHeaderIcon icon={domainVisuals.buildings.icon} />}
         title={building.name}
         sub={[
           building.addressStreet,
@@ -106,11 +106,10 @@ export const BuildingEditPage = () => {
           onCancel={goBack}
         />
 
-        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+        <div className="flex flex-col gap-6 xl:sticky xl:top-24">
           <InfoCard title={t("ui.common.infoCards.links")}>
             <ActionLink
               icon={domainVisuals.units.icon}
-              iconBackground={domainVisuals.units.accent}
               onClick={() =>
                 navigate({ to: "/wohnungen", search: { buildingId } })
               }
@@ -119,7 +118,6 @@ export const BuildingEditPage = () => {
             </ActionLink>
             <ActionLink
               icon={domainVisuals.meters.icon}
-              iconBackground={domainVisuals.meters.accent}
               onClick={() =>
                 navigate({
                   to: "/zaehler",
@@ -131,7 +129,6 @@ export const BuildingEditPage = () => {
             </ActionLink>
             <ActionLink
               icon={domainVisuals.tenants.icon}
-              iconBackground={domainVisuals.tenants.accent}
               onClick={() =>
                 navigate({ to: "/mieter", search: { buildingId } })
               }
@@ -143,7 +140,6 @@ export const BuildingEditPage = () => {
           <InfoCard title={t("ui.common.infoCards.actions")}>
             <ActionLink
               icon={RiDeleteBinLine}
-              iconBackground="var(--color-rose-400)"
               danger={true}
               onClick={() => deletion.request(building)}
             >

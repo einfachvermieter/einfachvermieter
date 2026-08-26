@@ -8,7 +8,6 @@ import {
 } from "@einfachvermieter/shared";
 import { RiInformationLine } from "@remixicon/react";
 import { SectionCard } from "../../../../components/common/SectionCard";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 
 const FOOTNOTE_MARKER = 1;
@@ -42,7 +41,6 @@ export const BillingInfoCard = ({
   return (
     <SectionCard
       icon={RiInformationLine}
-      iconBackground={gradients.slate}
       title={t("statements.pdf.appendixBillingInfo")}
     >
       <div className="space-y-5 text-sm">
@@ -149,7 +147,7 @@ export const BillingInfoCard = ({
                       </div>
                       <div className="h-2.5 flex-1 overflow-hidden rounded-sm bg-muted">
                         <div
-                          className="h-full rounded-sm bg-sky-500"
+                          className="h-full rounded-sm bg-limette-500"
                           style={{ width: `${bar.widthPct}%` }}
                         />
                       </div>

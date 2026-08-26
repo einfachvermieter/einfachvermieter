@@ -51,11 +51,11 @@ const PotIstSollCell = ({ pot }: { pot: PotState }) => (
 );
 
 const MONTH_STATUS_VARIANT = {
-  balanced: "lightGreen",
-  credit: "lightBlue",
-  partial: "lightYellow",
-  open: "lightRed",
-  upcoming: "slate",
+  balanced: "ok",
+  credit: "info",
+  partial: "warn",
+  open: "bad",
+  upcoming: "neutral",
 } as const;
 
 const MonthStatusBadge = ({

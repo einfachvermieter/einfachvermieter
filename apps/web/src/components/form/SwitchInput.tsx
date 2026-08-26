@@ -59,7 +59,9 @@ export const SwitchInput = <T extends FieldValues>({
               {labelHelp ? <HelpHint>{labelHelp}</HelpHint> : null}
             </FieldLabel>
             {description ? (
-              <p className="mt-0.5 text-xs text-slate-400">{description}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {description}
+              </p>
             ) : null}
           </div>
         </Field>

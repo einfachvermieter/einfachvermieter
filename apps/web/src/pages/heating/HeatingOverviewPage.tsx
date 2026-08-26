@@ -122,11 +122,9 @@ const heatingColumns = (
     cell: ({ row }) => {
       const active = isVersionActive(row.original.settings, today);
       return active ? (
-        <Badge variant="ok" dot={true}>
-          {t("ui.heating.versions.statusActive")}
-        </Badge>
+        <Badge variant="ok">{t("ui.heating.versions.statusActive")}</Badge>
       ) : (
-        <Badge variant="slate" dot={true}>
+        <Badge variant="neutral">
           {t("ui.heating.versions.statusArchived")}
         </Badge>
       );

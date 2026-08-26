@@ -4,7 +4,6 @@ import {
   RiBuildingLine,
   RiDashboard2Line,
   RiFileAddLine,
-  RiFileList3Line,
   RiGroupLine,
   RiHome6Line,
   RiMoneyEuroCircleLine,
@@ -14,40 +13,34 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { IconTile } from "../../components/common/IconTile";
-import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { buildingsQueryOptions } from "../../lib/buildings";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
 
 /**
- * Klasse der KPI-Kacheln
+ * Klasse der KPI-Karten
  */
 const KPI_CARD_CLASS =
-  "block rounded-[18px] border border-border bg-card p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-sky-200 hover:bg-sky-50/40 aria-disabled:pointer-events-none aria-disabled:opacity-50";
+  "block rounded-xl border border-border bg-card px-5 py-4 transition-colors hover:bg-muted aria-disabled:pointer-events-none aria-disabled:opacity-50";
 
 /**
- * Innenleben einer KPI-Kachel
+ * Innenleben einer KPI-Karte: Label oben, großer Wert darunter
  */
 const KpiCardBody = ({
-  icon,
-  gradient,
   value,
   label,
 }: {
-  icon: RemixiconComponentType;
-  gradient: string;
   value: number | undefined;
   label: string;
 }) => (
   <>
-    <IconTile icon={icon} size={40} background={gradient} />
-    <div className="mt-3.5 text-[30px] font-semibold tabular-nums">
+    <div className="text-xs font-medium text-muted-foreground">{label}</div>
+    <div className="mt-1.5 font-heading text-3xl font-semibold tracking-heading tabular-nums">
       {value ?? t("ui.common.emptyValue")}
     </div>
-    <div className="text-[13px] text-muted-foreground">{label}</div>
   </>
 );
 
@@ -55,29 +48,45 @@ const KpiCardBody = ({
  * Klassen der Schnellstart-Kachel
  */
 const QUICK_TILE_CLASS =
-  "flex items-center gap-3 rounded-[14px] bg-muted p-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-slate-200 dark:hover:bg-slate-700";
+  "flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted";
 
 /**
  * Innenleben einer Schnellstart-Kachel: Icon-Kachel, Label, Chevron
  */
 const QuickTileContent = ({
   icon,
-  gradient,
   children,
 }: {
   icon: RemixiconComponentType;
-  gradient: string;
   children: ReactNode;
 }) => (
   <>
-    <IconTile icon={icon} size={36} background={gradient} />
+    <IconTile icon={icon} size={30} />
     <span className="min-w-0 flex-1">{children}</span>
     <RiArrowRightSLine
       aria-hidden={true}
-      className="size-4.5 shrink-0 text-slate-400"
+      className="size-4 shrink-0 text-schiefer-400"
     />
   </>
 );
+
+/**
+ * Kartenkopf: Titel und Beschreibung
+ */
+const CardHead = ({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) => (
+  <div className="mb-3">
+    <h2 className="text-base font-semibold">{title}</h2>
+    <p className="text-xs text-muted-foreground">{description}</p>
+  </div>
+);
+
+const BuildingIcon = domainVisuals.buildings.icon;
 
 export const DashboardPage = () => {
   const { data: stats } = useQuery(statsQueryOptions());
@@ -103,11 +112,9 @@ export const DashboardPage = () => {
         subLoading={!stats}
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
         <Link to="/gebaeude" className={KPI_CARD_CLASS}>
           <KpiCardBody
-            icon={RiBuildingLine}
-            gradient={gradients.buildings}
             value={stats?.buildings}
             label={t("ui.dashboard.stats.buildings")}
           />
@@ -119,8 +126,6 @@ export const DashboardPage = () => {
           className={KPI_CARD_CLASS}
         >
           <KpiCardBody
-            icon={RiHome6Line}
-            gradient={gradients.units}
             value={stats?.units}
             label={t("ui.dashboard.stats.units")}
           />
@@ -132,8 +137,6 @@ export const DashboardPage = () => {
           className={KPI_CARD_CLASS}
         >
           <KpiCardBody
-            icon={RiGroupLine}
-            gradient={gradients.tenants}
             value={stats?.tenants}
             label={t("ui.dashboard.stats.tenants")}
           />
@@ -144,29 +147,22 @@ export const DashboardPage = () => {
           className={KPI_CARD_CLASS}
         >
           <KpiCardBody
-            icon={RiFileList3Line}
-            gradient={gradients.statements}
             value={stats?.openStatementsCount}
             label={t("ui.dashboard.stats.openStatements")}
           />
         </Link>
       </div>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[1.5fr_1fr]">
-        <section className="rounded-xl border border-border bg-card p-5.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-          <h2 className="text-[17px] font-semibold">
-            {t("ui.dashboard.quickstart.title")}
-          </h2>
-          <p className="mt-0.5 mb-4 text-sm text-slate-400">
-            {t("ui.dashboard.quickstart.description")}
-          </p>
-          <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid items-start gap-3.5 lg:grid-cols-[1.45fr_1fr]">
+        <section className="rounded-xl border border-border bg-card px-5 py-4">
+          <CardHead
+            title={t("ui.dashboard.quickstart.title")}
+            description={t("ui.dashboard.quickstart.description")}
+          />
+          <div className="grid gap-2.5 sm:grid-cols-2">
             {stats && stats.buildings === 0 ? (
               <Link to="/gebaeude/neu" className={QUICK_TILE_CLASS}>
-                <QuickTileContent
-                  icon={RiBuildingLine}
-                  gradient={gradients.buildings}
-                >
+                <QuickTileContent icon={RiBuildingLine}>
                   {t("ui.dashboard.quickstart.addBuilding")}
                 </QuickTileContent>
               </Link>
@@ -177,7 +173,7 @@ export const DashboardPage = () => {
                 search={{ buildingId: undefined }}
                 className={QUICK_TILE_CLASS}
               >
-                <QuickTileContent icon={RiHome6Line} gradient={gradients.units}>
+                <QuickTileContent icon={RiHome6Line}>
                   {t("ui.dashboard.quickstart.addUnit")}
                 </QuickTileContent>
               </Link>
@@ -188,20 +184,14 @@ export const DashboardPage = () => {
                 search={{ buildingId: undefined }}
                 className={QUICK_TILE_CLASS}
               >
-                <QuickTileContent
-                  icon={RiGroupLine}
-                  gradient={gradients.tenants}
-                >
+                <QuickTileContent icon={RiGroupLine}>
                   {t("ui.dashboard.quickstart.addTenant")}
                 </QuickTileContent>
               </Link>
             ) : null}
             {stats && stats.tenants > 0 ? (
               <Link to="/abrechnungen" className={QUICK_TILE_CLASS}>
-                <QuickTileContent
-                  icon={RiFileAddLine}
-                  gradient={gradients.statements}
-                >
+                <QuickTileContent icon={RiFileAddLine}>
                   {t("ui.dashboard.quickstart.newStatement")}
                 </QuickTileContent>
               </Link>
@@ -212,10 +202,7 @@ export const DashboardPage = () => {
                 search={{ buildingId: undefined }}
                 className={QUICK_TILE_CLASS}
               >
-                <QuickTileContent
-                  icon={RiReceiptLine}
-                  gradient={gradients.invoices}
-                >
+                <QuickTileContent icon={RiReceiptLine}>
                   {t("ui.dashboard.quickstart.recordCost")}
                 </QuickTileContent>
               </Link>
@@ -230,10 +217,7 @@ export const DashboardPage = () => {
                 }}
                 className={QUICK_TILE_CLASS}
               >
-                <QuickTileContent
-                  icon={RiDashboard2Line}
-                  gradient={gradients.water}
-                >
+                <QuickTileContent icon={RiDashboard2Line}>
                   {t("ui.dashboard.quickstart.recordReading")}
                 </QuickTileContent>
               </Link>
@@ -244,10 +228,7 @@ export const DashboardPage = () => {
                 search={{ tenantId: undefined }}
                 className={QUICK_TILE_CLASS}
               >
-                <QuickTileContent
-                  icon={RiMoneyEuroCircleLine}
-                  gradient={gradients.money}
-                >
+                <QuickTileContent icon={RiMoneyEuroCircleLine}>
                   {t("ui.dashboard.quickstart.recordPayment")}
                 </QuickTileContent>
               </Link>
@@ -255,18 +236,16 @@ export const DashboardPage = () => {
           </div>
         </section>
 
-        <section className="rounded-xl border border-border bg-card p-5.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-          <h2 className="text-[17px] font-semibold">
-            {t("ui.dashboard.buildingsCard.title")}
-          </h2>
-          <p className="mt-0.5 mb-2 text-sm text-slate-400">
-            {t("ui.dashboard.buildingsCard.description")}
-          </p>
+        <section className="rounded-xl border border-border bg-card px-5 py-4">
+          <CardHead
+            title={t("ui.dashboard.buildingsCard.title")}
+            description={t("ui.dashboard.buildingsCard.description")}
+          />
           {(buildings ?? []).map((building) => (
             <button
               key={building.id}
               type="button"
-              className="flex w-full cursor-pointer items-center gap-3.25 border-t border-border px-1 py-3.25 text-left first:border-t-0"
+              className="flex w-full cursor-pointer items-center gap-3 border-t border-schiefer-100 px-0.5 py-3 text-left first:border-t-0"
               onClick={() => {
                 // Nur navigieren, kein setBuildingId(), da sonst Konflikt
                 // mit Store, da navigate/buildingId primär ist.
@@ -276,12 +255,15 @@ export const DashboardPage = () => {
                 }).catch(() => undefined);
               }}
             >
-              <InitialsAvatar name={building.name} />
+              <BuildingIcon
+                aria-hidden={true}
+                className="size-5 shrink-0 text-schiefer-500"
+              />
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold hover:text-sky-700">
+                <span className="block truncate text-sm font-medium">
                   {building.name}
                 </span>
-                <span className="mt-0.5 block text-xs text-slate-400">
+                <span className="block text-xs text-muted-foreground">
                   {[
                     t("ui.navigation.buildingSwitcher.unitsCount", {
                       count: building.unitsCount,
@@ -294,7 +276,7 @@ export const DashboardPage = () => {
               </span>
               <RiArrowRightSLine
                 aria-hidden={true}
-                className="size-4.5 shrink-0 text-slate-400"
+                className="size-4 shrink-0 text-schiefer-400"
               />
             </button>
           ))}

@@ -14,9 +14,9 @@ export const MiniKpiRow = ({
       <div
         // biome-ignore lint/suspicious/noArrayIndexKey: statische Liste
         key={index}
-        className="rounded-[13px] border border-border bg-card px-4 py-3.5"
+        className="rounded-lg border border-border bg-card px-4 py-3.5"
       >
-        <div className="text-[11.5px] font-semibold text-slate-400">
+        <div className="text-2xs font-semibold text-muted-foreground">
           {item.label}
         </div>
         <div className="mt-1 text-xl font-semibold tabular-nums">

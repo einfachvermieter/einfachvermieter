@@ -8,7 +8,6 @@ import {
 import { RiHomeGearLine } from "@remixicon/react";
 import { SectionCard } from "../../../../components/common/SectionCard";
 import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 
 const ALLOCATION_BY_LABEL_KEY: Record<CostLineResult["allocationKey"], string> =
@@ -138,7 +137,6 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
   return (
     <SectionCard
       icon={RiHomeGearLine}
-      iconBackground={gradients.notes}
       title={t("ui.statements.detail.operatingCostsTitle")}
       description={t("ui.statements.detail.operatingCostsDescription")}
     >

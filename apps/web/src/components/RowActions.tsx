@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/Tooltip";
 
 type RowActionButtonProps = {
   label: string;
-  variant?: "ghostMuted" | "ghostRed";
+  variant?: "ghostMuted" | "ghostDestructive";
   icon?: ReactNode;
   onSelect?: () => void;
   children?: ReactNode;
@@ -70,7 +70,7 @@ export const RowActions = ({
   ) : (
     <RowActionButton
       label={deleteLabel}
-      variant="ghostRed"
+      variant="ghostDestructive"
       icon={<RiDeleteBin6Line />}
       onSelect={onDelete}
     />

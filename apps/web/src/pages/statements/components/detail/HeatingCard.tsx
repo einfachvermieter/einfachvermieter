@@ -23,7 +23,6 @@ import {
   QUIET_TABLE_GROUP_HEAD,
   QUIET_TABLE_HEAD_ROW,
 } from "../../../../components/common/tableStyles";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 
 /**
@@ -178,14 +177,13 @@ export const HeatingCard = ({
   return (
     <>
       {heatingIntro ? (
-        <p className="mb-5 rounded-xl border border-border bg-card px-6.5 py-4 text-sm text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+        <p className="mb-5 rounded-xl border border-border bg-card px-6.5 py-4 text-sm text-foreground">
           {heatingIntro}
         </p>
       ) : null}
       {hasBreakdown ? (
         <SectionCard
           icon={RiFireLine}
-          iconBackground={gradients.heating}
           title={t("statements.pdf.heating.breakdown.title")}
         >
           <ResultRows
@@ -340,7 +338,6 @@ export const HeatingCard = ({
 
       <SectionCard
         icon={RiPieChart2Line}
-        iconBackground={gradients.heating}
         title={t("statements.pdf.heating.distributionPerUnit")}
       >
         <div className="mb-4">
@@ -585,7 +582,6 @@ export const HeatingCard = ({
       {hw ? (
         <SectionCard
           icon={RiDropLine}
-          iconBackground={gradients.water}
           title={t("statements.pdf.heating.hotWater.title")}
         >
           <div className="scroll-shadow-x mb-4 overflow-x-auto">

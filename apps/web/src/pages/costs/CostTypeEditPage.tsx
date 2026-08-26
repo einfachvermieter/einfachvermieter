@@ -15,11 +15,7 @@ import {
   costTypeCategoryLabel,
   costTypeQueryOptions,
 } from "../../lib/costs";
-import {
-  costTypeVisual,
-  domainVisuals,
-  gradients,
-} from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import {
   heatingIdentityLabel,
   heatingSettingsListQueryOptions,
@@ -101,9 +97,6 @@ export const CostTypeEditPage = () => {
   }
 
   const costType = costTypeQuery.data;
-  const visual = costType
-    ? costTypeVisual(costType)
-    : { icon: domainVisuals.costTypes.icon, gradient: gradients.notes };
   const isHeating = costType?.category === "heating";
   const [heatingVersion] = heatingVersions ?? [];
 
@@ -112,7 +105,7 @@ export const CostTypeEditPage = () => {
       <PageHeader
         loading={!costType}
         statsSkeleton={3}
-        tile={<PageHeaderIcon icon={visual.icon} />}
+        tile={<PageHeaderIcon icon={domainVisuals.costTypes.icon} />}
         title={costType?.name ?? ""}
         sub={costType ? costTypeCategoryLabel(costType.category) : undefined}
         stats={
@@ -155,11 +148,10 @@ export const CostTypeEditPage = () => {
             onCancel={goBack}
           />
 
-          <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+          <div className="flex flex-col gap-6 xl:sticky xl:top-24">
             <InfoCard title={t("ui.common.infoCards.links")}>
               <ActionLink
                 icon={RiReceiptLine}
-                iconBackground={domainVisuals.invoices.accent}
                 onClick={() =>
                   navigate({
                     to: "/rechnungen/neu",
@@ -173,7 +165,6 @@ export const CostTypeEditPage = () => {
                 heatingVersion && (
                   <ActionLink
                     icon={domainVisuals.heating.icon}
-                    iconBackground={domainVisuals.heating.accent}
                     subtitle={heatingIdentityLabel(heatingVersion)}
                     onClick={() =>
                       navigate({
@@ -188,7 +179,6 @@ export const CostTypeEditPage = () => {
               ) : (
                 <ActionLink
                   icon={domainVisuals.meters.icon}
-                  iconBackground={domainVisuals.meters.accent}
                   subtitle={t("ui.meters.sub.count", {
                     count: costType.stats.assignedMetersCount,
                   })}
@@ -217,7 +207,7 @@ export const CostTypeEditPage = () => {
                     <Link
                       to="/rechnungen/$costEntryId"
                       params={{ costEntryId: costType.stats.lastEntry.id }}
-                      className="font-semibold text-sky-700 dark:text-sky-400"
+                      className="font-semibold text-limette-700"
                     >
                       {formatEur(costType.stats.lastEntry.amountCents)}
                     </Link>
@@ -231,7 +221,6 @@ export const CostTypeEditPage = () => {
             <InfoCard title={t("ui.common.infoCards.actions")}>
               <ActionLink
                 icon={RiDeleteBinLine}
-                iconBackground="var(--color-rose-400)"
                 danger={true}
                 onClick={() => deletion.request(costType)}
               >

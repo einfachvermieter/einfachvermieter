@@ -10,7 +10,7 @@ const Card = ({
     data-slot="card"
     data-size={size}
     className={cn(
-      "group/card flex flex-col gap-6 overflow-hidden rounded-xl bg-card py-6 text-sm text-card-foreground shadow-xs ring-1 ring-foreground/10 has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl max-sm:-mx-6 max-sm:rounded-none max-sm:ring-0 max-sm:border-y max-sm:border-foreground/10",
+      "group/card flex flex-col gap-6 overflow-hidden rounded-xl border border-border bg-card py-6 text-sm text-card-foreground has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl max-sm:-mx-6 max-sm:rounded-none max-sm:border-x-0",
       className,
     )}
     {...props}
@@ -32,7 +32,7 @@ const CardTitle = ({ className, ...props }: ComponentProps<"div">) => (
   <div
     data-slot="card-title"
     className={cn(
-      "font-heading text-lg leading-normal font-semibold group-data-[size=sm]/card:text-sm",
+      "text-base leading-normal font-semibold group-data-[size=sm]/card:text-sm",
       className,
     )}
     {...props}

@@ -6,7 +6,6 @@ import {
   EditableListSection,
   type EditableListSectionRowFormProps,
 } from "@/components/form/EditableListSection";
-import { gradients } from "../../../../lib/domainVisuals";
 import { formatPeriod } from "../../../../lib/format";
 import { t, translateKey } from "../../../../lib/i18n";
 import { GasFactorRowForm } from "./GasFactorRowForm";
@@ -62,7 +61,6 @@ export const GasFactorsCard = ({
       emptyHint={t("ui.meters.gasFactors.emptyHint")}
       addLabel={t("ui.meters.gasFactors.addPeriod")}
       icon={RiFireLine}
-      iconBackground={gradients.heating}
       fieldKeys={gasFactorsArray.fields}
       rows={watchedGasFactors}
       renderRow={(row) => {

@@ -5,14 +5,12 @@ import {
 } from "@einfachvermieter/shared";
 import { RiGroupLine } from "@remixicon/react";
 import { type UseFormReturn, useFieldArray } from "react-hook-form";
-import { InitialsAvatar } from "@/components/common/InitialsAvatar";
 import {
   EditableListSection,
   type EditableListSectionRowFormProps,
 } from "@/components/form/EditableListSection";
 import { HelpHint } from "@/components/help/HelpHint";
 import { Badge } from "@/components/ui/Badge";
-import { gradients } from "../../../../lib/domainVisuals";
 import {
   formatPeriod,
   getPeriodStatusToday,
@@ -165,17 +163,6 @@ export const Residents = ({
       emptyHint={t("ui.tenant.residentsEmptyHint")}
       addLabel={t("ui.tenant.addResident")}
       icon={RiGroupLine}
-      iconBackground={gradients.tenants}
-      rowLeading={(row, index) => (
-        <InitialsAvatar
-          name={
-            row.firstName || row.lastName
-              ? formatName(row.firstName, row.lastName)
-              : t("ui.tenant.residentIndex", { index: index + 1 })
-          }
-          background={gradients.tenants}
-        />
-      )}
       fieldKeys={residentsArray.fields}
       rows={watchedResidents}
       renderRow={(row, index) => {
@@ -195,17 +182,15 @@ export const Residents = ({
                   : t("ui.tenant.residentIndex", { index: index + 1 })}
               </p>
               {row.isContractParty ? (
-                <Badge variant="lightBlue">
+                <Badge variant="info">
                   {t("ui.tenant.fields.isContractParty")}
                 </Badge>
               ) : null}
               {periodStatus === "active" ? (
-                <Badge variant="lightGreen">{t("ui.tenant.active")}</Badge>
+                <Badge variant="ok">{t("ui.tenant.active")}</Badge>
               ) : null}
               {periodStatus === "last" ? (
-                <Badge variant="lightYellow">
-                  {t("ui.tenant.lastResident")}
-                </Badge>
+                <Badge variant="warn">{t("ui.tenant.lastResident")}</Badge>
               ) : null}
             </div>
             <p className="text-sm text-muted-foreground tabular-nums">

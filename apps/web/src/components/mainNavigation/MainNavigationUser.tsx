@@ -2,9 +2,9 @@ import {
   RiExpandUpDownLine,
   RiLockPasswordLine,
   RiLogoutBoxRLine,
+  RiUserLine,
 } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
-import { InitialsAvatar } from "@/components/common/InitialsAvatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,63 +36,59 @@ export const MainNavigationUser = ({
   const displayName = fullName || email;
 
   return (
-    <div className="rounded-[13px] border border-sidebar-border bg-card group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent">
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <DropdownMenu>
-            <SidebarMenuButton
-              asChild={true}
-              size="lg"
-              tooltip={displayName}
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <DropdownMenuTrigger>
-                <InitialsAvatar name={displayName} size={34} />
-                <span className="flex min-w-0 flex-1 flex-col text-left leading-tight">
-                  <span className="truncate text-[13px] font-semibold">
-                    {displayName}
-                  </span>
-                  {fullName ? (
-                    <span className="truncate text-[11px] text-muted-foreground">
-                      {email}
-                    </span>
-                  ) : null}
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <SidebarMenuButton
+            asChild={true}
+            size="lg"
+            tooltip={displayName}
+            className="h-auto px-2.5 py-1.5 data-[state=open]:bg-white/7 data-[state=open]:text-sidebar-accent-foreground"
+          >
+            <DropdownMenuTrigger>
+              <RiUserLine aria-hidden={true} className="size-5 shrink-0" />
+              <span className="flex min-w-0 flex-1 flex-col text-left leading-tight">
+                <span className="truncate text-sm font-medium text-sidebar-accent-foreground">
+                  {displayName}
                 </span>
-                <RiExpandUpDownLine className="ml-auto size-4 shrink-0 text-muted-foreground" />
-              </DropdownMenuTrigger>
-            </SidebarMenuButton>
-            <DropdownMenuContent
-              className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
-              side="top"
-              align="start"
-              sideOffset={4}
-            >
-              <DropdownMenuLabel className="flex min-w-0 flex-col">
                 {fullName ? (
-                  <span className="truncate text-[13px] font-semibold text-popover-foreground">
-                    {fullName}
-                  </span>
+                  <span className="truncate text-xs">{email}</span>
                 ) : null}
-                <span className="truncate text-xs font-normal text-muted-foreground">
-                  {email}
+              </span>
+              <RiExpandUpDownLine className="ml-auto size-4 shrink-0" />
+            </DropdownMenuTrigger>
+          </SidebarMenuButton>
+          <DropdownMenuContent
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
+            side="top"
+            align="start"
+            sideOffset={4}
+          >
+            <DropdownMenuLabel className="flex min-w-0 flex-col">
+              {fullName ? (
+                <span className="truncate text-sm font-medium text-popover-foreground">
+                  {fullName}
                 </span>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild={true}>
-                <Link to="/einstellungen/passwort">
-                  <RiLockPasswordLine />
-                  {t("ui.navigation.password")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={onLogout}>
-                <RiLogoutBoxRLine />
-                {t("ui.common.action.logout")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    </div>
+              ) : null}
+              <span className="truncate text-xs font-normal text-muted-foreground">
+                {email}
+              </span>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild={true}>
+              <Link to="/einstellungen/passwort">
+                <RiLockPasswordLine />
+                {t("ui.navigation.password")}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={onLogout}>
+              <RiLogoutBoxRLine />
+              {t("ui.common.action.logout")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 };

@@ -1,13 +1,12 @@
 import type { RemixiconComponentType } from "@remixicon/react";
 import type { ReactNode } from "react";
-import { IconTile } from "@/components/common/IconTile";
 
 /**
- * Weiße Sektions-Karte mit Icon-Kachel-Kopf
+ * Sektions-Karte mit Kopfzeile: kleines Akzent-Icon, Titel, optionale
+ * Beschreibung und Aktion rechts
  */
 export const SectionCard = ({
-  icon,
-  iconBackground,
+  icon: Icon,
   title,
   titleExtra,
   description,
@@ -15,8 +14,6 @@ export const SectionCard = ({
   children,
 }: {
   icon: RemixiconComponentType;
-  /** Farbe oder Verlauf aus lib/domainVisuals.ts */
-  iconBackground: string;
   title: string;
   /** Zusatz neben dem Titel, z. B. ein HelpHint */
   titleExtra?: ReactNode;
@@ -24,20 +21,20 @@ export const SectionCard = ({
   action?: ReactNode;
   children: ReactNode;
 }) => (
-  <section className="mb-5 rounded-xl border border-border bg-card px-6.5 py-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-    <div className="mb-5 flex items-center gap-3.25">
-      <IconTile icon={icon} size={40} background={iconBackground} />
+  <section className="mb-4 rounded-xl border border-border bg-card px-5.5 py-4.5">
+    <div className="mb-4 flex items-center gap-2.5">
+      <Icon aria-hidden={true} className="size-5 shrink-0 text-limette-700" />
       <div className="min-w-0 flex-1">
         <h2 className="flex items-center gap-1 text-lg font-semibold">
           {title}
           {titleExtra}
         </h2>
         {description ? (
-          <p className="mt-0.5 text-xs text-slate-400">{description}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
         ) : null}
       </div>
       {action}
     </div>
-    {children}
+    <div>{children}</div>
   </section>
 );

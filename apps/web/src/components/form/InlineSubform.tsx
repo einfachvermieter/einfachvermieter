@@ -10,7 +10,10 @@ export const InlineSubform = ({
   children: ReactNode;
   actions?: ReactNode;
 }) => (
-  <div className="mt-2.5 rounded-[13px] border border-sky-100 bg-sky-50 p-4 dark:border-sky-900 dark:bg-sky-950/30">
+  <div
+    data-slot="inline-subform"
+    className="my-2.5 rounded-lg border border-border bg-schiefer-50 p-4"
+  >
     {children}
     {actions ? (
       <div className="mt-3.5 flex justify-end gap-2">{actions}</div>

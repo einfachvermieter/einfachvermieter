@@ -1,12 +1,9 @@
 import type { RemixiconComponentType } from "@remixicon/react";
+import { IconTile } from "./IconTile";
 
 /**
- * Freistehendes Header-Icon
+ * Titel-Kachel des Seitenkopfs
  */
-export const PageHeaderIcon = ({
-  icon: Icon,
-}: {
-  icon: RemixiconComponentType;
-}) => (
-  <Icon aria-hidden={true} className="size-11 text-sky-700 dark:text-sky-400" />
+export const PageHeaderIcon = ({ icon }: { icon: RemixiconComponentType }) => (
+  <IconTile icon={icon} size={38} />
 );

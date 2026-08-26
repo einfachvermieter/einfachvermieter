@@ -7,7 +7,6 @@ import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import { tenantKindValues } from "../../../../lib/tenants";
 import type { Unit } from "../../../../lib/units";
@@ -51,9 +50,7 @@ export const BaseDataFields = ({
   return (
     <SectionCard
       icon={RiKey2Line}
-      iconBackground={gradients.bank}
       title={t("ui.tenant.sections.contract.title")}
-      description={t("ui.tenant.sections.contract.description")}
     >
       <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SelectInput

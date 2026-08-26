@@ -6,11 +6,11 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { DataTable } from "../../components/common/DataTable";
+import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { CELL_LINK, ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { RowActionButton } from "../../components/RowActions";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -56,19 +56,7 @@ const tenantColumns = (
     header: t("ui.common.columns.contractParty"),
     cell: ({ row }) => {
       const names = contractPartyNames(row.original);
-      return (
-        <EntityCell
-          name={
-            <Link
-              to="/mieter/$tenantId"
-              params={{ tenantId: row.original.id }}
-              className={ROW_TITLE_LINK}
-            >
-              {names || t("common.none")}
-            </Link>
-          }
-        />
-      );
+      return <EntityCell name={names || t("common.none")} />;
     },
   },
   {
@@ -76,13 +64,12 @@ const tenantColumns = (
     accessorKey: "unitName",
     header: t("ui.common.columns.unit"),
     cell: ({ row }) => (
-      <Link
+      <DomainLink
         to="/wohnungen/$unitId"
         params={{ unitId: row.original.unitId }}
-        className={CELL_LINK}
       >
         {row.original.unitName}
-      </Link>
+      </DomainLink>
     ),
   },
   {
@@ -125,13 +112,9 @@ const tenantColumns = (
     header: t("ui.common.columns.status"),
     cell: ({ row }) =>
       row.original.active ? (
-        <Badge variant="ok" dot={true}>
-          {t("ui.tenants.active")}
-        </Badge>
+        <Badge variant="ok">{t("ui.tenants.active")}</Badge>
       ) : (
-        <Badge variant="slate" dot={true}>
-          {t("ui.tenants.inactive")}
-        </Badge>
+        <Badge variant="neutral">{t("ui.tenants.inactive")}</Badge>
       ),
   },
   {
@@ -146,13 +129,12 @@ const tenantColumns = (
 
       // Kontosaldo ist aus Mietersicht signiert, die Anzeige aus Vermietersicht
       return (
-        <Link
+        <DomainLink
           to="/mieter/$tenantId/konto"
           params={{ tenantId: row.original.id }}
-          className="underline-offset-4 hover:underline"
         >
           <BalanceAmount receivableCents={-summary.balanceCents} />
-        </Link>
+        </DomainLink>
       );
     },
     meta: {

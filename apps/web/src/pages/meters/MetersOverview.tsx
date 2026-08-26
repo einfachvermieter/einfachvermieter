@@ -8,9 +8,7 @@ import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { RowActionButton } from "../../components/RowActions";
-import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { domainVisuals, meterTypeVisual } from "../../lib/domainVisuals";
@@ -35,24 +33,6 @@ const SORTABLE_COLUMNS: ReadonlySet<MeterSortColumn> = new Set([
 ]);
 
 const routeApi = getRouteApi("/zaehler");
-
-/**
- * Wohnungs-/Unterzähler sky, Allgemeinzähler indigo,
- * Hauptzähler und Differenzzähler slate
- */
-const roleBadgeVariant = (role: Meter["role"]) => {
-  if (role === "unit" || role === "sub") {
-    return "blue";
-  }
-  if (role === "common") {
-    return "indigo";
-  }
-  return "slate";
-};
-
-const roleBadge = (role: Meter["role"]) => (
-  <Badge variant={roleBadgeVariant(role)}>{meterRoleLabel(role)}</Badge>
-);
 
 export const MetersOverview = () => {
   const table = useServerTableState<MeterSortColumn>({
@@ -99,19 +79,7 @@ export const MetersOverview = () => {
       {
         accessorKey: "label",
         header: t("ui.meters.columns.label"),
-        cell: ({ row }) => (
-          <EntityCell
-            name={
-              <Link
-                to="/zaehler/$meterId"
-                params={{ meterId: row.original.id }}
-                className={ROW_TITLE_LINK}
-              >
-                {row.original.label}
-              </Link>
-            }
-          />
-        ),
+        cell: ({ row }) => <EntityCell name={row.original.label} />,
       },
       {
         accessorKey: "serialNumber",
@@ -123,13 +91,13 @@ export const MetersOverview = () => {
       },
       {
         accessorKey: "type",
-        header: t("ui.common.columns.type"),
+        header: t("ui.meters.fields.type"),
         cell: ({ row }) => meterTypeLabel(row.original.type),
       },
       {
         accessorKey: "role",
-        header: t("ui.common.columns.role"),
-        cell: ({ row }) => roleBadge(row.original.role),
+        header: t("ui.meters.fields.role"),
+        cell: ({ row }) => meterRoleLabel(row.original.role),
       },
       {
         id: "unit",

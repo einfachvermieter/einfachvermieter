@@ -22,7 +22,6 @@ import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ActionLink } from "../../components/common/ActionLink";
 import { Description } from "../../components/common/Description";
-import { EmptyNote } from "../../components/common/EmptyNote";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { InfoCard } from "../../components/common/InfoCard";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -124,7 +123,7 @@ const renderStatusBadge = (statement: StatementDetail) => {
   switch (statement.status) {
     case "draft":
       return (
-        <Badge variant="slate" dot={true}>
+        <Badge variant="neutral">
           {statement.supersedesStatementId
             ? t("ui.statements.detail.correctionDraft")
             : t("ui.statements.detail.draftLive")}
@@ -132,7 +131,7 @@ const renderStatusBadge = (statement: StatementDetail) => {
       );
     case "finalized":
       return (
-        <Badge variant="ok" dot={true}>
+        <Badge variant="ok">
           {t("ui.statements.detail.finalizedAt", {
             date: formatDate(statement.finalizedAt?.slice(0, 10) ?? ""),
           })}
@@ -140,13 +139,11 @@ const renderStatusBadge = (statement: StatementDetail) => {
       );
     case "cancelled":
       return (
-        <Badge variant="rose" dot={true}>
-          {t("ui.statements.detail.cancelledBadge")}
-        </Badge>
+        <Badge variant="bad">{t("ui.statements.detail.cancelledBadge")}</Badge>
       );
     default:
       return (
-        <Badge variant="slate" dot={true}>
+        <Badge variant="neutral">
           {t("ui.statements.detail.supersededBadge")}
         </Badge>
       );
@@ -316,7 +313,7 @@ const StatementTabs = ({
           </CardHeader>
           <CardContent className="h-full p-0">
             {/* Heller Rahmen hinter dem Viewer: füllt Letterbox-/Ladeflächen */}
-            <div className="h-full bg-white dark:bg-slate-100">
+            <div className="h-full bg-white">
               <object
                 data={pdfSrc}
                 type="application/pdf"
@@ -563,9 +560,7 @@ export const StatementDetailPage = () => {
     result?.heatingDetail?.energyComparison?.previous !== undefined &&
     climateFactors?.autoFetch === null &&
     climateFactors.rows.some((row) => row.factor === null);
-  const balanceClass = isRefund
-    ? "text-teal-700 dark:text-teal-400"
-    : "text-rose-700 dark:text-rose-400";
+  const balanceClass = isRefund ? "text-limette-700" : "text-himbeere-500";
   const resultStats = result
     ? [
         {
@@ -661,12 +656,11 @@ export const StatementDetailPage = () => {
           )}
         </div>
 
-        <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+        <div className="flex flex-col gap-6 xl:sticky xl:top-24">
           <InfoCard title={t("ui.common.infoCards.links")}>
             {tenantName ? (
               <ActionLink
                 icon={domainVisuals.tenants.icon}
-                iconBackground={domainVisuals.tenants.accent}
                 onClick={() =>
                   navigate({
                     to: "/mieter/$tenantId/konto",
@@ -681,7 +675,6 @@ export const StatementDetailPage = () => {
             {unit ? (
               <ActionLink
                 icon={domainVisuals.units.icon}
-                iconBackground={domainVisuals.units.accent}
                 onClick={() =>
                   navigate({
                     to: "/wohnungen/$unitId",
@@ -695,7 +688,6 @@ export const StatementDetailPage = () => {
             {building ? (
               <ActionLink
                 icon={RiBuildingLine}
-                iconBackground="var(--i-blue)"
                 onClick={() =>
                   navigate({
                     to: "/gebaeude/$buildingId",
@@ -709,7 +701,6 @@ export const StatementDetailPage = () => {
             {heatingVersion ? (
               <ActionLink
                 icon={domainVisuals.heating.icon}
-                iconBackground={domainVisuals.heating.accent}
                 subtitle={heatingIdentityLabel(heatingVersion)}
                 onClick={() =>
                   navigate({
@@ -727,7 +718,7 @@ export const StatementDetailPage = () => {
             {isDraft ? (
               <ActionLink
                 icon={RiLockLine}
-                iconBackground={domainVisuals.statements.accent}
+                accent={true}
                 onClick={() => setConfirmFinalizeOpen(true)}
               >
                 {t("ui.statements.detail.finalizeStatement")}
@@ -737,14 +728,13 @@ export const StatementDetailPage = () => {
               <>
                 <ActionLink
                   icon={RiCloseCircleLine}
-                  iconBackground="var(--color-amber-500)"
                   onClick={() => setCancelOpen(true)}
                 >
                   {t("ui.statements.detail.cancelStatement")}
                 </ActionLink>
                 <ActionLink
                   icon={RiFileCopy2Line}
-                  iconBackground={domainVisuals.statements.accent}
+                  accent={true}
                   onClick={() => correct.mutate()}
                 >
                   {t("ui.statements.detail.createCorrection")}
@@ -754,7 +744,7 @@ export const StatementDetailPage = () => {
             {statement.status === "cancelled" ? (
               <ActionLink
                 icon={RiFileCopy2Line}
-                iconBackground={domainVisuals.statements.accent}
+                accent={true}
                 onClick={() => correct.mutate()}
               >
                 {t("ui.statements.detail.createCorrection")}
@@ -762,7 +752,7 @@ export const StatementDetailPage = () => {
             ) : null}
             <ActionLink
               icon={RiDownloadLine}
-              iconBackground={domainVisuals.dashboard.accent}
+              accent={true}
               onClick={downloadPdf}
             >
               {t("ui.statements.detail.downloadPdf")}
@@ -770,7 +760,6 @@ export const StatementDetailPage = () => {
             {isDraft ? (
               <ActionLink
                 icon={RiDeleteBinLine}
-                iconBackground="var(--color-rose-400)"
                 danger={true}
                 onClick={() => setDeleteOpen(true)}
               >
@@ -781,7 +770,9 @@ export const StatementDetailPage = () => {
 
           {isDraft ? (
             <InfoCard title={t("ui.statements.detail.info.hintTitle")}>
-              <EmptyNote>{t("ui.statements.detail.info.hintText")}</EmptyNote>
+              <p className="text-sm leading-normal text-muted-foreground">
+                {t("ui.statements.detail.info.hintText")}
+              </p>
             </InfoCard>
           ) : null}
         </div>

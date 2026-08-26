@@ -48,12 +48,7 @@ export const CostTypeForm = ({
       form={form}
       onSubmit={(values) => onSubmit(costTypeFormToDto(values))}
     >
-      <SectionCard
-        icon={visual.icon}
-        iconBackground={visual.gradient}
-        title={t("ui.costs.detail.sectionTitle")}
-        description={t("ui.costs.detail.sectionDescription")}
-      >
+      <SectionCard icon={visual.icon} title={t("ui.costs.detail.sectionTitle")}>
         {fields}
       </SectionCard>
       <Savebar

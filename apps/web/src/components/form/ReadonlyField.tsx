@@ -18,7 +18,7 @@ export const ReadonlyField = ({
     <div className="flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-2 text-sm">
       <RiLockLine
         aria-hidden={true}
-        className="size-4 shrink-0 text-slate-400"
+        className="size-4 shrink-0 text-muted-foreground"
       />
       <span className="min-w-0 flex-1 truncate font-medium">{value}</span>
     </div>

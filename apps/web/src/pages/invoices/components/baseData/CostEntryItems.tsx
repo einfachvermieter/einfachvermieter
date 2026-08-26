@@ -24,7 +24,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/Tooltip";
 import type { CostType } from "../../../../lib/costs";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t, translateKey } from "../../../../lib/i18n";
 import type { Unit } from "../../../../lib/units";
 import {
@@ -54,13 +53,12 @@ export const CostEntryItems = ({
   return (
     <SectionCard
       icon={RiListCheck2}
-      iconBackground={gradients.notes}
       title={t("ui.invoices.items.title")}
       description={t("ui.invoices.items.description")}
       action={
         <Button
           type="button"
-          variant="ghostGreen"
+          variant="addLink"
           size="sm"
           onClick={() => itemsArray.append(emptyItem(defaultCostTypeId))}
         >
@@ -208,7 +206,7 @@ const CostEntryItemFields = ({
           <TooltipTrigger asChild={true}>
             <Button
               type="button"
-              variant="ghostRed"
+              variant="ghostDestructive"
               size="icon-sm"
               onClick={onRemove}
               aria-label={t("ui.invoices.items.remove")}

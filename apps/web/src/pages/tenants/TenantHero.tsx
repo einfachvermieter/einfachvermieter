@@ -7,7 +7,6 @@ import {
 } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { BalanceAmount } from "../../components/common/BalanceAmount";
-import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { buildingsQueryOptions } from "../../lib/buildings";
@@ -119,7 +118,7 @@ export const TenantHero = ({
 
   return (
     <PageHeader
-      tile={<InitialsAvatar name={heroName} size={44} />}
+      tile={<PageHeaderIcon icon={domainVisuals.tenants.icon} />}
       title={heroName}
       sub={[
         building?.name,

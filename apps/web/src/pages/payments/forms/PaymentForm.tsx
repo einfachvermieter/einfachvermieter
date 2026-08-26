@@ -19,6 +19,7 @@ import { useForm } from "react-hook-form";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { DateInput } from "@/components/form/DateInput";
 import { Form } from "@/components/form/Form";
+import { InlineSubform } from "@/components/form/InlineSubform";
 import { Savebar } from "@/components/form/Savebar";
 import { SelectInput, type SelectOption } from "@/components/form/SelectInput";
 import { SubformShell } from "@/components/form/SubformShell";
@@ -460,7 +461,7 @@ export const PaymentForm = ({
 
   if (variant === "inline") {
     return (
-      <div className="rounded-[13px] border border-sky-100 bg-sky-50 p-4 dark:border-sky-900 dark:bg-sky-950/30">
+      <InlineSubform>
         <SubformShell
           onSubmit={() => {
             form
@@ -472,7 +473,7 @@ export const PaymentForm = ({
         >
           {inlineFields}
         </SubformShell>
-      </div>
+      </InlineSubform>
     );
   }
 

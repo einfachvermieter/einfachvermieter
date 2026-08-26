@@ -12,7 +12,6 @@ import { Savebar } from "@/components/form/Savebar";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
 import { useCurrentUser, useUpdateProfile } from "@/lib/auth";
-import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import { useGoBack } from "@/lib/useGoBack";
 import { SettingsLayout } from "./SettingsLayout";
@@ -48,7 +47,6 @@ export const ProfileSettingsPage = () => {
         <fieldset disabled={submitting} className="contents">
           <SectionCard
             icon={RiUserLine}
-            iconBackground={domainVisuals.configuration.accent}
             title={t("ui.settings.profile.sectionTitle")}
           >
             <FieldGroup className="gap-4">

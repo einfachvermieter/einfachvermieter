@@ -112,12 +112,11 @@ export const TenantEditPage = () => {
             onResidentsChange={setFormResidentCount}
           />
 
-          <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+          <div className="flex flex-col gap-6 xl:sticky xl:top-24">
             <InfoCard title={t("ui.common.infoCards.links")}>
               {unit ? (
                 <ActionLink
                   icon={domainVisuals.units.icon}
-                  iconBackground={domainVisuals.units.accent}
                   onClick={() =>
                     navigate({
                       to: "/wohnungen/$unitId",
@@ -130,7 +129,6 @@ export const TenantEditPage = () => {
               ) : null}
               <ActionLink
                 icon={RiWallet3Line}
-                iconBackground="var(--i-cyan)"
                 onClick={() =>
                   navigate({
                     to: "/mieter/$tenantId/konto",
@@ -155,7 +153,7 @@ export const TenantEditPage = () => {
                     balanced === undefined ? (
                       t("ui.common.emptyValue")
                     ) : (
-                      <Badge variant={balanced ? "ok" : "warn"} dot={true}>
+                      <Badge variant={balanced ? "ok" : "warn"}>
                         {balanced
                           ? t("ui.account.status.balanced")
                           : t("ui.account.status.open")}
@@ -168,7 +166,6 @@ export const TenantEditPage = () => {
             <InfoCard title={t("ui.common.infoCards.actions")}>
               <ActionLink
                 icon={RiDeleteBinLine}
-                iconBackground="var(--color-rose-400)"
                 danger={true}
                 onClick={() => deletion.request({ id: tenantId })}
               >

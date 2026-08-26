@@ -306,9 +306,7 @@
       "buildingSwitcher": {
         "label": "Aktives Gebäude",
         "empty": "Kein Gebäude",
-        "all": "Alle Gebäude",
         "add": "Neues Gebäude",
-        "switchLabel": "Gebäude wechseln",
         "unitsCount": "{count, plural, one {# Wohnung} other {# Wohnungen}}"
       }
     },
@@ -479,7 +477,6 @@
       "editTitle": "Zähler bearbeiten",
       "detail": {
         "baseSection": "Stammdaten",
-        "baseDescription": "Art, Rolle und Zuordnung des Zählers",
         "moreFields": "Weitere Angaben (Raum, Gültigkeit)",
         "assignmentSection": "Kostenzuordnung",
         "assignmentDescription": "Wie der Verbrauch abgerechnet wird",
@@ -641,8 +638,7 @@
       },
       "sections": {
         "baseData": {
-          "title": "Stammdaten",
-          "description": "Bezeichnung und Adresse des Gebäudes"
+          "title": "Stammdaten"
         }
       },
       "actions": {
@@ -707,8 +703,7 @@
       "unitNumberMeta": "Mieteinheit {number}",
       "sections": {
         "baseData": {
-          "title": "Stammdaten",
-          "description": "Bezeichnung und Flächen der Wohnung"
+          "title": "Stammdaten"
         }
       },
       "links": {
@@ -992,7 +987,6 @@
       "typeEditTitle": "Kostenart bearbeiten",
       "detail": {
         "sectionTitle": "Stammdaten",
-        "sectionDescription": "Name, Kategorie und Umlage",
         "taxDisclose": "Steuerliche Angaben (§ 35a EStG)",
         "statsEntries": "Rechnungen {year}",
         "statsSum": "Summe {year}",
@@ -1135,7 +1129,6 @@
         "statPositions": "Positionen",
         "statPeriod": "Zeitraum",
         "basicsSection": "Basisdaten",
-        "basicsDescription": "Rechnungskopf",
         "moreOptions": "Mehr Optionen (Preisart, Einheitspreis)",
         "vendorFallback": "Ohne Lieferant",
         "costTypesLabel": "Kostenarten",
@@ -1212,10 +1205,7 @@
       "editTitle": "Heizkosten bearbeiten",
       "detail": {
         "validitySection": "Gültigkeit",
-        "validityDescription": "Zeitraum dieser Konfiguration",
-        "billingDescription": "Modus und Kostenaufteilung",
         "installationSection": "Heizung",
-        "installationDescription": "Anlage und Brennstoff",
         "hotWaterDisclose": "Warmwasser-Details",
         "splitBaseLegend": "{percent} % Grund · nach Heizfläche",
         "splitConsumptionLegend": "{percent} % Verbrauch · nach Zählern",
@@ -1651,8 +1641,7 @@
       },
       "sections": {
         "baseData": {
-          "title": "Stammdaten",
-          "description": "Mieter und Zeitraum der Abrechnung"
+          "title": "Stammdaten"
         }
       }
     },
@@ -1790,14 +1779,10 @@
       "editEyebrow": "Mieter bearbeiten",
       "addRentChange": "Mietänderung",
       "rentSimpleDescription": "Aktueller Mietsatz. Änderungen hier korrigieren den bestehenden Satz.",
-      "rentsDescription": "Kaltmiete und Nebenkosten im Zeitverlauf",
       "rentHistoryHint": "Frühere Sätze bleiben für die Abrechnung erhalten.",
-      "bankSimpleDescription": "Aktuelle Bankverbindung des Mieters",
-      "bankAccountsDescription": "Bankverbindungen des Mieters im Zeitverlauf",
       "sections": {
         "contract": {
-          "title": "Vertrag",
-          "description": "Wohnung, Laufzeit und Kaution"
+          "title": "Vertrag"
         },
         "notes": {
           "title": "Interne Notizen",
@@ -2038,8 +2023,7 @@
         "sections": {
           "provider": "Anbieter",
           "providerDescription": "Wer Ihre Rechnungen ausliest",
-          "connection": "Zugang",
-          "connectionDescription": "API-Key und Modell des gewählten Anbieters"
+          "connection": "Zugang"
         },
         "fields": {
           "provider": "Anbieter",

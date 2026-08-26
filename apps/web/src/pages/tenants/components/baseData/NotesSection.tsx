@@ -3,7 +3,6 @@ import { RiStickyNoteLine } from "@remixicon/react";
 import type { UseFormReturn } from "react-hook-form";
 import { SectionCard } from "@/components/common/SectionCard";
 import { TextareaInput } from "@/components/form/TextareaInput";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 
 /**
@@ -16,7 +15,6 @@ export const NotesSection = ({
 }) => (
   <SectionCard
     icon={RiStickyNoteLine}
-    iconBackground={gradients.notes}
     title={t("ui.tenant.sections.notes.title")}
     description={t("ui.tenant.sections.notes.description")}
   >

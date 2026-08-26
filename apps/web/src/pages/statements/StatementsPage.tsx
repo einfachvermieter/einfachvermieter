@@ -10,7 +10,6 @@ import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import {
@@ -46,31 +45,17 @@ const residentNames = (row: StatementOverviewRow): string =>
 const statusBadge = (status: StatementStatus) => {
   switch (status) {
     case "finalized":
-      return (
-        <Badge variant="ok" dot={true}>
-          {t("ui.statements.statusFinalized")}
-        </Badge>
-      );
+      return <Badge variant="ok">{t("ui.statements.statusFinalized")}</Badge>;
 
     case "draft":
-      return (
-        <Badge variant="slate" dot={true}>
-          {t("ui.statements.statusDraft")}
-        </Badge>
-      );
+      return <Badge variant="neutral">{t("ui.statements.statusDraft")}</Badge>;
 
     case "cancelled":
-      return (
-        <Badge variant="rose" dot={true}>
-          {t("ui.statements.statusCancelled")}
-        </Badge>
-      );
+      return <Badge variant="bad">{t("ui.statements.statusCancelled")}</Badge>;
 
     case "superseded":
       return (
-        <Badge variant="slate" dot={true}>
-          {t("ui.statements.statusSuperseded")}
-        </Badge>
+        <Badge variant="neutral">{t("ui.statements.statusSuperseded")}</Badge>
       );
 
     default:
@@ -114,15 +99,7 @@ export const StatementsPage = () => {
           const names = residentNames(row.original);
           return (
             <EntityCell
-              name={
-                <Link
-                  to="/abrechnungen/$statementId"
-                  params={{ statementId: row.original.id }}
-                  className={ROW_TITLE_LINK}
-                >
-                  {names || row.original.unitName}
-                </Link>
-              }
+              name={names || row.original.unitName}
               subline={names ? row.original.unitName : undefined}
             />
           );

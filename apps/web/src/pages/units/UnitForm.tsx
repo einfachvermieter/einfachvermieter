@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { UnitDataFields } from "./components/baseData/UnitDataFields";
 
@@ -48,9 +48,7 @@ export const UnitForm = ({
     <Form form={form} onSubmit={(values) => onSubmit(unitFormToDto(values))}>
       <SectionCard
         icon={domainVisuals.units.icon}
-        iconBackground={gradients.units}
         title={t("ui.units.sections.baseData.title")}
-        description={t("ui.units.sections.baseData.description")}
       >
         {fields}
       </SectionCard>

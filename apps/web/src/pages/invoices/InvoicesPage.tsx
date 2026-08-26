@@ -9,7 +9,6 @@ import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import {
@@ -61,17 +60,11 @@ const invoiceColumns = (
         <EntityCell
           name={
             <span className="flex items-center gap-1.5">
-              <Link
-                to="/rechnungen/$costEntryId"
-                params={{ costEntryId: row.original.id }}
-                className={ROW_TITLE_LINK}
-              >
-                {firstName ?? t("common.unknown")}
-              </Link>
+              {firstName ?? t("common.unknown")}
               {moreNames.length > 0 ? (
                 <Tooltip>
                   <TooltipTrigger asChild={true}>
-                    <Badge variant="morechip">
+                    <Badge variant="neutral">
                       {t("ui.common.moreChip", { count: moreNames.length })}
                     </Badge>
                   </TooltipTrigger>
@@ -120,7 +113,7 @@ const invoiceColumns = (
     header: t("ui.costs.columns.invoiceNumber"),
     cell: ({ row }) =>
       row.original.invoiceNumber ? (
-        <span className="text-[13px] text-muted-foreground tabular-nums">
+        <span className="text-sm text-muted-foreground tabular-nums">
           {row.original.invoiceNumber}
         </span>
       ) : (

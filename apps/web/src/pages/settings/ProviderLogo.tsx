@@ -38,8 +38,8 @@ export const ProviderLogo = ({ provider }: { provider: AiProvider }) => {
 
   return (
     <>
-      <img src={light} alt="" className={cn(base, "dark:hidden")} />
-      <img src={dark} alt="" className={cn(base, "hidden dark:block")} />
+      <img src={light} alt="" className={cn(base, "")} />
+      <img src={dark} alt="" className={cn(base, "hidden")} />
     </>
   );
 };

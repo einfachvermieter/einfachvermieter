@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { DateInput } from "@/components/form/DateInput";
+import { InlineSubform } from "@/components/form/InlineSubform";
 import { SubformShell } from "@/components/form/SubformShell";
 import { TextInput } from "@/components/form/TextInput";
 import { api } from "@/lib/api";
@@ -73,7 +74,7 @@ export const FeeInlineForm = ({
   };
 
   return (
-    <div className="rounded-[13px] border border-sky-100 bg-sky-50 p-4 dark:border-sky-900 dark:bg-sky-950/30">
+    <InlineSubform>
       <SubformShell
         onSubmit={() => {
           form
@@ -125,6 +126,6 @@ export const FeeInlineForm = ({
           />
         </div>
       </SubformShell>
-    </div>
+    </InlineSubform>
   );
 };

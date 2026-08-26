@@ -160,12 +160,11 @@ export const UnitEditPage = () => {
             onCancel={goBack}
           />
 
-          <div className="flex flex-col gap-4 xl:sticky xl:top-24">
+          <div className="flex flex-col gap-6 xl:sticky xl:top-24">
             <InfoCard title={t("ui.common.infoCards.links")}>
               {current ? (
                 <ActionLink
                   icon={domainVisuals.tenants.icon}
-                  iconBackground={domainVisuals.tenants.accent}
                   subtitle={t("ui.units.links.tenantSince", {
                     date: formatDate(current.startDate),
                   })}
@@ -181,7 +180,6 @@ export const UnitEditPage = () => {
               ) : null}
               <ActionLink
                 icon={domainVisuals.meters.icon}
-                iconBackground={domainVisuals.meters.accent}
                 onClick={() =>
                   navigate({
                     to: "/zaehler",
@@ -200,7 +198,6 @@ export const UnitEditPage = () => {
             <InfoCard title={t("ui.common.infoCards.actions")}>
               <ActionLink
                 icon={RiDeleteBinLine}
-                iconBackground="var(--color-rose-400)"
                 danger={true}
                 onClick={() => deletion.request(unit)}
               >

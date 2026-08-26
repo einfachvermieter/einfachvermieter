@@ -130,7 +130,7 @@ const DialogTitle = ({
 }: ComponentProps<typeof DialogPrimitive.Title>) => (
   <DialogPrimitive.Title
     data-slot="dialog-title"
-    className={cn("font-heading leading-none font-semibold", className)}
+    className={cn("leading-none font-semibold", className)}
     {...props}
   />
 );

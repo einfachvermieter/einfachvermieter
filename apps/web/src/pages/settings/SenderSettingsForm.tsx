@@ -14,7 +14,6 @@ import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
-import { gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import type { PendingLogo, SenderSettings } from "@/lib/senderSettings";
 import { SenderLogoSection } from "./SenderLogoSection";
@@ -82,7 +81,6 @@ export const SenderSettingsForm = ({
         <div>
           <SectionCard
             icon={RiContactsBook2Line}
-            iconBackground={gradients.buildings}
             title={t("ui.settings.sender.sections.contact")}
             description={t("ui.settings.sender.sections.contactDescription")}
           >
@@ -148,7 +146,6 @@ export const SenderSettingsForm = ({
 
           <SectionCard
             icon={RiBankLine}
-            iconBackground={gradients.money}
             title={t("ui.settings.sender.sections.bank")}
             description={t("ui.settings.sender.sections.bankDescription")}
           >
@@ -187,7 +184,6 @@ export const SenderSettingsForm = ({
 
           <SectionCard
             icon={RiImageLine}
-            iconBackground={gradients.statements}
             title={t("ui.settings.sender.logo.title")}
             description={t("ui.settings.sender.logo.description")}
           >

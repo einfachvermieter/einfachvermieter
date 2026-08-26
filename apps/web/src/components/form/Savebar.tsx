@@ -27,14 +27,17 @@ export const Savebar = ({
         damit Status und Buttons mit den Cards ausgereichtet sind */}
     <div className="mx-auto flex w-full max-w-310 items-center gap-3.5">
       {dirty ? (
-        <span className="flex items-center gap-1.75 text-sm text-amber-700 dark:text-amber-400">
-          <RiEditLine aria-hidden={true} className="size-3.75" />
+        <span className="flex items-center gap-1.75 text-sm text-muted-foreground">
+          <RiEditLine aria-hidden={true} className="size-3.75 text-honig-500" />
           {t("ui.common.savebar.unsavedChanges")}
         </span>
       ) : null}
       {savedAt && !dirty ? (
-        <span className="flex items-center gap-1.75 text-sm text-slate-400">
-          <RiCheckLine aria-hidden={true} className="size-3.75 text-teal-600" />
+        <span className="flex items-center gap-1.75 text-sm text-muted-foreground">
+          <RiCheckLine
+            aria-hidden={true}
+            className="size-3.75 text-limette-500"
+          />
           {t("ui.common.savebar.lastSaved", { date: savedAt })}
         </span>
       ) : null}

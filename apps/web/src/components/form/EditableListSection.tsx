@@ -35,11 +35,6 @@ export type EditableListSectionProps<T> = {
   icon: RemixiconComponentType;
 
   /**
-   * Farbe oder Verlauf
-   */
-  iconBackground: string;
-
-  /**
    * Avatar/Icon-Kachel einer Zeile. Ohne Angabe
    * in Zeilengröße (36px).
    */
@@ -117,7 +112,6 @@ export const EditableListSection = <T,>({
   emptyHint,
   addLabel,
   icon,
-  iconBackground,
   rowLeading,
   fieldKeys,
   rows,
@@ -179,7 +173,6 @@ export const EditableListSection = <T,>({
   return (
     <SectionCard
       icon={icon}
-      iconBackground={iconBackground}
       title={title}
       titleExtra={titleHelp}
       description={description}
@@ -215,11 +208,9 @@ export const EditableListSection = <T,>({
           <Fragment key={key.id}>
             <div
               data-invalid={rowErrorMessage ? true : undefined}
-              className="flex items-center gap-3.25 border-t border-border px-0.5 py-3.25 first:border-t-0 data-invalid:rounded-[12px] data-invalid:border data-invalid:border-destructive data-invalid:bg-destructive/5 data-invalid:px-3"
+              className="flex items-center gap-3.25 border-t border-border px-0.5 py-3.25 first:border-t-0 [[data-slot=inline-subform]+&]:border-t-0 data-invalid:rounded-xl data-invalid:border data-invalid:border-destructive data-invalid:bg-destructive/5 data-invalid:px-3"
             >
-              {rowLeading?.(row, index) ?? (
-                <IconTile icon={icon} size={36} background={iconBackground} />
-              )}
+              {rowLeading?.(row, index) ?? <IconTile icon={icon} size={36} />}
               <div className="min-w-0 flex-1">
                 {renderRow(row, index)}
                 {rowErrorMessage ? (
@@ -247,7 +238,7 @@ export const EditableListSection = <T,>({
                   <TooltipTrigger asChild={true}>
                     <Button
                       type="button"
-                      variant="ghostRed"
+                      variant="ghostDestructive"
                       size="icon-sm"
                       onClick={() => setDeleteIndex(index)}
                       aria-label={t("ui.common.action.delete")}

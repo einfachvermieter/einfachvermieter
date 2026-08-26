@@ -66,11 +66,6 @@ declare module "@tanstack/react-table" {
 const PAGE_SIZES = [25, 50, 100] as const;
 const SEARCH_DEBOUNCE_MS = 300;
 
-/**
- * Suchfeld erst ab dieser Zeilenzahl zeigen (progressive disclosure)
- */
-const SEARCH_MIN_ROWS = 10;
-
 const ServerSearchInput = ({
   value,
   onChange,
@@ -95,7 +90,7 @@ const ServerSearchInput = ({
   }, [draft, value, onChange]);
 
   return (
-    <InputGroup className="flex-1 bg-card sm:max-w-xs">
+    <InputGroup className="flex-1 sm:max-w-xs">
       <InputGroupInput
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
@@ -306,7 +301,7 @@ const DataTablePagination = <TData,>({
       <div className="flex items-center gap-2">
         <Label
           htmlFor={pageSizeId}
-          className="sr-only text-[13px] font-medium lg:not-sr-only"
+          className="sr-only text-sm font-medium lg:not-sr-only"
         >
           {t("ui.common.pagination.entriesPerPage")}
         </Label>
@@ -314,7 +309,7 @@ const DataTablePagination = <TData,>({
           value={String(currentPageSize)}
           onValueChange={(value) => table.setPageSize(Number(value))}
         >
-          <SelectTrigger size="sm" className="w-18 bg-card" id={pageSizeId}>
+          <SelectTrigger size="sm" className="w-18" id={pageSizeId}>
             <SelectValue placeholder={currentPageSize} />
           </SelectTrigger>
           <SelectContent>
@@ -326,7 +321,7 @@ const DataTablePagination = <TData,>({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex w-fit items-center justify-center text-[13px] font-medium text-muted-foreground">
+      <div className="flex w-fit items-center justify-center text-sm font-medium text-muted-foreground">
         {t("ui.common.pagination.pageOf", {
           page: currentPageIndex + 1,
           total: totalPages,
@@ -336,7 +331,7 @@ const DataTablePagination = <TData,>({
         <Button
           variant="outline"
           size="icon-sm"
-          className="hidden bg-card lg:flex"
+          className="hidden lg:flex"
           onClick={() => table.setPageIndex(0)}
           disabled={!table.getCanPreviousPage()}
         >
@@ -346,7 +341,6 @@ const DataTablePagination = <TData,>({
         <Button
           variant="outline"
           size="icon-sm"
-          className="bg-card"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
@@ -358,7 +352,6 @@ const DataTablePagination = <TData,>({
         <Button
           variant="outline"
           size="icon-sm"
-          className="bg-card"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
@@ -368,7 +361,7 @@ const DataTablePagination = <TData,>({
         <Button
           variant="outline"
           size="icon-sm"
-          className="hidden bg-card lg:flex"
+          className="hidden lg:flex"
           onClick={() => table.setPageIndex(table.getPageCount() - 1)}
           disabled={!table.getCanNextPage()}
         >
@@ -413,7 +406,7 @@ export const DataTable = <TData,>({
               cell: () => (
                 <RiArrowRightSLine
                   aria-hidden={true}
-                  className="size-4.5 text-slate-400"
+                  className="size-4 text-schiefer-400"
                 />
               ),
               meta: {
@@ -452,9 +445,7 @@ export const DataTable = <TData,>({
 
   let searchInput: ReactNode = null;
   if (server) {
-    const showSearch =
-      (totalRows ?? 0) >= SEARCH_MIN_ROWS || server.search.trim().length > 0;
-    searchInput = showSearch ? (
+    searchInput = (
       <ServerSearchInput
         value={server.search}
         onChange={server.onSearchChange}
@@ -462,7 +453,7 @@ export const DataTable = <TData,>({
           server.searchPlaceholder ?? t("ui.common.table.searchPlaceholder")
         }
       />
-    ) : null;
+    );
   } else if (clientFilterColumn) {
     searchInput = (
       <Input
@@ -473,7 +464,7 @@ export const DataTable = <TData,>({
         placeholder={
           filter?.placeholder ?? t("ui.common.table.searchPlaceholder")
         }
-        className="bg-card sm:max-w-xs"
+        className="sm:max-w-xs"
       />
     );
   }
@@ -490,7 +481,7 @@ export const DataTable = <TData,>({
       ) : null}
       <Card className="gap-0 py-0">
         <Table>
-          <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -517,11 +508,9 @@ export const DataTable = <TData,>({
             />
           </TableBody>
         </Table>
-        {table.getPageCount() > 1 ? (
-          <div className="border-t border-border px-5 py-3.5">
-            <DataTablePagination table={table} />
-          </div>
-        ) : null}
+        <div className="border-t border-border px-5 py-3.5">
+          <DataTablePagination table={table} />
+        </div>
       </Card>
     </div>
   );

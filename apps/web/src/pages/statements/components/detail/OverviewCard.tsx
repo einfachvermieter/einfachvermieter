@@ -3,7 +3,6 @@ import { formatEur } from "@einfachvermieter/shared";
 import { RiScales3Line } from "@remixicon/react";
 import { ResultRows } from "../../../../components/common/ResultRows";
 import { SectionCard } from "../../../../components/common/SectionCard";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 import { cn } from "../../../../lib/utils";
 
@@ -22,7 +21,6 @@ export const OverviewCard = ({ result }: { result: StatementResult }) => {
   return (
     <SectionCard
       icon={RiScales3Line}
-      iconBackground={gradients.statements}
       title={t("ui.statements.detail.overviewTitle")}
       description={t("ui.statements.detail.overviewDescription")}
     >
@@ -56,18 +54,14 @@ export const OverviewCard = ({ result }: { result: StatementResult }) => {
       />
       <div
         className={cn(
-          "mt-3.5 flex items-center justify-between rounded-[13px] px-4.25 py-3.25",
-          isRefund
-            ? "bg-teal-50 dark:bg-teal-950/30"
-            : "bg-rose-50 dark:bg-rose-950/30",
+          "mt-3.5 flex items-center justify-between rounded-lg px-4.25 py-3.25",
+          isRefund ? "bg-limette-50" : "bg-himbeere-50",
         )}
       >
         <span
           className={cn(
             "text-sm font-semibold",
-            isRefund
-              ? "text-teal-600 dark:text-teal-400"
-              : "text-rose-700 dark:text-rose-400",
+            isRefund ? "text-limette-700" : "text-himbeere-500",
           )}
         >
           {isRefund
@@ -76,10 +70,8 @@ export const OverviewCard = ({ result }: { result: StatementResult }) => {
         </span>
         <span
           className={cn(
-            "text-[19px] font-semibold tabular-nums",
-            isRefund
-              ? "text-teal-600 dark:text-teal-400"
-              : "text-rose-700 dark:text-rose-400",
+            "text-lg font-semibold tabular-nums",
+            isRefund ? "text-limette-700" : "text-himbeere-500",
           )}
         >
           {formatEur(Math.abs(result.balanceCents))}

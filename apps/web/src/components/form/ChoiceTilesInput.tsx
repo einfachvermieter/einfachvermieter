@@ -46,7 +46,10 @@ const tileLeading = (option: ChoiceTileOption): ReactNode => {
 
   const Icon = option.icon;
   return (
-    <Icon data-slot="tile-icon" className="size-4.25 shrink-0 text-slate-400" />
+    <Icon
+      data-slot="tile-icon"
+      className="size-4.25 shrink-0 text-muted-foreground"
+    />
   );
 };
 
@@ -105,7 +108,7 @@ export const ChoiceTilesInput = <T extends FieldValues>({
                 <label
                   key={option.value}
                   htmlFor={optionId}
-                  className="block cursor-pointer rounded-[13px] border-[1.5px] border-input bg-card px-4 py-3.5 transition hover:border-slate-400 has-data-checked:border-sky-700 has-data-disabled:cursor-not-allowed has-data-disabled:opacity-60 has-data-disabled:hover:border-input has-data-checked:**:data-[slot=tile-icon]:text-sky-700 has-data-checked:**:data-[slot=tile-title]:text-foreground"
+                  className="block cursor-pointer rounded-lg border-[1.5px] border-border bg-schiefer-50 px-4 py-3.5 transition has-data-checked:border-limette-700 has-data-checked:bg-limette-50 has-data-disabled:cursor-not-allowed has-data-disabled:opacity-60 has-data-checked:**:data-[slot=tile-icon]:text-limette-700 has-data-checked:**:data-[slot=tile-title]:text-foreground"
                 >
                   <RadioGroupItem
                     id={optionId}
@@ -115,13 +118,13 @@ export const ChoiceTilesInput = <T extends FieldValues>({
                   />
                   <span
                     data-slot="tile-title"
-                    className="flex items-center gap-2 text-sm font-semibold text-slate-400"
+                    className="flex items-center gap-2 text-sm font-semibold text-muted-foreground"
                   >
                     {tileLeading(option)}
                     {option.title}
                   </span>
                   {option.description ? (
-                    <span className="mt-1 block text-sm leading-normal text-slate-400">
+                    <span className="mt-1 block text-sm leading-normal text-muted-foreground">
                       {option.description}
                     </span>
                   ) : null}
