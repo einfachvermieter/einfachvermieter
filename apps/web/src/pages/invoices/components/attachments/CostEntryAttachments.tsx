@@ -32,7 +32,8 @@ import {
 import { t } from "../../../../lib/i18n";
 
 /**
- * Getönte 36-px-Kachel nach Dateityp: PDF rose, Bild teal, sonst slate.
+ * Getönte 36-px-Kachel nach Dateityp: PDF himbeere, Bild limette,
+ * sonst schiefer.
  */
 const AttachmentTile = ({ att }: { att: CostEntryAttachment }) => {
   if (isPdfAttachment(att)) {

@@ -69,7 +69,7 @@ export type EditableListSectionProps<T> = {
   resolveDefaultValues: (editIndex: number | null, current: T | undefined) => T;
 
   /**
-   * Rendert das Zeilen-Formular im sky-getönten Aufklapp-Bereich.
+   * Rendert das Zeilen-Formular im getönten Aufklapp-Bereich.
    */
   renderRowForm: (props: EditableListSectionRowFormProps<T>) => ReactNode;
 
