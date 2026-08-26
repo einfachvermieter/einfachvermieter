@@ -14,7 +14,7 @@ import { FieldGroup } from "@/components/ui/Field";
 import { useCurrentUser, useUpdateProfile } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { useGoBack } from "@/lib/useGoBack";
-import { SettingsLayout } from "./SettingsLayout";
+import { AccountLayout } from "./AccountLayout";
 
 export const ProfileSettingsPage = () => {
   const { data: user } = useCurrentUser();
@@ -38,7 +38,7 @@ export const ProfileSettingsPage = () => {
   };
 
   return (
-    <SettingsLayout
+    <AccountLayout
       active="profile"
       title={t("ui.settings.profile.title")}
       description={t("ui.settings.profile.description")}
@@ -78,6 +78,6 @@ export const ProfileSettingsPage = () => {
           onCancel={goHome}
         />
       </Form>
-    </SettingsLayout>
+    </AccountLayout>
   );
 };

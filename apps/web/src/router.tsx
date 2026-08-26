@@ -213,7 +213,7 @@ const redirectToSetupIfNeeded = async ({
 };
 
 /**
- * Passwort-Seite: im `local`-Auth-Modus gibt es kein Konto-Passwort.
+ * Konto-Seiten (Profil/Passwort): im `local`-Auth-Modus gibt es kein Konto.
  */
 const redirectAwayIfLocalAuth = async ({
   context,
@@ -1217,23 +1217,30 @@ const settingsIndexRoute = createRoute({
   path: "/einstellungen",
   beforeLoad: async ({ context }) => {
     await requireAuth({ context });
-    throw redirect({
-      to:
-        (await getSetupStatus(context))?.authMode === "local"
-          ? "/einstellungen/absender"
-          : "/einstellungen/profil",
-    });
+    throw redirect({ to: "/einstellungen/absender" });
+  },
+});
+
+/**
+ * Einstiegspunkt des Konto-Bereichs (Ziel der Breadcrumb)
+ */
+const accountIndexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/konto",
+  beforeLoad: async (args) => {
+    await redirectAwayIfLocalAuth(args);
+    throw redirect({ to: "/konto/profil" });
   },
 });
 
 const profileSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/einstellungen/profil",
+  path: "/konto/profil",
   beforeLoad: redirectAwayIfLocalAuth,
   component: ProfileSettingsPage,
   staticData: {
     crumb: () => [
-      { label: t("ui.common.crumbs.settings"), to: "/einstellungen" },
+      { label: t("ui.common.crumbs.account"), to: "/konto" },
       { label: t("ui.common.crumbs.settingsProfile") },
     ],
   },
@@ -1280,12 +1287,12 @@ const internetSettingsRoute = createRoute({
 
 const passwordSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/einstellungen/passwort",
+  path: "/konto/passwort",
   beforeLoad: redirectAwayIfLocalAuth,
   component: PasswordSettingsPage,
   staticData: {
     crumb: () => [
-      { label: t("ui.common.crumbs.settings"), to: "/einstellungen" },
+      { label: t("ui.common.crumbs.account"), to: "/konto" },
       { label: t("ui.common.crumbs.settingsPassword") },
     ],
   },
@@ -1329,6 +1336,7 @@ const routeTree = rootRoute.addChildren([
   statementCreateRoute,
   statementDetailRoute,
   settingsIndexRoute,
+  accountIndexRoute,
   profileSettingsRoute,
   senderSettingsRoute,
   aiSettingsRoute,

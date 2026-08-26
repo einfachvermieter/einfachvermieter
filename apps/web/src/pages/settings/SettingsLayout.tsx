@@ -1,9 +1,7 @@
 import {
   RiContactsBook2Line,
   RiGlobalLine,
-  RiLockPasswordLine,
   RiSparkling2Line,
-  RiUserLine,
 } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
@@ -12,21 +10,19 @@ import { PageHeaderIcon } from "@/components/common/PageHeaderIcon";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
-import { useAuthMode } from "@/lib/setup";
 
-type SettingsTab = "profile" | "sender" | "ai" | "internet" | "password";
+type SettingsTab = "sender" | "ai" | "internet";
 
 const TAB_ROUTES: Record<SettingsTab, string> = {
-  profile: "/einstellungen/profil",
   sender: "/einstellungen/absender",
   ai: "/einstellungen/ki",
   internet: "/einstellungen/internet",
-  password: "/einstellungen/passwort",
 };
 
 /**
- * Rahmen des Einstellungen-Bereichs: gemeinsamer Seitenkopf und
- * Unternavigation
+ * Rahmen des Einstellungen-Bereichs (App-Einstellungen): gemeinsamer
+ * Seitenkopf und Unternavigation. Profil und Passwort des Anmelde-Kontos
+ * liegen im eigenen Konto-Bereich (`AccountLayout`).
  */
 export const SettingsLayout = ({
   active,
@@ -40,7 +36,6 @@ export const SettingsLayout = ({
   children: ReactNode;
 }) => {
   const navigate = useNavigate();
-  const authMode = useAuthMode();
 
   return (
     <div className="space-y-6 pb-24">
@@ -60,14 +55,6 @@ export const SettingsLayout = ({
           }}
         >
           <TabsList variant="default">
-            {/* Desktop-App (`local`): dort gibt es kein Anmelde-Konto,
-                also auch keine Profil- und Passwort-Seite. */}
-            {authMode !== "local" ? (
-              <TabsTrigger value="profile">
-                <RiUserLine />
-                {t("ui.settings.nav.profile")}
-              </TabsTrigger>
-            ) : null}
             <TabsTrigger value="sender">
               <RiContactsBook2Line />
               {t("ui.settings.nav.sender")}
@@ -80,12 +67,6 @@ export const SettingsLayout = ({
               <RiGlobalLine />
               {t("ui.settings.nav.internet")}
             </TabsTrigger>
-            {authMode !== "local" ? (
-              <TabsTrigger value="password">
-                <RiLockPasswordLine />
-                {t("ui.settings.nav.password")}
-              </TabsTrigger>
-            ) : null}
           </TabsList>
         </Tabs>
       </div>

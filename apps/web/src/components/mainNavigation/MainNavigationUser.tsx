@@ -1,8 +1,8 @@
 import {
   RiExpandUpDownLine,
-  RiLockPasswordLine,
   RiLogoutBoxRLine,
   RiUserLine,
+  RiUserSettingsLine,
 } from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -76,9 +76,9 @@ export const MainNavigationUser = ({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild={true}>
-              <Link to="/einstellungen/passwort">
-                <RiLockPasswordLine />
-                {t("ui.navigation.password")}
+              <Link to="/konto/profil">
+                <RiUserSettingsLine />
+                {t("ui.navigation.userAccount")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

@@ -291,7 +291,7 @@
       },
       "dashboard": "Übersicht",
       "configuration": "Einstellungen",
-      "password": "Passwort",
+      "userAccount": "Konto verwalten",
       "buildings": "Gebäude",
       "units": "Wohnungen",
       "meters": "Zähler",
@@ -369,6 +369,7 @@
         "settingsSender": "Absenderdaten",
         "settingsAi": "KI-Anbieter",
         "settingsInternet": "Internetzugriffe",
+        "account": "Konto",
         "settingsPassword": "Passwort ändern",
         "settingsProfile": "Profil"
       },

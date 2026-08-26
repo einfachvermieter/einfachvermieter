@@ -5,8 +5,8 @@ import { Spinner } from "@/components/common/Spinner";
 import { changePassword, passwordPolicyQueryOptions } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { useGoBack } from "@/lib/useGoBack";
+import { AccountLayout } from "./AccountLayout";
 import { PasswordChangeForm } from "./PasswordChangeForm";
-import { SettingsLayout } from "./SettingsLayout";
 
 export const PasswordSettingsPage = () => {
   const { data: policy } = useQuery(passwordPolicyQueryOptions);
@@ -22,7 +22,7 @@ export const PasswordSettingsPage = () => {
   };
 
   return (
-    <SettingsLayout
+    <AccountLayout
       active="password"
       title={t("ui.settings.password.title")}
       description={t("ui.settings.password.description")}
@@ -38,6 +38,6 @@ export const PasswordSettingsPage = () => {
           <Spinner className="size-6 text-muted-foreground" />
         </div>
       )}
-    </SettingsLayout>
+    </AccountLayout>
   );
 };
