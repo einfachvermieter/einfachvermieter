@@ -9,23 +9,23 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary font-semibold text-primary-foreground hover:bg-limette-400",
+          "bg-primary font-semibold text-primary-foreground hover:bg-azur-600",
         // Sekundärbutton: weiß mit Rahmen
         outline:
           "border-border bg-background hover:bg-muted aria-expanded:bg-muted",
         secondary:
           "border-border bg-background hover:bg-muted aria-expanded:bg-muted",
-        addLink: "text-limette-700 underline-offset-3 hover:underline",
+        addLink: "text-azur-700 underline-offset-3 hover:underline",
         ghost:
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
         ghostMuted:
           "text-muted-foreground hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
         ghostDestructive: "text-himbeere-500 hover:bg-himbeere-50",
         helpHint:
-          "text-limette-700 hover:rounded-full hover:bg-limette-800 hover:text-white aria-expanded:rounded-full",
+          "text-azur-700 hover:rounded-full hover:bg-azur-800 hover:text-white aria-expanded:rounded-full",
         destructive:
           "bg-destructive font-semibold text-white hover:bg-himbeere-600 focus-visible:ring-destructive",
-        link: "text-limette-700 underline-offset-4 hover:underline",
+        link: "text-azur-700 underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 gap-2 px-4 in-data-[slot=button-group]:rounded-md",

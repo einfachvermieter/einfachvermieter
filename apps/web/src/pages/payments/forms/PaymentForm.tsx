@@ -12,20 +12,20 @@ import {
   splitSumByContract,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiFlashlightLine, RiScissorsCutLine } from "@remixicon/react";
+import {
+  type RemixiconComponentType,
+  RiFlashlightLine,
+  RiScissorsCutLine,
+} from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { DateInput } from "@/components/form/DateInput";
-import { Form } from "@/components/form/Form";
-import { InlineSubform } from "@/components/form/InlineSubform";
-import { Savebar } from "@/components/form/Savebar";
+import { FormSheet } from "@/components/form/FormSheet";
 import { SelectInput, type SelectOption } from "@/components/form/SelectInput";
-import { SubformShell } from "@/components/form/SubformShell";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
-import { Card, CardContent } from "@/components/ui/Card";
 import { FieldGroup } from "@/components/ui/Field";
 import { formatForMonth } from "@/lib/dateInput";
 import {
@@ -41,41 +41,33 @@ const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/u;
 
 type Props = {
   mode: "create" | "edit";
+  title: string;
+  icon?: RemixiconComponentType;
   tenantOptions: SelectOption[];
   tenantFieldDisabled?: boolean;
   lockedPurposeKind?: PaymentPurposeKind;
   allowedPurposeKinds?: PaymentPurposeKind[];
   defaultValues: PaymentFormValues;
   onSubmit: (values: PaymentFormValues) => Promise<void>;
-  onCancel: () => void;
-  savedAt?: string;
-  /**
-   * "page" (Standard): eigenes Formular mit Karte und Savebar.
-   * "inline": getöntes Aufklapp-Subform (SubformShell) ohne eigene Karte,
-   * z. B. eingebettet im Mieterkonto.
-   */
-  variant?: "page" | "inline";
-
-  /**
-   * Meldet die aktuelle Mieter-Auswahl nach außen, damit die
-   * Kontext-Karte der Anlege-Seite dem Wechsel folgt
-   */
-  onTenantChange?: (tenantId: string) => void;
+  onClose: () => void;
 };
 
+/**
+ * Zahlungs-Formular im FormSheet: Mieter, Datum, Zweck und die
+ * zweckabhängigen Felder (Monat mit Vertrags-Info, Abrechnung, Gebühr).
+ */
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: Markup
 export const PaymentForm = ({
   mode,
+  title,
+  icon,
   tenantOptions,
   tenantFieldDisabled = false,
   lockedPurposeKind,
   allowedPurposeKinds = [...paymentPurposeKinds],
   defaultValues,
   onSubmit,
-  onCancel,
-  savedAt,
-  variant = "page",
-  onTenantChange,
+  onClose,
 }: Props) => {
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
@@ -96,15 +88,10 @@ export const PaymentForm = ({
     };
   }, []);
 
-  const submitting = form.formState.isSubmitting;
   const purposeKind = form.watch("purposeKind");
   const tenantId = form.watch("tenantId");
   const forMonth = form.watch("forMonth");
   const inputMode = form.watch("inputMode");
-
-  useEffect(() => {
-    onTenantChange?.(tenantId);
-  }, [onTenantChange, tenantId]);
 
   const monthQueryEnabled = purposeKind === "month" && tenantId.length > 0;
   const { data: monthRows } = useQuery({
@@ -260,151 +247,27 @@ export const PaymentForm = ({
     await onSubmit(values);
   };
 
-  const inputModeTiles = (
-    <ChoiceTilesInput
-      control={form.control}
-      name="inputMode"
-      options={[
-        {
-          value: "sum",
-          icon: RiFlashlightLine,
-          title: t("ui.payments.fields.inputModeSum"),
-          description: t("ui.payments.fields.inputModeSumHint"),
-        },
-        {
-          value: "split",
-          icon: RiScissorsCutLine,
-          title: t("ui.payments.fields.inputModeSplit"),
-          description: t("ui.payments.fields.inputModeSplitHint"),
-        },
-      ]}
-    />
-  );
-
-  const referenceField = (
-    <TextInput
-      control={form.control}
-      name="reference"
-      optional={true}
-      label={t("ui.payments.fields.reference")}
-      placeholder={t("ui.payments.fields.referencePlaceholder")}
-    />
-  );
-
-  const fields = (
-    <FieldGroup className="gap-4">
-      <SelectInput
-        control={form.control}
-        name="tenantId"
-        label={t("ui.common.columns.tenant")}
-        disabled={tenantFieldDisabled}
-        options={tenantOptions}
-      />
-      <DateInput
-        control={form.control}
-        name="paymentDate"
-        label={t("ui.payments.columns.date")}
-        startMonth={calendarStart}
-        endMonth={calendarEnd}
-      />
-      <SelectInput
-        control={form.control}
-        name="purposeKind"
-        label={t("ui.payments.fields.purposeKind")}
-        disabled={mode === "edit" || lockedPurposeKind !== undefined}
-        options={allowedPurposeKinds.map((value) => ({
-          value,
-          label: t(`ui.payments.purposeKinds.${value}`),
-        }))}
-      />
-
-      {purposeKind === "month" ? (
-        <>
-          <SelectInput
-            control={form.control}
-            name="forMonth"
-            label={t("ui.payments.fields.forMonth")}
-            options={monthOptions}
-            placeholder={t("ui.payments.fields.forMonthPlaceholder")}
-          />
-          {monthRow ? <ContractInfo row={monthRow} mode={mode} /> : null}
-          {inputModeTiles}
-          {inputMode === "sum" ? (
-            <TextInput
-              control={form.control}
-              name="sumInput"
-              inputMode="decimal"
-              placeholder={t("ui.common.placeholders.amount")}
-              label={t("ui.payments.fields.sumEur")}
-              description={t("ui.payments.fields.sumHint")}
-              suffix="€"
-              inputClassName="max-w-xs"
-            />
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              <TextInput
-                control={form.control}
-                name="baseRentInput"
-                inputMode="decimal"
-                placeholder={t("ui.common.placeholders.amount")}
-                label={t("ui.payments.fields.baseRentEur")}
-                suffix="€"
-              />
-              <TextInput
-                control={form.control}
-                name="advanceInput"
-                inputMode="decimal"
-                placeholder={t("ui.common.placeholders.amount")}
-                label={t("ui.payments.fields.advanceEur")}
-                suffix="€"
-              />
-            </div>
-          )}
-        </>
-      ) : null}
-
-      {purposeKind === "statement" ? (
+  return (
+    <FormSheet
+      form={form}
+      icon={icon}
+      title={title}
+      submitLabel={
+        mode === "create"
+          ? t("ui.common.action.record")
+          : t("ui.common.action.save")
+      }
+      onSubmit={handleSubmit}
+      onClose={onClose}
+    >
+      <FieldGroup className="gap-4">
         <SelectInput
           control={form.control}
-          name="forStatementId"
-          label={t("ui.payments.fields.forStatement")}
-          options={statementOptions}
-          disabled={lockedPurposeKind === "statement"}
+          name="tenantId"
+          label={t("ui.common.columns.tenant")}
+          disabled={tenantFieldDisabled}
+          options={tenantOptions}
         />
-      ) : null}
-
-      {purposeKind === "fee" ? (
-        <SelectInput
-          control={form.control}
-          name="forFeeId"
-          label={t("ui.payments.fields.forFee")}
-          options={feeOptions}
-          disabled={lockedPurposeKind === "fee"}
-        />
-      ) : null}
-
-      {purposeKind !== "month" ? (
-        <TextInput
-          control={form.control}
-          name="amountInput"
-          inputMode="decimal"
-          placeholder={t("ui.common.placeholders.amount")}
-          label={t("ui.payments.fields.amountEur")}
-          description={t("ui.payments.fields.amountSignHint")}
-          suffix="€"
-        />
-      ) : null}
-
-      {referenceField}
-    </FieldGroup>
-  );
-
-  /**
-   * Inline-Variante (Mieterkonto): fester Mieter + Monatszweck
-   */
-  const inlineFields = (
-    <FieldGroup className="gap-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <DateInput
           control={form.control}
           name="paymentDate"
@@ -414,88 +277,118 @@ export const PaymentForm = ({
         />
         <SelectInput
           control={form.control}
-          name="forMonth"
-          label={t("ui.payments.fields.forMonth")}
-          options={monthOptions}
-          placeholder={t("ui.payments.fields.forMonthPlaceholder")}
+          name="purposeKind"
+          label={t("ui.payments.fields.purposeKind")}
+          disabled={mode === "edit" || lockedPurposeKind !== undefined}
+          options={allowedPurposeKinds.map((value) => ({
+            value,
+            label: t(`ui.payments.purposeKinds.${value}`),
+          }))}
         />
-      </div>
-      {monthRow ? <ContractInfo row={monthRow} mode={mode} /> : null}
-      {inputModeTiles}
-      {inputMode === "sum" ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <TextInput
-            control={form.control}
-            name="sumInput"
-            inputMode="decimal"
-            placeholder={t("ui.common.placeholders.amount")}
-            label={t("ui.payments.fields.sumEur")}
-            description={t("ui.payments.fields.sumHint")}
-            suffix="€"
-          />
-          {referenceField}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <TextInput
-            control={form.control}
-            name="baseRentInput"
-            inputMode="decimal"
-            placeholder={t("ui.common.placeholders.amount")}
-            label={t("ui.payments.fields.baseRentEur")}
-            suffix="€"
-          />
-          <TextInput
-            control={form.control}
-            name="advanceInput"
-            inputMode="decimal"
-            placeholder={t("ui.common.placeholders.amount")}
-            label={t("ui.payments.fields.advanceEur")}
-            suffix="€"
-          />
-          {referenceField}
-        </div>
-      )}
-    </FieldGroup>
-  );
 
-  if (variant === "inline") {
-    return (
-      <InlineSubform>
-        <SubformShell
-          onSubmit={() => {
-            form
-              .handleSubmit(handleSubmit)()
-              .catch(() => undefined);
-          }}
-          onCancel={onCancel}
-          submitLabel={t("ui.payments.add")}
-        >
-          {inlineFields}
-        </SubformShell>
-      </InlineSubform>
-    );
-  }
+        {purposeKind === "month" ? (
+          <>
+            <SelectInput
+              control={form.control}
+              name="forMonth"
+              label={t("ui.payments.fields.forMonth")}
+              options={monthOptions}
+              placeholder={t("ui.payments.fields.forMonthPlaceholder")}
+            />
+            {monthRow ? <ContractInfo row={monthRow} mode={mode} /> : null}
+            <ChoiceTilesInput
+              control={form.control}
+              name="inputMode"
+              options={[
+                {
+                  value: "sum",
+                  icon: RiFlashlightLine,
+                  title: t("ui.payments.fields.inputModeSum"),
+                  description: t("ui.payments.fields.inputModeSumHint"),
+                },
+                {
+                  value: "split",
+                  icon: RiScissorsCutLine,
+                  title: t("ui.payments.fields.inputModeSplit"),
+                  description: t("ui.payments.fields.inputModeSplitHint"),
+                },
+              ]}
+            />
+            {inputMode === "sum" ? (
+              <TextInput
+                control={form.control}
+                name="sumInput"
+                inputMode="decimal"
+                placeholder={t("ui.common.placeholders.amount")}
+                label={t("ui.payments.fields.sumEur")}
+                description={t("ui.payments.fields.sumHint")}
+                suffix="€"
+                inputClassName="max-w-xs"
+              />
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <TextInput
+                  control={form.control}
+                  name="baseRentInput"
+                  inputMode="decimal"
+                  placeholder={t("ui.common.placeholders.amount")}
+                  label={t("ui.payments.fields.baseRentEur")}
+                  suffix="€"
+                />
+                <TextInput
+                  control={form.control}
+                  name="advanceInput"
+                  inputMode="decimal"
+                  placeholder={t("ui.common.placeholders.amount")}
+                  label={t("ui.payments.fields.advanceEur")}
+                  suffix="€"
+                />
+              </div>
+            )}
+          </>
+        ) : null}
 
-  return (
-    <Form form={form} onSubmit={handleSubmit}>
-      <fieldset disabled={submitting} className="contents">
-        <Card>
-          <CardContent>{fields}</CardContent>
-        </Card>
-      </fieldset>
-      <Savebar
-        dirty={form.formState.isDirty}
-        savedAt={savedAt}
-        submitting={submitting}
-        onCancel={onCancel}
-        submitLabel={
-          mode === "create"
-            ? t("ui.common.action.record")
-            : t("ui.common.action.save")
-        }
-      />
-    </Form>
+        {purposeKind === "statement" ? (
+          <SelectInput
+            control={form.control}
+            name="forStatementId"
+            label={t("ui.payments.fields.forStatement")}
+            options={statementOptions}
+            disabled={lockedPurposeKind === "statement"}
+          />
+        ) : null}
+
+        {purposeKind === "fee" ? (
+          <SelectInput
+            control={form.control}
+            name="forFeeId"
+            label={t("ui.payments.fields.forFee")}
+            options={feeOptions}
+            disabled={lockedPurposeKind === "fee"}
+          />
+        ) : null}
+
+        {purposeKind !== "month" ? (
+          <TextInput
+            control={form.control}
+            name="amountInput"
+            inputMode="decimal"
+            placeholder={t("ui.common.placeholders.amount")}
+            label={t("ui.payments.fields.amountEur")}
+            description={t("ui.payments.fields.amountSignHint")}
+            suffix="€"
+          />
+        ) : null}
+
+        <TextInput
+          control={form.control}
+          name="reference"
+          optional={true}
+          label={t("ui.payments.fields.reference")}
+          placeholder={t("ui.payments.fields.referencePlaceholder")}
+        />
+      </FieldGroup>
+    </FormSheet>
   );
 };
 

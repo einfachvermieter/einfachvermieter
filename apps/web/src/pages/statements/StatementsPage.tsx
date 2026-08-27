@@ -1,9 +1,9 @@
 import { formatName } from "@einfachvermieter/shared";
 import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
@@ -29,6 +29,7 @@ import {
   statementsOverviewQueryOptions,
 } from "../../lib/statements";
 import { useServerTableState } from "../../lib/tableState";
+import { StatementCreateSheet } from "./StatementCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<StatementSortColumn> = new Set([
   "tenant",
@@ -71,6 +72,7 @@ export const StatementsPage = () => {
     storageKey: "statements",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -188,13 +190,11 @@ export const StatementsPage = () => {
         subLoading={!data}
         action={
           canAddStatement ? (
-            <Button asChild={true}>
-              <Link to="/abrechnungen/neu">
-                <RiAddLine />
-                <span className="hidden sm:inline">
-                  {t("ui.statements.addStatement")}
-                </span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">
+                {t("ui.statements.addStatement")}
+              </span>
             </Button>
           ) : undefined
         }
@@ -224,6 +224,10 @@ export const StatementsPage = () => {
           searchPlaceholder: t("ui.statements.searchPlaceholder"),
         }}
       />
+
+      {createOpen ? (
+        <StatementCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

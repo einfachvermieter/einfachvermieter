@@ -1,6 +1,4 @@
 import { formatDate, formatEur } from "@einfachvermieter/shared";
-import { RiPencilLine } from "@remixicon/react";
-import { Link } from "@tanstack/react-router";
 import { RowActions } from "@/components/RowActions";
 import {
   Table,
@@ -20,8 +18,8 @@ import type { useDeleteResource } from "@/lib/useDeleteResource";
 
 type AccountPaymentsTableProps = {
   rows: Payment[];
-  tenantId: string;
   deletion: ReturnType<typeof useDeleteResource<Payment>>;
+  onEditPayment: (payment: Payment) => void;
 };
 
 /**
@@ -29,8 +27,8 @@ type AccountPaymentsTableProps = {
  */
 export const AccountPaymentsTable = ({
   rows,
-  tenantId,
   deletion,
+  onEditPayment,
 }: AccountPaymentsTableProps) => {
   if (rows.length === 0) {
     return (
@@ -61,15 +59,7 @@ export const AccountPaymentsTable = ({
             <TableCell className="px-4 py-3">
               <RowActions
                 isDeleting={payment.id === deletion.deletingId}
-                editLink={
-                  <Link
-                    to="/zahlungen/$paymentId/bearbeiten"
-                    params={{ paymentId: payment.id }}
-                    search={{ tenantId }}
-                  >
-                    <RiPencilLine />
-                  </Link>
-                }
+                onEdit={() => onEditPayment(payment)}
                 onDelete={() => deletion.request(payment)}
               />
             </TableCell>

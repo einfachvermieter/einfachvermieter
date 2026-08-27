@@ -103,6 +103,13 @@ export type EditableListSectionProps<T> = {
   onFormCancel?: () => void;
 
   footer?: ReactNode;
+
+  /**
+   * Card zugeklappt starten, `defaultOpen` steuert den
+   * Anfangszustand, z.B. offen bei vorhandenen Einträgen
+   */
+  collapsible?: boolean;
+  defaultOpen?: boolean;
 };
 
 export const EditableListSection = <T,>({
@@ -128,6 +135,8 @@ export const EditableListSection = <T,>({
   defaultOpenAdd = false,
   onFormCancel,
   footer,
+  collapsible = false,
+  defaultOpen = false,
 }: EditableListSectionProps<T>) => {
   const [editTarget, setEditTarget] = useState<number | "new" | null>(
     defaultOpenAdd ? "new" : null,
@@ -176,6 +185,8 @@ export const EditableListSection = <T,>({
       title={title}
       titleExtra={titleHelp}
       description={description}
+      collapsible={collapsible}
+      defaultOpen={defaultOpen}
       action={
         <Button
           type="button"

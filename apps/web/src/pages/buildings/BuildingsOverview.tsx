@@ -84,7 +84,7 @@ export const BuildingsOverview = () => {
           headerClassName: "text-right",
         },
       },
-      // @todo: Löschen bleibt hier, bis die Gebäude-Detailseite eine Aktionen-Karte hat
+      // @todo: Löschen bleibt hier, bis die Gebäude-Detailseite eine Action-Card hat
       rowActionsColumn<Building>({ deletion }),
     ],
     [deletion],

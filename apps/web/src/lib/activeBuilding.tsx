@@ -31,10 +31,21 @@ const ActiveBuildingContext = createContext<ActiveBuildingValue | null>(null);
 
 export const ActiveBuildingProvider = ({
   children,
+  enabled = true,
 }: {
   children: ReactNode;
+
+  /**
+   * Auf Anmelde-/Einrichtungsseiten gibt es keine Gebäude zu laden.
+   * Provider kann trotzdem gemountet bleiben, damit er nicht beim
+   * Rendern plötzlich weg ist
+   */
+  enabled?: boolean;
 }) => {
-  const { data: buildings, isPending } = useQuery(buildingsQueryOptions);
+  const { data: buildings, isPending } = useQuery({
+    ...buildingsQueryOptions,
+    enabled,
+  });
   const [storedId, setStoredId] = useState<string | undefined>(
     readStoredBuildingId,
   );

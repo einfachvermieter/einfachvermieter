@@ -32,7 +32,7 @@ import {
 import { t } from "../../../../lib/i18n";
 
 /**
- * Getönte 36-px-Kachel nach Dateityp: PDF himbeere, Bild limette,
+ * Getönte 36-px-Kachel nach Dateityp: PDF himbeere, Bild azur,
  * sonst schiefer.
  */
 const AttachmentTile = ({ att }: { att: CostEntryAttachment }) => {
@@ -45,7 +45,7 @@ const AttachmentTile = ({ att }: { att: CostEntryAttachment }) => {
   }
   if (isImageAttachment(att)) {
     return (
-      <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-limette-50 text-limette-700">
+      <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-azur-50 text-azur-700">
         <RiImageLine className="size-4.5" aria-hidden={true} />
       </div>
     );

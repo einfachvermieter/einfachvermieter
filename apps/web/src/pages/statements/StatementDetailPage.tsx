@@ -3,27 +3,25 @@ import {
   formatDate,
   formatEur,
   formatName,
-  groupCalcWarnings,
   hasHeatingBreakdown,
   isoDatePlusOneYear,
-  isTenantWarning,
   todayIso,
 } from "@einfachvermieter/shared";
 import {
-  RiBuildingLine,
+  RiArrowDownSLine,
   RiCloseCircleLine,
   RiDeleteBinLine,
   RiDownloadLine,
   RiFileCopy2Line,
+  RiFilePdf2Line,
   RiLockLine,
 } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ActionLink } from "../../components/common/ActionLink";
+import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { Fragment, type ReactNode, useState } from "react";
 import { Description } from "../../components/common/Description";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { InfoCard } from "../../components/common/InfoCard";
+import { MiniKpiRow } from "../../components/common/MiniKpiRow";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { DestructiveConfirmDialog } from "../../components/DestructiveConfirmDialog";
@@ -41,6 +39,7 @@ import {
 } from "../../components/ui/AlertDialog";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
+import { ButtonGroup } from "../../components/ui/ButtonGroup";
 import {
   Card,
   CardAction,
@@ -49,6 +48,12 @@ import {
   CardTitle,
 } from "../../components/ui/Card";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../components/ui/DropdownMenu";
+import {
   Tabs,
   TabsContent,
   TabsList,
@@ -56,14 +61,9 @@ import {
 } from "../../components/ui/Tabs";
 import { Textarea } from "../../components/ui/Textarea";
 import { api } from "../../lib/api";
-import { buildingsQueryOptions } from "../../lib/buildings";
 import { climateFactorsQueryOptions } from "../../lib/climateFactors";
 import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
-import {
-  heatingIdentityLabel,
-  heatingSettingsListQueryOptions,
-} from "../../lib/heating";
 import { t } from "../../lib/i18n";
 import {
   type StatementDetail,
@@ -81,6 +81,7 @@ import { OccupancyCard } from "./components/detail/OccupancyCard";
 import { OperatingCostsCard } from "./components/detail/OperatingCostsCard";
 import { OverviewCard } from "./components/detail/OverviewCard";
 import { PaymentsCard } from "./components/detail/PaymentsCard";
+import { StatementFinalizeDialog } from "./components/detail/StatementFinalizeDialog";
 import { TaxableLaborCard } from "./components/detail/TaxableLaborCard";
 
 const routeApi = getRouteApi("/abrechnungen/$statementId");
@@ -116,8 +117,8 @@ const resolveDisplayResult = (
 };
 
 /**
- * Status-Punkt-Pill der Abrechnung (Entwurf/finalisiert/storniert/ersetzt),
- * für Hero-Meta und Infospalte.
+ * Status-Punkt-Pill der Abrechnung (Entwurf/finalisiert/storniert/ersetzt)
+ * für die Unterzeile im Seitenkopf.
  */
 const renderStatusBadge = (statement: StatementDetail) => {
   switch (statement.status) {
@@ -151,9 +152,56 @@ const renderStatusBadge = (statement: StatementDetail) => {
 };
 
 /**
+ * Kennzahl-Kacheln des Übersicht-Tabs
+ */
+const buildKpiItems = (
+  result: StatementResult,
+  tenantName: string,
+  unitName: string | undefined,
+) => {
+  const isRefund = result.balanceCents <= 0;
+  const paymentCount = result.payments?.length ?? 0;
+  let balanceHint: string | undefined;
+  if (tenantName) {
+    balanceHint = isRefund
+      ? t("ui.statements.detail.kpi.refundHint", { tenant: tenantName })
+      : t("ui.statements.detail.kpi.arrearsHint", { tenant: tenantName });
+  }
+  return [
+    {
+      label: t("ui.statements.detail.totalCosts"),
+      value: formatEur(result.totalCostsCents),
+      hint: unitName
+        ? t("ui.statements.detail.kpi.costsHint", { unit: unitName })
+        : undefined,
+    },
+    {
+      label: t("ui.statements.detail.advances"),
+      value: formatEur(result.totalAdvancesCents),
+      hint:
+        paymentCount > 0
+          ? t("ui.statements.detail.kpi.advancesHint", { count: paymentCount })
+          : undefined,
+    },
+    {
+      label: isRefund
+        ? t("ui.statements.detail.info.creditLabel")
+        : t("ui.statements.detail.additionalPayment"),
+      value: (
+        <span className={isRefund ? "text-limette-700" : "text-himbeere-500"}>
+          {formatEur(Math.abs(result.balanceCents))}
+        </span>
+      ),
+      hint: balanceHint,
+    },
+  ];
+};
+
+/**
  * Tab-Leiste + Inhalte der Abrechnungs-Detailseite. Tabs ohne Datenlage
  * (Zahlungen, Belegung, § 35a, Heizung) werden ausgeblendet, damit der Nutzer
- * nicht in leeren Ansichten landet.
+ * nicht in leeren Ansichten landet. Die PDF-Vorschau ist ein verstecktes
+ * Tab-Ziel, erreichbar über den Button im Seitenkopf.
  */
 const StatementTabs = ({
   result,
@@ -164,6 +212,8 @@ const StatementTabs = ({
   periodEnd,
   pdfSrc,
   pdfFilename,
+  tenantName,
+  unitName,
 }: {
   result: StatementResult;
   activeTab: string;
@@ -173,6 +223,8 @@ const StatementTabs = ({
   periodEnd: string;
   pdfSrc: string;
   pdfFilename: string;
+  tenantName: string;
+  unitName: string | undefined;
 }) => {
   const {
     heatingDetail,
@@ -183,8 +235,8 @@ const StatementTabs = ({
     taxableLabor !== undefined && taxableLabor.byCategory.length > 0;
   const payments = result.payments ?? [];
   const hasPayments = payments.length > 0;
-  // Analog zu PDF-Anhängen: Rechenweg-Karte nur, wenn das PDF den
-  // Heizkosten-Anhang druckt; § 6a-Karte nur, wenn die Seite nicht in der
+  // Analog zu PDF-Anhängen: Rechenweg-Card nur, wenn das PDF den
+  // Heizkosten-Anhang druckt; § 6a-Card nur, wenn die Seite nicht in der
   // Heizkonfiguration abgewählt wurde.
   const showHeatingBreakdown = heatingDetail
     ? hasHeatingBreakdown(heatingDetail, result.tenantPeriod, result.period)
@@ -192,6 +244,9 @@ const StatementTabs = ({
   const showBillingInfo =
     heatingDetail !== undefined && !heatingDetail.billingInfoOmitted;
   const showHeatingTab = showHeatingBreakdown || showBillingInfo;
+
+  const kpis = buildKpiItems(result, tenantName, unitName);
+
   return (
     <Tabs value={activeTab} onValueChange={onTabChange}>
       <TabsList variant="pills">
@@ -201,6 +256,11 @@ const StatementTabs = ({
         <TabsTrigger value="kosten">
           {t("ui.statements.detail.tabs.operatingCosts")}
         </TabsTrigger>
+        {showHeatingTab ? (
+          <TabsTrigger value="heizkosten">
+            {t("ui.statements.detail.tabs.heating")}
+          </TabsTrigger>
+        ) : null}
         {hasPayments ? (
           <TabsTrigger value="zahlungen">
             {t("ui.statements.detail.tabs.payments")}
@@ -216,20 +276,22 @@ const StatementTabs = ({
             {t("ui.statements.detail.tabs.taxableLabor")}
           </TabsTrigger>
         ) : null}
-        {showHeatingTab ? (
-          <TabsTrigger value="heizkosten">
-            {t("ui.statements.detail.tabs.heating")}
-          </TabsTrigger>
-        ) : null}
-        <TabsTrigger value="vorauszahlung">
-          {t("ui.statements.detail.tabs.advance")}
-        </TabsTrigger>
-        <TabsTrigger value="pdf">
-          {t("ui.statements.detail.tabs.pdf")}
-        </TabsTrigger>
       </TabsList>
       <TabsContent value="uebersicht">
-        <OverviewCard result={result} />
+        <div className="space-y-5">
+          <MiniKpiRow items={kpis} />
+          <AdvanceAdjustmentCard
+            statementId={statementId}
+            isDraft={isDraft}
+            detail={result.advanceAdjustment}
+            lines={result.lines}
+            periodEnd={periodEnd}
+          />
+          <OverviewCard
+            result={result}
+            onShowDetails={() => onTabChange("kosten")}
+          />
+        </div>
       </TabsContent>
       <TabsContent value="kosten">
         <OperatingCostsCard result={result} />
@@ -283,15 +345,6 @@ const StatementTabs = ({
           </div>
         </TabsContent>
       ) : null}
-      <TabsContent value="vorauszahlung">
-        <AdvanceAdjustmentCard
-          statementId={statementId}
-          isDraft={isDraft}
-          detail={result.advanceAdjustment}
-          lines={result.lines}
-          periodEnd={periodEnd}
-        />
-      </TabsContent>
       <TabsContent value="pdf">
         <Card className="h-225 overflow-hidden">
           <CardHeader>
@@ -361,11 +414,6 @@ export const StatementDetailPage = () => {
     enabled: Boolean(statement?.tenantId),
   });
   const { data: units } = useQuery(unitsQueryOptions);
-  const { data: buildings } = useQuery(buildingsQueryOptions);
-  const { data: heatingVersions } = useQuery({
-    ...heatingSettingsListQueryOptions(statement?.buildingId ?? ""),
-    enabled: Boolean(statement?.buildingId),
-  });
 
   const {
     data: preview,
@@ -385,8 +433,8 @@ export const StatementDetailPage = () => {
     staleTime: 0,
   });
 
-  // Für die Finalisieren-Warnung, solange die DWD-Abruf-Frage offen ist;
-  // gleicher Query-Cache wie die Klimafaktoren-Karte, kein Doppel-Fetch.
+  // Für die Finalisieren-Checkliste, solange die DWD-Abruf-Frage offen ist;
+  // gleicher Query-Cache wie die Klimafaktoren-Card, kein Doppel-Fetch.
   const { data: climateFactors } = useQuery({
     ...climateFactorsQueryOptions(statementId),
     enabled: Boolean(statement) && statement?.status === "draft",
@@ -433,7 +481,10 @@ export const StatementDetailPage = () => {
   const remove = useMutation({
     mutationFn: () => api.delete(`/statements/${statementId}`),
     onSuccess: async () => {
-      await invalidateStatementQueries();
+      // Detail-Query entfernen statt invalidieren: ein Nachladen liefe in
+      // einen 404 auf die gerade gelöschte Abrechnung.
+      queryClient.removeQueries({ queryKey: ["statement", statementId] });
+      await queryClient.invalidateQueries({ queryKey: ["statements"] });
       await navigate({ to: "/abrechnungen" });
     },
   });
@@ -451,14 +502,13 @@ export const StatementDetailPage = () => {
 
   if (!statement) {
     return (
-      <div className="pb-6">
+      <div className="max-w-225 pb-6">
         <PageHeader
           tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
           title=""
           loading={true}
-          statsSkeleton={3}
         />
-        <FormSkeleton rows={8} aside={true} tabs="pills" />
+        <FormSkeleton rows={8} tabs="pills" kpis={3} />
       </div>
     );
   }
@@ -466,22 +516,6 @@ export const StatementDetailPage = () => {
   const result = resolveDisplayResult(statement, preview);
 
   const isDraft = statement.status === "draft";
-
-  /**
-   * Datenqualitäts-Hinweise an den Vermieter (fehlende/rückläufige
-   * Zählerstände etc.). Sie erscheinen nicht im Mieter-PDF, sollten aber
-   * vor dem Abschließen behoben sein.
-   */
-  const dataIssueCount = [
-    result?.heatingDetail?.warnings ?? [],
-    result?.waterDetail?.warnings ?? [],
-  ].reduce(
-    (count, warnings) =>
-      count +
-      groupCalcWarnings(warnings.filter((warning) => !isTenantWarning(warning)))
-        .length,
-    0,
-  );
 
   const renderPreviewFallback = () => {
     if (previewError) {
@@ -540,14 +574,9 @@ export const StatementDetailPage = () => {
   const unit = units?.find(
     (entry) => entry.id === tenantAggregate?.tenant.unitId,
   );
-  const building = buildings?.find(
-    (entry) => entry.id === statement.buildingId,
-  );
-  const [heatingVersion] = heatingVersions ?? [];
 
   const statusBadge = renderStatusBadge(statement);
 
-  const isRefund = result ? result.balanceCents <= 0 : false;
   // 12 Monate nach Periodenende ist Nachforderung ausgeschlossen.
   // Guthaben schuldet der Vermieter weiter, deshalb nur bei Nachzahlung warnen.
   const deadlineMissedWithArrears =
@@ -560,47 +589,131 @@ export const StatementDetailPage = () => {
     result?.heatingDetail?.energyComparison?.previous !== undefined &&
     climateFactors?.autoFetch === null &&
     climateFactors.rows.some((row) => row.factor === null);
-  const balanceClass = isRefund ? "text-limette-700" : "text-himbeere-500";
-  const resultStats = result
-    ? [
-        {
-          label: t("ui.statements.detail.totalCosts"),
-          value: formatEur(result.totalCostsCents),
-        },
-        {
-          label: t("ui.statements.detail.advances"),
-          value: formatEur(result.totalAdvancesCents),
-        },
-        {
-          label: isRefund
-            ? t("ui.statements.detail.info.creditLabel")
-            : t("ui.statements.detail.additionalPayment"),
-          value: (
-            <span className={balanceClass}>
-              {formatEur(Math.abs(result.balanceCents))}
-            </span>
-          ),
-        },
-      ]
-    : undefined;
+
+  /**
+   * Unterzeile im Seitenkopf
+   */
+  const subLinkClass =
+    "underline-offset-3 transition-colors hover:text-azur-700 hover:underline";
+  const subItems: ReactNode[] = [];
+  if (tenantName) {
+    subItems.push(
+      <Link
+        to="/mieter/$tenantId/konto"
+        params={{ tenantId: statement.tenantId }}
+        className={subLinkClass}
+      >
+        {tenantName}
+      </Link>,
+    );
+  }
+  if (unit) {
+    subItems.push(
+      <Link
+        to="/wohnungen/$unitId"
+        params={{ unitId: unit.id }}
+        className={subLinkClass}
+      >
+        {unit.name}
+      </Link>,
+    );
+  }
+  subItems.push(
+    <span>{formatPeriod(statement.periodStart, statement.periodEnd)}</span>,
+  );
+
+  /**
+   * Primäraktion + Chevron-Menü für seltene Aktionen, je nach Status:
+   * Entwurf finalisieren/löschen, finalisiert PDF/Korrektur/Stornieren,
+   * storniert Korrektur/PDF, ersetzt nur PDF.
+   */
+  let primaryAction: ReactNode;
+  const menuItems: ReactNode[] = [];
+  if (isDraft) {
+    primaryAction = (
+      <Button onClick={() => setConfirmFinalizeOpen(true)}>
+        <RiLockLine data-icon="inline-start" />
+        {t("ui.statements.detail.finalizeStatement")}
+      </Button>
+    );
+    menuItems.push(
+      <DropdownMenuItem
+        key="delete"
+        variant="destructive"
+        onSelect={() => setDeleteOpen(true)}
+      >
+        <RiDeleteBinLine />
+        {t("ui.statements.detail.info.deleteDraft")}
+      </DropdownMenuItem>,
+    );
+  } else if (statement.status === "finalized") {
+    primaryAction = (
+      <Button onClick={downloadPdf}>
+        <RiDownloadLine data-icon="inline-start" />
+        {t("ui.statements.detail.downloadPdf")}
+      </Button>
+    );
+    menuItems.push(
+      <DropdownMenuItem key="correct" onSelect={() => correct.mutate()}>
+        <RiFileCopy2Line />
+        {t("ui.statements.detail.createCorrection")}
+      </DropdownMenuItem>,
+      <DropdownMenuItem
+        key="cancel"
+        variant="destructive"
+        onSelect={() => setCancelOpen(true)}
+      >
+        <RiCloseCircleLine />
+        {t("ui.statements.detail.cancelStatement")}
+      </DropdownMenuItem>,
+    );
+  } else if (statement.status === "cancelled") {
+    primaryAction = (
+      <Button onClick={() => correct.mutate()} disabled={correct.isPending}>
+        <RiFileCopy2Line data-icon="inline-start" />
+        {t("ui.statements.detail.createCorrection")}
+      </Button>
+    );
+    menuItems.push(
+      <DropdownMenuItem key="download" onSelect={downloadPdf}>
+        <RiDownloadLine />
+        {t("ui.statements.detail.downloadPdf")}
+      </DropdownMenuItem>,
+    );
+  } else {
+    primaryAction = (
+      <Button onClick={downloadPdf}>
+        <RiDownloadLine data-icon="inline-start" />
+        {t("ui.statements.detail.downloadPdf")}
+      </Button>
+    );
+  }
+
+  const subtitle = [
+    tenantName,
+    unit?.name,
+    formatPeriod(statement.periodStart, statement.periodEnd),
+  ]
+    .filter(Boolean)
+    .join(t("ui.common.separators.bullet"));
 
   return (
-    <div className="pb-6">
+    <div className="max-w-225 pb-6">
       <PageHeader
         tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
         title={identity}
+        titleExtra={statusBadge}
         sub={
           <span className="flex flex-wrap items-center gap-2">
             <span>
-              {[
-                tenantName,
-                unit?.name,
-                formatPeriod(statement.periodStart, statement.periodEnd),
-              ]
-                .filter(Boolean)
-                .join(t("ui.common.separators.bullet"))}
+              {subItems.map((item, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: statische Liste
+                <Fragment key={index}>
+                  {index > 0 ? t("ui.common.separators.bullet") : null}
+                  {item}
+                </Fragment>
+              ))}
             </span>
-            {statusBadge}
             {isCalculating ? (
               <span className="text-xs text-muted-foreground">
                 {t("ui.statements.detail.calculating")}
@@ -608,205 +721,85 @@ export const StatementDetailPage = () => {
             ) : null}
           </span>
         }
-        stats={resultStats}
-      />
-
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
-        <div className="space-y-6">
-          {statement.status === "cancelled" && statement.cancellationReason ? (
-            <Alert variant="warning">
-              <AlertTitle>
-                {t("ui.statements.detail.cancelledTitle")}
-              </AlertTitle>
-              <AlertDescription>
-                {t("ui.statements.detail.cancelledReason", {
-                  reason: statement.cancellationReason,
-                })}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          {result && (result.warnings ?? []).length > 0 ? (
-            <Alert variant="warning">
-              <AlertTitle>{t("ui.statements.detail.warningsTitle")}</AlertTitle>
-              <AlertDescription>
-                <p>{t("ui.statements.detail.warningsDescription")}</p>
-                <ul className="mt-2 list-disc pl-5">
-                  {result.warnings?.map((warning) => (
-                    <li key={warning}>{warning}</li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          {result ? (
-            <StatementTabs
-              result={result}
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              statementId={statement.id}
-              isDraft={isDraft}
-              periodEnd={statement.periodEnd}
-              pdfSrc={pdfSrc}
-              pdfFilename={pdfFilename}
-            />
-          ) : (
-            renderPreviewFallback()
-          )}
-        </div>
-
-        <div className="flex flex-col gap-6 xl:sticky xl:top-24">
-          <InfoCard title={t("ui.common.infoCards.links")}>
-            {tenantName ? (
-              <ActionLink
-                icon={domainVisuals.tenants.icon}
-                onClick={() =>
-                  navigate({
-                    to: "/mieter/$tenantId/konto",
-                    params: { tenantId: statement.tenantId },
-                    search: { tab: undefined },
-                  })
-                }
-              >
-                {tenantName}
-              </ActionLink>
-            ) : null}
-            {unit ? (
-              <ActionLink
-                icon={domainVisuals.units.icon}
-                onClick={() =>
-                  navigate({
-                    to: "/wohnungen/$unitId",
-                    params: { unitId: unit.id },
-                  })
-                }
-              >
-                {unit.name}
-              </ActionLink>
-            ) : null}
-            {building ? (
-              <ActionLink
-                icon={RiBuildingLine}
-                onClick={() =>
-                  navigate({
-                    to: "/gebaeude/$buildingId",
-                    params: { buildingId: building.id },
-                  })
-                }
-              >
-                {building.name}
-              </ActionLink>
-            ) : null}
-            {heatingVersion ? (
-              <ActionLink
-                icon={domainVisuals.heating.icon}
-                subtitle={heatingIdentityLabel(heatingVersion)}
-                onClick={() =>
-                  navigate({
-                    to: "/heizkosten/$id",
-                    params: { id: heatingVersion.id },
-                  })
-                }
-              >
-                {t("ui.meters.detail.heatingConfig")}
-              </ActionLink>
-            ) : null}
-          </InfoCard>
-
-          <InfoCard title={t("ui.common.infoCards.actions")}>
-            {isDraft ? (
-              <ActionLink
-                icon={RiLockLine}
-                accent={true}
-                onClick={() => setConfirmFinalizeOpen(true)}
-              >
-                {t("ui.statements.detail.finalizeStatement")}
-              </ActionLink>
-            ) : null}
-            {statement.status === "finalized" ? (
-              <>
-                <ActionLink
-                  icon={RiCloseCircleLine}
-                  onClick={() => setCancelOpen(true)}
-                >
-                  {t("ui.statements.detail.cancelStatement")}
-                </ActionLink>
-                <ActionLink
-                  icon={RiFileCopy2Line}
-                  accent={true}
-                  onClick={() => correct.mutate()}
-                >
-                  {t("ui.statements.detail.createCorrection")}
-                </ActionLink>
-              </>
-            ) : null}
-            {statement.status === "cancelled" ? (
-              <ActionLink
-                icon={RiFileCopy2Line}
-                accent={true}
-                onClick={() => correct.mutate()}
-              >
-                {t("ui.statements.detail.createCorrection")}
-              </ActionLink>
-            ) : null}
-            <ActionLink
-              icon={RiDownloadLine}
-              accent={true}
-              onClick={downloadPdf}
-            >
-              {t("ui.statements.detail.downloadPdf")}
-            </ActionLink>
-            {isDraft ? (
-              <ActionLink
-                icon={RiDeleteBinLine}
-                danger={true}
-                onClick={() => setDeleteOpen(true)}
-              >
-                {t("ui.statements.detail.info.deleteDraft")}
-              </ActionLink>
-            ) : null}
-          </InfoCard>
-
-          {isDraft ? (
-            <InfoCard title={t("ui.statements.detail.info.hintTitle")}>
-              <p className="text-sm leading-normal text-muted-foreground">
-                {t("ui.statements.detail.info.hintText")}
-              </p>
-            </InfoCard>
-          ) : null}
-        </div>
-      </div>
-
-      <DestructiveConfirmDialog
-        open={confirmFinalizeOpen}
-        onOpenChange={setConfirmFinalizeOpen}
-        title={t("ui.statements.detail.finalizeStatement")}
-        description={
+        action={
           <>
-            {dataIssueCount > 0
-              ? t("ui.statements.detail.confirmFinalizeWithDataIssues", {
-                  count: dataIssueCount,
-                })
-              : t("ui.statements.detail.confirmFinalize")}
-            {deadlineMissedWithArrears ? (
-              <p className="mt-2">
-                {t("ui.statements.detail.finalizeDeadlineWarning")}
-              </p>
-            ) : null}
-            {climateFactorQuestionOpen ? (
-              <p className="mt-2">
-                {t("ui.statements.detail.finalizeClimateFactorWarning")}
-              </p>
-            ) : null}
+            <Button variant="outline" onClick={() => handleTabChange("pdf")}>
+              <RiFilePdf2Line data-icon="inline-start" />
+              {t("ui.statements.detail.tabs.pdf")}
+            </Button>
+            {menuItems.length > 0 ? (
+              <ButtonGroup>
+                {primaryAction}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild={true}>
+                    <Button size="icon" aria-label={t("ui.common.a11y.more")}>
+                      <RiArrowDownSLine />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-56">
+                    {menuItems}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </ButtonGroup>
+            ) : (
+              primaryAction
+            )}
           </>
         }
-        confirmLabel={t("ui.statements.detail.finalizeStatement")}
-        onConfirm={() => {
-          setConfirmFinalizeOpen(false);
-          finalize.mutate();
-        }}
       />
+
+      <div className="space-y-6">
+        {statement.status === "cancelled" && statement.cancellationReason ? (
+          <Alert variant="warning">
+            <AlertTitle>{t("ui.statements.detail.cancelledTitle")}</AlertTitle>
+            <AlertDescription>
+              {t("ui.statements.detail.cancelledReason", {
+                reason: statement.cancellationReason,
+              })}
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
+        {result ? (
+          <StatementTabs
+            result={result}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            statementId={statement.id}
+            isDraft={isDraft}
+            periodEnd={statement.periodEnd}
+            pdfSrc={pdfSrc}
+            pdfFilename={pdfFilename}
+            tenantName={tenantName}
+            unitName={unit?.name}
+          />
+        ) : (
+          renderPreviewFallback()
+        )}
+      </div>
+
+      {isDraft ? (
+        <StatementFinalizeDialog
+          open={confirmFinalizeOpen}
+          onOpenChange={setConfirmFinalizeOpen}
+          subtitle={subtitle}
+          warnings={result?.warnings ?? []}
+          deadlineWarning={deadlineMissedWithArrears}
+          climateFactorQuestionOpen={climateFactorQuestionOpen}
+          advanceDetail={result?.advanceAdjustment}
+          balanceCents={result?.balanceCents ?? 0}
+          tenantName={tenantName}
+          isPending={finalize.isPending}
+          onConfirm={() => {
+            setConfirmFinalizeOpen(false);
+            finalize.mutate();
+          }}
+          onAdjustAdvance={() => {
+            setConfirmFinalizeOpen(false);
+            return handleTabChange("uebersicht");
+          }}
+        />
+      ) : null}
 
       <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <AlertDialogContent size="sm">

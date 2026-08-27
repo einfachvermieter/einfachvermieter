@@ -42,6 +42,7 @@ export const BillingInfoCard = ({
     <SectionCard
       icon={RiInformationLine}
       title={t("statements.pdf.appendixBillingInfo")}
+      collapsible={true}
     >
       <div className="space-y-5 text-sm">
         {rows.length > 0 ? (
@@ -147,7 +148,7 @@ export const BillingInfoCard = ({
                       </div>
                       <div className="h-2.5 flex-1 overflow-hidden rounded-sm bg-muted">
                         <div
-                          className="h-full rounded-sm bg-limette-500"
+                          className="h-full rounded-sm bg-azur-500"
                           style={{ width: `${bar.widthPct}%` }}
                         />
                       </div>

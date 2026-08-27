@@ -9,20 +9,7 @@ import { RiHomeGearLine } from "@remixicon/react";
 import { SectionCard } from "../../../../components/common/SectionCard";
 import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
 import { t } from "../../../../lib/i18n";
-
-const ALLOCATION_BY_LABEL_KEY: Record<CostLineResult["allocationKey"], string> =
-  {
-    // biome-ignore-start lint/style/useNamingConvention: domain bedingte keys
-    per_living_area: "costs.allocationsBy.perLivingArea",
-    per_heating_area: "costs.allocationsBy.perHeatingArea",
-    per_person: "costs.allocationsBy.perPerson",
-    per_unit: "costs.allocationsBy.perUnit",
-    per_consumption_m3: "costs.allocationsBy.perConsumptionM3",
-    per_consumption_kwh: "costs.allocationsBy.perConsumptionKwh",
-    heating_ordinance: "costs.allocationsBy.heizkostenV",
-    // biome-ignore-end lint/style/useNamingConvention: domain bedingte keys
-    fixed: "costs.allocationsBy.fixed",
-  };
+import { ALLOCATION_BY_LABEL_KEY } from "../../../../lib/statements";
 
 const isWasteWaterName = (name: string): boolean =>
   /schmutzwasser|abwasser/iu.test(name);
@@ -152,13 +139,13 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
                   {t("statements.pdf.costTable.totalCosts")}
                 </th>
                 <th className="py-2.5 text-center">
-                  {t("statements.pdf.costTable.bemessung")}
+                  {t("ui.statements.detail.columnBemessungFraction")}
                 </th>
                 <th className="py-2.5 text-center">
                   {t("statements.pdf.costTable.tage")}
                 </th>
                 <th className="py-2.5 text-right">
-                  {t("statements.pdf.costTable.yourCosts")}
+                  {t("ui.statements.detail.columnYourCosts")}
                 </th>
               </tr>
             </thead>

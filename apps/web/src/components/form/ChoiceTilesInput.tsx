@@ -41,7 +41,20 @@ const tileLeading = (option: ChoiceTileOption): ReactNode => {
   }
 
   if (!option.icon) {
-    return null;
+    // Ohne Icon ein Radio-Indikator (rein dekorativ),
+    // sonst sicht es aus wie eine KPI-Card
+    return (
+      <span
+        data-slot="tile-radio"
+        aria-hidden={true}
+        className="flex size-4 shrink-0 items-center justify-center rounded-full border border-input bg-background transition"
+      >
+        <span
+          data-slot="tile-radio-dot"
+          className="size-2 rounded-full bg-white opacity-0"
+        />
+      </span>
+    );
   }
 
   const Icon = option.icon;
@@ -108,7 +121,7 @@ export const ChoiceTilesInput = <T extends FieldValues>({
                 <label
                   key={option.value}
                   htmlFor={optionId}
-                  className="block cursor-pointer rounded-lg border-[1.5px] border-border bg-schiefer-50 px-4 py-3.5 transition has-data-checked:border-limette-700 has-data-checked:bg-limette-50 has-data-disabled:cursor-not-allowed has-data-disabled:opacity-60 has-data-checked:**:data-[slot=tile-icon]:text-limette-700 has-data-checked:**:data-[slot=tile-title]:text-foreground"
+                  className="block cursor-pointer rounded-lg border-[1.5px] border-border bg-card px-4 py-3.5 transition has-data-checked:border-azur-700 has-data-checked:bg-azur-50 has-data-disabled:cursor-not-allowed has-data-disabled:opacity-60 has-data-checked:**:data-[slot=tile-icon]:text-azur-700 has-data-checked:**:data-[slot=tile-title]:text-foreground has-data-checked:**:data-[slot=tile-radio]:border-azur-700 has-data-checked:**:data-[slot=tile-radio]:bg-azur-700 has-data-checked:**:data-[slot=tile-radio-dot]:opacity-100"
                 >
                   <RadioGroupItem
                     id={optionId}

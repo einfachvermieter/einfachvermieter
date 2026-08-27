@@ -3,7 +3,7 @@ import { RiAddLine, RiWallet3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { DataTable } from "../../components/common/DataTable";
 import { DomainLink } from "../../components/common/DomainLink";
@@ -31,6 +31,7 @@ import {
   tenantKindLabel,
   tenantsOverviewQueryOptions,
 } from "../../lib/tenants";
+import { TenantCreateSheet } from "./TenantCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<TenantSortColumn> = new Set([
   "unit",
@@ -162,6 +163,7 @@ export const TenantsPage = () => {
     storageKey: "tenants",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -232,13 +234,11 @@ export const TenantsPage = () => {
         subLoading={!data}
         action={
           canAddTenant ? (
-            <Button asChild={true}>
-              <Link to="/mieter/neu">
-                <RiAddLine />
-                <span className="hidden sm:inline">
-                  {t("ui.tenants.addTenant")}
-                </span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">
+                {t("ui.tenants.addTenant")}
+              </span>
             </Button>
           ) : undefined
         }
@@ -264,6 +264,10 @@ export const TenantsPage = () => {
           pageCount: table.pageCount(total),
         }}
       />
+
+      {createOpen ? (
+        <TenantCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

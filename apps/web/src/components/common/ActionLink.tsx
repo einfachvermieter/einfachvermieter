@@ -29,7 +29,7 @@ export const ActionLink = ({
     className={cn(
       "mb-2 flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium transition-colors last:mb-0",
       danger && "bg-himbeere-50 text-himbeere-500 hover:bg-himbeere-100",
-      accent && "bg-limette-50 text-limette-800 hover:bg-limette-100",
+      accent && "bg-azur-50 text-azur-800 hover:bg-azur-100",
       !danger &&
         !accent &&
         "bg-schiefer-50 text-foreground hover:bg-schiefer-100",
@@ -42,7 +42,7 @@ export const ActionLink = ({
       className={cn(
         "size-5 shrink-0",
         danger && "text-himbeere-500",
-        accent && "text-limette-700",
+        accent && "text-azur-700",
         !danger && !accent && "text-schiefer-500",
       )}
     />

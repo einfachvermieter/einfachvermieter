@@ -167,7 +167,7 @@
     "buildingHasUnits": "Gebäude mit Wohnungen kann nicht gelöscht werden",
     "unitHasTenants": "Wohnung mit Mietverträgen kann nicht gelöscht werden",
     "unitHasMeters": "Wohnung mit Zählern kann nicht gelöscht werden",
-    "tenantOverlapsExisting": "Mietvertrag überlappt mit bestehendem Vertrag {id} ({start} – {end}). Vorherigen Vertrag zuerst schließen.",
+    "tenantOverlapsExisting": "Die Wohnung ist im Zeitraum {start} – {end} bereits vermietet. Schließen Sie den bestehenden Vertrag zuerst.",
     "tenantOpenEnd": "unbefristet",
     "statementAlreadyFinalized": "Abrechnung ist bereits finalisiert",
     "statementDeleteFinalized": "Finalisierte Abrechnungen können nicht gelöscht werden",
@@ -339,16 +339,12 @@
         "buildings": "Gebäude",
         "buildingNew": "Neues Gebäude",
         "units": "Wohnungen",
-        "unitNew": "Neue Wohnung",
         "tenants": "Mieter",
-        "tenantNew": "Neuer Mieter",
         "tenantContract": "Mietvertrag",
         "payments": "Zahlungen",
-        "paymentNew": "Neue Zahlung",
         "paymentEdit": "Zahlung bearbeiten",
         "edit": "Bearbeiten",
         "meters": "Zähler",
-        "meterNew": "Neuer Zähler",
         "heating": "Heizkosten",
         "heatingExternalEntries": "Externe Einträge",
         "heatingVersionNew": "Neue Konfiguration",
@@ -360,10 +356,7 @@
         "invoiceNew": "Neue Rechnung",
         "invoiceEdit": "Rechnung bearbeiten",
         "statements": "Abrechnungen",
-        "statementNew": "Neue Abrechnung",
         "statementDetail": "Detail",
-        "feeNew": "Neue Gebühr",
-        "feeEdit": "Gebühr bearbeiten",
         "detail": "Detail",
         "settings": "Einstellungen",
         "settingsSender": "Absenderdaten",
@@ -436,7 +429,9 @@
         "dateOpenPicker": "Datum wählen",
         "monthOpenPicker": "Monat wählen",
         "monthPreviousYear": "Vorheriges Jahr",
-        "monthNextYear": "Nächstes Jahr"
+        "monthNextYear": "Nächstes Jahr",
+        "unsavedMessageClose": "Die Eingaben sind noch nicht gespeichert und gehen beim Schließen verloren.",
+        "unsavedKeepEditing": "Weiter bearbeiten"
       },
       "srOnly": {
         "openMenu": "Menü öffnen"
@@ -487,9 +482,13 @@
         "statusActive": "Aktiv",
         "statusInactive": "Beendet",
         "usageLabel": "Verwendung",
-        "lastReadingLabel": "Letzte Ablesung",
         "heatingConfig": "Heizkosten-Konfiguration",
-        "deleteAction": "Zähler löschen"
+        "deleteAction": "Zähler löschen",
+        "lastReadingHint": "Abgelesen am {date} von {source}",
+        "hkvSection": "Heizkostenverteiler",
+        "assignmentModeLabel": "Abrechnung",
+        "noCostTypes": "Noch keiner Kostenart zugeordnet",
+        "usedForCostTypes": "Verwendet für Kostenarten"
       },
       "listTitle": "Zählerliste",
       "listDescription": "Wasser, Strom, Gas und Wärmemengenzähler. Klicken Sie einen Zähler an, um Stände zu erfassen.",
@@ -548,7 +547,8 @@
         "baseMeter": "Basiszähler",
         "baseMeterPlaceholder": "Basiszähler auswählen",
         "subtractedMeters": "Abzuziehende Zähler",
-        "subtractedMetersEmpty": "Keine weiteren Zähler vom Typ {type} in diesem Gebäude verfügbar"
+        "subtractedMetersEmpty": "Keine weiteren Zähler vom Typ {type} in diesem Gebäude verfügbar",
+        "validity": "Gültigkeit"
       },
       "costAllocationMode": {
         "heatingCostBill": {
@@ -562,7 +562,8 @@
         "lockedHint": "Dieser Zähler ist in einer Heizkosten-Konfiguration referenziert und muss daher Teil der Heizkostenabrechnung bleiben."
       },
       "differenceConfig": {
-        "title": "Differenzzähler-Konfiguration"
+        "title": "Differenzzähler-Konfiguration",
+        "subtractedCount": "{count, plural, one {# Zähler} other {# Zähler}}"
       },
       "gasFactors": {
         "title": "Umrechnungsfaktoren",
@@ -577,7 +578,8 @@
         "noFactor": "Ohne Umrechnungsfaktor",
         "factorValue": "{value} kWh/m³",
         "notes": "Notiz",
-        "notesPlaceholder": "z. B. Stadtwerke 2024"
+        "notesPlaceholder": "z. B. Stadtwerke 2024",
+        "editPeriod": "Zeitraum bearbeiten"
       },
       "roleDescriptions": {
         "main": "Gesamtverbrauch des Gebäudes",
@@ -620,7 +622,8 @@
       "notFound": {
         "title": "Zähler nicht gefunden",
         "description": "Dieser Zähler existiert nicht oder wurde gelöscht."
-      }
+      },
+      "readingsDescription": "Der Verbrauch ergibt sich aus der Differenz zum vorherigen Stand."
     },
     "buildings": {
       "title": "Gebäude",
@@ -768,8 +771,8 @@
       "summary": "{unit} – {residents}",
       "addTenant": "Mieter anlegen",
       "confirmDeleteTenant": "Mietvertrag löschen?",
-      "confirmDeleteTenantMessage": "Soll der Mietvertrag von {residents} für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht.",
-      "confirmDeleteTenantMessageNoResidents": "Soll der Mietvertrag für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht.",
+      "confirmDeleteTenantMessage": "Soll der Mietvertrag von {residents} für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht. Für einen Auszug genügt es, das Vertragsende zu setzen – dabei bleibt die Historie erhalten.",
+      "confirmDeleteTenantMessageNoResidents": "Soll der Mietvertrag für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht. Für einen Auszug genügt es, das Vertragsende zu setzen – dabei bleibt die Historie erhalten.",
       "empty": "Keine Mietverträge vorhanden",
       "emptyForBuilding": "Noch keine Mietverträge in Gebäude „{building}“ angelegt",
       "emptySearch": "Keine Mietverträge gefunden für „{query}“",
@@ -907,7 +910,7 @@
         "sepaGranted": "erteilt",
         "sepaMissing": "fehlt",
         "openStatement": "Abrechnung öffnen",
-        "emptyPayments": "Noch keine sonstigen Zahlungen erfasst. Regelmäßige Mieteingänge finden Sie unter {link}.",
+        "emptyPayments": "Noch keine sonstigen Zahlungen erfasst. Regelmäßige Mieteingänge stehen oben unter „Mieteingänge pro Monat“.",
         "emptySettlements": "Noch keine Abrechnungen vorhanden.",
         "emptyFees": "Noch keine Gebühren erfasst."
       },
@@ -973,7 +976,8 @@
         "reasonPlaceholder": "z. B. Mahngebühr Mai",
         "confirmDelete": "Gebühr löschen?",
         "confirmDeleteMessage": "Soll die Gebühr vom {date} über {amount} wirklich gelöscht werden?"
-      }
+      },
+      "showEarlierYears": "Frühere Jahre anzeigen"
     },
     "costs": {
       "title": "Kostenarten",
@@ -1498,13 +1502,8 @@
         "amountHelp": "Nach einer Abrechnung darf die Vorauszahlung auf eine angemessene Höhe angepasst werden (§ 560 Abs. 4 BGB). Angemessen heißt: am Ergebnis der letzten Abrechnung orientiert.\n\nEin pauschaler Sicherheitszuschlag darauf ist nicht zulässig. Erwartete Preissteigerungen dürfen Sie einrechnen, wenn Sie sie belegen können. Erfassen Sie dazu die neue Rechnung, dann berücksichtigt der Vorschlag sie.",
         "amountBelowSuggestedWarning": "Der gewählte Betrag liegt unter dem Vorjahres-Vorschlag ({suggested}). Eine Senkung ist möglich, in der Regel wird die Vorauszahlung jedoch mindestens auf das auf 12 Monate hochgerechnete Vorjahres-Ist angepasst.",
         "amountCustomInfo": "Der Betrag weicht von den Standard-Vorschlägen ab (aktuell, Vorjahres-Ist auf 12 Monate hochgerechnet, mit Tarif-Erwartungen). Er muss auf konkret belegbaren Werten beruhen (Bescheid, Vertrag, Versorger-Mitteilung). Pauschale Sicherheitszuschläge sind nach BGH-Rechtsprechung unzulässig.",
-        "applyCurrent": "Vertraglich beibehalten ({amount})",
-        "applySuggested": "Vorjahres-Ist auf 12 Monate hochgerechnet ({amount})",
-        "applySuggestedWithTariffs": "Mit Tarif-Erwartungen ({amount})",
         "validFromLabel": "Gültig ab",
         "validFromDescription": "Erster Tag des Monats, ab dem die neue Vorauszahlung gilt.",
-        "saveButton": "Anpassung speichern",
-        "removeButton": "Anpassung entfernen",
         "tariffs": {
           "sectionTitle": "Erwartete Tarifänderungen pro Kostenart",
           "sectionDescription": "Diese Werte werden automatisch aus bereits erfassten Folge-Rechnungen abgeleitet. Liegt für die kommende Periode bereits ein Beleg vor (Bescheid, Vertrag, Versorger-Mitteilung), erfassen Sie ihn als Kosteneintrag, dann erscheint er hier. Pauschale Sicherheitszuschläge sind nach BGH-Rechtsprechung unzulässig.",
@@ -1521,18 +1520,24 @@
           "amountPositive": "Der Betrag muss größer als 0 sein.",
           "validFromRequired": "Bitte einen Stichtag wählen.",
           "validFromAfterPeriodEnd": "Der Stichtag muss nach dem Ende des Abrechnungszeitraums liegen."
+        },
+        "choice": {
+          "keepTitle": "Beibehalten",
+          "keepDescription": "{amount} wie vertraglich vereinbart",
+          "suggestedTitle": "Vorschlag übernehmen",
+          "suggestedDescription": "{amount}, die Kosten dieses Jahres, auf 12 Monate umgelegt",
+          "customTitle": "Eigener Betrag",
+          "customDescription": "Selbst festlegen"
         }
       },
       "detail": {
         "title": "Abrechnung {start} – {end}",
         "identityYear": "Abrechnung {year}",
-        "draftLive": "Entwurf – Live-Berechnung",
+        "draftLive": "Entwurf",
         "finalizedAt": "Finalisiert am {date}",
         "calculating": "wird berechnet …",
-        "confirmFinalize": "Abrechnung wirklich finalisieren? Danach sind keine Änderungen mehr möglich.",
         "finalizeDeadlineWarning": "Der Abrechnungszeitraum endete vor mehr als zwölf Monaten. Die Nachzahlung ist nach § 556 Abs. 3 BGB nicht mehr durchsetzbar.",
         "finalizeClimateFactorWarning": "Sie haben noch nicht entschieden, ob Klimafaktoren vom Deutschen Wetterdienst geladen werden dürfen. Ohne Klimafaktor bleibt der Verbrauchsvergleich im Anhang unbereinigt. Die Frage finden Sie im Tab „Heizkosten“.",
-        "confirmFinalizeWithDataIssues": "Es {count, plural, one {liegt noch ein Hinweis} other {liegen noch # Hinweise}} zur Datenqualität vor (siehe „Hinweise zur Berechnung“). Trotzdem finalisieren? Danach sind keine Änderungen mehr möglich.",
         "finalizing": "Wird finalisiert …",
         "finalizeStatement": "Abrechnung finalisieren",
         "correctionDraft": "Korrektur (Entwurf)",
@@ -1549,21 +1554,16 @@
           "operatingCosts": "Betriebskosten",
           "heating": "Heizkosten",
           "occupancy": "Belegung",
-          "taxableLabor": "§ 35a EStG",
+          "taxableLabor": "Haushaltsnahe Leistungen",
           "payments": "Zahlungen",
-          "advance": "Vorauszahlung",
           "pdf": "PDF-Vorschau"
         },
-        "overviewTitle": "Übersicht",
-        "overviewDescription": "Zusammenfassung der umgelegten Kosten und des Abrechnungssaldos.",
         "operatingCostsTitle": "Betriebskosten",
         "operatingCostsDescription": "Detail-Aufstellung der umgelegten Betriebskosten (ohne Heizkosten).",
         "operatingCostsSum": "Summe Betriebskosten",
         "heatingTabTitle": "Heizkostenberechnung",
         "heatingTabDescription": "Aufschlüsselung nach Verbrauchs- und Grundkostenanteil, Verteilung pro Wohnung und HKV-/WMZ-Details.",
         "occupancyMeterUnitColumn": "Wohnung",
-        "summaryOperatingCosts": "Betriebskosten",
-        "summaryHeatingCosts": "Heizkosten",
         "breakdown": "Aufstellung",
         "breakdownDescription": "Berechnung aus aktuellen Stammdaten",
         "costItems": "Kostenpositionen",
@@ -1583,7 +1583,6 @@
         "totalCosts": "Summe Kosten",
         "advances": "Vorauszahlungen",
         "additionalPayment": "Nachzahlung",
-        "refund": "Rückzahlung",
         "pdfPreview": "PDF-Vorschau",
         "pdfPreviewDescription": "Exakt wie das Dokument nach dem Finalisieren",
         "downloadPdf": "PDF herunterladen",
@@ -1597,16 +1596,13 @@
           "resultCredit": "{amount} Guthaben",
           "deleteDraft": "Entwurf löschen",
           "confirmDeleteTitle": "Entwurf löschen?",
-          "confirmDeleteMessage": "Soll der Abrechnungs-Entwurf für den Zeitraum {period} wirklich gelöscht werden?",
-          "confirmDeleteMessageWithTenant": "Soll der Abrechnungs-Entwurf für {tenant}, „{unit}“ ({period}) wirklich gelöscht werden?",
-          "hintTitle": "Hinweis",
+          "confirmDeleteMessage": "Der Entwurf für den Zeitraum {period} wird gelöscht. Erfasste Kosten, Zahlungen und Zählerstände bleiben erhalten – nur diese Abrechnung entfällt und kann jederzeit neu erstellt werden.",
+          "confirmDeleteMessageWithTenant": "Der Entwurf für {tenant}, „{unit}“ ({period}) wird gelöscht. Erfasste Kosten, Zahlungen und Zählerstände bleiben erhalten – nur diese Abrechnung entfällt und kann jederzeit neu erstellt werden.",
           "hintText": "Nach dem Finalisieren sind keine Änderungen mehr möglich. Danach stehen „Stornieren“ und „Korrekturabrechnung“ zur Verfügung."
         },
         "pdfFilename": "Nebenkostenabrechnung_{start}_{end}.pdf",
         "loadingData": "Lade Daten …",
         "computing": "Berechnung läuft …",
-        "warningsTitle": "Hinweise zur Berechnung",
-        "warningsDescription": "Folgende Punkte sollten Sie vor dem Finalisieren prüfen:",
         "calculationErrorTitle": "Berechnung nicht möglich",
         "paymentsTitle": "Mieteingänge",
         "paymentsDescription": "Erfasste Mietzahlungen mit Kalt- und NK-Voraus-Anteil im Abrechnungszeitraum.",
@@ -1615,7 +1611,7 @@
         "paymentsTotalAdvance": "Summe Vorauszahlungen",
         "legendReceived": "eingegangen",
         "legendOpen": "offen",
-        "showEntries": "Einzelbuchungen anzeigen",
+        "showEntries": "Einzelbuchungen",
         "showMeters": "Alle Zähler anzeigen",
         "paymentsTotal": "Summe Mieteingänge: {total}",
         "paymentsColumnMonth": "Mietmonat",
@@ -1638,7 +1634,31 @@
         "occupancyDaysGroup": "{count}× {days}",
         "occupancyLandlordPersonDays": "davon Vermieter (1 Basis-Person × Leerstandstage)",
         "occupancyLandlordDays": "Vermieter-Anteil Leerstand (Wohnungstage)",
-        "occupancyPeriodTotal": "Periodentage gesamt ({units} × {days})"
+        "occupancyPeriodTotal": "Periodentage gesamt ({units} × {days})",
+        "overviewCosts": {
+          "title": "Kosten im Abrechnungszeitraum",
+          "allDetails": "Alle Details",
+          "columnDistribution": "Verteilung"
+        },
+        "kpi": {
+          "costsHint": "Anteil {unit}",
+          "advancesHint": "{count, plural, one {# Zahlung} other {# Zahlungen}} erhalten",
+          "refundHint": "{tenant} erhält Geld zurück",
+          "arrearsHint": "{tenant} muss nachzahlen"
+        },
+        "finalizeDialog": {
+          "noIssues": "Die Berechnung meldet keine Auffälligkeiten.",
+          "advanceKept": "Künftige Vorauszahlung: bleibt bei {amount}.",
+          "advanceAdjusted": "Künftige Vorauszahlung: {amount} ab {date}.",
+          "advanceSuggestionHint": "Der Vorschlag aus den Ist-Kosten wäre {amount}.",
+          "adjustNow": "Jetzt anpassen",
+          "resultRefund": "Ergebnis: {tenant} erhält {amount} zurück.",
+          "resultArrears": "Ergebnis: {tenant} muss {amount} nachzahlen.",
+          "confirm": "Jetzt finalisieren"
+        },
+        "columnBemessungFraction": "Bemessung Mieter / gesamt",
+        "heatingKpiLabel": "Heizkosten der Wohnung",
+        "heatingKpiHint": "{heating} Heizung + {hotWater} Warmwasser"
       },
       "sections": {
         "baseData": {
@@ -1779,7 +1799,6 @@
     "tenant": {
       "editEyebrow": "Mieter bearbeiten",
       "addRentChange": "Mietänderung",
-      "rentSimpleDescription": "Aktueller Mietsatz. Änderungen hier korrigieren den bestehenden Satz.",
       "rentHistoryHint": "Frühere Sätze bleiben für die Abrechnung erhalten.",
       "sections": {
         "contract": {
@@ -1787,12 +1806,12 @@
         },
         "notes": {
           "title": "Interne Notizen",
-          "description": "Nur für Sie sichtbar"
+          "description": "Diese Notiz ist nur für Sie sichtbar und wird nicht dem Mieter angezeigt."
         }
       },
       "hero": {
         "warmRent": "Warmmiete",
-        "contractStart": "Vertragsbeginn"
+        "residentsCount": "{count, plural, one {# Bewohner} other {# Bewohner}}"
       },
       "atAGlance": {
         "title": "Auf einen Blick",
@@ -1913,12 +1932,27 @@
       "addressesEmptyHint": "Ohne Eintrag wird die Wohnungsadresse als Postanschrift verwendet. Tragen Sie nur dann eine abweichende Anschrift ein, wenn die Post für einen Zeitraum woandershin gehen soll.",
       "addressesHelp": "Abweichende Anschriften sind optional. Standardmäßig gilt die Wohnungsadresse als Postanschrift des Mieters. Solange für einen Zeitraum kein Eintrag hinterlegt ist, wird automatisch darauf zurückgegriffen.\n\nEinträge sind sinnvoll, wenn der Mieter noch nicht eingezogen oder schon ausgezogen ist, oder wenn z. B. die Eltern Vertragspartner sind und die Post an deren Adresse gehen soll.\n\nMehrere Einträge mit unterschiedlichen Gültigkeitszeiträumen sind möglich; Zeiträume dürfen sich nicht überlappen. Ohne Startdatum gilt eine Anschrift ab Vertragsbeginn, ohne Enddatum bis zum Vertragsende.",
       "addAddress": "Abweichende Anschrift hinzufügen",
-      "editAddress": "Abweichende Anschrift bearbeiten",
+      "editAddress": "Anschrift bearbeiten",
       "removeAddress": "Abweichende Anschrift {index} entfernen",
       "confirmRemoveAddress": "Abweichende Anschrift entfernen?",
       "addressIndex": "Anschrift {index}",
       "addressCurrent": "aktuell",
-      "lastAddress": "zuletzt"
+      "lastAddress": "zuletzt",
+      "kpi": {
+        "balanceLabel": "Mietkonto-Saldo",
+        "openMonthsHint": "{count, plural, one {# Monat offen} other {# Monate offen}}",
+        "warmRentHint": "{base} kalt + {advance} Nebenkosten",
+        "depositNoneHint": "Keine Kaution vereinbart",
+        "depositUnpaidHint": "Vereinbart, noch nicht eingegangen",
+        "depositPaidHint": "Vollständig eingegangen"
+      },
+      "notesEmptyHint": "Noch keine Notizen erfasst",
+      "create": {
+        "contractPartyTitle": "Vertragspartner",
+        "contractPartyHint": "Weitere Bewohner ergänzen Sie nach dem Anlegen.",
+        "rentTitle": "Mietsatz",
+        "rentDescription": "Gilt vom Vertragsbeginn bis zum Vertragsende. Mietänderungen ergänzen Sie nach dem Anlegen."
+      }
     },
     "reading": {
       "createTitle": "Zählerstand erfassen",
@@ -2038,11 +2072,21 @@
           "baseUrlDescription": "Nur nötig, wenn Sie den Anbieter über einen eigenen Server oder Proxy ansprechen. Leer lassen für die Standardadresse."
         },
         "providers": {
-          "mistral": { "label": "Mistral" },
-          "openai": { "label": "OpenAI" },
-          "anthropic": { "label": "Anthropic (Claude)" },
-          "gemini": { "label": "Google Gemini" },
-          "ollama": { "label": "Ollama (lokal)" }
+          "mistral": {
+            "label": "Mistral"
+          },
+          "openai": {
+            "label": "OpenAI"
+          },
+          "anthropic": {
+            "label": "Anthropic (Claude)"
+          },
+          "gemini": {
+            "label": "Google Gemini"
+          },
+          "ollama": {
+            "label": "Ollama (lokal)"
+          }
         }
       },
       "password": {
@@ -2270,7 +2314,7 @@
         "comparisonPrevWeatherNoteShort": "Der Heizverbrauch ist witterungsbereinigt (Datenbasis: Deutscher Wetterdienst) und auf ein Normjahr umgerechnet.",
         "comparisonPrevWeatherNoteShortManual": "Der Heizverbrauch ist witterungsbereinigt und auf ein Normjahr umgerechnet.",
         "comparisonPrevExtrapolatedNote": "Deckt ein Zeitraum kein volles Jahr ab, ist sein Verbrauch über die Gradtagszahlen auf ein volles Jahr hochgerechnet.",
-        "comparisonPrevCalculationNote": "Rechenweg: dieser Zeitraum {currentBase} \u00d7 Klimafaktor {currentFactor} = {currentResult}; vorheriger Zeitraum {previousBase} \u00d7 Klimafaktor {previousFactor} = {previousResult}.",
+        "comparisonPrevCalculationNote": "Rechenweg: dieser Zeitraum {currentBase} × Klimafaktor {currentFactor} = {currentResult}; vorheriger Zeitraum {previousBase} × Klimafaktor {previousFactor} = {previousResult}.",
         "districtHeatValueMissing": "Hierzu liegen uns keine Angaben des Versorgers vor",
         "comparisonPrevMissing": "Für den vorhergehenden Abrechnungszeitraum liegen keine Daten vor.",
         "externalReference": "Die Angaben nach § 6a Abs. 3 HeizkostenV (Energieträger, Emissionen, Verbrauchsvergleiche) entnehmen Sie der beigefügten Heizkostenabrechnung Ihres Wärmedienstleisters.",
@@ -2368,7 +2412,6 @@
         "energySource": "Energieträger",
         "distributionPerUnit": "Verteilung pro Wohnung",
         "yourHeatingIntro": "Ihre Heizkosten von {total} setzen sich zusammen aus {heating} Heizung und {hotWater} Warmwasser.",
-        "heatingIntroOverview": "Die Heizkosten von {total} setzen sich zusammen aus {heating} Heizung und {hotWater} Warmwasser.",
         "unit": "Wohnung",
         "heatingArea": "Heizfläche",
         "targetUnitLabel": "{unit} (Ihre Wohnung)",

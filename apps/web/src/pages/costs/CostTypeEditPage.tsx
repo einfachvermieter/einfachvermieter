@@ -207,7 +207,7 @@ export const CostTypeEditPage = () => {
                     <Link
                       to="/rechnungen/$costEntryId"
                       params={{ costEntryId: costType.stats.lastEntry.id }}
-                      className="font-semibold text-limette-700"
+                      className="font-semibold text-azur-700"
                     >
                       {formatEur(costType.stats.lastEntry.amountCents)}
                     </Link>

@@ -21,6 +21,7 @@ import {
 import {
   daysBetween,
   enumerateMonths,
+  formatDate,
   maxDate,
   minDate,
   pad2,
@@ -1134,9 +1135,10 @@ export class TenantsService {
         const i18n = getI18n();
         throw new BadRequestException(
           i18n.t("errors.tenantOverlapsExisting", {
-            id: t.id,
-            start: t.startDate,
-            end: t.endDate ?? i18n.t("errors.tenantOpenEnd"),
+            start: formatDate(t.startDate),
+            end: t.endDate
+              ? formatDate(t.endDate)
+              : i18n.t("errors.tenantOpenEnd"),
           }),
         );
       }

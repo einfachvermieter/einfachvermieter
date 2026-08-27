@@ -13,6 +13,7 @@ import { useBreadcrumbTrail } from "../useBreadcrumbTrail";
 export const PageHeader = ({
   tile,
   title,
+  titleExtra,
   sub,
   loading = false,
   subLoading = false,
@@ -26,6 +27,11 @@ export const PageHeader = ({
    */
   tile: ReactNode;
   title: string;
+
+  /**
+   * Zusatz neben dem Titel, z.B. Status-Badge
+   */
+  titleExtra?: ReactNode;
   sub?: ReactNode;
 
   /**
@@ -77,7 +83,7 @@ export const PageHeader = ({
               {entry.to ? (
                 <Link
                   to={entry.to}
-                  className="underline-offset-3 transition-colors hover:text-limette-700 hover:underline"
+                  className="underline-offset-3 transition-colors hover:text-azur-700 hover:underline"
                 >
                   {entry.label}
                 </Link>
@@ -100,8 +106,9 @@ export const PageHeader = ({
               <Skeleton className="h-5 w-56" />
             </div>
           ) : (
-            <h1 className="font-heading text-2xl font-semibold tracking-heading">
-              {title}
+            <h1 className="flex items-center gap-2.5 font-heading text-2xl font-semibold tracking-heading">
+              <span className="truncate">{title}</span>
+              {titleExtra}
             </h1>
           )}
           {/* Zeile immer reservieren, damit nachladende Unterzeilen die

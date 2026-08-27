@@ -11,11 +11,11 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        ok: "bg-limette-500 text-limette-1000",
-        warn: "bg-honig-500 text-honig-1000",
-        bad: "bg-himbeere-500 text-white",
-        info: "bg-azur-500 text-white",
-        neutral: "bg-schiefer-500 text-white",
+        ok: "bg-limette-100 text-limette-800",
+        warn: "bg-honig-100 text-honig-800",
+        bad: "bg-himbeere-100 text-himbeere-600",
+        info: "bg-azur-100 text-azur-600",
+        neutral: "bg-schiefer-100 text-schiefer-600",
       },
     },
     defaultVariants: {

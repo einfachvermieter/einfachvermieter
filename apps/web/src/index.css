@@ -94,7 +94,7 @@
     --text-3xl: 1.9375rem;
     --text-3xl--line-height: 1.15;
 
-    /* Radien: Felder/Buttons 8px, Titel-Kachel 10px, Karten 12px */
+    /* Radien: Felder/Buttons 8px, Titel-Kachel 10px, Cards 12px */
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius-lg: 0.625rem;
@@ -135,24 +135,23 @@
 
 :root {
     --background: var(--color-white);
-    --foreground: var(--color-schiefer-1000);
+    --foreground: var(--color-schiefer-900);
     --card: var(--color-white);
-    --card-foreground: var(--color-schiefer-1000);
+    --card-foreground: var(--color-schiefer-900);
     --popover: var(--color-white);
-    --popover-foreground: var(--color-schiefer-1000);
-    /* Primärbutton: Limette mit dunkler Schrift */
-    --primary: var(--color-limette-500);
-    --primary-foreground: var(--color-limette-1000);
-    --secondary: var(--color-white);
-    --secondary-foreground: var(--color-schiefer-1000);
+    --popover-foreground: var(--color-schiefer-900);
+    --primary: var(--color-azur-500);
+    --primary-foreground: var(--color-white);
+    --secondary: var(--color-limette-500);
+    --secondary-foreground: var(--color-limette-1000);
     --muted: var(--color-schiefer-50);
     --muted-foreground: var(--color-schiefer-500);
     --accent: var(--color-schiefer-50);
-    --accent-foreground: var(--color-schiefer-1000);
+    --accent-foreground: var(--color-schiefer-900);
     --destructive: var(--color-himbeere-500);
     --border: var(--color-schiefer-200);
     --input: var(--color-schiefer-200);
-    --ring: var(--color-limette-800);
+    --ring: var(--color-azur-800);
     --radius: 0.5rem;
     --sidebar: var(--color-schiefer-900);
     --sidebar-foreground: var(--color-schiefer-400);
@@ -176,7 +175,7 @@
     @apply bg-background text-base text-foreground;
     }
   ::selection {
-    @apply bg-limette-100;
+    @apply bg-azur-100;
     }
   @media (prefers-reduced-motion: reduce) {
     * {
@@ -190,8 +189,8 @@
  * Waagerechter Bildlauf-Hinweis an Tabellen: ein weicher Schatten an der
  * Kante, solange in diese Richtung noch Inhalt steht. Reines CSS - die
  * "local"-Ebenen wandern mit dem Inhalt und decken den Schatten am Ende ab.
- * Die Deckfarbe ist die Kartenfläche; Tabellen stehen in dieser Anwendung
- * immer in einer Karte.
+ * Die Deckfarbe ist die Card-Fläche; Tabellen stehen in dieser Anwendung
+ * immer in einer Card.
  */
 .scroll-shadow-x {
   background:

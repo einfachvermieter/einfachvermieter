@@ -1,9 +1,9 @@
 import { formatNumber, pad2 } from "@einfachvermieter/shared";
 import { RiAddLine, RiHome6Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
@@ -22,6 +22,7 @@ import {
   type UnitSortColumn,
   unitsOverviewQueryOptions,
 } from "../../lib/units";
+import { UnitCreateSheet } from "./UnitCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<UnitSortColumn> = new Set([
   "name",
@@ -67,6 +68,7 @@ export const UnitsOverview = () => {
     storageKey: "units",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -160,11 +162,9 @@ export const UnitsOverview = () => {
         subLoading={!data}
         action={
           canAddUnit ? (
-            <Button asChild={true}>
-              <Link to="/wohnungen/neu" search={{ buildingId }}>
-                <RiAddLine />
-                <span className="hidden sm:inline">{t("ui.units.add")}</span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">{t("ui.units.add")}</span>
             </Button>
           ) : undefined
         }
@@ -193,6 +193,10 @@ export const UnitsOverview = () => {
           pageCount: table.pageCount(data?.total ?? 0),
         }}
       />
+
+      {createOpen ? (
+        <UnitCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

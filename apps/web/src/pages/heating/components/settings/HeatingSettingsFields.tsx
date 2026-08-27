@@ -94,7 +94,7 @@ const applyBillingType = (
   );
 };
 
-// biome-ignore lint/complexity/noExcessiveLinesPerFunction: Länge liegt in den Feld-Sektionen (JSX).
+// biome-ignore lint/complexity/noExcessiveLinesPerFunction: Länge liegt in den Feld-Abschnitten (JSX).
 export const HeatingSettingsFields = ({
   form,
   hotWaterMeterCandidates,
@@ -354,7 +354,7 @@ export const HeatingSettingsFields = ({
                       <AlertDescription>
                         {t("ui.heating.fields.hotWaterMeterMissing")}{" "}
                         <Link
-                          to="/zaehler/neu"
+                          to="/zaehler"
                           search={{
                             buildingId,
                             type: "water_hot",

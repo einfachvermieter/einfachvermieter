@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 
 const DomainAnchor = ({ children, ...props }: ComponentProps<"a">) => (
   <a
-    className="inline-flex items-center gap-0.5 text-limette-700 underline-offset-4 hover:underline"
+    className="inline-flex items-center gap-0.5 text-azur-700 underline-offset-4 hover:underline"
     {...props}
   >
     {children}

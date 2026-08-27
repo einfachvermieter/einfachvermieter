@@ -13,12 +13,12 @@ export const ComputedValueRow = ({
   label: string;
   value: ReactNode;
 }) => (
-  <div className="mt-0.5 flex items-center justify-between rounded-lg bg-limette-50 px-4 py-3">
-    <span className="flex items-center gap-2 text-sm font-semibold text-limette-700">
+  <div className="mt-0.5 flex items-center justify-between rounded-lg bg-azur-50 px-4 py-3">
+    <span className="flex items-center gap-2 text-sm font-semibold text-azur-700">
       {Icon ? <Icon aria-hidden={true} className="size-4.5" /> : null}
       {label}
     </span>
-    <span className="text-lg font-semibold text-limette-700 tabular-nums">
+    <span className="text-lg font-semibold text-azur-700 tabular-nums">
       {value}
     </span>
   </div>

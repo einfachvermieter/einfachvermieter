@@ -2,7 +2,7 @@ import { RiAddLine, RiListOrdered2 } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -25,6 +25,7 @@ import { statsQueryOptions } from "../../lib/stats";
 import { rowActionsColumn, rowIconColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 import { unitsQueryOptions } from "../../lib/units";
+import { MeterCreateSheet } from "./MeterCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<MeterSortColumn> = new Set([
   "label",
@@ -41,6 +42,7 @@ export const MetersOverview = () => {
     storageKey: "meters",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -157,14 +159,9 @@ export const MetersOverview = () => {
         subLoading={!data}
         action={
           canAddMeter ? (
-            <Button asChild={true}>
-              <Link
-                to="/zaehler/neu"
-                search={{ buildingId, type: undefined, unitId: undefined }}
-              >
-                <RiAddLine />
-                <span className="hidden sm:inline">{t("ui.meters.add")}</span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">{t("ui.meters.add")}</span>
             </Button>
           ) : undefined
         }
@@ -190,6 +187,10 @@ export const MetersOverview = () => {
           pageCount: table.pageCount(data?.total ?? 0),
         }}
       />
+
+      {createOpen ? (
+        <MeterCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

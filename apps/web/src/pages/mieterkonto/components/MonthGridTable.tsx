@@ -8,12 +8,11 @@ import {
   RiAddLine,
   RiArrowDownSLine,
   RiArrowRightSLine,
-  RiPencilLine,
 } from "@remixicon/react";
-import { Link } from "@tanstack/react-router";
 import { Fragment, useMemo, useState } from "react";
 import { RowActionButton, RowActions } from "@/components/RowActions";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import {
   Table,
   TableBody,
@@ -82,51 +81,12 @@ const MonthStatusBadge = ({
   );
 };
 
-/**
- * Aktion für einen Monat ohne Zahlung: Inline-Erfassung öffnen
- * (`onRecordPayment`) oder als Fallback `/zahlungen/neu`.
- */
-const RecordPaymentCell = ({
-  row,
-  tenantId,
-  onRecordPayment,
-}: {
-  row: MonthGridRow;
-  tenantId: string;
-  onRecordPayment?: (row: MonthGridRow) => void;
-}) =>
-  onRecordPayment ? (
-    <RowActionButton
-      label={t("ui.account.recordPayment")}
-      icon={<RiAddLine />}
-      onSelect={() => onRecordPayment(row)}
-    />
-  ) : (
-    <RowActionButton label={t("ui.account.recordPayment")}>
-      <Link
-        to="/zahlungen/neu"
-        search={{
-          tenantId,
-          forMonth: row.forMonth,
-          baseRentCents: row.baseRent.sollCents,
-          advanceCents: row.advance.sollCents,
-        }}
-      >
-        <RiAddLine />
-      </Link>
-    </RowActionButton>
-  );
-
 type MonthGridTableProps = {
   monthRows: MonthGridRow[];
   payments: Payment[];
-  tenantId: string;
   deletion: ReturnType<typeof useDeleteResource<Payment>>;
-  /**
-   * Monats-"+" öffnet die eingebettete Inline-Erfassung (vorbelegt)
-   * statt der Route `/zahlungen/neu`.
-   */
-  onRecordPayment?: (row: MonthGridRow) => void;
+  onRecordPayment: (row: MonthGridRow) => void;
+  onEditPayment: (payment: Payment) => void;
 };
 
 /**
@@ -137,9 +97,9 @@ type MonthGridTableProps = {
 export const MonthGridTable = ({
   monthRows,
   payments,
-  tenantId,
   deletion,
   onRecordPayment,
+  onEditPayment,
 }: MonthGridTableProps) => {
   const monthsByYear = useMemo(() => {
     const sorted = [...monthRows].reverse();
@@ -185,6 +145,12 @@ export const MonthGridTable = ({
       [year]: !(prev[year] ?? year === latestYear),
     }));
 
+  // Ältere Jahre kappen, damit die Seitenhöhe bei langen Verträgen
+  // konstant bleibt: neben dem aktuellen Jahr nur drei zurückliegende.
+  const [showAllYears, setShowAllYears] = useState(false);
+  const visibleGroups = showAllYears ? monthsByYear : monthsByYear.slice(0, 4);
+  const hasHiddenYears = visibleGroups.length < monthsByYear.length;
+
   const paymentById = useMemo(() => {
     const map = new Map<string, Payment>();
     for (const payment of payments) {
@@ -223,7 +189,7 @@ export const MonthGridTable = ({
             </TableCell>
           </TableRow>
         ) : (
-          monthsByYear.map((group) => {
+          visibleGroups.map((group) => {
             const { year, rows } = group;
             const open = isYearOpen(year);
             return (
@@ -263,10 +229,10 @@ export const MonthGridTable = ({
                       <TableRow key={row.forMonth}>
                         <TableCell className="px-4 py-3">
                           {row.paymentIds.length === 0 ? (
-                            <RecordPaymentCell
-                              row={row}
-                              tenantId={tenantId}
-                              onRecordPayment={onRecordPayment}
+                            <RowActionButton
+                              label={t("ui.account.recordPayment")}
+                              icon={<RiAddLine />}
+                              onSelect={() => onRecordPayment(row)}
                             />
                           ) : (
                             <div className="flex flex-col items-start gap-1">
@@ -281,15 +247,7 @@ export const MonthGridTable = ({
                                     isDeleting={
                                       paymentId === deletion.deletingId
                                     }
-                                    editLink={
-                                      <Link
-                                        to="/zahlungen/$paymentId/bearbeiten"
-                                        params={{ paymentId }}
-                                        search={{ tenantId }}
-                                      >
-                                        <RiPencilLine />
-                                      </Link>
-                                    }
+                                    onEdit={() => onEditPayment(payment)}
                                     onDelete={() => deletion.request(payment)}
                                   />
                                 );
@@ -314,6 +272,20 @@ export const MonthGridTable = ({
             );
           })
         )}
+        {hasHiddenYears ? (
+          <TableRow>
+            <TableCell colSpan={5} className="px-4 py-2">
+              <Button
+                type="button"
+                variant="addLink"
+                size="text"
+                onClick={() => setShowAllYears(true)}
+              >
+                {t("ui.account.showEarlierYears")}
+              </Button>
+            </TableCell>
+          </TableRow>
+        ) : null}
       </TableBody>
     </Table>
   );

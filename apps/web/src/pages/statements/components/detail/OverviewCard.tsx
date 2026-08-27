@@ -1,81 +1,83 @@
-import type { StatementResult } from "@einfachvermieter/shared";
-import { formatEur } from "@einfachvermieter/shared";
-import { RiScales3Line } from "@remixicon/react";
-import { ResultRows } from "../../../../components/common/ResultRows";
+import { formatEur, type StatementResult } from "@einfachvermieter/shared";
+import { RiCoinsLine } from "@remixicon/react";
 import { SectionCard } from "../../../../components/common/SectionCard";
+import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
+import { Button } from "../../../../components/ui/Button";
 import { t } from "../../../../lib/i18n";
-import { cn } from "../../../../lib/utils";
+import { ALLOCATION_BY_LABEL_KEY } from "../../../../lib/statements";
 
-export const OverviewCard = ({ result }: { result: StatementResult }) => {
-  const heatingCents = result.lines
-    .filter((l) => l.allocationKey === "heating_ordinance")
-    .reduce((sum, l) => sum + l.tenantAmountCents, 0);
-
-  const operatingCents = result.lines
-    .filter((l) => l.allocationKey !== "heating_ordinance")
-    .reduce((sum, l) => sum + l.tenantAmountCents, 0);
-
-  const totalCents = operatingCents + heatingCents;
-  const isRefund = result.balanceCents <= 0;
-
+/**
+ * Kosten-Kurzübersicht im Übersicht-Tab: eine Zeile je Kostenposition mit
+ * Umlageschlüssel und Mieter-Anteil. Der Rechenweg steht in den Tabs
+ * Betriebskosten und Heizkosten.
+ */
+export const OverviewCard = ({
+  result,
+  onShowDetails,
+}: {
+  result: StatementResult;
+  /**
+   * Wechselt in den Betriebskosten-Tab
+   */
+  onShowDetails?: () => void;
+}) => {
+  const totalCents = result.lines.reduce(
+    (sum, line) => sum + line.tenantAmountCents,
+    0,
+  );
   return (
     <SectionCard
-      icon={RiScales3Line}
-      title={t("ui.statements.detail.overviewTitle")}
-      description={t("ui.statements.detail.overviewDescription")}
+      icon={RiCoinsLine}
+      title={t("ui.statements.detail.overviewCosts.title")}
+      action={
+        onShowDetails ? (
+          <Button variant="addLink" size="text" onClick={onShowDetails}>
+            {t("ui.statements.detail.overviewCosts.allDetails")}
+          </Button>
+        ) : undefined
+      }
     >
-      <ResultRows
-        rows={[
-          {
-            label: t("ui.statements.detail.summaryOperatingCosts"),
-            value: formatEur(operatingCents),
-          },
-          {
-            label: t("ui.statements.detail.summaryHeatingCosts"),
-            value: formatEur(heatingCents),
-          },
-          {
-            label: t("ui.statements.detail.totalCosts"),
-            value: formatEur(totalCents),
-            kind: "sum",
-          },
-          {
-            label: t("ui.statements.detail.advances"),
-            // Ohne Vorauszahlungen gibt es nichts abzuziehen, das
-            // Minuszeichen entfällt dann.
-            value:
-              result.totalAdvancesCents === 0
-                ? formatEur(0)
-                : t("ui.common.deductionAmount", {
-                    amount: formatEur(result.totalAdvancesCents),
-                  }),
-          },
-        ]}
-      />
-      <div
-        className={cn(
-          "mt-3.5 flex items-center justify-between rounded-lg px-4.25 py-3.25",
-          isRefund ? "bg-limette-50" : "bg-himbeere-50",
-        )}
-      >
-        <span
-          className={cn(
-            "text-sm font-semibold",
-            isRefund ? "text-limette-700" : "text-himbeere-500",
-          )}
-        >
-          {isRefund
-            ? t("ui.statements.detail.refund")
-            : t("ui.statements.detail.additionalPayment")}
-        </span>
-        <span
-          className={cn(
-            "text-lg font-semibold tabular-nums",
-            isRefund ? "text-limette-700" : "text-himbeere-500",
-          )}
-        >
-          {formatEur(Math.abs(result.balanceCents))}
-        </span>
+      <div className="scroll-shadow-x overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className={QUIET_TABLE_HEAD_ROW}>
+              <th className="py-2.5">
+                {t("ui.statements.detail.columnCostType")}
+              </th>
+              <th className="py-2.5">
+                {t("ui.statements.detail.overviewCosts.columnDistribution")}
+              </th>
+              <th className="py-2.5 text-right">
+                {t("ui.statements.detail.columnYourShare")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {result.lines.map((line) => (
+              <tr key={line.costTypeName} className="border-b border-border">
+                <td className="py-2.5 font-semibold text-foreground">
+                  {line.costTypeName}
+                </td>
+                <td className="py-2.5 text-muted-foreground">
+                  {t(ALLOCATION_BY_LABEL_KEY[line.allocationKey])}
+                </td>
+                <td className="py-2.5 text-right tabular-nums">
+                  {formatEur(line.tenantAmountCents)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="border-t-2 border-foreground">
+              <td className="py-2 font-semibold" colSpan={2}>
+                {t("ui.statements.detail.sum")}
+              </td>
+              <td className="py-2 text-right font-semibold tabular-nums">
+                {formatEur(totalCents)}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
     </SectionCard>
   );

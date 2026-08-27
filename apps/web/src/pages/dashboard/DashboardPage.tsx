@@ -11,7 +11,7 @@ import {
 } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
@@ -19,15 +19,17 @@ import { buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { statsQueryOptions } from "../../lib/stats";
+import { PaymentSheet } from "../payments/PaymentSheet";
+import { TenantCreateSheet } from "../tenants/TenantCreateSheet";
 
 /**
- * Klasse der KPI-Karten
+ * Klasse der KPI-Cards
  */
 const KPI_CARD_CLASS =
   "block rounded-xl border border-border bg-card px-5 py-4 transition-colors hover:bg-muted aria-disabled:pointer-events-none aria-disabled:opacity-50";
 
 /**
- * Innenleben einer KPI-Karte: Label oben, großer Wert darunter
+ * Innenleben einer KPI-Card: Label oben, großer Wert darunter
  */
 const KpiCardBody = ({
   value,
@@ -71,7 +73,7 @@ const QuickTileContent = ({
 );
 
 /**
- * Kartenkopf: Titel und Beschreibung
+ * Card Header: Titel und Beschreibung
  */
 const CardHead = ({
   title,
@@ -92,6 +94,8 @@ export const DashboardPage = () => {
   const { data: stats } = useQuery(statsQueryOptions());
   const { data: buildings } = useQuery(buildingsQueryOptions);
   const navigate = useNavigate();
+  const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
+  const [tenantSheetOpen, setTenantSheetOpen] = useState(false);
 
   const noBuildings = stats?.buildings === 0;
 
@@ -169,7 +173,7 @@ export const DashboardPage = () => {
             ) : null}
             {stats && stats.buildings > 0 && stats.units === 0 ? (
               <Link
-                to="/wohnungen/neu"
+                to="/wohnungen"
                 search={{ buildingId: undefined }}
                 className={QUICK_TILE_CLASS}
               >
@@ -179,15 +183,15 @@ export const DashboardPage = () => {
               </Link>
             ) : null}
             {stats && stats.units > 0 && stats.tenants === 0 ? (
-              <Link
-                to="/mieter/neu"
-                search={{ buildingId: undefined }}
+              <button
+                type="button"
                 className={QUICK_TILE_CLASS}
+                onClick={() => setTenantSheetOpen(true)}
               >
                 <QuickTileContent icon={RiGroupLine}>
                   {t("ui.dashboard.quickstart.addTenant")}
                 </QuickTileContent>
-              </Link>
+              </button>
             ) : null}
             {stats && stats.tenants > 0 ? (
               <Link to="/abrechnungen" className={QUICK_TILE_CLASS}>
@@ -223,15 +227,15 @@ export const DashboardPage = () => {
               </Link>
             ) : null}
             {stats && stats.tenants > 0 ? (
-              <Link
-                to="/zahlungen/neu"
-                search={{ tenantId: undefined }}
+              <button
+                type="button"
                 className={QUICK_TILE_CLASS}
+                onClick={() => setPaymentSheetOpen(true)}
               >
                 <QuickTileContent icon={RiMoneyEuroCircleLine}>
                   {t("ui.dashboard.quickstart.recordPayment")}
                 </QuickTileContent>
-              </Link>
+              </button>
             ) : null}
           </div>
         </section>
@@ -282,6 +286,16 @@ export const DashboardPage = () => {
           ))}
         </section>
       </div>
+
+      {paymentSheetOpen ? (
+        <PaymentSheet
+          request={{ mode: "create" }}
+          onClose={() => setPaymentSheetOpen(false)}
+        />
+      ) : null}
+      {tenantSheetOpen ? (
+        <TenantCreateSheet onClose={() => setTenantSheetOpen(false)} />
+      ) : null}
     </div>
   );
 };

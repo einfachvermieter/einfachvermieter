@@ -50,7 +50,7 @@ export const meterToFormValues = (meter: Meter): MeterFormValues => ({
           energyFactor:
             factor.energyFactorKwhPerM3 === null
               ? ""
-              : String(factor.energyFactorKwhPerM3),
+              : String(factor.energyFactorKwhPerM3).replace(".", ","),
           notes: factor.notes ?? "",
         }))
       : [],

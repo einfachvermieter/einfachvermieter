@@ -5,8 +5,7 @@ import {
   pad2,
   type StatementResult,
 } from "@einfachvermieter/shared";
-import { RiBankCardLine } from "@remixicon/react";
-import { Disclose } from "../../../../components/common/Disclose";
+import { RiBankCardLine, RiListUnordered } from "@remixicon/react";
 import { MonthTileGrid } from "../../../../components/common/MonthTileGrid";
 import { SectionCard } from "../../../../components/common/SectionCard";
 import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
@@ -130,112 +129,120 @@ export const PaymentsCard = ({
   const monthBuckets = aggregatePaymentsByMonth(payments, period, tenantPeriod);
 
   return (
-    <SectionCard
-      icon={RiBankCardLine}
-      title={t("ui.statements.detail.paymentsTitle")}
-      description={t("ui.statements.detail.paymentsDescription")}
-    >
-      {payments.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          {t("ui.statements.detail.paymentsEmpty")}
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {/* Monats-Kacheln: NK-Voraus-Anteil je Kalendermonat (wie Aggregation der PDF-Anlage). Nicht den i18n aus dem PDF verwenden, da dort "Sie" Anrede! */}
+    <>
+      <SectionCard
+        icon={RiBankCardLine}
+        title={t("ui.statements.detail.paymentsTitle")}
+        description={t("ui.statements.detail.paymentsDescription")}
+      >
+        {payments.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {t("ui.statements.detail.paymentsIntro")}
+            {t("ui.statements.detail.paymentsEmpty")}
           </p>
-          <MonthTileGrid
-            months={monthBuckets.map((b) => ({
-              label: `${b.monthShort} ${b.year}`,
-              value: b.inTenantPeriod
-                ? formatEur(b.advanceCents)
-                : t("ui.common.emptyValue"),
-              state: tileState(b),
-            }))}
-          />
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <span
-                aria-hidden={true}
-                className="size-2 rounded-full bg-limette-400"
-              />
-              {t("ui.statements.detail.legendReceived")}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span
-                aria-hidden={true}
-                className="size-2 rounded-full bg-honig-400"
-              />
-              {t("ui.statements.detail.legendOpen")}
-            </span>
+        ) : (
+          <div className="space-y-4">
+            {/* Monats-Kacheln: NK-Voraus-Anteil je Kalendermonat (wie Aggregation der PDF-Anlage). Nicht den i18n aus dem PDF verwenden, da dort "Sie" Anrede! */}
+            <p className="text-sm text-muted-foreground">
+              {t("ui.statements.detail.paymentsIntro")}
+            </p>
+            <MonthTileGrid
+              months={monthBuckets.map((b) => ({
+                label: `${b.monthShort} ${b.year}`,
+                value: b.inTenantPeriod
+                  ? formatEur(b.advanceCents)
+                  : t("ui.common.emptyValue"),
+                state: tileState(b),
+              }))}
+            />
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span
+                  aria-hidden={true}
+                  className="size-2 rounded-full bg-limette-400"
+                />
+                {t("ui.statements.detail.legendReceived")}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span
+                  aria-hidden={true}
+                  className="size-2 rounded-full bg-honig-400"
+                />
+                {t("ui.statements.detail.legendOpen")}
+              </span>
+            </div>
+            <ComputedValueRow
+              label={t("ui.statements.detail.paymentsTotalAdvance")}
+              value={formatEur(totalAdvance)}
+            />
           </div>
-          <ComputedValueRow
-            label={t("ui.statements.detail.paymentsTotalAdvance")}
-            value={formatEur(totalAdvance)}
-          />
+        )}
+      </SectionCard>
 
+      {payments.length > 0 ? (
+        <SectionCard
+          collapsible={true}
+          icon={RiListUnordered}
+          title={t("ui.statements.detail.showEntries")}
+        >
           {/* Detailtabelle (Vermietersicht), je Zahlung mit Datum,
-                Verwendungszweck und Kaltmiete; im PDF aus Datenschutz-
-                gründen nicht enthalten. */}
-          <Disclose label={t("ui.statements.detail.showEntries")}>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className={QUIET_TABLE_HEAD_ROW}>
-                  <th className="py-2.5">
-                    {t("ui.statements.detail.paymentsColumnMonth")}
-                  </th>
-                  <th className="py-2.5">
-                    {t("ui.statements.detail.paymentsColumnDate")}
-                  </th>
-                  <th className="py-2.5">
-                    {t("ui.statements.detail.paymentsColumnReference")}
-                  </th>
-                  <th className="py-2.5 text-right">
-                    {t("ui.statements.detail.paymentsColumnBaseRent")}
-                  </th>
-                  <th className="py-2.5 text-right">
-                    {t("ui.statements.detail.paymentsColumnAdvance")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {payments.map((payment) => (
-                  <tr key={payment.id} className="border-b border-border">
-                    <td className="py-2.5 tabular-nums">{payment.forMonth}</td>
-                    <td className="py-2.5 tabular-nums">
-                      {formatDate(payment.date)}
-                    </td>
-                    <td className="py-2.5 text-xs text-muted-foreground">
-                      {payment.reference ?? t("common.none")}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {formatEur(payment.baseRentCents)}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {formatEur(payment.advanceCents)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-foreground">
-                  <td className="py-2 font-semibold" colSpan={3}>
-                    {t("ui.statements.detail.paymentsTotal", {
-                      total: formatEur(total),
-                    })}
+              Verwendungszweck und Kaltmiete; im PDF aus Datenschutz-
+              gründen nicht enthalten. */}
+          <table className="w-full text-sm">
+            <thead>
+              <tr className={QUIET_TABLE_HEAD_ROW}>
+                <th className="py-2.5">
+                  {t("ui.statements.detail.paymentsColumnMonth")}
+                </th>
+                <th className="py-2.5">
+                  {t("ui.statements.detail.paymentsColumnDate")}
+                </th>
+                <th className="py-2.5">
+                  {t("ui.statements.detail.paymentsColumnReference")}
+                </th>
+                <th className="py-2.5 text-right">
+                  {t("ui.statements.detail.paymentsColumnBaseRent")}
+                </th>
+                <th className="py-2.5 text-right">
+                  {t("ui.statements.detail.paymentsColumnAdvance")}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.map((payment) => (
+                <tr key={payment.id} className="border-b border-border">
+                  <td className="py-2.5 tabular-nums">{payment.forMonth}</td>
+                  <td className="py-2.5 tabular-nums">
+                    {formatDate(payment.date)}
                   </td>
-                  <td className="py-2 text-right" colSpan={2}>
-                    <span className="font-semibold tabular-nums">
-                      {formatEur(totalAdvance)}
-                    </span>
+                  <td className="py-2.5 text-xs text-muted-foreground">
+                    {payment.reference ?? t("common.none")}
+                  </td>
+                  <td className="py-2.5 text-right tabular-nums">
+                    {formatEur(payment.baseRentCents)}
+                  </td>
+                  <td className="py-2.5 text-right tabular-nums">
+                    {formatEur(payment.advanceCents)}
                   </td>
                 </tr>
-              </tfoot>
-            </table>
-          </Disclose>
-        </div>
-      )}
-    </SectionCard>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-foreground">
+                <td className="py-2 font-semibold" colSpan={3}>
+                  {t("ui.statements.detail.paymentsTotal", {
+                    total: formatEur(total),
+                  })}
+                </td>
+                <td className="py-2 text-right" colSpan={2}>
+                  <span className="font-semibold tabular-nums">
+                    {formatEur(totalAdvance)}
+                  </span>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </SectionCard>
+      ) : null}
+    </>
   );
 };

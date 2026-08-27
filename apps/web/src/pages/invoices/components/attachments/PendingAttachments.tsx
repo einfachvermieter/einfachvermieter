@@ -28,9 +28,7 @@ const fileIcon = (file: File) => {
     );
   }
   if (file.type.startsWith("image/")) {
-    return (
-      <RiImageLine className="size-5 text-limette-700" aria-hidden={true} />
-    );
+    return <RiImageLine className="size-5 text-azur-700" aria-hidden={true} />;
   }
   return (
     <RiFileLine className="size-5 text-muted-foreground" aria-hidden={true} />

@@ -32,11 +32,15 @@ const calendarEnd = new Date(today.getFullYear() + 5, 11, 1);
 export const MeterBaseFields = ({
   form,
   units,
-  onTypeChange,
+  variant = "card",
 }: {
   form: UseFormReturn<MeterFormValues>;
   units: Unit[];
-  onTypeChange: (newType: string) => void;
+
+  /**
+   * "sheet" = ohne Card-Wrapper, für das Formular-Sheet
+   */
+  variant?: "card" | "sheet";
 }) => {
   const selectedBuildingId = form.watch("buildingId");
   const selectedRole = form.watch("role");
@@ -94,110 +98,140 @@ export const MeterBaseFields = ({
     }
   }, [selectedRole, isVirtual, form]);
 
+  /**
+   * Typwechsel verwirft die typgebundenen Angaben (Brennwerte, HKV-Felder)
+   * und die Quellen des Differenzzählers.
+   */
+  const onTypeChange = (newType: string) => {
+    if (newType !== "gas") {
+      form.setValue("gasFactors", []);
+    }
+
+    if (newType !== "heat_cost_allocator") {
+      form.setValue("radiator", "");
+      form.setValue("kTotal", "");
+      form.setValue("radiatorManufacturer", "");
+      form.setValue("radiatorModel", "");
+      form.setValue("radiatorType", "");
+      form.setValue("radiatorDimensions", "");
+    }
+
+    form.setValue("baseMeterId", "");
+    form.setValue("subtractedMeterIds", []);
+  };
+
+  const fields = (
+    <FieldGroup className="gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <TextInput
+          control={form.control}
+          name="label"
+          label={t("ui.meters.fields.label")}
+          optional={true}
+          placeholder={suggestedLabel}
+          description={t("ui.meters.fields.labelDescription")}
+        />
+        <SelectInput
+          control={form.control}
+          name="type"
+          label={t("ui.meters.fields.type")}
+          onValueChange={onTypeChange}
+          options={meterTypes.map((type) => ({
+            value: type,
+            label: `${t(`meters.types.${type}`)} (${measurementUnitLabel(measurementUnitFor(type))})`,
+          }))}
+        />
+        <SelectInput
+          control={form.control}
+          name="role"
+          label={t("ui.meters.fields.role")}
+          description2={t(`ui.meters.roleDescriptions.${selectedRole}`)}
+          options={visibleRoles.map((role) => ({
+            value: role,
+            label: t(`meters.roles.${role}`),
+          }))}
+        />
+        {showUnitField ? (
+          <SelectInput
+            control={form.control}
+            name="unitId"
+            label={t("ui.meters.fields.unit")}
+            optional={!roleRequiresUnit(selectedRole)}
+            options={[
+              { value: UNIT_NONE, label: "-" },
+              ...scopedUnits.map((unit) => ({
+                value: unit.id,
+                label: unit.name,
+              })),
+            ]}
+          />
+        ) : null}
+        <TextInput
+          control={form.control}
+          name="serialNumber"
+          label={t("ui.meters.fields.serialNumber")}
+          optional={true}
+          disabled={isVirtual}
+          description={
+            isVirtual ? t("ui.meters.hints.virtualNoReadings") : undefined
+          }
+        />
+        {isRemoteReadableRelevantType(selectedType) && !isVirtual ? (
+          <SwitchInput
+            control={form.control}
+            name="isRemoteReadable"
+            label={t("ui.meters.fields.isRemoteReadable")}
+            description={t("ui.meters.fields.isRemoteReadableDescription")}
+          />
+        ) : null}
+      </div>
+      <Disclose label={t("ui.meters.detail.moreFields")}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <TextInput
+            control={form.control}
+            name="room"
+            label={
+              showUnitField
+                ? t("ui.meters.fields.room")
+                : t("ui.meters.fields.area")
+            }
+            placeholder={
+              showUnitField
+                ? t("ui.meters.fields.roomPlaceholder")
+                : t("ui.meters.fields.areaPlaceholder")
+            }
+            optional={true}
+          />
+          <DateInput
+            control={form.control}
+            name="validFrom"
+            label={t("ui.meters.fields.validFrom")}
+            startMonth={calendarStart}
+            endMonth={calendarEnd}
+          />
+          <DateInput
+            control={form.control}
+            name="validUntil"
+            label={t("ui.meters.fields.validUntil")}
+            optional={true}
+            startMonth={calendarStart}
+            endMonth={calendarEnd}
+          />
+        </div>
+      </Disclose>
+    </FieldGroup>
+  );
+
+  if (variant === "sheet") {
+    return fields;
+  }
+
   return (
     <SectionCard
       icon={RiDashboard2Line}
       title={t("ui.meters.detail.baseSection")}
     >
-      <FieldGroup className="gap-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <TextInput
-            control={form.control}
-            name="label"
-            label={t("ui.meters.fields.label")}
-            optional={true}
-            placeholder={suggestedLabel}
-            description={t("ui.meters.fields.labelDescription")}
-          />
-          <SelectInput
-            control={form.control}
-            name="type"
-            label={t("ui.meters.fields.type")}
-            onValueChange={onTypeChange}
-            options={meterTypes.map((type) => ({
-              value: type,
-              label: `${t(`meters.types.${type}`)} (${measurementUnitLabel(measurementUnitFor(type))})`,
-            }))}
-          />
-          <SelectInput
-            control={form.control}
-            name="role"
-            label={t("ui.meters.fields.role")}
-            description2={t(`ui.meters.roleDescriptions.${selectedRole}`)}
-            options={visibleRoles.map((role) => ({
-              value: role,
-              label: t(`meters.roles.${role}`),
-            }))}
-          />
-          {showUnitField ? (
-            <SelectInput
-              control={form.control}
-              name="unitId"
-              label={t("ui.meters.fields.unit")}
-              optional={!roleRequiresUnit(selectedRole)}
-              options={[
-                { value: UNIT_NONE, label: "-" },
-                ...scopedUnits.map((unit) => ({
-                  value: unit.id,
-                  label: unit.name,
-                })),
-              ]}
-            />
-          ) : null}
-          <TextInput
-            control={form.control}
-            name="serialNumber"
-            label={t("ui.meters.fields.serialNumber")}
-            optional={true}
-            disabled={isVirtual}
-            description={
-              isVirtual ? t("ui.meters.hints.virtualNoReadings") : undefined
-            }
-          />
-          {isRemoteReadableRelevantType(selectedType) && !isVirtual ? (
-            <SwitchInput
-              control={form.control}
-              name="isRemoteReadable"
-              label={t("ui.meters.fields.isRemoteReadable")}
-              description={t("ui.meters.fields.isRemoteReadableDescription")}
-            />
-          ) : null}
-        </div>
-        <Disclose label={t("ui.meters.detail.moreFields")}>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <TextInput
-              control={form.control}
-              name="room"
-              label={
-                showUnitField
-                  ? t("ui.meters.fields.room")
-                  : t("ui.meters.fields.area")
-              }
-              placeholder={
-                showUnitField
-                  ? t("ui.meters.fields.roomPlaceholder")
-                  : t("ui.meters.fields.areaPlaceholder")
-              }
-              optional={true}
-            />
-            <DateInput
-              control={form.control}
-              name="validFrom"
-              label={t("ui.meters.fields.validFrom")}
-              startMonth={calendarStart}
-              endMonth={calendarEnd}
-            />
-            <DateInput
-              control={form.control}
-              name="validUntil"
-              label={t("ui.meters.fields.validUntil")}
-              optional={true}
-              startMonth={calendarStart}
-              endMonth={calendarEnd}
-            />
-          </div>
-        </Disclose>
-      </FieldGroup>
+      {fields}
     </SectionCard>
   );
 };

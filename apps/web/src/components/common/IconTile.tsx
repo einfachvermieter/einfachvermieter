@@ -29,7 +29,7 @@ export const IconTile = ({
     aria-hidden={true}
     data-slot="icon-tile"
     className={cn(
-      "grid shrink-0 place-items-center bg-limette-100 text-limette-700",
+      "grid shrink-0 place-items-center bg-azur-100 text-azur-700",
       SIZE_CLASSES[size],
       className,
     )}

@@ -1,41 +1,34 @@
-import {
-  formatDate,
-  formatEur,
-  formatName,
-  pickRentForDate,
-  todayIso,
-} from "@einfachvermieter/shared";
+import { formatName, todayIso } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
-import { BalanceAmount } from "../../components/common/BalanceAmount";
+import { Link } from "@tanstack/react-router";
+import { Fragment, type ReactNode } from "react";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
-import { buildingsQueryOptions } from "../../lib/buildings";
+import { Badge } from "../../components/ui/Badge";
 import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
-import { tenantQueryOptions } from "../../lib/tenants";
+import { currentResidentCount, tenantQueryOptions } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
 
 /**
- * Hero-Band eines Mieters (Stammdaten- und Konto-Tab): Initialen-Avatar,
- * Vertragspartner, Gebäude/Wohnung/seit. Lädt seine Daten selbst.
+ * Hero-Band eines Mieters (Stammdaten- und Konto-Tab): Titel mit
+ * Status-Badge, Unterzeile mit Wohnungs-Querverweis, Laufzeit und
+ * Bewohner-Zahl. Lädt seine Daten selbst.
  */
 export const TenantHero = ({
   tenantId,
-  balance,
+  action,
 }: {
   tenantId: string;
+
   /**
-   * Gesetzt = Konto-Variante mit Saldo/Kaution/Status statt Warmmiete-Stats
+   * Aktionen rechts im Kopf, z.B. das ...-Menü mit "Mieter löschen"
    */
-  balance?: {
-    balanceCents: number;
-    deposit: { sollCents: number; istCents: number };
-  };
+  action?: ReactNode;
 }) => {
   const { data: aggregate } = useQuery(tenantQueryOptions(tenantId));
   const { data: units } = useQuery(unitsQueryOptions);
-  const { data: buildings } = useQuery(buildingsQueryOptions);
 
   if (!aggregate) {
     return (
@@ -43,14 +36,12 @@ export const TenantHero = ({
         tile={<PageHeaderIcon icon={domainVisuals.tenants.icon} />}
         title=""
         loading={true}
-        statsSkeleton={balance ? 3 : 4}
       />
     );
   }
 
   const { tenant } = aggregate;
   const unit = units?.find((entry) => entry.id === tenant.unitId);
-  const building = buildings?.find((entry) => entry.id === unit?.buildingId);
 
   const today = todayIso();
   const active =
@@ -63,71 +54,50 @@ export const TenantHero = ({
     .join(t("ui.common.separators.comma"));
   const heroName = names || (unit?.name ?? "");
 
-  const currentRent = pickRentForDate(aggregate.rents, today);
-  const warmRentCents = currentRent
-    ? currentRent.monthlyBaseRentCents + currentRent.monthlyAdvanceCents
-    : null;
+  const residentCount = currentResidentCount(
+    aggregate.residents,
+    tenant,
+    today,
+  );
 
-  const statusStat = {
-    label: t("ui.common.columns.status"),
-    value: active ? t("ui.tenants.active") : t("ui.tenants.inactive"),
-  };
-
-  const stats = balance
-    ? [
-        {
-          label: t("ui.account.balanceLabel"),
-          value: <BalanceAmount receivableCents={-balance.balanceCents} />,
-        },
-        {
-          label: t("ui.account.depositLabel"),
-          // Offene Kaution positiv als "... offen" ausweisen; ein negativer
-          // Betrag suggeriert fälschlich eine Schuld des Vermieters.
-          value:
-            balance.deposit.sollCents - balance.deposit.istCents > 0
-              ? t("ui.account.depositOpen", {
-                  amount: formatEur(
-                    balance.deposit.sollCents - balance.deposit.istCents,
-                  ),
-                })
-              : formatEur(balance.deposit.istCents),
-        },
-        statusStat,
-      ]
-    : [
-        {
-          label: t("ui.tenant.hero.warmRent"),
-          value:
-            warmRentCents !== null
-              ? formatEur(warmRentCents)
-              : t("ui.common.emptyValue"),
-        },
-        {
-          label: t("ui.tenant.fields.deposit"),
-          value:
-            tenant.depositCents > 0
-              ? formatEur(tenant.depositCents)
-              : t("ui.common.emptyValue"),
-        },
-        {
-          label: t("ui.tenant.hero.contractStart"),
-          value: formatDate(tenant.startDate),
-        },
-        statusStat,
-      ];
+  const subItems: ReactNode[] = [];
+  if (unit) {
+    subItems.push(
+      <Link
+        to="/wohnungen/$unitId"
+        params={{ unitId: unit.id }}
+        className="underline-offset-3 transition-colors hover:text-azur-700 hover:underline"
+      >
+        {unit.name}
+      </Link>,
+    );
+  }
+  subItems.push(<span>{formatPeriod(tenant.startDate, tenant.endDate)}</span>);
+  subItems.push(
+    <span>{t("ui.tenant.hero.residentsCount", { count: residentCount })}</span>,
+  );
 
   return (
     <PageHeader
       tile={<PageHeaderIcon icon={domainVisuals.tenants.icon} />}
       title={heroName}
-      sub={[
-        building?.name,
-        unit?.name,
-        formatPeriod(tenant.startDate, tenant.endDate),
-      ]
-        .filter(Boolean)
-        .join(t("ui.common.separators.bullet"))}
-      stats={stats}
+      titleExtra={
+        <Badge variant={active ? "ok" : "neutral"}>
+          {active ? t("ui.tenants.active") : t("ui.tenants.inactive")}
+        </Badge>
+      }
+      sub={
+        <span>
+          {subItems.map((item, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: statische Liste
+            <Fragment key={index}>
+              {index > 0 ? t("ui.common.separators.bullet") : null}
+              {item}
+            </Fragment>
+          ))}
+        </span>
+      }
+      action={action}
     />
   );
 };
