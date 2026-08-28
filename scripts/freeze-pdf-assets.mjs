@@ -65,7 +65,7 @@ const fontSources = [
 
 const svgSources = [
   {
-    src: "apps/web/src/img/logo/logo.svg",
+    src: "apps/web/src/img/logo/logo_light.svg",
     out: "packages/pdf/assets/logo-pdf.svg",
   },
 ];
