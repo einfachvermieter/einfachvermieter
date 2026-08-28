@@ -1,21 +1,21 @@
 import { formatBytes, formatDate } from "@einfachvermieter/shared";
 import {
-  RiAiGenerate2Line,
   RiAttachment2,
+  RiBardFill,
   RiDeleteBinLine,
   RiEyeLine,
   RiFileLine,
   RiFilePdf2Line,
   RiImageLine,
   RiLoader4Line,
-  RiUploadCloud2Line,
 } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { FileDropZone } from "@/components/common/FileDropZone";
+import { SectionCard } from "@/components/common/SectionCard";
 import { DestructiveConfirmDialog } from "@/components/DestructiveConfirmDialog";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { isMistralSupported } from "../../../../lib/aiExtraction";
 import { ApiError } from "../../../../lib/api";
 import {
@@ -61,14 +61,18 @@ const AttachmentTile = ({ att }: { att: CostEntryAttachment }) => {
 export const CostEntryAttachments = ({
   costEntryId,
   onExtract,
+  onUploaded,
   extractingAttachmentId,
 }: {
   costEntryId: string;
   onExtract?: (attachmentId: string) => void;
+  /**
+   * Meldet einen frisch hochgeladenen Beleg an die Rechnungs-Seite
+   */
+  onUploaded?: (attachment: CostEntryAttachment) => void;
   extractingAttachmentId?: string | null;
 }) => {
   const queryClient = useQueryClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] =
     useState<CostEntryAttachment | null>(null);
@@ -88,8 +92,8 @@ export const CostEntryAttachments = ({
     onSuccess: async (created) => {
       setErrorMessage(null);
       await invalidate();
-      setPreviewId(created.id);
       toast.success(t("common.saved"));
+      onUploaded?.(created);
     },
     onError: (err: unknown) => {
       setErrorMessage(
@@ -121,10 +125,7 @@ export const CostEntryAttachments = ({
     },
   });
 
-  const onFilesSelected = (files: FileList | null) => {
-    if (!files || files.length === 0) {
-      return;
-    }
+  const onFilesSelected = (files: FileList) => {
     setErrorMessage(null);
     for (const file of Array.from(files)) {
       if (file.size > MAX_ATTACHMENT_BYTES) {
@@ -138,48 +139,38 @@ export const CostEntryAttachments = ({
       }
       uploadMutation.mutate(file);
     }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
   };
 
   const attachments = attachmentsQuery.data ?? [];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <RiAttachment2 className="size-5" aria-hidden={true} />
-          {t("ui.invoices.attachments.title")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-3">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={ATTACHMENT_ACCEPT_ATTR}
-            multiple={true}
-            className="hidden"
-            onChange={(event) => onFilesSelected(event.target.files)}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadMutation.isPending}
-          >
-            <RiUploadCloud2Line aria-hidden={true} />
-            {uploadMutation.isPending
+    <SectionCard
+      icon={RiAttachment2}
+      title={t("ui.invoices.attachments.title")}
+    >
+      <div className="space-y-4">
+        <FileDropZone
+          accept={ATTACHMENT_ACCEPT_ATTR}
+          buttonLabel={
+            uploadMutation.isPending
               ? t("ui.invoices.attachments.uploading")
-              : t("ui.invoices.attachments.upload")}
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            {t("ui.invoices.attachments.hint", {
-              limit: formatBytes(MAX_ATTACHMENT_BYTES),
-            })}
-          </span>
-        </div>
+              : t("ui.invoices.attachments.upload")
+          }
+          disabled={uploadMutation.isPending}
+          hint={
+            <>
+              <span className="block">
+                {t("ui.invoices.attachments.dropHint")}
+              </span>
+              <span className="block text-xs">
+                {t("ui.invoices.attachments.hint", {
+                  limit: formatBytes(MAX_ATTACHMENT_BYTES),
+                })}
+              </span>
+            </>
+          }
+          onFiles={onFilesSelected}
+        />
 
         {errorMessage ? (
           <p className="text-sm text-destructive">{errorMessage}</p>
@@ -204,7 +195,7 @@ export const CostEntryAttachments = ({
                       <button
                         type="button"
                         onClick={() => setPreviewId(isOpen ? null : att.id)}
-                        className="block max-w-full truncate text-left text-sm font-semibold hover:underline"
+                        className="block w-full truncate text-left text-sm font-semibold hover:underline"
                         title={att.originalFilename}
                       >
                         {att.originalFilename}
@@ -220,14 +211,10 @@ export const CostEntryAttachments = ({
                       {onExtract && isMistralSupported(att.mimeType) ? (
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => onExtract(att.id)}
                           disabled={Boolean(extractingAttachmentId)}
-                          aria-label={t(
-                            "ui.invoices.aiExtract.buttonAriaLabel",
-                          )}
-                          title={t("ui.invoices.aiExtract.button")}
                         >
                           {extractingAttachmentId === att.id ? (
                             <RiLoader4Line
@@ -235,8 +222,11 @@ export const CostEntryAttachments = ({
                               className="animate-spin"
                             />
                           ) : (
-                            <RiAiGenerate2Line aria-hidden={true} />
+                            <RiBardFill aria-hidden={true} />
                           )}
+                          {extractingAttachmentId === att.id
+                            ? t("ui.invoices.aiExtract.extracting")
+                            : t("ui.invoices.aiExtract.button")}
                         </Button>
                       ) : null}
                       <Button
@@ -277,7 +267,7 @@ export const CostEntryAttachments = ({
             })}
           </ul>
         )}
-      </CardContent>
+      </div>
 
       <DestructiveConfirmDialog
         open={pendingDelete !== null}
@@ -301,7 +291,7 @@ export const CostEntryAttachments = ({
           }
         }}
       />
-    </Card>
+    </SectionCard>
   );
 };
 

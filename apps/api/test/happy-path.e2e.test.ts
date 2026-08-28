@@ -221,6 +221,7 @@ describe("Happy Path", () => {
     await api("/costs", {
       method: "POST",
       body: {
+        buildingId: building.id,
         invoiceDate: "2025-02-15",
         vendor: "Stadt Essen",
         items: [
@@ -515,6 +516,7 @@ describe("Happy Path", () => {
     await api("/costs", {
       method: "POST",
       body: {
+        buildingId: building.id,
         invoiceDate: "2025-03-01",
         vendor: "Stadtwerke",
         items: [

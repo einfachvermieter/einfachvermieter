@@ -201,13 +201,12 @@ export type CostEntryItemDto = z.infer<typeof costEntryItemSchema>;
 
 export const costEntryCreateSchema = z
   .object({
+    buildingId: z.guid(),
     invoiceDate: isoDate(),
     invoiceNumber: z.string().max(100).optional().nullable(),
     vendor: z.string().max(200).optional().nullable(),
     notes: z.string().max(1000).optional().nullable(),
-    items: z
-      .array(costEntryItemSchema)
-      .min(1, messageKey("ui.costs.validation.itemsMin")),
+    items: z.array(costEntryItemSchema),
   })
   .strict();
 
@@ -219,10 +218,7 @@ export const costEntryUpdateSchema = z
     invoiceNumber: z.string().max(100).optional().nullable(),
     vendor: z.string().max(200).optional().nullable(),
     notes: z.string().max(1000).optional().nullable(),
-    items: z
-      .array(costEntryItemSchema)
-      .min(1, messageKey("ui.costs.validation.itemsMin"))
-      .optional(),
+    items: z.array(costEntryItemSchema).optional(),
   })
   .strict();
 

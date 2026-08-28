@@ -96,7 +96,8 @@
     "fixedUnitWrongBuilding": "Die gewählte Wohnung gehört nicht zum Gebäude dieser Kostenart.",
     "unitOnlyForFixed": "Eine Wohnungs-Zuordnung ist nur bei pauschalen Kostenarten möglich.",
     "costTypeUnknown": "Die gewählte Kostenart existiert nicht.",
-    "generic": "Ungültiger Wert"
+    "generic": "Ungültiger Wert",
+    "costTypeWrongBuilding": "Die gewählte Kostenart gehört zu einem anderen Gebäude."
   },
   "entities": {
     "building": {
@@ -167,7 +168,7 @@
     "buildingHasUnits": "Gebäude mit Wohnungen kann nicht gelöscht werden",
     "unitHasTenants": "Wohnung mit Mietverträgen kann nicht gelöscht werden",
     "unitHasMeters": "Wohnung mit Zählern kann nicht gelöscht werden",
-    "tenantOverlapsExisting": "Die Wohnung ist im Zeitraum {start} – {end} bereits vermietet. Schließen Sie den bestehenden Vertrag zuerst.",
+    "tenantOverlapsExisting": "Die Wohnung ist im Zeitraum {start} – {end} bereits vermietet. Schließen Sie den bestehenden Vertrag zuerst.",
     "tenantOpenEnd": "unbefristet",
     "statementAlreadyFinalized": "Abrechnung ist bereits finalisiert",
     "statementDeleteFinalized": "Finalisierte Abrechnungen können nicht gelöscht werden",
@@ -350,10 +351,8 @@
         "heatingVersionNew": "Neue Konfiguration",
         "heatingVersionEdit": "Konfiguration bearbeiten",
         "costTypes": "Kostenarten",
-        "costTypeNew": "Neue Kostenart",
         "costTypeEdit": "Kostenart bearbeiten",
         "invoices": "Rechnungen",
-        "invoiceNew": "Neue Rechnung",
         "invoiceEdit": "Rechnung bearbeiten",
         "statements": "Abrechnungen",
         "statementDetail": "Detail",
@@ -771,8 +770,8 @@
       "summary": "{unit} – {residents}",
       "addTenant": "Mieter anlegen",
       "confirmDeleteTenant": "Mietvertrag löschen?",
-      "confirmDeleteTenantMessage": "Soll der Mietvertrag von {residents} für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht. Für einen Auszug genügt es, das Vertragsende zu setzen – dabei bleibt die Historie erhalten.",
-      "confirmDeleteTenantMessageNoResidents": "Soll der Mietvertrag für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht. Für einen Auszug genügt es, das Vertragsende zu setzen – dabei bleibt die Historie erhalten.",
+      "confirmDeleteTenantMessage": "Soll der Mietvertrag von {residents} für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht. Für einen Auszug genügt es, das Vertragsende zu setzen, dabei bleibt die Historie erhalten.",
+      "confirmDeleteTenantMessageNoResidents": "Soll der Mietvertrag für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht. Für einen Auszug genügt es, das Vertragsende zu setzen, dabei bleibt die Historie erhalten.",
       "empty": "Keine Mietverträge vorhanden",
       "emptyForBuilding": "Noch keine Mietverträge in Gebäude „{building}“ angelegt",
       "emptySearch": "Keine Mietverträge gefunden für „{query}“",
@@ -988,18 +987,19 @@
         "count": "{count, plural, one {# Kostenart} other {# Kostenarten}}"
       },
       "typeCreateTitle": "Neue Kostenart",
-      "typeCreateDescription": "Kategorie und Umlageschlüssel für eine neue Kostenart anlegen.",
-      "typeEditTitle": "Kostenart bearbeiten",
       "detail": {
         "sectionTitle": "Stammdaten",
         "taxDisclose": "Steuerliche Angaben (§ 35a EStG)",
         "statsEntries": "Rechnungen {year}",
-        "statsSum": "Summe {year}",
-        "metersLabel": "Zähler",
-        "metersAssigned": "{count} zugeordnet",
-        "lastEntryLabel": "Letzte Rechnung",
-        "openMeters": "Zugeordnete Zähler",
-        "openHeating": "Heizkosten-Konfiguration öffnen",
+        "entriesHint": "{count, plural, one {# Rechnung} other {# Rechnungen}} erfasst · zuletzt am {date}",
+        "entriesEmptyYear": "Keine Rechnung in diesem Jahr erfasst",
+        "entriesEmpty": "Noch keine Rechnung für diese Kostenart erfasst",
+        "co2Row": "CO₂-Erfassung",
+        "metersSection": "Verbrauchsquellen",
+        "metersDescription": "Diese Zähler liefern den Verbrauch, nach dem die Kosten verteilt werden",
+        "metersEmpty": "Dieser Kostenart ist noch kein Zähler zugeordnet. Die Zuordnung nehmen Sie beim Zähler vor.",
+        "manageMeters": "Zähler verwalten",
+        "heatingLink": "Heizkosten-Konfiguration",
         "deleteAction": "Kostenart löschen"
       },
       "entryCreateTitle": "Kostenrechnung",
@@ -1131,7 +1131,6 @@
       "editTitle": "Rechnung bearbeiten",
       "detail": {
         "statAmount": "Betrag",
-        "statPositions": "Positionen",
         "statPeriod": "Zeitraum",
         "basicsSection": "Basisdaten",
         "moreOptions": "Mehr Optionen (Preisart, Einheitspreis)",
@@ -1140,7 +1139,10 @@
         "deleteAction": "Rechnung löschen",
         "deleteTitle": "Rechnung löschen?",
         "deleteMessage": "Soll die Rechnung vom {date} mit allen Positionen wirklich gelöscht werden?",
-        "deleteMessageWithVendor": "Soll die Rechnung von {vendor} vom {date} mit allen Positionen wirklich gelöscht werden?"
+        "deleteMessageWithVendor": "Soll die Rechnung von {vendor} vom {date} mit allen Positionen wirklich gelöscht werden?",
+        "invoiceNumberMeta": "Nr. {number}",
+        "statementsHint": "Fließt ein in",
+        "noStatementsHint": "Noch keine Abrechnung für diesen Zeitraum"
       },
       "identityTitleNoVendor": "Rechnung vom {date}",
       "empty": "Noch keine Rechnungen erfasst",
@@ -1153,8 +1155,11 @@
         "description": "Eine Rechnung kann mehrere Kostenarten mit eigenem Betrag und Zeitraum enthalten.",
         "add": "Position hinzufügen",
         "remove": "Position entfernen",
-        "empty": "Noch keine Position angelegt. Fügen Sie mindestens eine Position hinzu.",
-        "positionLabel": "Position {index}"
+        "empty": "Noch keine Position erfasst. Ohne Positionen fließt die Rechnung in keine Abrechnung ein.",
+        "positionLabel": "Position {index}",
+        "sum": "Summe der Positionen",
+        "editTitle": "Position bearbeiten",
+        "confirmRemove": "Position entfernen?"
       },
       "notFound": {
         "title": "Rechnung nicht gefunden",
@@ -1183,21 +1188,41 @@
         "tooLarge": "„{filename}“ überschreitet die maximale Dateigröße von {limit}.",
         "partialUploadFailed": "Die Rechnung wurde gespeichert, aber einige Belege konnten nicht hochgeladen werden: {details}",
         "confirmDelete": "Beleg entfernen?",
-        "confirmDeleteMessage": "Soll der Beleg „{filename}“ wirklich entfernt werden?"
+        "confirmDeleteMessage": "Soll der Beleg „{filename}“ wirklich entfernt werden?",
+        "dropHint": "oder Dateien hierher ziehen"
       },
       "aiExtract": {
-        "button": "Mit KI vorausfüllen",
-        "buttonAriaLabel": "Felder mit KI aus diesem Beleg vorausfüllen",
-        "extracting": "Wird analysiert …",
-        "successToast": "Felder wurden vorausgefüllt. Bitte prüfen Sie alle Werte vor dem Speichern.",
-        "noCostTypes": "Bitte zuerst Kostenarten anlegen, dann ist die KI-Extraktion möglich.",
-        "unsupportedType": "Dieser Dateityp wird von der KI-Extraktion nicht unterstützt. Bitte als PDF, JPEG, PNG, WebP oder GIF hochladen.",
-        "failed": "Die KI-Extraktion ist fehlgeschlagen. Bitte erneut versuchen oder die Felder manuell ausfüllen.",
-        "notConfigured": "Die KI-Extraktion ist nicht konfiguriert.",
+        "button": "Mit KI auswerten",
+        "extracting": "KI wertet aus …",
+        "noCostTypes": "Bitte zuerst Kostenarten anlegen, dann kann die KI den Beleg auswerten.",
+        "unsupportedType": "Diesen Dateityp kann die KI nicht auswerten. Bitte als PDF, JPEG, PNG, WebP oder GIF hochladen.",
+        "failed": "Die KI konnte den Beleg nicht auswerten. Bitte erneut versuchen oder die Angaben selbst eintragen.",
+        "notConfigured": "Die KI-Auswertung ist nicht eingerichtet.",
         "warnings": {
-          "title": "Hinweise zur KI-Extraktion"
-        }
-      }
+          "title": "Hinweise der KI-Auswertung"
+        },
+        "running": "Der Beleg wird von der KI ausgewertet …",
+        "runningHint": "Lieferant, Datum, Nummer und Positionen werden aus dem Beleg gelesen. Das dauert einen Moment.",
+        "failedTitle": "KI-Auswertung fehlgeschlagen",
+        "appliedToast": "Angaben der KI übernommen. Bitte prüfen Sie die Werte.",
+        "autoLabel": "Beleg automatisch mit KI auswerten",
+        "autoDescription": "Die KI liest Lieferant, Datum, Nummer und Positionen nach dem Erfassen aus dem Beleg.",
+        "notConfiguredTitle": "Belege von der KI auswerten lassen",
+        "notConfiguredText": "Mit einem hinterlegten KI-Zugang liest EinfachVermieter Lieferant, Datum, Nummer und Positionen selbst aus dem Beleg.",
+        "settingsLink": "In den Einstellungen einrichten",
+        "confirmReplaceTitle": "Beleg mit KI auswerten?",
+        "confirmReplaceMessage": "Die von der KI gelesenen Positionen ersetzen die {count, plural, one {vorhandene Position} other {# vorhandenen Positionen}} dieser Rechnung."
+      },
+      "create": {
+        "sourceLabel": "Wie möchten Sie erfassen?",
+        "sourceManual": "Angaben eingeben",
+        "sourceManualDescription": "Rechnungsdatum, Lieferant und Nummer selbst eintragen.",
+        "sourceUpload": "Beleg hochladen",
+        "sourceUploadDescription": "Die KI liest Lieferant, Datum, Nummer und Positionen aus dem Beleg.",
+        "sourceUploadDescriptionNoAi": "Der Beleg wird an die Rechnung gehängt; die Angaben tragen Sie danach ein.",
+        "fileRequired": "Bitte wählen Sie einen Beleg aus"
+      },
+      "noItems": "Ohne Position"
     },
     "heating": {
       "title": "Heizkosten",
@@ -1596,8 +1621,8 @@
           "resultCredit": "{amount} Guthaben",
           "deleteDraft": "Entwurf löschen",
           "confirmDeleteTitle": "Entwurf löschen?",
-          "confirmDeleteMessage": "Der Entwurf für den Zeitraum {period} wird gelöscht. Erfasste Kosten, Zahlungen und Zählerstände bleiben erhalten – nur diese Abrechnung entfällt und kann jederzeit neu erstellt werden.",
-          "confirmDeleteMessageWithTenant": "Der Entwurf für {tenant}, „{unit}“ ({period}) wird gelöscht. Erfasste Kosten, Zahlungen und Zählerstände bleiben erhalten – nur diese Abrechnung entfällt und kann jederzeit neu erstellt werden.",
+          "confirmDeleteMessage": "Der Entwurf für den Zeitraum {period} wird gelöscht. Erfasste Kosten, Zahlungen und Zählerstände bleiben erhalten. Nur diese Abrechnung entfällt und kann jederzeit neu erstellt werden.",
+          "confirmDeleteMessageWithTenant": "Der Entwurf für {tenant}, „{unit}“ ({period}) wird gelöscht. Erfasste Kosten, Zahlungen und Zählerstände bleiben erhalten. Nur diese Abrechnung entfällt und kann jederzeit neu erstellt werden.",
           "hintText": "Nach dem Finalisieren sind keine Änderungen mehr möglich. Danach stehen „Stornieren“ und „Korrekturabrechnung“ zur Verfügung."
         },
         "pdfFilename": "Nebenkostenabrechnung_{start}_{end}.pdf",

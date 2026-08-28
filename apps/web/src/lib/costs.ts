@@ -54,6 +54,7 @@ export type CostTypeDetail = CostType & { stats: CostTypeStats };
 
 export type CostEntry = {
   id: string;
+  buildingId: string;
   invoiceDate: string;
   invoiceNumber: string | null;
   vendor: string | null;
@@ -64,6 +65,7 @@ export type CostEntryItem = {
   id: string;
   costTypeId: string;
   costTypeName: string;
+  unitId: string | null;
   amountCents: number;
   unitPriceCents: number | null;
   laborCostsCents: number | null;
@@ -147,6 +149,21 @@ export const costTypeCategoryLabel = (category: CostTypeCategory): string =>
 
 export const laborCostCategoryLabel = (category: LaborCostCategory): string =>
   t(`ui.costs.laborCostCategoryOptions.${category}`);
+
+/**
+ * Verteilung einer Kostenart als Text
+ */
+export const costTypeAllocationText = (
+  costType: Pick<CostType, "category" | "defaultAllocationKey">,
+): string => {
+  if (costType.category === "heating") {
+    return t("costs.allocations.heizkostenV");
+  }
+
+  return costType.defaultAllocationKey
+    ? allocationLabel(costType.defaultAllocationKey)
+    : t("ui.common.emptyValue");
+};
 
 export type CostCategory = "byShare" | "byConsumption" | "heating";
 
@@ -282,6 +299,30 @@ export const costEntriesOverviewQueryOptions = (
       return api.get<CostEntriesOverviewResult>(`/costs?${search.toString()}`);
     },
     placeholderData: (prev) => prev,
+  });
+
+/**
+ * Rechnungsposition einer Kostenart, angereichert um die Kopfdaten der
+ * Rechnung (unpaginiert, neueste zuerst)
+ */
+export type CostTypeEntryRow = {
+  id: string;
+  costEntryId: string;
+  costTypeId: string;
+  amountCents: number;
+  periodStart: string;
+  periodEnd: string;
+  position: number;
+  invoiceDate: string;
+  invoiceNumber: string | null;
+  vendor: string | null;
+};
+
+export const costTypeEntriesQueryOptions = (costTypeId: string) =>
+  queryOptions({
+    queryKey: ["costs", "byType", costTypeId],
+    queryFn: () =>
+      api.get<CostTypeEntryRow[]>(`/costs?costTypeId=${costTypeId}`),
   });
 
 export const costEntryQueryOptions = (id: string) =>

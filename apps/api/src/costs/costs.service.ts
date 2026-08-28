@@ -67,6 +67,7 @@ type CostEntryItemRow = {
 
 export type CostEntryDetail = {
   id: string;
+  buildingId: string;
   invoiceDate: string;
   invoiceNumber: string | null;
   vendor: string | null;
@@ -324,11 +325,12 @@ export class CostsService {
       CostTypeSchema,
       buildingId ? { buildingId } : {},
     );
+    const entries = await this.em.find(
+      CostEntrySchema,
+      buildingId ? { buildingId } : {},
+    );
     const items = await this.em.find(CostEntryItemSchema, {
-      costTypeId: { $in: costTypes.map((ct) => ct.id) },
-    });
-    const entries = await this.em.find(CostEntrySchema, {
-      id: { $in: [...new Set(items.map((item) => item.costEntryId))] },
+      costEntryId: { $in: entries.map((entry) => entry.id) },
     });
 
     const costTypeById = new Map(costTypes.map((ct) => [ct.id, ct]));
@@ -341,37 +343,54 @@ export class CostsService {
     }
 
     const needle = q?.toLowerCase();
+
+    // Rechnungen ohne Position haben keine Kostenart; sie bleiben in der
+    // Liste, solange nicht nach Kostenart gefiltert wird, und die
+    // Freitextsuche greift dann auf Nummer und Lieferant zu.
+    const entryWithoutItemsMatches = (entry: CostEntry): boolean => {
+      if (costTypeId) {
+        return false;
+      }
+
+      if (!needle) {
+        return true;
+      }
+
+      return (
+        (entry.invoiceNumber ?? "").toLowerCase().includes(needle) ||
+        (entry.vendor ?? "").toLowerCase().includes(needle)
+      );
+    };
+
     const entryMatches = (
       entry: CostEntry,
       entryItems: CostEntryItem[],
     ): boolean =>
-      entryItems.some((item) => {
-        const costType = costTypeById.get(item.costTypeId);
-        if (!costType) {
-          return false;
-        }
+      entryItems.length === 0
+        ? entryWithoutItemsMatches(entry)
+        : entryItems.some((item) => {
+            const costType = costTypeById.get(item.costTypeId);
+            if (!costType) {
+              return false;
+            }
 
-        if (buildingId && costType.buildingId !== buildingId) {
-          return false;
-        }
+            if (costTypeId && item.costTypeId !== costTypeId) {
+              return false;
+            }
 
-        if (costTypeId && item.costTypeId !== costTypeId) {
-          return false;
-        }
+            if (needle) {
+              const matchesNeedle =
+                costType.name.toLowerCase().includes(needle) ||
+                (entry.invoiceNumber ?? "").toLowerCase().includes(needle) ||
+                (entry.vendor ?? "").toLowerCase().includes(needle);
 
-        if (needle) {
-          const matchesNeedle =
-            costType.name.toLowerCase().includes(needle) ||
-            (entry.invoiceNumber ?? "").toLowerCase().includes(needle) ||
-            (entry.vendor ?? "").toLowerCase().includes(needle);
+              if (!matchesNeedle) {
+                return false;
+              }
+            }
 
-          if (!matchesNeedle) {
-            return false;
-          }
-        }
-
-        return true;
-      });
+            return true;
+          });
 
     const collator = new Intl.Collator("de", { sensitivity: "base" });
     const matched = entries.filter((entry) =>
@@ -385,15 +404,10 @@ export class CostsService {
       );
       const names = new Set<string>();
 
-      let firstBuildingId = "";
-
       for (const item of ordered) {
         const costType = costTypeById.get(item.costTypeId);
         if (costType) {
           names.add(costType.name);
-          if (!firstBuildingId) {
-            firstBuildingId = costType.buildingId;
-          }
         }
       }
 
@@ -413,7 +427,7 @@ export class CostsService {
           ordered[0]?.periodEnd ?? "",
         ),
         costTypeNames: Array.from(names).sort(collator.compare),
-        buildingId: firstBuildingId,
+        buildingId: entry.buildingId,
       };
     });
 
@@ -459,6 +473,7 @@ export class CostsService {
     const items = await this.loadItems(id);
     return {
       id: entry.id,
+      buildingId: entry.buildingId,
       invoiceDate: entry.invoiceDate,
       invoiceNumber: entry.invoiceNumber,
       vendor: entry.vendor,
@@ -472,10 +487,12 @@ export class CostsService {
    * Rechnung mit ihren Positionen anlegen
    */
   async createCostEntry(dto: CostEntryCreateDto): Promise<CostEntryDetail> {
-    await this.assertItemUnitAssignments(dto.items);
+    await assertBuildingExists(this.em, dto.buildingId);
+    await this.assertItemUnitAssignments(dto.items, dto.buildingId);
 
     const newId = await this.em.transactional(async (em) => {
       const entry = em.create(CostEntrySchema, {
+        buildingId: dto.buildingId,
         invoiceDate: dto.invoiceDate,
         invoiceNumber: dto.invoiceNumber ?? null,
         vendor: dto.vendor ?? null,
@@ -502,8 +519,13 @@ export class CostsService {
     id: string,
     patch: CostEntryUpdateDto,
   ): Promise<CostEntryDetail> {
+    const existing = await this.em.findOne(CostEntrySchema, { id });
+    if (!existing) {
+      throw new NotFoundException(notFoundMessage("costEntry", id));
+    }
+
     if (patch.items !== undefined) {
-      await this.assertItemUnitAssignments(patch.items);
+      await this.assertItemUnitAssignments(patch.items, existing.buildingId);
     }
 
     await this.em.transactional(async (em) => {
@@ -548,6 +570,7 @@ export class CostsService {
    */
   private async assertItemUnitAssignments(
     items: CostEntryItemDto[],
+    buildingId: string,
   ): Promise<void> {
     if (items.length === 0) {
       return;
@@ -589,6 +612,14 @@ export class CostsService {
         errors.push({
           path: ["items", index, "costTypeId"],
           message: i18n.t("validation.costTypeUnknown"),
+        });
+        return;
+      }
+
+      if (costType.buildingId !== buildingId) {
+        errors.push({
+          path: ["items", index, "costTypeId"],
+          message: i18n.t("validation.costTypeWrongBuilding"),
         });
         return;
       }

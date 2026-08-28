@@ -116,7 +116,7 @@ export const FormSheet = <T extends FieldValues>({
           <form
             ref={scrollRef}
             noValidate={true}
-            className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+            className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto"
             onScroll={syncOverflow}
             onSubmit={form.handleSubmit(handleValid)}
           >
@@ -141,8 +141,8 @@ export const FormSheet = <T extends FieldValues>({
               ) : null}
             </SheetHeader>
 
-            <fieldset disabled={isSubmitting} className="px-4 py-4">
-              <div className="flex flex-col gap-4">
+            <fieldset disabled={isSubmitting} className="min-w-0 px-4 py-4">
+              <div className="flex min-w-0 flex-col gap-4">
                 {rootError ? (
                   <Alert variant="error">
                     <AlertTitle>

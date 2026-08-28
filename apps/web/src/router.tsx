@@ -70,13 +70,11 @@ import { BuildingCreatePage } from "./pages/buildings/BuildingCreatePage";
 import { BuildingEditPage } from "./pages/buildings/BuildingEditPage";
 import { BuildingsOverview } from "./pages/buildings/BuildingsOverview";
 import { CostsOverview } from "./pages/costs/CostsOverview";
-import { CostTypeCreatePage } from "./pages/costs/CostTypeCreatePage";
 import { CostTypeEditPage } from "./pages/costs/CostTypeEditPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import { HeatingOverviewPage } from "./pages/heating/HeatingOverviewPage";
 import { HeatingVersionCreatePage } from "./pages/heating/HeatingVersionCreatePage";
 import { HeatingVersionEditPage } from "./pages/heating/HeatingVersionEditPage";
-import { CostEntryCreatePage } from "./pages/invoices/CostEntryCreatePage";
 import { CostEntryEditPage } from "./pages/invoices/CostEntryEditPage";
 import { InvoicesPage } from "./pages/invoices/InvoicesPage";
 import { MeterDetailPage } from "./pages/meters/MeterDetailPage";
@@ -720,25 +718,14 @@ const costsRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.costTypes") },
 });
 
-const costTypeCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/kostenarten/neu",
-  beforeLoad: requirePrerequisite("costTypes"),
-  validateSearch: costsSearchSchema,
-  component: CostTypeCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.costTypes"), to: "/kostenarten" },
-      { label: t("ui.common.crumbs.costTypeNew") },
-    ],
-  },
-});
-
 const costTypeEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/kostenarten/$costTypeId",
   beforeLoad: requireAuth,
   loader: async ({ context, params }) => {
+    if (params.costTypeId === "neu") {
+      throw redirect({ to: "/kostenarten", search: { buildingId: undefined } });
+    }
     try {
       return await context.queryClient.ensureQueryData(
         costTypeQueryOptions(params.costTypeId),
@@ -778,24 +765,21 @@ const invoicesRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.invoices") },
 });
 
-const costEntryCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/rechnungen/neu",
-  beforeLoad: requirePrerequisite("invoices"),
-  component: CostEntryCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.invoices"), to: "/rechnungen" },
-      { label: t("ui.common.crumbs.invoiceNew") },
-    ],
-  },
-});
-
 const costEntryEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/rechnungen/$costEntryId",
   beforeLoad: requireAuth,
+  // Nach dem Anlegen: entweder gleich das Blatt der ersten Position für
+  // diese Kostenart öffnen oder den hochgeladenen Beleg auswerten
+  validateSearch: (search: Record<string, unknown>) => ({
+    costTypeId:
+      typeof search.costTypeId === "string" ? search.costTypeId : undefined,
+    extract: search.extract === true || search.extract === "true" || undefined,
+  }),
   loader: async ({ context, params }) => {
+    if (params.costEntryId === "neu") {
+      throw redirect({ to: "/rechnungen", search: { buildingId: undefined } });
+    }
     try {
       return await context.queryClient.ensureQueryData(
         costEntryQueryOptions(params.costEntryId),
@@ -1028,10 +1012,8 @@ const routeTree = rootRoute.addChildren([
   heatingVersionCreateRoute,
   heatingVersionEditRoute,
   costsRoute,
-  costTypeCreateRoute,
   costTypeEditRoute,
   invoicesRoute,
-  costEntryCreateRoute,
   costEntryEditRoute,
   statementsRoute,
   statementDetailRoute,

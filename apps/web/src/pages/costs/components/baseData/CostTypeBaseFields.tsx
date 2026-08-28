@@ -95,14 +95,12 @@ export const CostTypeBaseFields = ({
 
   return (
     <FieldGroup className="gap-5">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <TextInput
-          control={form.control}
-          name="name"
-          label={t("ui.common.columns.name")}
-          placeholder={t("ui.costs.typeFields.namePlaceholder")}
-        />
-      </div>
+      <TextInput
+        control={form.control}
+        name="name"
+        label={t("ui.common.columns.name")}
+        placeholder={t("ui.costs.typeFields.namePlaceholder")}
+      />
 
       {showBetrkvHint ? (
         <Alert variant="warning">

@@ -1,6 +1,6 @@
 import { Outlet } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import logoUrl from "../img/logo/logo.svg";
+import logoUrl from "../img/logo/logo_light.svg";
 import { DocumentTitle } from "./DocumentTitle";
 import { MainNavigation } from "./mainNavigation/MainNavigation";
 import { Separator } from "./ui/Separator";

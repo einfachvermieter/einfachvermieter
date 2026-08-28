@@ -1,8 +1,8 @@
 import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
@@ -29,6 +29,7 @@ import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
 import { rowIconColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
+import { CostTypeCreateSheet } from "./CostTypeCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<CostTypeSortColumn> = new Set([
   "name",
@@ -42,6 +43,7 @@ export const CostsOverview = () => {
     storageKey: "costTypes",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -126,13 +128,9 @@ export const CostsOverview = () => {
         subLoading={!data}
         action={
           canAddCostType ? (
-            <Button asChild={true}>
-              <Link to="/kostenarten/neu" search={{ buildingId }}>
-                <RiAddLine />
-                <span className="hidden sm:inline">
-                  {t("ui.costs.addType")}
-                </span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">{t("ui.costs.addType")}</span>
             </Button>
           ) : undefined
         }
@@ -161,6 +159,10 @@ export const CostsOverview = () => {
           pageCount: table.pageCount(data?.total ?? 0),
         }}
       />
+
+      {createOpen ? (
+        <CostTypeCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

@@ -8,7 +8,8 @@ export class Migration20260428151845 extends Migration {
     this.addSql(`create table \`buildings\` (\`id\` varchar(255) not null, \`name\` varchar(255) not null, \`address_street\` varchar(255) not null, \`address_postal_code\` varchar(255) not null, \`address_city\` varchar(255) not null, \`created_at\` varchar(255) not null default current_timestamp, \`updated_at\` varchar(255) not null default current_timestamp, primary key (\`id\`)) default character set utf8mb4 engine = InnoDB;`);
     this.addSql(`alter table \`buildings\` add unique \`buildings_name_unique\` (\`name\`);`);
 
-    this.addSql(`create table \`cost_entries\` (\`id\` varchar(255) not null, \`invoice_date\` varchar(255) not null, \`invoice_number\` varchar(255) null, \`vendor\` varchar(255) null, \`document_path\` text null, \`notes\` text null, \`created_at\` varchar(255) not null default current_timestamp, \`updated_at\` varchar(255) not null default current_timestamp, primary key (\`id\`)) default character set utf8mb4 engine = InnoDB;`);
+    this.addSql(`create table \`cost_entries\` (\`id\` varchar(255) not null, \`building_id\` varchar(255) not null, \`invoice_date\` varchar(255) not null, \`invoice_number\` varchar(255) null, \`vendor\` varchar(255) null, \`document_path\` text null, \`notes\` text null, \`created_at\` varchar(255) not null default current_timestamp, \`updated_at\` varchar(255) not null default current_timestamp, primary key (\`id\`)) default character set utf8mb4 engine = InnoDB;`);
+    this.addSql(`alter table \`cost_entries\` add index \`cost_entries_building_id\` (\`building_id\`);`);
 
     this.addSql(`create table \`cost_entry_attachments\` (\`id\` varchar(255) not null, \`cost_entry_id\` varchar(255) not null, \`original_filename\` varchar(255) not null, \`mime_type\` varchar(255) not null, \`size_bytes\` int not null, \`storage_key\` text not null, \`ocr_text\` text null, \`created_at\` varchar(255) not null default current_timestamp, primary key (\`id\`)) default character set utf8mb4 engine = InnoDB;`);
     this.addSql(`alter table \`cost_entry_attachments\` add index \`cost_entry_attachments_cost_entry_id\` (\`cost_entry_id\`);`);
@@ -103,6 +104,7 @@ export class Migration20260428151845 extends Migration {
 
     this.addSql(`alter table \`cost_entry_attachments\` add constraint \`cost_entry_attachments_cost_entry_id_foreign\` foreign key (\`cost_entry_id\`) references \`cost_entries\` (\`id\`) on delete cascade;`);
 
+    this.addSql(`alter table \`cost_entries\` add constraint \`cost_entries_building_id_foreign\` foreign key (\`building_id\`) references \`buildings\` (\`id\`) on delete restrict;`);
     this.addSql(`alter table \`cost_types\` add constraint \`cost_types_building_id_foreign\` foreign key (\`building_id\`) references \`buildings\` (\`id\`) on delete restrict;`);
 
     this.addSql(`alter table \`units\` add constraint \`units_building_id_foreign\` foreign key (\`building_id\`) references \`buildings\` (\`id\`) on delete restrict;`);

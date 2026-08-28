@@ -1,6 +1,5 @@
 import type { CostEntryExtractionResult } from "@einfachvermieter/shared";
 import { centsToEurInput } from "@einfachvermieter/shared";
-import type { UseFormReturn } from "react-hook-form";
 import type { CostType } from "../../../../lib/costs";
 import {
   type CostEntryFormValues,
@@ -36,13 +35,15 @@ const unitPriceStorageToInput = (
   });
 };
 
-export const applyExtractionToForm = (
-  form: UseFormReturn<CostEntryFormValues>,
+/**
+ * Erkannte Rechnungsdaten über die vorhandenen Werte legen. Was die
+ * Erkennung nicht liefert, bleibt stehen.
+ */
+export const applyExtraction = (
+  current: CostEntryFormValues,
   result: CostEntryExtractionResult,
   costTypes: CostType[],
-): void => {
-  const current = form.getValues();
-
+): CostEntryFormValues => {
   const vendor = trimOrNull(result.vendor) ?? current.vendor;
   const invoiceNumber =
     trimOrNull(result.invoiceNumber) ?? current.invoiceNumber;
@@ -99,13 +100,11 @@ export const applyExtractionToForm = (
     });
   }
 
-  form.reset(
-    {
-      invoiceDate,
-      invoiceNumber,
-      vendor,
-      items,
-    },
-    { keepDirty: false, keepErrors: false },
-  );
+  return {
+    buildingId: current.buildingId,
+    invoiceDate,
+    invoiceNumber,
+    vendor,
+    items,
+  };
 };

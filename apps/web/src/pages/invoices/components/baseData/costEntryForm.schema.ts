@@ -195,6 +195,7 @@ export type CostEntryItemFormValues = {
 };
 
 export type CostEntryFormValues = {
+  buildingId: string;
   invoiceDate: string;
   invoiceNumber: string;
   vendor: string;
@@ -328,12 +329,18 @@ const itemSchema = z
   );
 
 export const costEntryFormSchema = z.object({
+  buildingId: z
+    .string()
+    .min(1, messageKey("ui.costs.validation.buildingRequired"))
+    .pipe(z.guid()),
   invoiceDate: z
     .string()
     .min(1, messageKey("ui.costs.validation.invoiceDateRequired")),
   invoiceNumber: z.string(),
   vendor: z.string(),
-  items: z.array(itemSchema).min(1, messageKey("ui.costs.validation.itemsMin")),
+  // Positionen dürfen fehlen: eine aus einem Beleg angelegte Rechnung
+  // bekommt sie erst auf der Rechnung.
+  items: z.array(itemSchema),
 });
 
 export type CostEntryItemSubmitValues = {
@@ -351,6 +358,7 @@ export type CostEntryItemSubmitValues = {
 };
 
 export type CostEntrySubmitValues = {
+  buildingId: string;
   invoiceDate: string;
   invoiceNumber: string | null;
   vendor: string | null;
@@ -362,6 +370,7 @@ export const costEntryFormToDto = (
   values: CostEntryFormValues,
   costTypes: CostType[],
 ): CostEntrySubmitValues => ({
+  buildingId: values.buildingId,
   invoiceDate: values.invoiceDate,
   invoiceNumber: values.invoiceNumber.trim() || null,
   vendor: values.vendor.trim() || null,
@@ -417,6 +426,7 @@ type CostEntryItemSource = {
 };
 
 type CostEntrySource = {
+  buildingId: string;
   invoiceDate: string;
   invoiceNumber: string | null;
   vendor: string | null;
@@ -427,6 +437,7 @@ export const costEntryToFormValues = (
   entry: CostEntrySource,
   costTypes: CostType[],
 ): CostEntryFormValues => ({
+  buildingId: entry.buildingId,
   invoiceDate: entry.invoiceDate,
   invoiceNumber: entry.invoiceNumber ?? "",
   vendor: entry.vendor ?? "",

@@ -1,9 +1,9 @@
 import { formatDate, formatEur } from "@einfachvermieter/shared";
 import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -30,6 +30,7 @@ import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { rowIconColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
+import { CostEntryCreateSheet } from "./CostEntryCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<CostEntrySortColumn> = new Set([
   "invoiceDate",
@@ -60,7 +61,11 @@ const invoiceColumns = (
         <EntityCell
           name={
             <span className="flex items-center gap-1.5">
-              {firstName ?? t("common.unknown")}
+              {firstName ?? (
+                <span className="text-muted-foreground">
+                  {t("ui.invoices.noItems")}
+                </span>
+              )}
               {moreNames.length > 0 ? (
                 <Tooltip>
                   <TooltipTrigger asChild={true}>
@@ -143,6 +148,7 @@ export const InvoicesPage = () => {
     storageKey: "invoices",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -205,13 +211,11 @@ export const InvoicesPage = () => {
         subLoading={!data}
         action={
           canAddInvoice ? (
-            <Button asChild={true}>
-              <Link to="/rechnungen/neu">
-                <RiAddLine />
-                <span className="hidden sm:inline">
-                  {t("ui.invoices.addEntry")}
-                </span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">
+                {t("ui.invoices.addEntry")}
+              </span>
             </Button>
           ) : undefined
         }
@@ -233,6 +237,7 @@ export const InvoicesPage = () => {
           navigate({
             to: "/rechnungen/$costEntryId",
             params: { costEntryId: entry.id },
+            search: { costTypeId: undefined, extract: undefined },
           })
         }
         server={{
@@ -240,6 +245,10 @@ export const InvoicesPage = () => {
           pageCount: table.pageCount(total),
         }}
       />
+
+      {createOpen ? (
+        <CostEntryCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };
