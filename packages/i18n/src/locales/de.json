@@ -348,7 +348,6 @@
         "meters": "Zähler",
         "heating": "Heizkosten",
         "heatingExternalEntries": "Externe Einträge",
-        "heatingVersionNew": "Neue Konfiguration",
         "heatingVersionEdit": "Konfiguration bearbeiten",
         "costTypes": "Kostenarten",
         "costTypeEdit": "Kostenart bearbeiten",
@@ -1237,6 +1236,7 @@
         "validitySection": "Gültigkeit",
         "installationSection": "Heizung",
         "hotWaterDisclose": "Warmwasser-Details",
+        "prorationMethodRow": "Verfahren",
         "splitBaseLegend": "{percent} % Grund · nach Heizfläche",
         "splitConsumptionLegend": "{percent} % Verbrauch · nach Zählern",
         "prorationChartLegendDegreeDays": "Gradtagszahlen",
@@ -1245,20 +1245,13 @@
         "prorationChartBarTitle": "{month}: {promille} ‰ ({percent} %)",
         "prorationChartNoteDegreeDays": "Bei einem Wechsel im Jahr trägt der Wintermieter den größeren Anteil: Januar zählt 170 ‰, Juli nur 14 ‰ der Jahresheizkosten (Gradtagszahlen nach § 9b Abs. 2 HeizkostenV).",
         "prorationChartNoteLinear": "Bei einem Wechsel im Jahr zählt jeder Tag gleich viel: Die Jahresheizkosten werden tagesproportional aufgeteilt (Ø {promille} ‰ je Monat).",
-        "statusInactive": "Inaktiv",
         "modeLabel": "Modus",
         "modeInternalHeatMeter": "Intern · WMZ",
         "modeInternalAllocator": "Intern · HKV",
         "modeExternal": "Extern",
-        "co2Pill": "CO₂-Aufteilung",
-        "co2Active": "aktiv",
-        "co2Off": "aus",
-        "openMeters": "Wärmemengenzähler öffnen",
-        "openStatements": "Abrechnungen öffnen",
         "deleteAction": "Konfiguration löschen"
       },
       "identityTitle": "Gültig ab {validFrom}",
-      "heroTitle": "Heizkosten-Konfiguration ab {validFrom}",
       "empty": "Noch keine Heizkosten-Konfigurationen angelegt. Wählen Sie in der Seitenleiste ein Gebäude, um eine erste Konfiguration anzulegen.",
       "emptySearch": "Keine Konfigurationen gefunden für „{query}“",
       "emptyForBuilding": "Noch keine Heizkosten-Konfiguration für Gebäude „{building}“ angelegt.",
@@ -1317,7 +1310,7 @@
         "hotWaterMeterMissingLink": "Wärmemengenzähler anlegen",
         "hotWaterSupplyTemperature": "Warmwasservorlauftemperatur",
         "hotWaterSupplyTemperatureDescription": "Üblich sind 60 °C. Wird in die Schätzformel und in die Mieter-Information übernommen.",
-        "totalHeatEnergyKwh": "Gesamt-Wärmemenge (kWh)",
+        "totalHeatEnergyKwh": "Gesamt-Wärmemenge",
         "totalHeatEnergyKwhDescription": "Jahres-Wärmemenge der gesamten Heizungsanlage in kWh. Damit rechnen Sie den Warmwasseranteil nach § 9 Abs. 2 HeizkostenV heraus. Entnehmen Sie den Wert Ihrer Energieabrechnung (Gas/Fernwärme weisen kWh aus). Rechnen Sie über einen kürzeren Zeitraum ab, tragen Sie den auf diesen Zeitraum entfallenden Anteil ein.",
         "mandatorySeventyPercent": "70 % Verbrauchsanteil zwingend",
         "mandatorySeventyPercentDescription": "Aktivieren, wenn alle drei Punkte zutreffen: Das Gebäude erfüllt das Anforderungsniveau der Wärmeschutzverordnung 1994 nicht, es wird mit einer Öl- oder Gas-Zentralheizung versorgt, und die freiliegenden Wärmeleitungen sind überwiegend gedämmt. Dann schreibt § 7 Abs. 1 Satz 2 HeizkostenV 70 % nach Verbrauch vor.",
@@ -1389,7 +1382,38 @@
         "validToBeforeFrom": "Gültig-bis darf nicht vor Gültig-ab liegen"
       },
       "cards": {
-        "billing": "Abrechnung"
+        "billing": "Abrechnung",
+        "proration": "Aufteilung bei Mieterwechsel"
+      },
+      "kpi": {
+        "split": "Verteilung der Heizkosten",
+        "splitValue": "{base} / {consumption}",
+        "splitHint": "{base} % Grundkosten nach Fläche · {consumption} % Verbrauch nach Zählern",
+        "splitExternal": "Extern",
+        "splitExternalHint": "Der Dienstleister verteilt, Sie tragen die Endbeträge ein",
+        "proration": "Aufteilung bei Mieterwechsel"
+      },
+      "prorationShort": {
+        "linear": "Linear",
+        "degree_days": "Saisonal"
+      },
+      "prorationHints": {
+        "linear": "Tagesproportional, jeder Tag zählt gleich viel",
+        "degree_days": "Nach Heizgradtagszahlen, der Wintermieter trägt mehr"
+      },
+      "billingTypeTiles": {
+        "internal_heat_cost_allocator": {
+          "title": "Heizkostenverteiler",
+          "description": "Sie rechnen selbst ab, Verbrauch aus den Verteilern an den Heizkörpern"
+        },
+        "internal_heat_meter": {
+          "title": "Wärmemengenzähler",
+          "description": "Sie rechnen selbst ab, Verbrauch in kWh aus Wärmemengenzählern"
+        },
+        "external": {
+          "title": "Externe Abrechnung",
+          "description": "Ein Dienstleister rechnet ab, Sie tragen nur die Endbeträge je Wohnung ein"
+        }
       },
       "versions": {
         "createTitle": "Neue Heizkosten-Konfiguration",
@@ -1449,6 +1473,8 @@
         "description": "Endbeträge aus externer Abrechnung pro Wohnung und Zeitraum. Optional zusätzlich aufteilbar in Grund- und Verbrauchskosten.",
         "add": "Eintrag hinzufügen",
         "empty": "Noch keine externen Heizkosten-Einträge erfasst.",
+        "sum": "Summe",
+        "coverage": "{covered} von {total, plural, one {# Wohnung} other {# Wohnungen}} erfasst",
         "columns": {
           "period": "Zeitraum",
           "unit": "Wohnung",

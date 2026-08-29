@@ -5,9 +5,9 @@ import {
 } from "@einfachvermieter/shared";
 import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -33,6 +33,7 @@ import {
   type DeleteResource,
   useDeleteResource,
 } from "../../lib/useDeleteResource";
+import { HeatingCreateSheet } from "./HeatingCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<HeatingSortColumn> = new Set([
   "mode",
@@ -141,6 +142,7 @@ export const HeatingOverviewPage = () => {
     storageKey: "heating",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -227,13 +229,11 @@ export const HeatingOverviewPage = () => {
         subLoading={!building}
         action={
           canAddHeating ? (
-            <Button asChild={true}>
-              <Link to="/heizkosten/neu" search={{ buildingId }}>
-                <RiAddLine />
-                <span className="hidden sm:inline">
-                  {t("ui.heating.versions.add")}
-                </span>
-              </Link>
+            <Button onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">
+                {t("ui.heating.versions.add")}
+              </span>
             </Button>
           ) : undefined
         }
@@ -274,6 +274,10 @@ export const HeatingOverviewPage = () => {
           pageCount,
         }}
       />
+
+      {createOpen ? (
+        <HeatingCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
 
       {deletion.dialog}
     </div>

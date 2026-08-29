@@ -41,11 +41,6 @@ import {
 } from "./lib/heating";
 import { t } from "./lib/i18n";
 import { type Meter, meterQueryOptions } from "./lib/meters";
-import {
-  ensurePrerequisiteMet,
-  type GatedDomain,
-  PREREQUISITES,
-} from "./lib/prerequisites";
 import { setupStatusQueryOptions } from "./lib/setup";
 import {
   type Statement,
@@ -73,7 +68,6 @@ import { CostsOverview } from "./pages/costs/CostsOverview";
 import { CostTypeEditPage } from "./pages/costs/CostTypeEditPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import { HeatingOverviewPage } from "./pages/heating/HeatingOverviewPage";
-import { HeatingVersionCreatePage } from "./pages/heating/HeatingVersionCreatePage";
 import { HeatingVersionEditPage } from "./pages/heating/HeatingVersionEditPage";
 import { CostEntryEditPage } from "./pages/invoices/CostEntryEditPage";
 import { InvoicesPage } from "./pages/invoices/InvoicesPage";
@@ -145,31 +139,6 @@ const requireAuth = async ({ context }: { context: RouterContext }) => {
     throw error;
   }
 };
-
-/**
- * Anlage-Route absichern: erst Auth, dann ob die fachliche Voraussetzung fürs
- * aktive Gebäude erfüllt ist. Fehlt sie, zurück zur Liste, deren Leer-Hinweis
- * auf die zuerst benötigte Entität verweist.
- */
-const requirePrerequisite =
-  (domain: GatedDomain) =>
-  async ({
-    context,
-    search,
-  }: {
-    context: RouterContext;
-    search?: { buildingId?: string };
-  }) => {
-    await requireAuth({ context });
-    const met = await ensurePrerequisiteMet(
-      context.queryClient,
-      domain,
-      search ?? {},
-    );
-    if (!met) {
-      throw redirect({ to: PREREQUISITES[domain].listTo });
-    }
-  };
 
 /**
  * Login-Seite: ist die App noch nicht eingerichtet, zuerst zum Assistenten.
@@ -658,25 +627,14 @@ const heatingRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.heating") },
 });
 
-const heatingVersionCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/heizkosten/neu",
-  beforeLoad: requirePrerequisite("heating"),
-  validateSearch: heatingSearchSchema,
-  component: HeatingVersionCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.heating"), to: "/heizkosten" },
-      { label: t("ui.common.crumbs.heatingVersionNew") },
-    ],
-  },
-});
-
 const heatingVersionEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/heizkosten/$id",
   beforeLoad: requireAuth,
   loader: async ({ context, params }) => {
+    if (params.id === "neu") {
+      throw redirect({ to: "/heizkosten", search: { buildingId: undefined } });
+    }
     try {
       return await context.queryClient.ensureQueryData(
         heatingSettingsByIdQueryOptions(params.id),
@@ -1009,7 +967,6 @@ const routeTree = rootRoute.addChildren([
   meterEditRoute,
   meterReadingsRoute,
   heatingRoute,
-  heatingVersionCreateRoute,
   heatingVersionEditRoute,
   costsRoute,
   costTypeEditRoute,
