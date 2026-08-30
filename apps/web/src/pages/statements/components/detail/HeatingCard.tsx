@@ -429,7 +429,9 @@ export const HeatingCard = ({
                       {unit.unitName}
                     </td>
                     <td className="py-2.5 text-right tabular-nums">
-                      {`${formatNumber(unit.areaSqm, 2)}\u00A0m²`}
+                      {t("ui.common.measures.sqm", {
+                        value: formatNumber(unit.areaSqm, 2),
+                      })}
                     </td>
                     <td className="py-2.5 text-right tabular-nums">
                       {formatAggregatedConsumption(unit.consumptionKwh)}
@@ -472,7 +474,9 @@ export const HeatingCard = ({
                   {t("statements.pdf.heating.totalHouse")}
                 </td>
                 <td className="py-2.5 text-right tabular-nums">
-                  {`${formatNumber(totalArea, 2)}\u00A0m²`}
+                  {t("ui.common.measures.sqm", {
+                    value: formatNumber(totalArea, 2),
+                  })}
                 </td>
                 <td className="py-2.5 text-right tabular-nums">
                   {formatAggregatedConsumption(totalConsumption)}

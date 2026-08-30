@@ -11,6 +11,7 @@ import type {
   CostTypeAllocationKey,
   CostTypeCategory,
 } from "../../../../lib/costs";
+import { t } from "../../../../lib/i18n";
 
 const amountRegex = /^-?\d+([.,]\d{1,2})?$/u;
 const unitPriceRegex = /^\d+([.,]\d{1,4})?$/u;
@@ -45,25 +46,43 @@ export const unitPriceDisplayConfig = (
   allocationKey: CostTypeAllocationKey | null,
 ): UnitPriceDisplayConfig | null => {
   if (category === "heating") {
-    return { suffix: "ct/kWh", inputScale: STORAGE_SCALE_PER_CENT };
+    return {
+      suffix: t("ui.common.unitPrices.ctPerKwh"),
+      inputScale: STORAGE_SCALE_PER_CENT,
+    };
   }
 
   switch (allocationKey) {
     case "per_consumption_m3":
-      return { suffix: "€/m³", inputScale: STORAGE_SCALE_PER_EURO };
+      return {
+        suffix: t("ui.common.unitPrices.eurPerCubicMeter"),
+        inputScale: STORAGE_SCALE_PER_EURO,
+      };
 
     case "per_consumption_kwh":
-      return { suffix: "ct/kWh", inputScale: STORAGE_SCALE_PER_CENT };
+      return {
+        suffix: t("ui.common.unitPrices.ctPerKwh"),
+        inputScale: STORAGE_SCALE_PER_CENT,
+      };
 
     case "per_person":
-      return { suffix: "€/Person", inputScale: STORAGE_SCALE_PER_EURO };
+      return {
+        suffix: t("ui.common.unitPrices.eurPerPerson"),
+        inputScale: STORAGE_SCALE_PER_EURO,
+      };
 
     case "per_living_area":
     case "per_heating_area":
-      return { suffix: "€/m²", inputScale: STORAGE_SCALE_PER_EURO };
+      return {
+        suffix: t("ui.common.unitPrices.eurPerSqm"),
+        inputScale: STORAGE_SCALE_PER_EURO,
+      };
 
     case "per_unit":
-      return { suffix: "€/Wohnung", inputScale: STORAGE_SCALE_PER_EURO };
+      return {
+        suffix: t("ui.common.unitPrices.eurPerUnit"),
+        inputScale: STORAGE_SCALE_PER_EURO,
+      };
 
     default:
       return null;

@@ -47,7 +47,10 @@ const itemExtras = (
   if (item.unitPriceCents !== null && config) {
     extras.push({
       label: t("ui.costs.entryFields.unitPrice"),
-      value: `${formatNumberLoose(item.unitPriceCents / config.inputScale, 4)} ${config.suffix}`,
+      value: t("ui.common.measures.withUnit", {
+        value: formatNumberLoose(item.unitPriceCents / config.inputScale, 4),
+        unit: config.suffix,
+      }),
     });
   }
 
@@ -61,7 +64,9 @@ const itemExtras = (
   if (item.co2AmountGrams !== null) {
     extras.push({
       label: t("ui.costs.entryFields.co2Amount"),
-      value: `${formatNumberLoose(item.co2AmountGrams / CO2_GRAMS_PER_KG, 3)} kg`,
+      value: t("ui.common.measures.kg", {
+        value: formatNumberLoose(item.co2AmountGrams / CO2_GRAMS_PER_KG, 3),
+      }),
     });
   }
 

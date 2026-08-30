@@ -165,7 +165,7 @@ export const DashboardPage = () => {
           />
           <div className="grid gap-2.5 sm:grid-cols-2">
             {stats && stats.buildings === 0 ? (
-              <Link to="/gebaeude/neu" className={QUICK_TILE_CLASS}>
+              <Link to="/gebaeude" className={QUICK_TILE_CLASS}>
                 <QuickTileContent icon={RiBuildingLine}>
                   {t("ui.dashboard.quickstart.addBuilding")}
                 </QuickTileContent>

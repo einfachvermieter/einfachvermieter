@@ -44,7 +44,11 @@ export const HeatingInstallationCard = ({
         value:
           version.districtHeatEmissionsKgPerYear === null
             ? dash
-            : `${formatNumberLoose(version.districtHeatEmissionsKgPerYear)} kg`,
+            : t("ui.common.measures.kg", {
+                value: formatNumberLoose(
+                  version.districtHeatEmissionsKgPerYear,
+                ),
+              }),
       },
       {
         label: t("ui.heating.fields.districtHeatPrimaryEnergyFactor"),
@@ -66,14 +70,18 @@ export const HeatingInstallationCard = ({
       },
       {
         label: t("ui.heating.fields.hotWaterSupplyTemperature"),
-        value: `${version.hotWaterSupplyTemperatureCelsius} °C`,
+        value: t("ui.common.measures.celsius", {
+          value: version.hotWaterSupplyTemperatureCelsius,
+        }),
       },
       {
         label: t("ui.heating.fields.totalHeatEnergyKwh"),
         value:
           version.totalHeatEnergyKwh === null
             ? dash
-            : `${formatNumberLoose(version.totalHeatEnergyKwh)} kWh`,
+            : t("ui.common.measures.kwh", {
+                value: formatNumberLoose(version.totalHeatEnergyKwh),
+              }),
       },
     );
 

@@ -318,6 +318,20 @@
         "comma": ", "
       },
       "moreChip": "+{count}",
+      "unitPrices": {
+        "ctPerKwh": "ct/kWh",
+        "eurPerCubicMeter": "€/m³",
+        "eurPerPerson": "€/Person",
+        "eurPerSqm": "€/m²",
+        "eurPerUnit": "€/Wohnung"
+      },
+      "measures": {
+        "sqm": "{value} m²",
+        "kwh": "{value} kWh",
+        "celsius": "{value} °C",
+        "kg": "{value} kg",
+        "withUnit": "{value} {unit}"
+      },
       "infoCards": {
         "actions": "Aktionen",
         "atAGlance": "Auf einen Blick",
@@ -626,6 +640,10 @@
     "buildings": {
       "title": "Gebäude",
       "activeTenants": "Aktive Mieter",
+      "detail": {
+        "manageUnits": "Wohnungen verwalten",
+        "unitsEmpty": "Für dieses Gebäude ist noch keine Wohnung angelegt"
+      },
       "createTitle": "Neues Gebäude",
       "editEyebrow": "Gebäude bearbeiten",
       "add": "Gebäude hinzufügen",

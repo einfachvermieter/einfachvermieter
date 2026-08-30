@@ -201,14 +201,18 @@ export const UnitEditPage = () => {
               },
               {
                 label: t("ui.units.fields.area"),
-                value: `${formatNumber(unit.areaSqm, 2)} m²`,
+                value: t("ui.common.measures.sqm", {
+                  value: formatNumber(unit.areaSqm, 2),
+                }),
               },
               {
                 label: t("ui.units.fields.heatingArea"),
                 value:
                   unit.heatingAreaSqm === null
                     ? dash
-                    : `${formatNumber(unit.heatingAreaSqm, 2)} m²`,
+                    : t("ui.common.measures.sqm", {
+                        value: formatNumber(unit.heatingAreaSqm, 2),
+                      }),
               },
             ]}
           />

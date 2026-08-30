@@ -61,7 +61,6 @@ import { type Unit, unitQueryOptions, unitsQueryOptions } from "./lib/units";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { OutdatedVersionPage } from "./pages/auth/OutdatedVersionPage";
 import { PasswordRecoveryPage } from "./pages/auth/PasswordRecoveryPage";
-import { BuildingCreatePage } from "./pages/buildings/BuildingCreatePage";
 import { BuildingEditPage } from "./pages/buildings/BuildingEditPage";
 import { BuildingsOverview } from "./pages/buildings/BuildingsOverview";
 import { CostsOverview } from "./pages/costs/CostsOverview";
@@ -294,24 +293,14 @@ const buildingsRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.buildings") },
 });
 
-const buildingCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/gebaeude/neu",
-  beforeLoad: requireAuth,
-  component: BuildingCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.buildings"), to: "/gebaeude" },
-      { label: t("ui.common.crumbs.buildingNew") },
-    ],
-  },
-});
-
 const buildingEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/gebaeude/$buildingId",
   beforeLoad: requireAuth,
   loader: async ({ context, params }) => {
+    if (params.buildingId === "neu") {
+      throw redirect({ to: "/gebaeude" });
+    }
     try {
       return await context.queryClient.ensureQueryData(
         buildingQueryOptions(params.buildingId),
@@ -329,7 +318,6 @@ const buildingEditRoute = createRoute({
       tile={<PageHeaderIcon icon={domainVisuals.buildings.icon} />}
       statsSkeleton={3}
       rows={4}
-      aside={true}
     />
   ),
   pendingMs: 0,
@@ -955,7 +943,6 @@ const routeTree = rootRoute.addChildren([
   outdatedVersionRoute,
   dashboardRoute,
   buildingsRoute,
-  buildingCreateRoute,
   buildingEditRoute,
   unitsRoute,
   unitEditRoute,
