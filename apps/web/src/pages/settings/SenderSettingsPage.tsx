@@ -1,6 +1,10 @@
-import type { SenderSettingsUpdateDto } from "@einfachvermieter/shared";
+import type {
+  SenderSettingsUpdateDto,
+  senderSettingsUpdateSchema,
+} from "@einfachvermieter/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
+import type { z } from "zod";
 import { FormSkeleton } from "@/components/FormSkeleton";
 import { t } from "@/lib/i18n";
 import {
@@ -15,7 +19,9 @@ import { useGoBack } from "@/lib/useGoBack";
 import { SenderSettingsForm } from "./SenderSettingsForm";
 import { SettingsLayout } from "./SettingsLayout";
 
-const toFormDefaults = (settings: SenderSettings): SenderSettingsUpdateDto => ({
+const toFormDefaults = (
+  settings: SenderSettings,
+): z.input<typeof senderSettingsUpdateSchema> => ({
   senderName: settings.senderName,
   senderAddressStreet: settings.senderAddressStreet,
   senderAddressPostalCode: settings.senderAddressPostalCode,
@@ -26,7 +32,9 @@ const toFormDefaults = (settings: SenderSettings): SenderSettingsUpdateDto => ({
   senderBankName: settings.senderBankName ?? "",
   senderBankIban: settings.senderBankIban ?? "",
   senderBankBic: settings.senderBankBic ?? "",
-  useLogo: settings.useLogo,
+  logoMode: settings.logoMode,
+  logoAlignment: settings.logoAlignment,
+  logoScalePercent: String(settings.logoScalePercent),
 });
 
 export const SenderSettingsPage = () => {

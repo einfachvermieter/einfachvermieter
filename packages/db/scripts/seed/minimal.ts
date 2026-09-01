@@ -11,7 +11,7 @@ import { runSeed, runSeedAsScript, schema } from "./engine.js";
 const main = runSeed("minimal", ({ insert }) => {
   insert(schema.appSettings, {
     id: schema.APP_SETTINGS_ID,
-    useLogo: false,
+    logoMode: "none",
   });
 });
 

@@ -292,7 +292,6 @@
       },
       "dashboard": "Übersicht",
       "configuration": "Einstellungen",
-      "userAccount": "Konto verwalten",
       "buildings": "Gebäude",
       "units": "Wohnungen",
       "meters": "Zähler",
@@ -373,10 +372,7 @@
         "settings": "Einstellungen",
         "settingsSender": "Absenderdaten",
         "settingsAi": "KI-Anbieter",
-        "settingsInternet": "Internetzugriffe",
-        "account": "Konto",
-        "settingsPassword": "Passwort ändern",
-        "settingsProfile": "Profil"
+        "settingsInternet": "Internetzugriffe"
       },
       "columns": {
         "label": "Bezeichnung",
@@ -406,7 +402,6 @@
         "viewDetails": "Details ansehen",
         "save": "Speichern",
         "saving": "Wird gespeichert …",
-        "apply": "Übernehmen",
         "cancel": "Abbrechen",
         "create": "Anlegen",
         "generate": "Erstellen",
@@ -435,7 +430,6 @@
         "unsavedDiscard": "Änderungen verwerfen",
         "optionalSuffix": " (optional)",
         "requiredMarker": " *",
-        "readonlyAssignment": "Zuordnung kann nicht geändert werden",
         "datePlaceholder": "TT.MM.JJJJ",
         "monthPlaceholder": "MM.JJJJ",
         "dateOpenPicker": "Datum wählen",
@@ -2091,12 +2085,11 @@
       "nav": {
         "sender": "Absenderdaten",
         "ai": "KI-Anbieter",
-        "internet": "Internetzugriffe",
-        "password": "Passwort",
-        "profile": "Profil"
+        "internet": "Internetzugriffe"
       },
       "internet": {
         "title": "Internetzugriffe",
+        "undecided": "Noch nicht entschieden",
         "description": "Zugriff auf externe Server erlauben.",
         "saveSuccess": "Einstellung gespeichert.",
         "climateFactors": {
@@ -2204,24 +2197,52 @@
           "bankIbanPlaceholder": "z. B. DE89 3704 0044 0532 0130 00",
           "bankBic": "BIC",
           "bankBicPlaceholder": "z. B. COBADEFFXXX",
-          "useLogo": "Logo im Briefkopf verwenden",
-          "useLogoDescription": "Wenn aktiv, wird das hochgeladene Logo verwendet. Ohne hochgeladenes Logo wird das App-Logo eingesetzt."
+          "logoMode": "Logo im Briefkopf",
+          "logoAlignment": "Ausrichtung",
+          "logoScalePercent": "Größe"
         },
         "validation": {
           "emailFormat": "Bitte eine gültige E-Mail-Adresse angeben.",
-          "invalidIban": "Bitte eine gültige IBAN angeben."
+          "invalidIban": "Bitte eine gültige IBAN angeben.",
+          "logoScale": "Bitte 100, 75 oder 50 Prozent wählen."
         },
+        "logoModes": {
+          "own": {
+            "title": "Eigenes Logo",
+            "description": "Das hochgeladene Logo"
+          },
+          "app": {
+            "title": "App-Logo",
+            "description": "Das Logo von EinfachVermieter"
+          },
+          "none": {
+            "title": "Kein Logo",
+            "description": "Der Briefkopf bleibt frei"
+          }
+        },
+        "logoAlignments": {
+          "left": "Linksbündig",
+          "center": "Mittig",
+          "right": "Rechtsbündig"
+        },
+        "logoScaleOption": "{percent} %",
         "logo": {
           "title": "Firmenlogo",
           "description": "PNG, JPEG, WebP oder SVG, maximal 2 MB. Empfohlen: ca. 600 × 200 px.",
           "current": "Aktuelles Logo",
-          "fallback": "Kein eigenes Logo hochgeladen, daher wird das App-Logo verwendet.",
+          "fallback": "Noch kein Logo hochgeladen",
           "uploadAction": "Logo hochladen",
           "replaceAction": "Logo ersetzen",
           "removeAction": "Logo entfernen",
           "pendingHint": "Die Änderung wird erst beim Speichern übernommen.",
           "previewLoading": "Vorschau wird erstellt …",
           "previewError": "Die Vorschau konnte nicht erstellt werden."
+        },
+        "preview": {
+          "note": "So erscheint der Kopf Ihrer Abrechnung. Die Vorschau übernimmt die Angaben von oben.",
+          "recipientName": "Mieterin oder Mieter",
+          "recipientStreet": "Musterweg 1",
+          "recipientCity": "12345 Musterstadt"
         }
       },
       "profile": {

@@ -82,7 +82,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     senderBankName: "Sparkasse Musterstadt",
     senderBankIban: "DE02500105170137075030",
     senderBankBic: "SPMUDE3MXXX",
-    useLogo: true,
+    logoMode: "own",
     logoStorageKey: demoLogoStorageKey,
     logoMimeType: "image/svg+xml",
   });

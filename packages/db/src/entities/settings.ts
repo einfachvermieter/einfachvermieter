@@ -19,7 +19,9 @@ export type AppSettings = {
   senderBankName: string | null;
   senderBankIban: string | null;
   senderBankBic: string | null;
-  useLogo: boolean;
+  logoMode: Opt<string>;
+  logoAlignment: Opt<string>;
+  logoScalePercent: Opt<number>;
   logoStorageKey: string | null;
   logoMimeType: string | null;
   aiProvider: string | null;
@@ -75,7 +77,17 @@ export const AppSettingsSchema = new EntitySchema<AppSettings>({
       fieldName: "sender_bank_bic",
       nullable: true,
     },
-    useLogo: { type: "boolean", fieldName: "use_logo", default: true },
+    logoMode: { type: "string", fieldName: "logo_mode", default: "app" },
+    logoAlignment: {
+      type: "string",
+      fieldName: "logo_alignment",
+      default: "center",
+    },
+    logoScalePercent: {
+      type: "integer",
+      fieldName: "logo_scale_percent",
+      default: 100,
+    },
     logoStorageKey: {
       type: "text",
       fieldName: "logo_storage_key",

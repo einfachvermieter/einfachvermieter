@@ -8,7 +8,6 @@ import { UpdateLinks } from "@/components/common/UpdateLinks";
 import { UpdateVersion } from "@/components/common/UpdateVersion";
 import { FormSkeleton } from "@/components/FormSkeleton";
 import { HelpHint } from "@/components/help/HelpHint";
-import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Switch } from "@/components/ui/Switch";
 import { climateFactorsSettingsQueryOptions } from "@/lib/climateFactors";
@@ -49,24 +48,29 @@ const ConsentCard = ({
 }) => (
   <SectionCard icon={icon} title={title}>
     <div className="space-y-4">
-      {value === null ? (
-        <Alert variant="info">
-          <AlertDescription>{undecidedNote}</AlertDescription>
-        </Alert>
-      ) : null}
-      <div className="flex items-center gap-3">
+      <div className="flex items-start gap-3">
         <Switch
           checked={value === true}
           disabled={disabled}
           onCheckedChange={(checked) => onChange(checked === true)}
         />
         <div>
-          <p className="flex items-center gap-2 text-sm font-medium">
+          <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
             {label}
             <Badge variant="ok">{t("ui.internetAccess.recommended")}</Badge>
+            {value === null ? (
+              <Badge variant="neutral">
+                {t("ui.settings.internet.undecided")}
+              </Badge>
+            ) : null}
             <HelpHint>{details}</HelpHint>
           </p>
           <p className="text-xs text-muted-foreground">{description}</p>
+          {value === null ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {undecidedNote}
+            </p>
+          ) : null}
         </div>
       </div>
       {children}

@@ -1,3 +1,4 @@
+import type { SenderLogoAlignment } from "@einfachvermieter/shared";
 import { StyleSheet } from "@react-pdf/renderer";
 
 // ── Design-Tokens ─────────────────────────────────────────────────
@@ -108,13 +109,11 @@ export const styles = StyleSheet.create({
 
   // Logo absolut im Briefkopf platziert. Volle Box-Größe + `objectFit:
   // contain` skaliert das Bild proportional auf die größte ins Rechteck
-  // passende Darstellung (ohne Verzerrung, ohne Crop)
+  // passende Darstellung (ohne Verzerrung, ohne Crop). Maße und Ausrichtung
+  // liefert `senderLogoStyle`.
   senderLogo: {
     position: "absolute",
     top: 28.35, // 10 mm
-    left: 70.86, // 25 mm
-    width: 467.68, // 165 mm
-    height: 70.86, // 25 mm
     objectFit: "contain",
   },
 
@@ -396,3 +395,66 @@ export const styles = StyleSheet.create({
     textAlign: "right",
   },
 });
+
+/**
+ * Satzbreite des Briefkopfs in pt: 165 mm zwischen linkem und rechtem Rand
+ */
+const LOGO_AREA_WIDTH = 467.68;
+/**
+ * Volle Logo-Höhe in pt: 25 mm
+ */
+const LOGO_AREA_HEIGHT = 70.86;
+/**
+ * Linker Satzrand in pt: 25 mm
+ */
+const LOGO_AREA_LEFT = 70.86;
+
+/**
+ * Anteil des freien Platzes links vom Logo
+ */
+const LOGO_OFFSET_FACTOR: Record<SenderLogoAlignment, number> = {
+  left: 0,
+  center: 0.5,
+  right: 1,
+};
+
+/**
+ *Lage des Bildes in seiner Box, falls es sie nicht ausfüllt
+ */
+const LOGO_OBJECT_POSITION: Record<SenderLogoAlignment, string> = {
+  left: "0%",
+  center: "50%",
+  right: "100%",
+};
+
+/**
+ * Maße und Lage des Logos: Der Anteil verkleinert die Box, die Ausrichtung
+ * schiebt sie an den linken oder rechten Satzrand.
+ *
+ * Ist das Seitenverhältnis bekannt, wird die Box genau so breit wie das
+ * Logo darin. Das ist der einzige Weg, ein SVG auszurichten: react-pdf
+ * zeichnet SVG als Vektor und zentriert es immer in seiner Box. Bei
+ * Rasterbildern rückt stattdessen `objectPositionX` das Bild in der Box.
+ */
+export const senderLogoStyle = (options: {
+  alignment?: SenderLogoAlignment | null;
+  scalePercent?: number | null;
+  aspectRatio?: number | null;
+}) => {
+  const alignment = options.alignment ?? "center";
+  const scale = (options.scalePercent ?? 100) / 100;
+  const areaWidth = LOGO_AREA_WIDTH * scale;
+  const height = LOGO_AREA_HEIGHT * scale;
+  const width = options.aspectRatio
+    ? Math.min(areaWidth, height * options.aspectRatio)
+    : areaWidth;
+  const freeSpace = LOGO_AREA_WIDTH - width;
+
+  return {
+    ...styles.senderLogo,
+    left: LOGO_AREA_LEFT + freeSpace * LOGO_OFFSET_FACTOR[alignment],
+    width,
+    height,
+    objectPositionX: LOGO_OBJECT_POSITION[alignment],
+  };
+};

@@ -76,8 +76,6 @@ import { MetersOverview } from "./pages/meters/MetersOverview";
 import { MieterkontoDetail } from "./pages/mieterkonto/MieterkontoDetail";
 import { AiSettingsPage } from "./pages/settings/AiSettingsPage";
 import { InternetSettingsPage } from "./pages/settings/InternetSettingsPage";
-import { PasswordSettingsPage } from "./pages/settings/PasswordSettingsPage";
-import { ProfileSettingsPage } from "./pages/settings/ProfileSettingsPage";
 import { SenderSettingsPage } from "./pages/settings/SenderSettingsPage";
 import { SetupPage } from "./pages/setup/SetupPage";
 import { StatementDetailPage } from "./pages/statements/StatementDetailPage";
@@ -155,20 +153,6 @@ const redirectToSetupIfNeeded = async ({
 
   if (status?.authMode === "local") {
     throw redirect({ to: "/" });
-  }
-};
-
-/**
- * Konto-Seiten (Profil/Passwort): im `local`-Auth-Modus gibt es kein Konto.
- */
-const redirectAwayIfLocalAuth = async ({
-  context,
-}: {
-  context: RouterContext;
-}) => {
-  await requireAuth({ context });
-  if ((await getSetupStatus(context))?.authMode === "local") {
-    throw redirect({ to: "/einstellungen/absender" });
   }
 };
 
@@ -859,31 +843,6 @@ const settingsIndexRoute = createRoute({
   },
 });
 
-/**
- * Einstiegspunkt des Konto-Bereichs (Ziel der Breadcrumb)
- */
-const accountIndexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/konto",
-  beforeLoad: async (args) => {
-    await redirectAwayIfLocalAuth(args);
-    throw redirect({ to: "/konto/profil" });
-  },
-});
-
-const profileSettingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/konto/profil",
-  beforeLoad: redirectAwayIfLocalAuth,
-  component: ProfileSettingsPage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.account"), to: "/konto" },
-      { label: t("ui.common.crumbs.settingsProfile") },
-    ],
-  },
-});
-
 const senderSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/einstellungen/absender",
@@ -923,19 +882,6 @@ const internetSettingsRoute = createRoute({
   },
 });
 
-const passwordSettingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/konto/passwort",
-  beforeLoad: redirectAwayIfLocalAuth,
-  component: PasswordSettingsPage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.account"), to: "/konto" },
-      { label: t("ui.common.crumbs.settingsPassword") },
-    ],
-  },
-});
-
 const routeTree = rootRoute.addChildren([
   loginRoute,
   setupRoute,
@@ -962,12 +908,9 @@ const routeTree = rootRoute.addChildren([
   statementsRoute,
   statementDetailRoute,
   settingsIndexRoute,
-  accountIndexRoute,
-  profileSettingsRoute,
   senderSettingsRoute,
   aiSettingsRoute,
   internetSettingsRoute,
-  passwordSettingsRoute,
 ]);
 
 /**

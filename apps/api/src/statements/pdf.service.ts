@@ -14,6 +14,9 @@ import {
   type StatementResult,
   statementResultSchema,
   todayIso,
+  toLogoAlignment,
+  toLogoMode,
+  toLogoScalePercent,
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
@@ -198,7 +201,7 @@ export class PdfService {
       }
     }
 
-    const senderLogoUrl = await this.resolveSenderLogo(senderSettings);
+    const logo = await this.resolveSenderLogo(senderSettings);
 
     return {
       buildingName: building.name,
@@ -226,7 +229,12 @@ export class PdfService {
       senderBankName: senderSettings.senderBankName ?? null,
       senderBankIban: senderSettings.senderBankIban ?? null,
       senderBankBic: senderSettings.senderBankBic ?? null,
-      senderLogoUrl,
+      senderLogoUrl: logo.url,
+      senderLogoAspectRatio: logo.aspectRatio,
+      senderLogoAlignment: toLogoAlignment(senderSettings.logoAlignment),
+      senderLogoScalePercent: toLogoScalePercent(
+        senderSettings.logoScalePercent,
+      ),
       documentDate: statement.documentDate ?? today,
       hasSepaMandate,
       hasBankAccount,
@@ -234,31 +242,70 @@ export class PdfService {
   }
 
   /**
-   * Auflösung des Logos als data-URI: bei aktivem Sender-Logo den Upload,
-   * sonst das App-Default-SVG aus dem packages/pdf-Asset-Ordner.
+   * Auflösung des Logos als data-URI, je nach gewähltem Modus: das
+   * hochgeladene Logo, das App-Logo aus dem packages/pdf-Asset-Ordner
+   * oder keines. Fehlt der Upload, bleibt der Briefkopf leer. Bei SVG
+   * kommt das Seitenverhältnis mit, sonst lässt es sich nicht ausrichten.
    */
   private async resolveSenderLogo(senderSettings: {
-    useLogo: boolean;
-    hasLogo: boolean;
-  }): Promise<string | null> {
-    if (!senderSettings.useLogo) {
-      return null;
+    logoMode: string;
+  }): Promise<{ url: string | null; aspectRatio: number | null }> {
+    const mode = toLogoMode(senderSettings.logoMode);
+    if (mode === "none") {
+      return { url: null, aspectRatio: null };
     }
 
-    if (senderSettings.hasLogo) {
+    if (mode === "own") {
       const logo = await this.settingsService.loadLogo();
-      if (logo) {
-        return toDataUri(logo.data, logo.mimeType);
+      if (!logo) {
+        return { url: null, aspectRatio: null };
       }
+
+      return {
+        url: toDataUri(logo.data, logo.mimeType),
+        aspectRatio:
+          logo.mimeType === SVG_MIME
+            ? svgAspectRatio(logo.data.toString("utf8"))
+            : null,
+      };
     }
 
     const data = await readFile(appLogoPath);
-    return toDataUri(data, "image/svg+xml");
+    return {
+      url: toDataUri(data, SVG_MIME),
+      aspectRatio: svgAspectRatio(data.toString("utf8")),
+    };
   }
 }
+
+const SVG_MIME = "image/svg+xml";
+
+/**
+ * Breite geteilt durch Höhe aus der viewBox (bevorzugt) oder den
+ * width/height-Attributen. Ohne brauchbare Angabe null.
+ */
+const VIEW_BOX_PATTERN =
+  /viewBox\s*=\s*["']\s*[\d.-]+[\s,]+[\d.-]+[\s,]+([\d.]+)[\s,]+([\d.]+)/iu;
+const WIDTH_PATTERN = /\bwidth\s*=\s*["']([\d.]+)/iu;
+const HEIGHT_PATTERN = /\bheight\s*=\s*["']([\d.]+)/iu;
+
+const svgAspectRatio = (svg: string): number | null => {
+  const viewBox = VIEW_BOX_PATTERN.exec(svg);
+  if (viewBox) {
+    const boxWidth = Number(viewBox[1]);
+    const boxHeight = Number(viewBox[2]);
+    if (boxWidth > 0 && boxHeight > 0) {
+      return boxWidth / boxHeight;
+    }
+  }
+
+  const width = Number(WIDTH_PATTERN.exec(svg)?.[1]);
+  const height = Number(HEIGHT_PATTERN.exec(svg)?.[1]);
+  return width > 0 && height > 0 ? width / height : null;
+};
 
 /**
  * Binärdaten als base64-data-URI kodieren (zum Einbetten ins PDF).
  */
-const toDataUri = (data: Buffer, mimeType: string): string =>
-  `data:${mimeType};base64,${data.toString("base64")}`;
+const toDataUri = (data: Buffer | string, mimeType: string): string =>
+  `data:${mimeType};base64,${Buffer.from(data).toString("base64")}`;

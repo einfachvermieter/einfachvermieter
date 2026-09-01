@@ -1,10 +1,11 @@
 import {
   RiExpandUpDownLine,
+  RiLockPasswordLine,
   RiLogoutBoxRLine,
   RiUserLine,
   RiUserSettingsLine,
 } from "@remixicon/react";
-import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/Sidebar";
 import { t } from "@/lib/i18n";
+import { PasswordSheet } from "@/pages/settings/PasswordSheet";
+import { ProfileSheet } from "@/pages/settings/ProfileSheet";
 
 export const MainNavigationUser = ({
   email,
@@ -31,6 +34,9 @@ export const MainNavigationUser = ({
   lastName: string | null;
   onLogout: () => void;
 }) => {
+  // Profil und Passwort öffnen als Sheet ohne Navigation
+  const [sheet, setSheet] = useState<"profile" | "password" | null>(null);
+
   // Voller Name als primäre Zeile, E-Mail darunter; ohne Namen die E-Mail
   const fullName = [firstName, lastName].filter(Boolean).join(" ");
   const displayName = fullName || email;
@@ -75,11 +81,13 @@ export const MainNavigationUser = ({
               </span>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild={true}>
-              <Link to="/konto/profil">
-                <RiUserSettingsLine />
-                {t("ui.navigation.userAccount")}
-              </Link>
+            <DropdownMenuItem onSelect={() => setSheet("profile")}>
+              <RiUserSettingsLine />
+              {t("ui.settings.profile.title")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSheet("password")}>
+              <RiLockPasswordLine />
+              {t("ui.settings.password.title")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={onLogout}>
@@ -89,6 +97,13 @@ export const MainNavigationUser = ({
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+
+      {sheet === "profile" ? (
+        <ProfileSheet onClose={() => setSheet(null)} />
+      ) : null}
+      {sheet === "password" ? (
+        <PasswordSheet onClose={() => setSheet(null)} />
+      ) : null}
     </SidebarMenu>
   );
 };

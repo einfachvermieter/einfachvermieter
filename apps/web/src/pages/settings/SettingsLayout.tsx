@@ -38,7 +38,7 @@ export const SettingsLayout = ({
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="max-w-225 space-y-6 pb-24">
       <div className="space-y-4">
         <PageHeader
           tile={<PageHeaderIcon icon={domainVisuals.configuration.icon} />}
@@ -54,7 +54,7 @@ export const SettingsLayout = ({
             );
           }}
         >
-          <TabsList variant="default">
+          <TabsList variant="pills">
             <TabsTrigger value="sender">
               <RiContactsBook2Line />
               {t("ui.settings.nav.sender")}

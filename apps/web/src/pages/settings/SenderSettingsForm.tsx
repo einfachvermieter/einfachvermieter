@@ -3,7 +3,7 @@ import {
   senderSettingsUpdateSchema,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiBankLine, RiContactsBook2Line, RiImageLine } from "@remixicon/react";
+import { RiBankLine, RiContactsBook2Line } from "@remixicon/react";
 import { bankDataByIBAN } from "bankdata-germany";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -12,18 +12,17 @@ import { Disclose } from "@/components/common/Disclose";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Form } from "@/components/form/Form";
 import { Savebar } from "@/components/form/Savebar";
-import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { t } from "@/lib/i18n";
 import type { PendingLogo, SenderSettings } from "@/lib/senderSettings";
-import { SenderLogoSection } from "./SenderLogoSection";
+import { SenderLogoCard } from "./SenderLogoCard";
 
 const normalizeIban = (raw: string): string =>
   raw.replace(/\s+/gu, "").toUpperCase();
 
 type SenderSettingsFormProps = {
   settings: SenderSettings;
-  defaultValues: SenderSettingsUpdateDto;
+  defaultValues: z.input<typeof senderSettingsUpdateSchema>;
   onSubmit: (values: SenderSettingsUpdateDto) => Promise<void>;
   onCancel: () => void;
   pendingLogo: PendingLogo;
@@ -74,6 +73,16 @@ export const SenderSettingsForm = ({
       });
     }
   }, [bankData, form]);
+
+  const letterValues = {
+    name: form.watch("senderName") ?? "",
+    street: form.watch("senderAddressStreet") ?? "",
+    postalCode: form.watch("senderAddressPostalCode") ?? "",
+    city: form.watch("senderAddressCity") ?? "",
+    phone: form.watch("senderPhone") ?? "",
+    fax: form.watch("senderFax") ?? "",
+    email: form.watch("senderEmail") ?? "",
+  };
 
   return (
     <Form form={form} onSubmit={onSubmit}>
@@ -182,26 +191,14 @@ export const SenderSettingsForm = ({
             </div>
           </SectionCard>
 
-          <SectionCard
-            icon={RiImageLine}
-            title={t("ui.settings.sender.logo.title")}
-            description={t("ui.settings.sender.logo.description")}
-          >
-            <div className="flex flex-col gap-4">
-              <SwitchInput
-                control={form.control}
-                name="useLogo"
-                label={t("ui.settings.sender.fields.useLogo")}
-                description={t("ui.settings.sender.fields.useLogoDescription")}
-              />
-              <SenderLogoSection
-                settings={settings}
-                pendingLogo={pendingLogo}
-                onPendingLogoChange={onPendingLogoChange}
-                logoVersion={logoVersion}
-              />
-            </div>
-          </SectionCard>
+          <SenderLogoCard
+            form={form}
+            settings={settings}
+            letterValues={letterValues}
+            pendingLogo={pendingLogo}
+            onPendingLogoChange={onPendingLogoChange}
+            logoVersion={logoVersion}
+          />
         </div>
       </fieldset>
       <Savebar

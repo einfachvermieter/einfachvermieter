@@ -5,15 +5,15 @@ import {
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiLockPasswordLine } from "@remixicon/react";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
-import { SectionCard } from "@/components/common/SectionCard";
-import { Form } from "@/components/form/Form";
+import { FormSheet } from "@/components/form/FormSheet";
 import { PasswordPolicyHint } from "@/components/form/PasswordPolicyHint";
-import { Savebar } from "@/components/form/Savebar";
 import { TextInput } from "@/components/form/TextInput";
-import { FieldGroup } from "@/components/ui/Field";
+import { changePassword, passwordPolicyQueryOptions } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 
 /**
@@ -41,17 +41,26 @@ const makeSchema = (policy: PasswordPolicy) =>
 
 type PasswordChangeFormValues = z.infer<ReturnType<typeof makeSchema>>;
 
-type PasswordChangeFormProps = {
-  policy: PasswordPolicy;
-  onSubmit: (values: PasswordChangeDto) => Promise<void>;
-  onCancel: () => void;
+/**
+ * Passwort des angemeldeten Kontos ändern
+ */
+export const PasswordSheet = ({ onClose }: { onClose: () => void }) => {
+  const { data: policy } = useQuery(passwordPolicyQueryOptions);
+
+  if (!policy) {
+    return null;
+  }
+
+  return <PasswordSheetForm policy={policy} onClose={onClose} />;
 };
 
-export const PasswordChangeForm = ({
+const PasswordSheetForm = ({
   policy,
-  onSubmit,
-  onCancel,
-}: PasswordChangeFormProps) => {
+  onClose,
+}: {
+  policy: PasswordPolicy;
+  onClose: () => void;
+}) => {
   const schema = useMemo(() => makeSchema(policy), [policy]);
   const form = useForm<PasswordChangeFormValues>({
     resolver: zodResolver(schema),
@@ -63,54 +72,51 @@ export const PasswordChangeForm = ({
     },
   });
 
-  const submitting = form.formState.isSubmitting;
-
+  // Fehler laufen über das Form-Error-Handling (inline am Feld), daher
+  // hier nur der Erfolgs-Toast: das Passwort liegt in keiner Query.
   const handleSubmit = async (values: PasswordChangeFormValues) => {
-    await onSubmit({
+    const dto: PasswordChangeDto = {
       currentPassword: values.currentPassword,
       newPassword: values.newPassword,
-    });
+    };
+    await changePassword(dto);
+    toast.success(t("ui.settings.password.saveSuccess"));
     form.reset();
+    onClose();
   };
 
   return (
-    <Form form={form} onSubmit={handleSubmit} guardUnsavedChanges={false}>
-      <fieldset disabled={submitting} className="contents">
-        <SectionCard
-          icon={RiLockPasswordLine}
-          title={t("ui.settings.password.credentialsTitle")}
-        >
-          <FieldGroup className="gap-4">
-            <TextInput
-              control={form.control}
-              name="currentPassword"
-              label={t("ui.settings.password.fields.current")}
-              type="password"
-              autoComplete="current-password"
-            />
-            <TextInput
-              control={form.control}
-              name="newPassword"
-              label={t("ui.settings.password.fields.new")}
-              description={<PasswordPolicyHint policy={policy} />}
-              type="password"
-              autoComplete="new-password"
-            />
-            <TextInput
-              control={form.control}
-              name="newPasswordConfirm"
-              label={t("ui.settings.password.fields.confirm")}
-              type="password"
-              autoComplete="new-password"
-            />
-          </FieldGroup>
-        </SectionCard>
-      </fieldset>
-      <Savebar
-        dirty={form.formState.isDirty}
-        submitting={submitting}
-        onCancel={onCancel}
+    <FormSheet
+      form={form}
+      icon={RiLockPasswordLine}
+      title={t("ui.settings.password.title")}
+      description={t("ui.settings.password.description")}
+      submitLabel={t("ui.common.action.save")}
+      onSubmit={handleSubmit}
+      onClose={onClose}
+    >
+      <TextInput
+        control={form.control}
+        name="currentPassword"
+        label={t("ui.settings.password.fields.current")}
+        type="password"
+        autoComplete="current-password"
       />
-    </Form>
+      <TextInput
+        control={form.control}
+        name="newPassword"
+        label={t("ui.settings.password.fields.new")}
+        description={<PasswordPolicyHint policy={policy} />}
+        type="password"
+        autoComplete="new-password"
+      />
+      <TextInput
+        control={form.control}
+        name="newPasswordConfirm"
+        label={t("ui.settings.password.fields.confirm")}
+        type="password"
+        autoComplete="new-password"
+      />
+    </FormSheet>
   );
 };
