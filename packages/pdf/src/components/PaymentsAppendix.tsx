@@ -1,3 +1,4 @@
+import { monthKeyOf } from "@einfachvermieter/i18n";
 import {
   formatEur,
   type PaymentSummary,
@@ -32,21 +33,6 @@ type MonthBucket = {
   advanceCents: number;
   inTenantPeriod: boolean;
 };
-
-const MONTH_KEYS = [
-  "jan",
-  "feb",
-  "mar",
-  "apr",
-  "may",
-  "jun",
-  "jul",
-  "aug",
-  "sep",
-  "oct",
-  "nov",
-  "dec",
-] as const;
 
 const SPLIT_THRESHOLD = 11;
 const SHORT_NAME_THRESHOLD = 7;
@@ -93,7 +79,7 @@ const aggregateByMonth = (
   const tenantEndKey = tenantPeriod.end.slice(0, 7);
 
   const buckets: MonthBucket[] = months.map(({ year, month }) => {
-    const monKey = MONTH_KEYS[month - 1];
+    const monKey = monthKeyOf(month);
     const key = `${year}-${pad2(month)}`;
 
     return {

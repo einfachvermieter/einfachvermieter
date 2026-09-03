@@ -280,6 +280,111 @@ export class AccountsService {
   }
 
   /**
+   * Soll und Ist der Mieteingänge je Monat, summiert über alle Mieter.
+   * Kaltmiete und Vorauszahlung zusammen, wie sie auch überwiesen werden.
+   */
+  async getMonthlyTotals(
+    rangeStart: string,
+    rangeEnd: string,
+  ): Promise<{ month: string; targetCents: number; receivedCents: number }[]> {
+    const tenantsList = await this.em.find(TenantSchema, {});
+    const tenantIds = tenantsList.map((tenant) => tenant.id);
+
+    const [rents, monthPayments] = await Promise.all([
+      this.em.find(
+        TenantRentSchema,
+        { tenantId: { $in: tenantIds } },
+        { orderBy: { startDate: "asc" } },
+      ),
+      this.em.find(PaymentSchema, {
+        tenantId: { $in: tenantIds },
+        forMonth: { $ne: null },
+      }),
+    ]);
+
+    const rentsByTenant = groupByTenant(rents);
+    const paymentsByTenant = groupByTenant(monthPayments);
+
+    const totals = new Map<string, { target: number; received: number }>();
+    for (const month of enumerateMonths(rangeStart, rangeEnd)) {
+      totals.set(month, { target: 0, received: 0 });
+    }
+
+    for (const tenant of tenantsList) {
+      const rows = buildMonthRows(
+        tenant,
+        rentsByTenant.get(tenant.id) ?? [],
+        paymentsByTenant.get(tenant.id) ?? [],
+        rangeStart,
+        rangeEnd,
+      );
+
+      for (const row of rows) {
+        const bucket = totals.get(row.forMonth);
+        if (!bucket) {
+          continue;
+        }
+        bucket.target += row.baseRent.sollCents + row.advance.sollCents;
+        bucket.received += row.baseRent.istCents + row.advance.istCents;
+      }
+    }
+
+    return [...totals.entries()].map(([month, bucket]) => ({
+      month,
+      targetCents: bucket.target,
+      receivedCents: bucket.received,
+    }));
+  }
+
+  /**
+   * Erster Monat, in dem der Mieter etwas offen gelassen hat. Für den
+   * Hinweis "im Rückstand seit ..."
+   */
+  async getFirstOpenMonths(
+    rangeStart: string,
+    rangeEnd: string,
+  ): Promise<Map<string, string>> {
+    const tenantsList = await this.em.find(TenantSchema, {});
+    const tenantIds = tenantsList.map((tenant) => tenant.id);
+
+    const [rents, monthPayments] = await Promise.all([
+      this.em.find(
+        TenantRentSchema,
+        { tenantId: { $in: tenantIds } },
+        { orderBy: { startDate: "asc" } },
+      ),
+      this.em.find(PaymentSchema, {
+        tenantId: { $in: tenantIds },
+        forMonth: { $ne: null },
+      }),
+    ]);
+
+    const rentsByTenant = groupByTenant(rents);
+    const paymentsByTenant = groupByTenant(monthPayments);
+    const firstOpen = new Map<string, string>();
+
+    for (const tenant of tenantsList) {
+      const rows = buildMonthRows(
+        tenant,
+        rentsByTenant.get(tenant.id) ?? [],
+        paymentsByTenant.get(tenant.id) ?? [],
+        rangeStart,
+        rangeEnd,
+      );
+
+      const open = rows.find(
+        (row) =>
+          row.baseRent.status === "open" || row.advance.status === "open",
+      );
+      if (open) {
+        firstOpen.set(tenant.id, open.forMonth);
+      }
+    }
+
+    return firstOpen;
+  }
+
+  /**
    * Soll/Ist je NK-Abrechnungs-Buchung des Mieters
    */
   async getSettlementRows(tenantId: string): Promise<SettlementRow[]> {

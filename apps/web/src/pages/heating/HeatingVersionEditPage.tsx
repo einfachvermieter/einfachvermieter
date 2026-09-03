@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../components/ui/DropdownMenu";
+import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
@@ -92,6 +93,9 @@ export const HeatingVersionEditPage = () => {
   // steht der neue Stand sofort in der Ansicht.
   const versionQuery = useQuery(heatingSettingsByIdQueryOptions(id));
   const version = versionQuery.data;
+
+  // Beim Direkteinstieg das Gebäude des Objekts übernehmen
+  useAdoptBuilding(version?.buildingId);
   const { data: buildings } = useQuery(buildingsQueryOptions);
   const building = buildings?.find((entry) => entry.id === version?.buildingId);
 

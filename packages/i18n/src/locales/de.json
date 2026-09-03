@@ -37,8 +37,6 @@
   },
   "common": {
     "appName": {
-      "Einfach": "Einfach",
-      "Vermieter": "Vermieter",
       "EinfachVermieter": "EinfachVermieter"
     },
     "save": "Speichern",
@@ -411,7 +409,8 @@
         "logout": "Abmelden",
         "close": "Schließen",
         "backToOverview": "Zur Übersicht",
-        "backToHome": "Zur Startseite"
+        "backToHome": "Zur Startseite",
+        "open": "Öffnen"
       },
       "savebar": {
         "lastSaved": "Zuletzt gespeichert: {date}",
@@ -2052,33 +2051,80 @@
     },
     "dashboard": {
       "title": "Übersicht",
-      "eyebrow": "Portfolio",
       "sub": {
-        "buildings": "{count, plural, one {# Gebäude} other {# Gebäude}}",
-        "tagline": "im gesamten Portfolio"
+        "buildings": "{count, plural, one {# Gebäude} other {# Gebäude}}"
       },
       "buildingsCard": {
         "title": "Ihre Gebäude",
-        "description": "Zum Verwalten ein Gebäude wählen.",
-        "tenantsCount": "{count, plural, one {# aktiver Mieter} other {# aktive Mieter}}"
-      },
-      "stats": {
-        "buildings": "Gebäude",
-        "units": "Wohnungen",
-        "tenants": "Mieter",
-        "openStatements": "Offene Abrechnungen"
+        "description": "Zum Öffnen ein Gebäude wählen",
+        "manage": "Verwalten",
+        "noUnits": "noch keine Wohnungen",
+        "setUp": "einrichten",
+        "overdue": "{amount} offen",
+        "missingStatements": "Abrechnung {year} fehlt",
+        "total": "Zusammen {units, plural, one {# Wohnung} other {# Wohnungen}} · {amount} Sollmiete im Monat",
+        "unitsLink": "{count, plural, one {# Wohnung} other {# Wohnungen}}",
+        "rentedLink": "{count, plural, one {# vermietet} other {# vermietet}}"
       },
       "quickstart": {
         "title": "Schnellstart",
-        "description": "Häufige Aufgaben direkt aus der Übersicht starten.",
-        "newStatement": "Neue Abrechnung erstellen",
-        "recordCost": "Kostenrechnung erfassen",
+        "description": "Häufige Aufgaben direkt starten",
+        "newStatement": "Abrechnung erstellen",
+        "recordCost": "Rechnung erfassen",
         "recordReading": "Zählerstand eintragen",
         "recordPayment": "Zahlung erfassen",
         "addBuilding": "Erstes Gebäude anlegen",
         "addUnit": "Erste Wohnung anlegen",
         "addTenant": "Ersten Mieter anlegen"
-      }
+      },
+      "greeting": "Guten Tag",
+      "headline": {
+        "statementsDue": "Für {count, plural, one {ein Mietverhältnis fehlt} other {# Mietverhältnisse fehlt}} die Abrechnung {year}. Die Frist endet am {deadline}.",
+        "allDone": "Alle Abrechnungen für {year} sind erstellt.",
+        "noBuildings": "Legen Sie Ihr erstes Gebäude an, dann füllt sich diese Seite."
+      },
+      "kpi": {
+        "statements": "Abrechnungen {year}",
+        "statementsOpen": "{count, plural, one {# offen} other {# offen}}",
+        "statementsAllDone": "vollständig",
+        "statementsHint": "{done} von {total} erstellt · noch {days, plural, one {# Tag} other {# Tage}} bis zur Frist",
+        "statementsHintOverdue": "{done} von {total} erstellt · die Frist ist seit dem {deadline} verstrichen",
+        "statementsHintDone": "Frist am {deadline} gewahrt",
+        "overdue": "Offene Forderungen",
+        "overdueHint": "{count, plural, one {# Mieter im Rückstand} other {# Mieter im Rückstand}} seit {month}",
+        "overdueNone": "Alle Mieten sind ausgeglichen",
+        "intake": "Mieteingänge im {month}",
+        "intakeHint": "von {target} Sollmiete · {open} offen",
+        "intakeHintComplete": "vollständig eingegangen"
+      },
+      "tasks": {
+        "title": "Was jetzt ansteht",
+        "empty": "Nichts Dringendes. Alle Abrechnungen sind erstellt und die Mieten ausgeglichen.",
+        "statementsTitle": "Abrechnung {year} für {count, plural, one {ein Mietverhältnis} other {# Mietverhältnisse}} erstellen",
+        "statementsBody": "Nach dem {deadline} können Sie keine Nachforderungen mehr stellen.",
+        "overdueTitle": "{count, plural, one {Ein Mieter ist} other {# Mieter sind}} im Rückstand",
+        "overdueSince": "seit {month}",
+        "metersTitle": "Zählerstände zum Jahresende ablesen",
+        "metersBody": "Ohne Ablesung wird der Verbrauch geschätzt",
+        "metersWhen": "bis 31.12.",
+        "setupTitle": "{count, plural, one {Ein Eintrag ist} other {# Einträge sind}} noch nicht fertig eingerichtet",
+        "setupWhen": "offen",
+        "statementsCount": "{count, plural, one {# Abrechnung} other {# Abrechnungen}}",
+        "more": "+{count} weitere",
+        "less": "Weniger anzeigen",
+        "setupNoUnits": "keine Wohnungen",
+        "setupNoTenant": "kein Mieter",
+        "setupUnitLabel": "{building} · {unit}"
+      },
+      "intake": {
+        "title": "Mieteingänge der letzten Monate",
+        "note": "Heller Balken: die Sollmiete des Monats. Insgesamt fehlen {amount}.",
+        "noteComplete": "In den letzten Monaten sind alle Mieten vollständig eingegangen.",
+        "barTitle": "{month}: {received} von {target}",
+        "ofTarget": "von {amount}"
+      },
+      "createStatement": "Abrechnung erstellen",
+      "monthYear": "{month} {year}"
     },
     "settings": {
       "eyebrow": "Einstellungen",

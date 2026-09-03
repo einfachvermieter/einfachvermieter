@@ -1,3 +1,4 @@
+import { monthKeyOf } from "@einfachvermieter/i18n";
 import {
   formatDate,
   formatEur,
@@ -11,21 +12,6 @@ import { SectionCard } from "../../../../components/common/SectionCard";
 import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
 import { ComputedValueRow } from "../../../../components/form/ComputedValueRow";
 import { t } from "../../../../lib/i18n";
-
-const PAYMENT_MONTH_KEYS = [
-  "jan",
-  "feb",
-  "mar",
-  "apr",
-  "may",
-  "jun",
-  "jul",
-  "aug",
-  "sep",
-  "oct",
-  "nov",
-  "dec",
-] as const;
 
 type PaymentMonthBucket = {
   key: string;
@@ -80,7 +66,7 @@ const aggregatePaymentsByMonth = (
 
   const buckets: PaymentMonthBucket[] = iterPeriodMonths(period).map(
     ({ year, month }) => {
-      const monthKey = PAYMENT_MONTH_KEYS[month - 1];
+      const monthKey = monthKeyOf(month);
       const key = `${year}-${pad2(month)}`;
 
       return {

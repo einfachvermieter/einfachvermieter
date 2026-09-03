@@ -2,6 +2,15 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /**
+ * Einfärbung des Werts, wenn eine Zahl auf etwas Offenes hinweist
+ */
+const VALUE_TONE = {
+  neutral: "",
+  warning: "text-honig-600",
+  bad: "text-himbeere-500",
+} as const;
+
+/**
  * Reihe kleiner Kennzahl-Kacheln (z. B. Kaution: Vereinbart / Eingegangen /
  * Status). Der Wert darf Text, eine Zahl oder eine Pill sein.
  */
@@ -9,7 +18,12 @@ export const MiniKpiRow = ({
   items,
   columns = 3,
 }: {
-  items: { label: ReactNode; value: ReactNode; hint?: ReactNode }[];
+  items: {
+    label: ReactNode;
+    value: ReactNode;
+    hint?: ReactNode;
+    tone?: keyof typeof VALUE_TONE;
+  }[];
 
   /**
    * Spalten ab sm
@@ -32,7 +46,12 @@ export const MiniKpiRow = ({
         <div className="text-2xs font-semibold text-schiefer-600">
           {item.label}
         </div>
-        <div className="mt-1 text-xl font-semibold tabular-nums">
+        <div
+          className={cn(
+            "mt-1 text-xl font-semibold tabular-nums",
+            VALUE_TONE[item.tone ?? "neutral"],
+          )}
+        >
           {item.value}
         </div>
         {item.hint ? (

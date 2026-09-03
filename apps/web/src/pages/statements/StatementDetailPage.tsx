@@ -60,6 +60,7 @@ import {
   TabsTrigger,
 } from "../../components/ui/Tabs";
 import { Textarea } from "../../components/ui/Textarea";
+import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { climateFactorsQueryOptions } from "../../lib/climateFactors";
 import { domainVisuals } from "../../lib/domainVisuals";
@@ -406,6 +407,9 @@ export const StatementDetailPage = () => {
     enabled: Boolean(statementId),
   });
   const statement = statementQuery.data;
+
+  // Beim Direkteinstieg das Gebäude des Objekts übernehmen
+  useAdoptBuilding(statement?.buildingId);
 
   // Mietvertrag + Wohnungen für die identifizierende Überschrift (Mieter,
   // Wohnung), gleicher Query-Cache wie der Route-Loader, kein Doppel-Fetch.

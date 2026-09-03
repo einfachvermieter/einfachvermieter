@@ -18,12 +18,11 @@ export const AppBrand = ({ tone = "dark" }: { tone?: "light" | "dark" }) => (
     <span
       className={
         tone === "dark"
-          ? "truncate font-heading text-lg font-semibold tracking-heading text-white"
-          : "truncate font-heading text-lg font-semibold tracking-heading text-foreground"
+          ? "truncate font-heading text-xl font-semibold tracking-heading text-schiefer-50"
+          : "truncate font-heading text-xl font-semibold tracking-heading text-foreground"
       }
     >
-      {t("common.appName.Einfach")}
-      {t("common.appName.Vermieter")}
+      {t("common.appName.EinfachVermieter")}
     </span>
   </div>
 );

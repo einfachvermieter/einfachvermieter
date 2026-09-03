@@ -1,24 +1,10 @@
+import { MONTH_KEYS } from "@einfachvermieter/i18n";
 import {
   DEGREE_DAYS_PROMILLE_PER_MONTH,
   formatNumber,
   type HeatingProrationMethod,
 } from "@einfachvermieter/shared";
 import { t } from "../../../../lib/i18n";
-
-const MONTH_KEYS = [
-  "jan",
-  "feb",
-  "mar",
-  "apr",
-  "may",
-  "jun",
-  "jul",
-  "aug",
-  "sep",
-  "oct",
-  "nov",
-  "dec",
-] as const;
 
 const maxPromille = Math.max(...DEGREE_DAYS_PROMILLE_PER_MONTH);
 /**

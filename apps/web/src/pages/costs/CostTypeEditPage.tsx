@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../components/ui/DropdownMenu";
+import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import {
   type CostType,
@@ -28,8 +29,12 @@ import {
 } from "../../lib/costs";
 import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
-import { meterRoleLabel, metersOverviewQueryOptions } from "../../lib/meters";
-import { unitsQueryOptions } from "../../lib/units";
+import {
+  type Meter,
+  meterRoleLabel,
+  metersOverviewQueryOptions,
+} from "../../lib/meters";
+import { type Unit, unitsQueryOptions } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useDeleteResource } from "../../lib/useDeleteResource";
 import { CostEntryCreateSheet } from "../invoices/CostEntryCreateSheet";
@@ -68,6 +73,28 @@ const toFormValues = (costType: CostType): CostTypeFormValues => {
 };
 
 /**
+ * Zähler, die dieser Kostenart zugeordnet sind, mit Wohnung und Rolle
+ * als zweiter Zeile
+ */
+const metersOfCostType = (
+  meters: Meter[],
+  costTypeId: string,
+  units: Unit[],
+): { id: string; label: string; sub: string }[] =>
+  meters
+    .filter((meter) => meter.costTypeIds.includes(costTypeId))
+    .map((meter) => ({
+      id: meter.id,
+      label: meter.label,
+      sub: [
+        units.find((unit) => unit.id === meter.unitId)?.name,
+        meterRoleLabel(meter.role),
+      ]
+        .filter(Boolean)
+        .join(t("ui.common.separators.bullet")),
+    }));
+
+/**
  * Kostenart-Ansicht: Kopf, Kennzahlen, Stammdaten als Werte-Card sowie die
  * Rechnungen und Verbrauchsquellen dieser Kostenart
  */
@@ -78,6 +105,9 @@ export const CostTypeEditPage = () => {
   // steht der neue Stand sofort in der Ansicht.
   const costTypeQuery = useQuery(costTypeQueryOptions(costTypeId));
   const costType = costTypeQuery.data;
+
+  // Beim Direkteinstieg das Gebäude des Objekts übernehmen
+  useAdoptBuilding(costType?.buildingId);
 
   const { data: entries } = useQuery(costTypeEntriesQueryOptions(costTypeId));
   const { data: units } = useQuery(unitsQueryOptions);
@@ -143,18 +173,11 @@ export const CostTypeEditPage = () => {
   const isHeating = costType.category === "heating";
   const { stats } = costType;
 
-  const assignedMeters = (meterPage?.items ?? [])
-    .filter((meter) => meter.costTypeIds.includes(costTypeId))
-    .map((meter) => ({
-      id: meter.id,
-      label: meter.label,
-      sub: [
-        units?.find((unit) => unit.id === meter.unitId)?.name,
-        meterRoleLabel(meter.role),
-      ]
-        .filter(Boolean)
-        .join(t("ui.common.separators.bullet")),
-    }));
+  const assignedMeters = metersOfCostType(
+    meterPage?.items ?? [],
+    costTypeId,
+    units ?? [],
+  );
 
   const showMeters =
     costCategoryFor(costType.category, costType.defaultAllocationKey) ===

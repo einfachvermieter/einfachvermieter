@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../components/ui/DropdownMenu";
+import { useAdoptBuilding } from "../../lib/activeBuilding";
 import {
   aiConfigQueryOptions,
   extractCostEntryFromAttachment,
@@ -102,6 +103,9 @@ export const CostEntryEditPage = () => {
   const { data: allStatements } = useQuery(statementsQueryOptions);
 
   const entry = costEntryQuery.data;
+
+  // Beim Direkteinstieg das Gebäude des Objekts übernehmen
+  useAdoptBuilding(entry?.buildingId);
   const costTypes = costTypesOfEntryBuilding(allCostTypes, entry);
   const save = useCostEntrySave(entry, costTypes);
 

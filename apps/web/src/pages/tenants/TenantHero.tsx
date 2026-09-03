@@ -5,6 +5,7 @@ import { Fragment, type ReactNode } from "react";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { Badge } from "../../components/ui/Badge";
+import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
@@ -29,6 +30,11 @@ export const TenantHero = ({
 }) => {
   const { data: aggregate } = useQuery(tenantQueryOptions(tenantId));
   const { data: units } = useQuery(unitsQueryOptions);
+
+  // Beim Direkteinstieg das Gebäude des Objekts übernehmen
+  useAdoptBuilding(
+    units?.find((entry) => entry.id === aggregate?.tenant.unitId)?.buildingId,
+  );
 
   if (!aggregate) {
     return (

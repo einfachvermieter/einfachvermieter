@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../components/ui/DropdownMenu";
+import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals } from "../../lib/domainVisuals";
@@ -54,6 +55,9 @@ export const UnitEditPage = () => {
   // Aus der Query statt aus den Loader-Daten: nach dem Speichern im Sheet
   // steht der neue Stand sofort in der Ansicht.
   const { data: unit } = useQuery(unitQueryOptions(unitId));
+
+  // Beim Direkteinstieg das Gebäude des Objekts übernehmen
+  useAdoptBuilding(unit?.buildingId);
   const { data: buildings } = useQuery(buildingsQueryOptions);
   const navigate = useNavigate();
   const router = useRouter();

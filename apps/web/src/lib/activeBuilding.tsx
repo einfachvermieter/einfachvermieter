@@ -25,6 +25,7 @@ type ActiveBuildingValue = {
   buildings: Building[];
   isPending: boolean;
   setBuildingId: (id: string) => void;
+  adoptBuildingId: (id: string) => void;
 };
 
 const ActiveBuildingContext = createContext<ActiveBuildingValue | null>(null);
@@ -85,6 +86,11 @@ export const ActiveBuildingProvider = ({
     }
   }, [buildingId, storedId]);
 
+  const adoptBuildingId = useCallback((id: string) => {
+    setStoredId(id);
+    writeStoredBuildingId(id);
+  }, []);
+
   const setBuildingId = useCallback(
     (id: string) => {
       setStoredId(id);
@@ -108,8 +114,9 @@ export const ActiveBuildingProvider = ({
       buildings: buildings ?? [],
       isPending,
       setBuildingId,
+      adoptBuildingId,
     }),
-    [buildingId, buildings, isPending, setBuildingId],
+    [buildingId, buildings, isPending, setBuildingId, adoptBuildingId],
   );
 
   return (
@@ -117,6 +124,31 @@ export const ActiveBuildingProvider = ({
       {children}
     </ActiveBuildingContext.Provider>
   );
+};
+
+/**
+ * Zieht das aktive Gebäude auf das Gebäude des angezeigten Objekts nach.
+ */
+// biome-ignore lint/style/useComponentExportOnlyModules: Hooks bewusst neben ihrem Provider
+export const useAdoptBuilding = (buildingId: string | undefined): void => {
+  const {
+    buildingId: activeId,
+    buildings,
+    adoptBuildingId,
+  } = useActiveBuilding();
+
+  useEffect(() => {
+    if (!buildingId || buildingId === activeId) {
+      return;
+    }
+
+    // Gelöschte oder fremde Ids nicht übernehmen
+    if (!buildings.some((building) => building.id === buildingId)) {
+      return;
+    }
+
+    adoptBuildingId(buildingId);
+  }, [buildingId, activeId, buildings, adoptBuildingId]);
 };
 
 // biome-ignore lint/style/useComponentExportOnlyModules: Context-Hook bewusst neben seinem Provider
