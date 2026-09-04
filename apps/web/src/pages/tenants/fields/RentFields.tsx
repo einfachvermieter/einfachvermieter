@@ -40,7 +40,9 @@ export const RentFields = <T extends FieldValues>({
             control={control}
             name={path("startDate")}
             label={t("ui.tenant.fields.validFrom")}
+            description={t("ui.tenant.fields.rentValidFromHint")}
             boundary="start"
+            optional={true}
           />
           <MonthInput
             control={control}

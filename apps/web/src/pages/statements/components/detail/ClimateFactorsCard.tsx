@@ -55,7 +55,7 @@ const sourceBadge = (row: ClimateFactorRow) => {
  * des Vorperiodenvergleichs (§ 6a Abs. 3 Nr. 5 HeizkostenV): der eigene
  * Abrechnungszeitraum und - falls vorhanden - der der Vorperiode, mit dem
  * gecachten DWD-Wert der Gebäude-PLZ. Bearbeiten nur hinter dem Schalter
- * (Notausgang ohne Internet); „Neu laden" holt den DWD-Wert zurück und
+ * (Notausgang ohne Internet); "Neu laden" holt den DWD-Wert zurück und
  * überschreibt manuelle Eingaben. Werte gelten je PLZ + Zeitraum, also
  * automatisch für alle Abrechnungen und Gebäude derselben PLZ.
  */

@@ -1,4 +1,9 @@
-import { tenantAggregateToFormValues } from "@einfachvermieter/shared";
+import {
+  applyContractPeriod,
+  closeOpenPeriods,
+  type TenantFormValues,
+  tenantAggregateToFormValues,
+} from "@einfachvermieter/shared";
 import {
   RiBankCardLine,
   RiDeleteBinLine,
@@ -65,6 +70,31 @@ const upsert = <T,>(list: T[], index: number | null, row: T): T[] =>
 
 const removeAt = <T,>(list: T[], index: number): T[] =>
   list.filter((_, i) => i !== index);
+
+/**
+ * Angaben, deren Zeiträume beim Verschieben des Vertragszeitraums
+ * mitwandern. Mietsätze, Bewohner, Bankverbindungen nur mit erfasstem
+ * Start-/End-Datum.
+ */
+const shiftedSectionsOf = (values: TenantFormValues): string[] => {
+  const sections: string[] = [];
+
+  if (values.kind !== "owner" && values.rents.length > 0) {
+    sections.push(t("ui.tenant.rentsTitle"));
+  }
+  if (
+    values.residents.some(
+      (resident) => resident.moveInDate || resident.moveOutDate,
+    )
+  ) {
+    sections.push(t("ui.tenant.fields.residents"));
+  }
+  if (values.bankAccounts.length > 0) {
+    sections.push(t("ui.tenant.fields.bankAccount"));
+  }
+
+  return sections;
+};
 
 /**
  * Stammdaten-Ansicht des Mieters
@@ -292,6 +322,21 @@ export const TenantEditPage = () => {
       {sheet?.kind === "contract" ? (
         <TenantContractSheet
           units={units ?? []}
+          shiftedSections={shiftedSectionsOf(values)}
+          dependentPeriods={[
+            ...values.rents.map((rent) => ({
+              ...rent,
+              label: t("ui.tenant.entryTypes.rent"),
+            })),
+            ...values.bankAccounts.map((account) => ({
+              ...account,
+              label: t("ui.tenant.entryTypes.bankAccount"),
+            })),
+            ...values.addresses.map((address) => ({
+              ...address,
+              label: t("ui.tenant.entryTypes.address"),
+            })),
+          ]}
           defaultValues={{
             unitId: values.unitId,
             kind: values.kind,
@@ -301,9 +346,14 @@ export const TenantEditPage = () => {
           }}
           onSubmit={async (contract) => {
             await save((current) => {
-              const next = { ...current, ...contract };
+              // Verschobener Vertragszeitraum zieht die Randzeiträume von
+              // Mietsätzen, Bewohnern und Bankverbindungen mit.
+              const next = applyContractPeriod(
+                { ...current, ...contract },
+                { startDate: contract.startDate, endDate: contract.endDate },
+              );
               if (next.kind !== "owner" && next.rents.length === 0) {
-                next.rents = [emptyRentRow(next.startDate)];
+                next.rents = [emptyRentRow()];
               }
               return next;
             });
@@ -350,7 +400,11 @@ export const TenantEditPage = () => {
             const { index } = sheet;
             await save((current) => ({
               ...current,
-              rents: upsert(current.rents, index, row),
+              // Der bisherige Satz endet am Tag vor der Mietänderung
+              rents: closeOpenPeriods(
+                upsert(current.rents, index, row),
+                current.startDate,
+              ),
             }));
             closeSheet();
           }}
@@ -374,7 +428,11 @@ export const TenantEditPage = () => {
             const { index } = sheet;
             await save((current) => ({
               ...current,
-              bankAccounts: upsert(current.bankAccounts, index, row),
+              // Die bisherige Bankverbindung endet vor der neuen
+              bankAccounts: closeOpenPeriods(
+                upsert(current.bankAccounts, index, row),
+                current.startDate,
+              ),
             }));
             closeSheet();
           }}
@@ -398,7 +456,11 @@ export const TenantEditPage = () => {
             const { index } = sheet;
             await save((current) => ({
               ...current,
-              addresses: upsert(current.addresses, index, row),
+              // Die bisherige Anschrift endet vor der neuen
+              addresses: closeOpenPeriods(
+                upsert(current.addresses, index, row),
+                current.startDate,
+              ),
             }));
             closeSheet();
           }}

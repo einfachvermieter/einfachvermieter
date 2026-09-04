@@ -80,13 +80,18 @@ export const DashboardBuildings = ({ data }: { data: DashboardResult }) => {
                   <DomainLink
                     to="/wohnungen"
                     search={{ buildingId: building.id }}
+                    icon={domainVisuals.units.icon}
                   >
                     {t("ui.dashboard.buildingsCard.unitsLink", {
                       count: building.unitsCount,
                     })}
                   </DomainLink>
                   {t("ui.common.separators.bullet")}
-                  <DomainLink to="/mieter" search={{ buildingId: building.id }}>
+                  <DomainLink
+                    to="/mieter"
+                    search={{ buildingId: building.id }}
+                    icon={domainVisuals.tenants.icon}
+                  >
                     {t("ui.dashboard.buildingsCard.rentedLink", {
                       count: building.rentedCount,
                     })}
@@ -137,7 +142,11 @@ const BuildingHint = ({
 }) => {
   if (building.unitsCount === 0) {
     return (
-      <DomainLink to="/wohnungen" search={{ buildingId: building.id }}>
+      <DomainLink
+        to="/wohnungen"
+        search={{ buildingId: building.id }}
+        icon={domainVisuals.units.icon}
+      >
         {t("ui.dashboard.buildingsCard.setUp")}
       </DomainLink>
     );
@@ -153,7 +162,11 @@ const BuildingHint = ({
   }
   if (building.missingStatements > 0) {
     return (
-      <DomainLink to="/abrechnungen">
+      <DomainLink
+        to="/abrechnungen"
+        search={{ buildingId: building.id }}
+        icon={domainVisuals.statements.icon}
+      >
         {t("ui.dashboard.buildingsCard.missingStatements", { year })}
       </DomainLink>
     );

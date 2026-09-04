@@ -16,7 +16,7 @@ const INFO_COL_LABEL = { flex: 1 };
 const INFO_COL_VALUE = { flex: 1 };
 
 /**
- * Anhang „Abrechnungsinformationen nach § 6a HeizkostenV": Energieträger
+ * Anhang "Abrechnungsinformationen nach § 6a HeizkostenV": Energieträger
  * (bei Fernwärme mit Treibhausgasemissionen und Primärenergiefaktor des
  * Netzes), enthaltene Steuern/Abgaben und Erfassungs-/Abrechnungsentgelte
  * (soweit erfasst), der Vergleich mit dem Durchschnittsnutzer,

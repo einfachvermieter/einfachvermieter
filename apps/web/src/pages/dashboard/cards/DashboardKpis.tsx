@@ -25,13 +25,11 @@ export const DashboardKpis = ({ data }: { data: DashboardResult }) => {
     }
     if (data.daysUntilDeadline < 0) {
       return t("ui.dashboard.kpi.statementsHintOverdue", {
-        done: data.statementsDone,
         total: data.statementsTotal,
         deadline: formatDate(data.statementDeadline),
       });
     }
     return t("ui.dashboard.kpi.statementsHint", {
-      done: data.statementsDone,
       total: data.statementsTotal,
       days: data.daysUntilDeadline,
     });
@@ -71,13 +69,9 @@ export const DashboardKpis = ({ data }: { data: DashboardResult }) => {
         month: currentMonth ? monthLabel(currentMonth.month) : "",
       }),
       value: formatEur(currentMonth?.receivedCents ?? 0),
-      hint:
-        openThisMonth === 0
-          ? t("ui.dashboard.kpi.intakeHintComplete")
-          : t("ui.dashboard.kpi.intakeHint", {
-              target: formatEur(currentMonth?.targetCents ?? 0),
-              open: formatEur(openThisMonth),
-            }),
+      hint: t("ui.dashboard.kpi.intakeHint", {
+        target: formatEur(currentMonth?.targetCents ?? 0),
+      }),
       tone: openThisMonth > 0 ? "warning" : "neutral",
     });
   }

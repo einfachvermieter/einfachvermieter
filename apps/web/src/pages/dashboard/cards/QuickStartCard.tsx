@@ -90,7 +90,11 @@ export const QuickStartCard = ({
           </button>
         ) : null}
         {stats.tenants > 0 ? (
-          <Link to="/abrechnungen" className={TILE_CLASS}>
+          <Link
+            to="/abrechnungen"
+            search={{ buildingId: undefined }}
+            className={TILE_CLASS}
+          >
             <TileContent icon={RiFileAddLine}>
               {t("ui.dashboard.quickstart.newStatement")}
             </TileContent>

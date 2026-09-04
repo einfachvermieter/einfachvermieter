@@ -313,7 +313,7 @@ export const co2TenantShareCents = (
 
 /**
  * Liste der bewohnten Monate mit ihrem festen Gradtagszahlen-Anteil,
- * z. B. „Jan 170 ‰, Feb 150 ‰". Nur Monate, in die die Mietzeit
+ * z. B. "Jan 170 ‰, Feb 150 ‰". Nur Monate, in die die Mietzeit
  * (teilweise) fällt.
  */
 const residentMonthsPromille = (

@@ -27,7 +27,7 @@ import { ProviderLogo } from "./ProviderLogo";
 
 /**
  * Formularwerte. Der Anbieter ist hier immer ein String, damit die Auswahl
- * auch den Zustand „abgeschaltet" abbilden kann; die Umsetzung auf das
+ * auch den Zustand "abgeschaltet" abbilden kann; die Umsetzung auf das
  * API-Format übernimmt die Seite.
  */
 const aiSettingsFormSchema = z.object({

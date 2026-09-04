@@ -286,7 +286,7 @@ export type HeatingSetting = {
    */
   districtHeatPrimaryEnergyFactor: number | null;
   /**
-   * Ob die Seite „Abrechnungsinformationen nach § 6a HeizkostenV" mit der
+   * Ob die Seite "Abrechnungsinformationen nach § 6a HeizkostenV" mit der
    * Abrechnung gedruckt wird. Nur im externen Modus abwählbar.
    */
   includeBillingInfo: Opt<boolean>;

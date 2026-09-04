@@ -6,6 +6,7 @@ import { EmptyNote } from "@/components/common/EmptyNote";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import type { DashboardResult } from "@/lib/stats";
 import { monthLabel } from "../monthLabel";
@@ -104,8 +105,9 @@ export const DashboardTasks = ({
         key: building.id,
         label: (
           <DomainLink
-            to="/gebaeude/$buildingId"
-            params={{ buildingId: building.id }}
+            to="/abrechnungen"
+            search={{ buildingId: building.id }}
+            icon={domainVisuals.statements.icon}
           >
             {building.name}
           </DomainLink>
@@ -142,6 +144,7 @@ export const DashboardTasks = ({
           <DomainLink
             to="/mieter/$tenantId/konto"
             params={{ tenantId: tenant.tenantId }}
+            icon={domainVisuals.tenants.icon}
           >
             {tenant.residentNames.join(t("ui.common.separators.comma"))}
           </DomainLink>
@@ -168,6 +171,7 @@ export const DashboardTasks = ({
                 type: undefined,
                 unitId: undefined,
               }}
+              icon={domainVisuals.meters.icon}
             >
               {t("ui.meters.sub.count", { count: data.meterCount })}
             </DomainLink>
@@ -187,7 +191,11 @@ export const DashboardTasks = ({
     ...emptyBuildings.map((building) => ({
       key: `building-${building.id}`,
       label: (
-        <DomainLink to="/wohnungen" search={{ buildingId: building.id }}>
+        <DomainLink
+          to="/wohnungen"
+          search={{ buildingId: building.id }}
+          icon={domainVisuals.units.icon}
+        >
           {building.name}
         </DomainLink>
       ),
@@ -196,7 +204,11 @@ export const DashboardTasks = ({
     ...data.unitsWithoutTenant.map((unit) => ({
       key: `unit-${unit.id}`,
       label: (
-        <DomainLink to="/mieter" search={{ buildingId: unit.buildingId }}>
+        <DomainLink
+          to="/mieter"
+          search={{ buildingId: unit.buildingId }}
+          icon={domainVisuals.tenants.icon}
+        >
           {t("ui.dashboard.tasks.setupUnitLabel", {
             building: unit.buildingName,
             unit: unit.name,

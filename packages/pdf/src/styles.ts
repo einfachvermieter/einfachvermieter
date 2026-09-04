@@ -327,7 +327,7 @@ export const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "#BBBBBB",
   },
-  // Breit genug für den längsten Wert („9.999.999 Verbrauchseinheiten"),
+  // Breit genug für den längsten Wert ("9.999.999 Verbrauchseinheiten"),
   // sonst bricht react-pdf mit Trennstrich um und der Wert liest sich
   // wie ein Minus.
   energyBarValue: {

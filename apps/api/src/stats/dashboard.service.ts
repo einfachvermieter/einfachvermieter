@@ -67,7 +67,7 @@ export class DashboardService {
     const [balances, months, firstOpenMonths, names] = await Promise.all([
       this.accountsService.getAllBalances(today),
       this.accountsService.getMonthlyTotals(chartStart, today),
-      this.accountsService.getFirstOpenMonths(chartStart, today),
+      this.accountsService.getFirstOpenMonths(today),
       this.tenantNames(tenants.map((tenant) => tenant.id)),
     ]);
 

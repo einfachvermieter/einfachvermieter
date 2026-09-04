@@ -16,11 +16,6 @@ export const RentIntakeChart = ({ data }: { data: DashboardResult }) => {
       Math.max(month.targetCents, month.receivedCents),
     ),
   );
-  const missingCents = data.months.reduce(
-    (sum, month) => sum + Math.max(0, month.targetCents - month.receivedCents),
-    0,
-  );
-
   return (
     <SectionCard icon={RiBarChartLine} title={t("ui.dashboard.intake.title")}>
       <div className="mt-2 flex h-29 items-end gap-3">
@@ -79,12 +74,6 @@ export const RentIntakeChart = ({ data }: { data: DashboardResult }) => {
           </div>
         ))}
       </div>
-
-      <p className="text-xs text-muted-foreground">
-        {missingCents === 0
-          ? t("ui.dashboard.intake.noteComplete")
-          : t("ui.dashboard.intake.note", { amount: formatEur(missingCents) })}
-      </p>
     </SectionCard>
   );
 };

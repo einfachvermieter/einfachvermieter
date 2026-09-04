@@ -13,7 +13,7 @@ import { t } from "../../../../lib/i18n";
 const FOOTNOTE_MARKER = 1;
 
 /**
- * Web-Version des PDF-Anhangs „Abrechnungsinformationen nach § 6a HeizkostenV"
+ * Web-Version des PDF-Anhangs "Abrechnungsinformationen nach § 6a HeizkostenV"
  */
 export const BillingInfoCard = ({
   detail,

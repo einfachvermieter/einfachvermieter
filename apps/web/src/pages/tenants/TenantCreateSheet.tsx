@@ -13,7 +13,6 @@ import {
 } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { FormSheet } from "@/components/form/FormSheet";
 import { SheetSection } from "@/components/form/SheetSection";
@@ -36,7 +35,7 @@ const buildDefaults = (startDate: string): TenantFormValues => ({
   // "0 = keine Kaution" vorbelegen, damit das Pflichtformat nicht blockt
   depositEuros: "0,00",
   residents: [emptyResidentRow()],
-  rents: [emptyRentRow(startDate)],
+  rents: [emptyRentRow()],
 });
 
 /**
@@ -58,16 +57,7 @@ export const TenantCreateSheet = ({ onClose }: { onClose: () => void }) => {
     defaultValues: buildDefaults(todayIso()),
   });
 
-  const startDate = form.watch("startDate");
   const showRent = form.watch("kind") !== "owner";
-
-  // Der erste Mietsatz gilt vom Vertragsbeginn bis Vertragsende; sein
-  // Zeitraum wird nicht erfasst, sondern folgt dem Vertrag.
-  useEffect(() => {
-    if (startDate && form.getValues("rents.0.startDate") !== startDate) {
-      form.setValue("rents.0.startDate", startDate);
-    }
-  }, [startDate, form]);
 
   const createTenant = useCrudMutation({
     mutationFn: (dto: ReturnType<typeof tenantFormToDto>) =>

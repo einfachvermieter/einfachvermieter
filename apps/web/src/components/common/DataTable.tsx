@@ -508,10 +508,9 @@ export const DataTable = <TData,>({
             />
           </TableBody>
         </Table>
-        <div className="border-t border-border px-5 py-3.5">
-          <DataTablePagination table={table} />
-        </div>
       </Card>
+
+      <DataTablePagination table={table} />
     </div>
   );
 };

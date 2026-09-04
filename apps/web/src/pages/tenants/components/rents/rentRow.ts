@@ -7,7 +7,7 @@ export type RentRowValues = TenantFormValues["rents"][number];
 
 export const rentRowSchema = tenantFormSchema.shape.rents.element;
 
-export const emptyRentRow = (startDate: string): RentRowValues => ({
+export const emptyRentRow = (startDate = ""): RentRowValues => ({
   startDate,
   endDate: "",
   monthlyBaseRentEuros: "0,00",

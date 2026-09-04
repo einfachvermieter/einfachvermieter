@@ -78,6 +78,9 @@
     --font-heading: "Bricolage Grotesque Variable", "Geist Variable", sans-serif;
     --tracking-heading: -0.015em;
 
+    /* Formular-Sheet: 512px bis 1700px Fensterbreite, dann bis 720px bei 1920px */
+    --container-sheet-form: clamp(32rem, calc(94.55vw - 1095.3px), 45rem);
+
     /* Schriftgrößen: Basis 14px, Tabellen/Navigation 13.5px, Labels 12.5px, Tabellenköpfe 11.5px */
     --text-2xs: 0.71875rem;
     --text-2xs--line-height: 1rem;
@@ -200,8 +203,8 @@
  */
 .scroll-shadow-x {
   background:
-    linear-gradient(to right, var(--card) 40%, transparent) 0 0 / 12px 100% no-repeat local,
-    linear-gradient(to left, var(--card) 40%, transparent) 100% 0 / 12px 100% no-repeat local,
+    linear-gradient(to right, var(--card) 8px, transparent 16px) 0 0 / 16px 100% no-repeat local,
+    linear-gradient(to left, var(--card) 8px, transparent 16px) 100% 0 / 16px 100% no-repeat local,
     linear-gradient(to right, var(--border), transparent) 0 0 / 8px 100% no-repeat scroll,
     linear-gradient(to left, var(--border), transparent) 100% 0 / 8px 100% no-repeat scroll;
 }

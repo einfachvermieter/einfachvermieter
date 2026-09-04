@@ -112,10 +112,113 @@ export type TenantFormValues = z.infer<typeof tenantFormSchema>;
 
 const ISO_INFINITY = "9999-12-31";
 
+const previousDay = (iso: string): string => {
+  const date = new Date(`${iso}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().slice(0, 10);
+};
+
 const addDay = (iso: string): string => {
   const date = new Date(`${iso}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + 1);
   return date.toISOString().slice(0, 10);
+};
+
+/**
+ * Schließt aufeinanderfolgende Zeiträume so, dass sie sich nicht
+ * überlappen: Jeder Eintrag endet am Tag vor dem nächsten, der letzte
+ * bleibt offen. Ohne das lässt sich kein zweiter Eintrag anlegen. Der
+ * bestehende läuft ja bis auf Weiteres, und ihn vorher zu verkürzen
+ * risse eine Lücke in die Abdeckung.
+ */
+export const closeOpenPeriods = <
+  T extends { startDate: string; endDate: string },
+>(
+  entries: T[],
+  fallbackStart: string,
+): T[] => {
+  const sorted = [...entries].sort((left, right) =>
+    (left.startDate || fallbackStart).localeCompare(
+      right.startDate || fallbackStart,
+    ),
+  );
+
+  return sorted.map((entry, index) => {
+    const next = sorted[index + 1];
+    if (!next) {
+      return entry;
+    }
+
+    const nextStart = next.startDate || fallbackStart;
+    const ownEnd = entry.endDate;
+    if (ownEnd && ownEnd < nextStart) {
+      return entry;
+    }
+
+    return { ...entry, endDate: previousDay(nextStart) };
+  });
+};
+
+/**
+ * Zieht die Zeiträume des Vertrags mit, wenn Beginn oder Ende verschoben
+ * werden. Ohne das ist eine Verschiebung nicht möglich: Henne/Ei-Problem
+ * mit Vertrag und Mietsätzen, Bewohnern und Bankverbindungen.
+ */
+export const applyContractPeriod = (
+  values: TenantFormValues,
+  period: { startDate: string; endDate: string },
+): TenantFormValues => {
+  const { startDate, endDate } = period;
+  if (!startDate) {
+    return { ...values, ...period };
+  }
+
+  const insidePeriod = (entry: { startDate: string; endDate: string }) =>
+    !(
+      (entry.endDate && entry.endDate < startDate) ||
+      (endDate && entry.startDate && entry.startDate > endDate)
+    );
+
+  const clampPeriods = <T extends { startDate: string; endDate: string }>(
+    entries: T[],
+  ): T[] => {
+    const kept = entries.filter(insidePeriod);
+
+    // Leere Ränder bleiben leer: sie meinen ohnehin Vertragsbeginn bzw.
+    // -ende und wandern damit von selbst mit.
+    return kept.map((entry, index) => ({
+      ...entry,
+      startDate:
+        entry.startDate && (index === 0 || entry.startDate < startDate)
+          ? startDate
+          : entry.startDate,
+      endDate:
+        entry.endDate &&
+        (index === kept.length - 1 || (endDate && entry.endDate > endDate))
+          ? endDate
+          : entry.endDate,
+    }));
+  };
+
+  const rents = values.rents.length > 0 ? clampPeriods(values.rents) : [];
+
+  return {
+    ...values,
+    ...period,
+    rents,
+    bankAccounts: clampPeriods(values.bankAccounts),
+    residents: values.residents.map((resident) => ({
+      ...resident,
+      moveInDate:
+        resident.moveInDate && resident.moveInDate < startDate
+          ? startDate
+          : resident.moveInDate,
+      moveOutDate:
+        resident.moveOutDate && endDate && resident.moveOutDate > endDate
+          ? endDate
+          : resident.moveOutDate,
+    })),
+  };
 };
 
 const hasFullContractPartyCoverage = (
@@ -579,7 +682,9 @@ export const tenantAggregateToFormValues = (
       ),
     )
     .map((rent) => ({
-      startDate: rent.startDate ?? aggregate.tenant.startDate,
+      // Leer heißt "ab Vertragsbeginn"; auffüllen würde die Kopplung an
+      // den Vertrag kappen.
+      startDate: rent.startDate ?? "",
       endDate: rent.endDate ?? "",
       monthlyBaseRentEuros: centsToEurInput(rent.monthlyBaseRentCents),
       monthlyAdvanceEuros: centsToEurInput(rent.monthlyAdvanceCents),

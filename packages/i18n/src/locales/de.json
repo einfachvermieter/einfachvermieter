@@ -152,9 +152,9 @@
     }
   },
   "startup": {
-    "connecting": "Verbindung wird aufgebaut …",
-    "stillUnavailableTitle": "Keine Verbindung",
-    "stillUnavailable": "Die Anwendung hat innerhalb der erwarteten Zeit nicht geantwortet. Bitte später erneut versuchen.",
+    "connecting": "Wird geladen …",
+    "stillUnavailableTitle": "Laden fehlgeschlagen",
+    "stillUnavailable": "Die Anwendung konnte innerhalb der erwarteten Zeit nicht geladen werden. Bitte später erneut versuchen.",
     "retry": "Erneut versuchen"
   },
   "errors": {
@@ -986,7 +986,8 @@
         "confirmDelete": "Gebühr löschen?",
         "confirmDeleteMessage": "Soll die Gebühr vom {date} über {amount} wirklich gelöscht werden?"
       },
-      "showEarlierYears": "Frühere Jahre anzeigen"
+      "showEarlierYears": "Frühere Jahre anzeigen",
+      "toggleYear": "Jahr {year} auf- oder zuklappen"
     },
     "costs": {
       "title": "Kostenarten",
@@ -1959,7 +1960,10 @@
         "addressStreet": "Straße und Hausnummer",
         "addressStreetPlaceholder": "z. B. Musterstraße 12",
         "addressPostalCode": "PLZ",
-        "addressCity": "Ort"
+        "addressCity": "Ort",
+        "periodShiftHint": "Mietsätze, Bewohner und Bankverbindungen werden auf den geänderten Zeitraum angepasst. Bitte prüfen Sie diese Angaben anschließend.",
+        "rentValidFromHint": "Leer lassen für den Vertragsbeginn",
+        "periodDropHint": "{count, plural, one {Ein Eintrag ({types}) liegt} other {# Einträge ({types}) liegen}} vollständig außerhalb des neuen Zeitraums und {count, plural, one {wird} other {werden}} beim Speichern entfernt."
       },
       "addResident": "Bewohner hinzufügen",
       "editResident": "Bewohner bearbeiten",
@@ -2014,6 +2018,11 @@
         "contractPartyHint": "Weitere Bewohner ergänzen Sie nach dem Anlegen.",
         "rentTitle": "Mietsatz",
         "rentDescription": "Gilt vom Vertragsbeginn bis zum Vertragsende. Mietänderungen ergänzen Sie nach dem Anlegen."
+      },
+      "entryTypes": {
+        "rent": "Mietsatz",
+        "bankAccount": "Bankverbindung",
+        "address": "Anschrift"
       }
     },
     "reading": {
@@ -2087,15 +2096,14 @@
         "statements": "Abrechnungen {year}",
         "statementsOpen": "{count, plural, one {# offen} other {# offen}}",
         "statementsAllDone": "vollständig",
-        "statementsHint": "{done} von {total} erstellt · noch {days, plural, one {# Tag} other {# Tage}} bis zur Frist",
-        "statementsHintOverdue": "{done} von {total} erstellt · die Frist ist seit dem {deadline} verstrichen",
+        "statementsHint": "von {total} · noch {days, plural, one {# Tag} other {# Tage}} bis zur Frist",
+        "statementsHintOverdue": "von {total} · die Frist ist seit dem {deadline} verstrichen",
         "statementsHintDone": "Frist am {deadline} gewahrt",
         "overdue": "Offene Forderungen",
         "overdueHint": "{count, plural, one {# Mieter im Rückstand} other {# Mieter im Rückstand}} seit {month}",
         "overdueNone": "Alle Mieten sind ausgeglichen",
         "intake": "Mieteingänge im {month}",
-        "intakeHint": "von {target} Sollmiete · {open} offen",
-        "intakeHintComplete": "vollständig eingegangen"
+        "intakeHint": "von {target} Sollmiete"
       },
       "tasks": {
         "title": "Was jetzt ansteht",
@@ -2118,8 +2126,6 @@
       },
       "intake": {
         "title": "Mieteingänge der letzten Monate",
-        "note": "Heller Balken: die Sollmiete des Monats. Insgesamt fehlen {amount}.",
-        "noteComplete": "In den letzten Monaten sind alle Mieten vollständig eingegangen.",
         "barTitle": "{month}: {received} von {target}",
         "ofTarget": "von {amount}"
       },

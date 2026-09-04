@@ -340,10 +340,7 @@ export class AccountsService {
    * Erster Monat, in dem der Mieter etwas offen gelassen hat. Für den
    * Hinweis "im Rückstand seit ..."
    */
-  async getFirstOpenMonths(
-    rangeStart: string,
-    rangeEnd: string,
-  ): Promise<Map<string, string>> {
+  async getFirstOpenMonths(rangeEnd: string): Promise<Map<string, string>> {
     const tenantsList = await this.em.find(TenantSchema, {});
     const tenantIds = tenantsList.map((tenant) => tenant.id);
 
@@ -368,7 +365,7 @@ export class AccountsService {
         tenant,
         rentsByTenant.get(tenant.id) ?? [],
         paymentsByTenant.get(tenant.id) ?? [],
-        rangeStart,
+        tenant.startDate,
         rangeEnd,
       );
 

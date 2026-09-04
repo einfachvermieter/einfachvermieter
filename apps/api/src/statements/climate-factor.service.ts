@@ -23,7 +23,7 @@ import { notFoundMessage } from "../i18n/notFound.js";
 
 /**
  * Basis-URL der DWD-Klimafaktoren (CC BY 4.0 bzw. GeoNutzV,
- * Quellenvermerk „Deutscher Wetterdienst" steht im § 6a-Anhang).
+ * Quellenvermerk "Deutscher Wetterdienst" steht im § 6a-Anhang).
  * Eine CSV je gleitendem 12-Monats-Fenster: `DatAnf;DatEnd;PLZ;KF`,
  * PLZ ohne führende Nullen, Publikation ~6 Wochen nach Monatsende.
  */

@@ -35,11 +35,20 @@ const isMidYear = (startDate: string, endDate: string): boolean =>
 export const TenantContractSheet = ({
   units,
   defaultValues,
+  shiftedSections,
+  dependentPeriods,
   onSubmit,
   onClose,
 }: {
   units: Unit[];
   defaultValues: TenantContractValues;
+  shiftedSections: string[];
+  /**
+   * Zeiträume der abhängigen Einträge samt Bezeichnung, um zu erkennen,
+   * ob einer davon ganz aus dem neuen Vertragszeitraum fällt und um im
+   * Hinweis zu sagen, um welche Art Eintrag es geht.
+   */
+  dependentPeriods: { startDate: string; endDate: string; label: string }[];
   onSubmit: (values: TenantContractValues) => Promise<void>;
   onClose: () => void;
 }) => {
@@ -48,6 +57,24 @@ export const TenantContractSheet = ({
     reValidateMode: "onSubmit",
     defaultValues,
   });
+
+  // Ein verschobener Zeitraum zieht Mietsätze, Bewohner und
+  // Bankverbindungen mit -> warnen
+  const startDate = form.watch("startDate");
+  const endDate = form.watch("endDate");
+  const periodChanged =
+    startDate !== defaultValues.startDate || endDate !== defaultValues.endDate;
+
+  // Einträge, die vollständig außerhalb des neuen Zeitraums liegen,
+  // werden beim Speichern entfernt -> warnen
+  const dropped = startDate
+    ? dependentPeriods.filter(
+        (entry) =>
+          (entry.endDate && entry.endDate < startDate) ||
+          (endDate && entry.startDate && entry.startDate > endDate),
+      )
+    : [];
+  const droppedLabels = [...new Set(dropped.map((entry) => entry.label))];
 
   return (
     <FormSheet
@@ -65,7 +92,24 @@ export const TenantContractSheet = ({
           unitDisabled={true}
         />
       </FieldGroup>
-      {isMidYear(form.watch("startDate"), form.watch("endDate")) ? (
+      {periodChanged && shiftedSections.length > 0 ? (
+        <Alert variant="warning">
+          <AlertDescription>
+            {t("ui.tenant.fields.periodShiftHint")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {dropped.length > 0 ? (
+        <Alert variant="error">
+          <AlertDescription>
+            {t("ui.tenant.fields.periodDropHint", {
+              count: dropped.length,
+              types: droppedLabels.join(t("ui.common.separators.comma")),
+            })}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {isMidYear(startDate, endDate) ? (
         <Alert variant="info">
           <AlertDescription>
             {t("ui.tenant.fields.interimReadingHint")}

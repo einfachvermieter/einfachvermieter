@@ -41,7 +41,7 @@ const yearPot = (sollCents: number, istCents: number): PotState => ({
  * Eine Topf-Spalte als eine Zelle "ist / soll"
  */
 const PotIstSollCell = ({ pot }: { pot: PotState }) => (
-  <TableCell className="px-4 py-3 text-right align-top tabular-nums">
+  <TableCell className="px-4 py-3 text-right align-middle tabular-nums">
     <span className="font-semibold">{formatEur(pot.istCents)}</span>{" "}
     <span className="text-muted-foreground">
       {`/ ${formatEur(pot.sollCents)}`}
@@ -73,7 +73,7 @@ const MonthStatusBadge = ({
 }) => {
   const status = monthStatus(base, advance, forMonth);
   return (
-    <TableCell className="px-4 py-3 align-top">
+    <TableCell className="px-4 py-3 align-middle">
       <Badge variant={MONTH_STATUS_VARIANT[status]}>
         {t(`ui.account.status.${status}`)}
       </Badge>
@@ -194,20 +194,26 @@ export const MonthGridTable = ({
             const open = isYearOpen(year);
             return (
               <Fragment key={year}>
-                <TableRow className="bg-muted/40">
-                  <TableCell />
+                <TableRow className="border-schiefer-200 border-t-2 bg-schiefer-100 hover:bg-schiefer-100">
+                  <TableCell className="px-4 py-2 align-middle">
+                    <Button
+                      type="button"
+                      variant="ghostMuted"
+                      size="icon-sm"
+                      aria-expanded={open}
+                      aria-label={t("ui.account.toggleYear", { year })}
+                      onClick={() => toggleYear(year)}
+                    >
+                      {open ? <RiArrowDownSLine /> : <RiArrowRightSLine />}
+                    </Button>
+                  </TableCell>
                   <TableCell className="p-0 align-middle">
                     <button
                       type="button"
                       onClick={() => toggleYear(year)}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left font-semibold hover:bg-muted"
+                      className="w-full px-4 py-2 text-left text-base font-semibold tabular-nums"
                     >
-                      {open ? (
-                        <RiArrowDownSLine className="size-4" />
-                      ) : (
-                        <RiArrowRightSLine className="size-4" />
-                      )}
-                      <span className="tabular-nums">{year}</span>
+                      {year}
                     </button>
                   </TableCell>
                   <PotIstSollCell
@@ -227,7 +233,7 @@ export const MonthGridTable = ({
                 {open
                   ? rows.map((row) => (
                       <TableRow key={row.forMonth}>
-                        <TableCell className="px-4 py-3">
+                        <TableCell className="px-4 py-3 align-middle">
                           {row.paymentIds.length === 0 ? (
                             <RowActionButton
                               label={t("ui.account.recordPayment")}
@@ -255,7 +261,7 @@ export const MonthGridTable = ({
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="px-4 py-3 align-top font-medium tabular-nums">
+                        <TableCell className="px-4 py-3 align-middle font-medium tabular-nums">
                           {formatForMonth(row.forMonth)}
                         </TableCell>
                         <PotIstSollCell pot={row.baseRent} />

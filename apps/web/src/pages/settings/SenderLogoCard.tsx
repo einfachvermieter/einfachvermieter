@@ -28,7 +28,7 @@ const LOGO_MODE_ICONS = {
 } as const;
 
 /**
- * Karte „Firmenlogo“: Auswahl der Darstellung, Ausrichtung und Größe,
+ * Karte "Firmenlogo": Auswahl der Darstellung, Ausrichtung und Größe,
  * darunter die Briefkopf-Vorschau mit den Hochladen-Aktionen.
  */
 export const SenderLogoCard = ({

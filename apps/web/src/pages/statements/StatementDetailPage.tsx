@@ -489,7 +489,10 @@ export const StatementDetailPage = () => {
       // einen 404 auf die gerade gelöschte Abrechnung.
       queryClient.removeQueries({ queryKey: ["statement", statementId] });
       await queryClient.invalidateQueries({ queryKey: ["statements"] });
-      await navigate({ to: "/abrechnungen" });
+      await navigate({
+        to: "/abrechnungen",
+        search: { buildingId: undefined },
+      });
     },
   });
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -500,6 +503,7 @@ export const StatementDetailPage = () => {
         title={t("ui.statements.notFound.title")}
         description={t("ui.statements.notFound.description")}
         to="/abrechnungen"
+        search={{ buildingId: undefined }}
       />
     );
   }

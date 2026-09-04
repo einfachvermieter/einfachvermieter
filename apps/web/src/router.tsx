@@ -737,10 +737,16 @@ const costEntryEditRoute = createRoute({
   },
 });
 
+const statementsSearchSchema = (search: Record<string, unknown>) => ({
+  buildingId:
+    typeof search.buildingId === "string" ? search.buildingId : undefined,
+});
+
 const statementsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/abrechnungen",
   beforeLoad: requireAuth,
+  validateSearch: statementsSearchSchema,
   component: StatementsPage,
   staticData: { crumb: t("ui.common.crumbs.statements") },
 });
@@ -766,7 +772,7 @@ const statementDetailLoader = async ({
   params: { statementId: string };
 }): Promise<StatementDetailLoaderData | null> => {
   if (params.statementId === "neu") {
-    throw redirect({ to: "/abrechnungen" });
+    throw redirect({ to: "/abrechnungen", search: { buildingId: undefined } });
   }
   try {
     const statement = await context.queryClient.ensureQueryData(
