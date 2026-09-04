@@ -69,10 +69,10 @@ export const Form = <
   });
 
   const handleValid = async (values: TTransformedValues) => {
-    setRootError(null);
     try {
       await onSubmit(values);
       submitSucceededRef.current = true;
+      setRootError(null);
     } catch (err) {
       setRootError(applyApiFieldErrors(form, err));
     }

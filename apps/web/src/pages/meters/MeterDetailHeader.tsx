@@ -1,4 +1,3 @@
-import { RiListOrdered2, RiSpeedUpLine } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 import { t } from "../../lib/i18n";
@@ -25,13 +24,11 @@ export const MeterDetailHeader = ({
         }).catch(() => undefined);
       }}
     >
-      <TabsList variant="default">
+      <TabsList variant="pills">
         <TabsTrigger value="stammdaten">
-          <RiSpeedUpLine />
           {t("ui.meters.tabs.master")}
         </TabsTrigger>
         <TabsTrigger value="zaehlerstaende">
-          <RiListOrdered2 />
           {t("ui.meters.tabs.readings")}
         </TabsTrigger>
       </TabsList>

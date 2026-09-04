@@ -5,19 +5,19 @@ import {
 } from "@einfachvermieter/shared";
 import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import {
   type HeatingOverviewRow,
@@ -33,6 +33,7 @@ import {
   type DeleteResource,
   useDeleteResource,
 } from "../../lib/useDeleteResource";
+import { HeatingCreateSheet } from "./HeatingCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<HeatingSortColumn> = new Set([
   "mode",
@@ -54,15 +55,7 @@ const heatingColumns = (
     accessorFn: (row) => row.settings.validFrom,
     header: t("ui.heating.versions.columns.validFrom"),
     cell: ({ row }) => (
-      <EntityCell
-        tile={
-          <IconTile
-            icon={domainVisuals.heating.icon}
-            background={gradients.heating}
-          />
-        }
-        name={formatDate(row.original.settings.validFrom)}
-      />
+      <EntityCell name={formatDate(row.original.settings.validFrom)} />
     ),
     meta: { cellClassName: "tabular-nums" },
   },
@@ -130,11 +123,9 @@ const heatingColumns = (
     cell: ({ row }) => {
       const active = isVersionActive(row.original.settings, today);
       return active ? (
-        <Badge variant="ok" dot={true}>
-          {t("ui.heating.versions.statusActive")}
-        </Badge>
+        <Badge variant="ok">{t("ui.heating.versions.statusActive")}</Badge>
       ) : (
-        <Badge variant="slate" dot={true}>
+        <Badge variant="neutral">
           {t("ui.heating.versions.statusArchived")}
         </Badge>
       );
@@ -151,6 +142,7 @@ export const HeatingOverviewPage = () => {
     storageKey: "heating",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -227,13 +219,7 @@ export const HeatingOverviewPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.heating.icon}
-            size={44}
-            background={gradients.heating}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.heating.icon} />}
         title={t("ui.heating.title")}
         sub={
           building
@@ -243,13 +229,11 @@ export const HeatingOverviewPage = () => {
         subLoading={!building}
         action={
           canAddHeating ? (
-            <Button asChild={true}>
-              <Link to="/heizkosten/neu" search={{ buildingId }}>
-                <RiAddLine />
-                <span className="hidden sm:inline">
-                  {t("ui.heating.versions.add")}
-                </span>
-              </Link>
+            <Button onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">
+                {t("ui.heating.versions.add")}
+              </span>
             </Button>
           ) : undefined
         }
@@ -290,6 +274,10 @@ export const HeatingOverviewPage = () => {
           pageCount,
         }}
       />
+
+      {createOpen ? (
+        <HeatingCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
 
       {deletion.dialog}
     </div>

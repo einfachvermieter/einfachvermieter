@@ -1,34 +1,46 @@
 import { formatDate, formatEur } from "@einfachvermieter/shared";
-import { RiBillLine, RiDeleteBinLine } from "@remixicon/react";
+import { RiDeleteBinLine, RiMoreLine, RiPriceTag3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
-import { ActionLink } from "../../components/common/ActionLink";
+import { getRouteApi, useNavigate, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
+import { DomainLink } from "../../components/common/DomainLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { IconTile } from "../../components/common/IconTile";
-import { InfoCard } from "../../components/common/InfoCard";
+import { MiniKpiRow } from "../../components/common/MiniKpiRow";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
+import { Button } from "../../components/ui/Button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../components/ui/DropdownMenu";
+import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import {
   type CostType,
   type CostTypeDetail,
+  costCategoryFor,
+  costTypeAllocationText,
   costTypeCategoryLabel,
+  costTypeEntriesQueryOptions,
   costTypeQueryOptions,
 } from "../../lib/costs";
-import {
-  costTypeVisual,
-  domainVisuals,
-  gradients,
-} from "../../lib/domainVisuals";
-import {
-  heatingIdentityLabel,
-  heatingSettingsListQueryOptions,
-} from "../../lib/heating";
+import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
+import {
+  type Meter,
+  meterRoleLabel,
+  metersOverviewQueryOptions,
+} from "../../lib/meters";
+import { type Unit, unitsQueryOptions } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useDeleteResource } from "../../lib/useDeleteResource";
-import { useGoBack } from "../../lib/useGoBack";
-import { CostTypeForm } from "./components/baseData/CostTypeForm";
+import { CostEntryCreateSheet } from "../invoices/CostEntryCreateSheet";
+import { CostTypeBaseCard } from "./cards/CostTypeBaseCard";
+import { CostTypeEntriesCard } from "./cards/CostTypeEntriesCard";
+import { CostTypeMetersCard } from "./cards/CostTypeMetersCard";
 import {
   ALLOCATION_KEY_NONE,
   type CostTypeFormValues,
@@ -36,6 +48,7 @@ import {
   costTypeAllocationKeySchema,
   LABOR_CATEGORY_NONE,
 } from "./components/baseData/costTypeForm.schema";
+import { CostTypeSheet } from "./sheets/CostTypeSheet";
 
 const routeApi = getRouteApi("/kostenarten/$costTypeId");
 
@@ -59,37 +72,81 @@ const toFormValues = (costType: CostType): CostTypeFormValues => {
   };
 };
 
+/**
+ * Zähler, die dieser Kostenart zugeordnet sind, mit Wohnung und Rolle
+ * als zweiter Zeile
+ */
+const metersOfCostType = (
+  meters: Meter[],
+  costTypeId: string,
+  units: Unit[],
+): { id: string; label: string; sub: string }[] =>
+  meters
+    .filter((meter) => meter.costTypeIds.includes(costTypeId))
+    .map((meter) => ({
+      id: meter.id,
+      label: meter.label,
+      sub: [
+        units.find((unit) => unit.id === meter.unitId)?.name,
+        meterRoleLabel(meter.role),
+      ]
+        .filter(Boolean)
+        .join(t("ui.common.separators.bullet")),
+    }));
+
+/**
+ * Kostenart-Ansicht: Kopf, Kennzahlen, Stammdaten als Werte-Card sowie die
+ * Rechnungen und Verbrauchsquellen dieser Kostenart
+ */
 export const CostTypeEditPage = () => {
   const { costTypeId } = routeApi.useParams();
 
+  // Aus der Query statt aus den Loader-Daten: nach dem Speichern im Sheet
+  // steht der neue Stand sofort in der Ansicht.
   const costTypeQuery = useQuery(costTypeQueryOptions(costTypeId));
-  const { data: heatingVersions } = useQuery({
-    ...heatingSettingsListQueryOptions(costTypeQuery.data?.buildingId ?? ""),
-    enabled: costTypeQuery.data?.category === "heating",
+  const costType = costTypeQuery.data;
+
+  // Beim Direkteinstieg das Gebäude des Objekts übernehmen
+  useAdoptBuilding(costType?.buildingId);
+
+  const { data: entries } = useQuery(costTypeEntriesQueryOptions(costTypeId));
+  const { data: units } = useQuery(unitsQueryOptions);
+  const { data: meterPage } = useQuery({
+    ...metersOverviewQueryOptions({
+      page: 0,
+      pageSize: 1000,
+      buildingId: costType?.buildingId,
+    }),
+    enabled: costType !== undefined,
   });
 
-  const goBack = useGoBack("/kostenarten");
   const navigate = useNavigate();
+  const router = useRouter();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [entrySheetOpen, setEntrySheetOpen] = useState(false);
 
   const updateCostType = useCrudMutation({
     mutationFn: ({ buildingId: _ignored, ...dto }: CostTypeSubmitValues) =>
       api.patch<CostType>(`/costs/types/${costTypeId}`, dto),
     invalidateKeys: [["costTypes"], ["costType", costTypeId]],
-    onSuccess: goBack,
   });
 
   const deletion = useDeleteResource<CostTypeDetail>({
     endpoint: (target) => `/costs/types/${target.id}`,
-    invalidateKeys: [["costTypes"]],
+    invalidateKeys: [["costTypes"], ["stats"]],
     title: t("ui.costs.confirmDeleteType"),
     describe: (target) =>
       t("ui.costs.confirmDeleteTypeMessage", { name: target.name }),
-    onDeleted: goBack,
+    onDeleted: () =>
+      navigate({
+        to: "/kostenarten",
+        search: { buildingId: costType?.buildingId },
+      }),
   });
 
   if (
     costTypeQuery.isError ||
-    (costTypeQuery.data === undefined && !costTypeQuery.isLoading)
+    (costType === undefined && !costTypeQuery.isLoading)
   ) {
     return (
       <EntityNotFound
@@ -100,153 +157,151 @@ export const CostTypeEditPage = () => {
     );
   }
 
-  const costType = costTypeQuery.data;
-  const visual = costType
-    ? costTypeVisual(costType)
-    : { icon: domainVisuals.costTypes.icon, gradient: gradients.notes };
-  const isHeating = costType?.category === "heating";
-  const [heatingVersion] = heatingVersions ?? [];
+  if (!costType) {
+    return (
+      <div className="max-w-225 pb-6">
+        <PageHeader
+          tile={<PageHeaderIcon icon={RiPriceTag3Line} />}
+          title=""
+          loading={true}
+        />
+        <FormSkeleton rows={4} />
+      </div>
+    );
+  }
+
+  const isHeating = costType.category === "heating";
+  const { stats } = costType;
+
+  const assignedMeters = metersOfCostType(
+    meterPage?.items ?? [],
+    costTypeId,
+    units ?? [],
+  );
+
+  const showMeters =
+    costCategoryFor(costType.category, costType.defaultAllocationKey) ===
+      "byConsumption" || stats.assignedMetersCount > 0;
 
   return (
-    <div className="pb-24">
-      <PageHeader
-        loading={!costType}
-        statsSkeleton={3}
-        tile={
-          <IconTile icon={visual.icon} size={44} background={visual.gradient} />
-        }
-        title={costType?.name ?? ""}
-        sub={costType ? costTypeCategoryLabel(costType.category) : undefined}
-        stats={
-          costType
-            ? [
-                {
-                  label: t("ui.costs.detail.statsEntries", {
-                    year: costType.stats.year,
-                  }),
-                  value: String(costType.stats.entryCount),
-                },
-                {
-                  label: t("ui.costs.detail.statsSum", {
-                    year: costType.stats.year,
-                  }),
-                  value: formatEur(costType.stats.totalAmountCents),
-                },
-                {
-                  label: t("ui.costs.columns.category"),
-                  value: costTypeCategoryLabel(costType.category),
-                },
-              ]
-            : undefined
-        }
-      />
+    <>
+      <div className="max-w-225 pb-6">
+        <PageHeader
+          tile={<PageHeaderIcon icon={costTypeVisual(costType).icon} />}
+          title={costType.name}
+          sub={
+            <span className="flex flex-wrap items-center gap-2">
+              <span>
+                {[
+                  costTypeCategoryLabel(costType.category),
+                  costTypeAllocationText(costType),
+                ].join(t("ui.common.separators.bullet"))}
+              </span>
+              {isHeating ? (
+                <DomainLink
+                  to="/heizkosten"
+                  search={{ buildingId: costType.buildingId }}
+                >
+                  {t("ui.costs.detail.heatingLink")}
+                </DomainLink>
+              ) : null}
+            </span>
+          }
+          action={
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild={true}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={t("ui.common.a11y.more")}
+                >
+                  <RiMoreLine />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-56">
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => deletion.request(costType)}
+                >
+                  <RiDeleteBinLine />
+                  {t("ui.costs.detail.deleteAction")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
 
-      {costType ? (
-        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px] *:min-w-0">
-          <CostTypeForm
-            mode="edit"
-            savedAt={
-              costType.updatedAt
-                ? formatDate(costType.updatedAt.slice(0, 10))
-                : undefined
-            }
-            defaultValues={toFormValues(costType)}
-            onSubmit={async (values) => {
-              await updateCostType.mutateAsync(values);
-            }}
-            onCancel={goBack}
+        <div className="space-y-5">
+          <MiniKpiRow
+            columns={showMeters ? 2 : 1}
+            items={[
+              {
+                label: t("ui.costs.detail.statsEntries", { year: stats.year }),
+                value: formatEur(stats.totalAmountCents),
+                hint:
+                  stats.entryCount > 0 && stats.lastEntry
+                    ? t("ui.costs.detail.entriesHint", {
+                        count: stats.entryCount,
+                        date: formatDate(stats.lastEntry.invoiceDate),
+                      })
+                    : t("ui.costs.detail.entriesEmptyYear"),
+              },
+              ...(showMeters
+                ? [
+                    {
+                      label: t("ui.costs.detail.metersSection"),
+                      value: t("ui.meters.sub.count", {
+                        count: stats.assignedMetersCount,
+                      }),
+                    },
+                  ]
+                : []),
+            ]}
           />
 
-          <div className="flex flex-col gap-4 xl:sticky xl:top-24">
-            <InfoCard title={t("ui.common.infoCards.links")}>
-              <ActionLink
-                icon={RiBillLine}
-                iconBackground={domainVisuals.invoices.accent}
-                onClick={() =>
-                  navigate({
-                    to: "/rechnungen/neu",
-                    search: { buildingId: costType.buildingId },
-                  })
-                }
-              >
-                {t("ui.costs.addEntry")}
-              </ActionLink>
-              {isHeating ? (
-                heatingVersion && (
-                  <ActionLink
-                    icon={domainVisuals.heating.icon}
-                    iconBackground={domainVisuals.heating.accent}
-                    subtitle={heatingIdentityLabel(heatingVersion)}
-                    onClick={() =>
-                      navigate({
-                        to: "/heizkosten/$id",
-                        params: { id: heatingVersion.id },
-                      })
-                    }
-                  >
-                    {t("ui.costs.detail.openHeating")}
-                  </ActionLink>
-                )
-              ) : (
-                <ActionLink
-                  icon={domainVisuals.meters.icon}
-                  iconBackground={domainVisuals.meters.accent}
-                  subtitle={t("ui.meters.sub.count", {
-                    count: costType.stats.assignedMetersCount,
-                  })}
-                  onClick={() =>
-                    navigate({
-                      to: "/zaehler",
-                      search: {
-                        buildingId: costType.buildingId,
-                        unitId: undefined,
-                        type: undefined,
-                      },
-                    })
-                  }
-                >
-                  {t("ui.costs.detail.openMeters")}
-                </ActionLink>
-              )}
-            </InfoCard>
-
-            <InfoCard
-              title={t("ui.common.infoCards.details")}
-              rows={[
-                {
-                  label: t("ui.costs.detail.lastEntryLabel"),
-                  value: costType.stats.lastEntry ? (
-                    <Link
-                      to="/rechnungen/$costEntryId"
-                      params={{ costEntryId: costType.stats.lastEntry.id }}
-                      className="font-semibold text-sky-700 dark:text-sky-400"
-                    >
-                      {formatEur(costType.stats.lastEntry.amountCents)}
-                    </Link>
-                  ) : (
-                    t("ui.common.emptyValue")
-                  ),
-                },
-              ]}
+          <div>
+            <CostTypeBaseCard
+              costType={costType}
+              onEdit={() => setSheetOpen(true)}
             />
 
-            <InfoCard title={t("ui.common.infoCards.actions")}>
-              <ActionLink
-                icon={RiDeleteBinLine}
-                iconBackground="var(--color-rose-400)"
-                danger={true}
-                onClick={() => deletion.request(costType)}
-              >
-                {t("ui.costs.detail.deleteAction")}
-              </ActionLink>
-            </InfoCard>
+            <CostTypeEntriesCard
+              rows={entries ?? []}
+              onAdd={() => setEntrySheetOpen(true)}
+            />
+
+            {showMeters ? (
+              <CostTypeMetersCard
+                meters={assignedMeters}
+                buildingId={costType.buildingId}
+              />
+            ) : null}
           </div>
         </div>
-      ) : (
-        <FormSkeleton rows={4} aside={true} />
-      )}
+      </div>
+
+      {sheetOpen ? (
+        <CostTypeSheet
+          mode="edit"
+          defaultValues={toFormValues(costType)}
+          onSubmit={async (values) => {
+            await updateCostType.mutateAsync(values);
+
+            await router.invalidate();
+            setSheetOpen(false);
+          }}
+          onClose={() => setSheetOpen(false)}
+        />
+      ) : null}
+
+      {entrySheetOpen ? (
+        <CostEntryCreateSheet
+          costTypeId={costTypeId}
+          onClose={() => setEntrySheetOpen(false)}
+        />
+      ) : null}
 
       {deletion.dialog}
-    </div>
+    </>
   );
 };

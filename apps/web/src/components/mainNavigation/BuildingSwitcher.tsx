@@ -1,18 +1,8 @@
-import {
-  RiAddLine,
-  RiCheckLine,
-  RiCommunityLine,
-  RiExpandUpDownLine,
-} from "@remixicon/react";
-import { Link } from "@tanstack/react-router";
-import { InitialsAvatar } from "@/components/common/InitialsAvatar";
-import { MenuIconTile } from "@/components/common/MenuIconTile";
+import { RiCheckLine, RiExpandUpDownLine } from "@remixicon/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu";
 import {
@@ -21,7 +11,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/Sidebar";
 import { useActiveBuilding } from "@/lib/activeBuilding";
+import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
+
+const BuildingIcon = domainVisuals.buildings.icon;
 
 export const BuildingSwitcher = () => {
   const { building, buildings, buildingId, setBuildingId } =
@@ -37,74 +30,40 @@ export const BuildingSwitcher = () => {
             tooltip={
               building?.name ?? t("ui.navigation.buildingSwitcher.empty")
             }
-            className="h-auto rounded-t-[13px] rounded-b-none py-3 pr-3 pl-3 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            className="h-auto rounded-lg border border-sidebar-border bg-white/8 px-2.5 py-2 text-sidebar-accent-foreground hover:border-sidebar-foreground hover:bg-white/8 data-[state=open]:border-sidebar-foreground"
           >
             <DropdownMenuTrigger>
-              <InitialsAvatar name={building?.name ?? "?"} size={29} />
-              <div className="flex flex-1 flex-col gap-0.5 overflow-hidden text-left leading-none">
-                <span className="text-[10px] font-semibold tracking-wider text-sidebar-foreground/60 uppercase">
-                  {t("ui.navigation.buildingSwitcher.label")}
-                </span>
-                <span className="truncate text-[13.5px] font-semibold text-slate-900 dark:text-slate-100">
-                  {building?.name ?? t("ui.navigation.buildingSwitcher.empty")}
-                </span>
-              </div>
-              <RiExpandUpDownLine className="ml-auto size-4 shrink-0 text-sidebar-foreground/50" />
+              <BuildingIcon
+                aria-hidden={true}
+                className="size-4.5 shrink-0 text-sidebar-foreground"
+              />
+              <span className="flex-1 truncate text-left text-sm font-semibold">
+                {building?.name ?? t("ui.navigation.buildingSwitcher.empty")}
+              </span>
+              <RiExpandUpDownLine className="ml-auto size-4 shrink-0 text-sidebar-foreground" />
             </DropdownMenuTrigger>
           </SidebarMenuButton>
           <DropdownMenuContent
-            className="w-[calc(var(--radix-dropdown-menu-trigger-width)-1rem)]"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-52"
             side="bottom"
             align="start"
             sideOffset={4}
-            alignOffset={8}
           >
-            <DropdownMenuLabel className="text-[10.5px] font-semibold tracking-[0.09em] text-muted-foreground uppercase">
-              {t("ui.navigation.buildingSwitcher.switchLabel")}
-            </DropdownMenuLabel>
             {buildings.map((item) => (
               <DropdownMenuItem
                 key={item.id}
                 onSelect={() => setBuildingId(item.id)}
               >
-                <InitialsAvatar name={item.name} size={29} />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-[13px] font-semibold">
-                    {item.name}
-                  </span>
-                  <span className="truncate text-[11.5px] text-muted-foreground">
-                    {[
-                      t("ui.navigation.buildingSwitcher.unitsCount", {
-                        count: item.unitsCount,
-                      }),
-                      t("ui.dashboard.buildingsCard.tenantsCount", {
-                        count: item.activeTenantsCount,
-                      }),
-                    ].join(t("ui.common.separators.bullet"))}
-                  </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                  {item.name}
                 </span>
                 <RiCheckLine
                   className={
-                    item.id === buildingId
-                      ? "text-sky-700 dark:text-sky-400"
-                      : "invisible"
+                    item.id === buildingId ? "text-limette-700" : "invisible"
                   }
                 />
               </DropdownMenuItem>
             ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild={true}>
-              <Link to="/gebaeude">
-                <MenuIconTile icon={RiCommunityLine} />
-                {t("ui.navigation.buildingSwitcher.all")}
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild={true}>
-              <Link to="/gebaeude/neu">
-                <MenuIconTile icon={RiAddLine} />
-                {t("ui.navigation.buildingSwitcher.add")}
-              </Link>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

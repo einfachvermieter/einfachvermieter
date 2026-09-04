@@ -3,7 +3,6 @@ import { formatDate } from "@einfachvermieter/shared";
 import { RiGroupLine } from "@remixicon/react";
 import { SectionCard } from "../../../../components/common/SectionCard";
 import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 
 type ResidentGroup = {
@@ -43,7 +42,6 @@ export const OccupancyCard = ({
   return (
     <SectionCard
       icon={RiGroupLine}
-      iconBackground={gradients.tenants}
       title={t("ui.statements.detail.occupancyTitle")}
       description={t("ui.statements.detail.occupancyDescription")}
     >

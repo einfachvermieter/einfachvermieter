@@ -1,43 +1,86 @@
-import type { RemixiconComponentType } from "@remixicon/react";
-import type { ReactNode } from "react";
-import { IconTile } from "@/components/common/IconTile";
+import {
+  type RemixiconComponentType,
+  RiArrowDownSLine,
+} from "@remixicon/react";
+import { type ReactNode, useId, useState } from "react";
+import { cn } from "@/lib/utils";
 
 /**
- * Weiße Sektions-Karte mit Icon-Kachel-Kopf
+ * Abschnitt-Card mit Kopfzeile: kleines Akzent-Icon, Titel, optionale
+ * Beschreibung und Aktion rechts
  */
 export const SectionCard = ({
-  icon,
-  iconBackground,
+  icon: Icon,
   title,
   titleExtra,
   description,
   action,
+  collapsible = false,
+  defaultOpen = false,
   children,
 }: {
   icon: RemixiconComponentType;
-  /** Farbe oder Verlauf aus lib/domainVisuals.ts */
-  iconBackground: string;
   title: string;
   /** Zusatz neben dem Titel, z. B. ein HelpHint */
   titleExtra?: ReactNode;
   description?: string;
   action?: ReactNode;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
   children: ReactNode;
-}) => (
-  <section className="mb-5 rounded-xl border border-border bg-card px-6.5 py-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-    <div className="mb-5 flex items-center gap-3.25">
-      <IconTile icon={icon} size={40} background={iconBackground} />
-      <div className="min-w-0 flex-1">
-        <h2 className="flex items-center gap-1 text-lg font-semibold">
-          {title}
-          {titleExtra}
-        </h2>
-        {description ? (
-          <p className="mt-0.5 text-xs text-slate-400">{description}</p>
+}) => {
+  const [open, setOpen] = useState(defaultOpen);
+  const contentId = useId();
+  const showBody = !collapsible || open;
+
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-card px-5.5 py-4.5">
+      <div
+        className={cn("relative flex items-center gap-2.5", showBody && "mb-4")}
+      >
+        <Icon aria-hidden={true} className="size-5 shrink-0 text-azur-700" />
+        <div className="min-w-0 flex-1">
+          <h2 className="flex items-center gap-1 text-lg font-semibold">
+            {collapsible ? (
+              // Klickfläche per Pseudo-Element über die ganze Kopfzeile
+              // strecken; HelpHint und Aktion liegen als positionierte
+              // Nachbarn darüber und bleiben eigenständig klickbar
+              <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={contentId}
+                onClick={() => setOpen((value) => !value)}
+                className="cursor-pointer text-left after:absolute after:inset-0"
+              >
+                {title}
+              </button>
+            ) : (
+              title
+            )}
+            {titleExtra ? (
+              <span className="relative shrink-0 translate-y-px">
+                {titleExtra}
+              </span>
+            ) : null}
+          </h2>
+          {description ? (
+            <p className="text-xs text-muted-foreground">{description}</p>
+          ) : null}
+        </div>
+        {showBody && action ? (
+          <span className="relative shrink-0">{action}</span>
+        ) : null}
+        {collapsible ? (
+          <RiArrowDownSLine
+            aria-hidden={true}
+            className={cn(
+              "pointer-events-none size-4.5 shrink-0 text-muted-foreground transition-transform",
+              open && "rotate-180",
+            )}
+          />
         ) : null}
       </div>
-      {action}
-    </div>
-    {children}
-  </section>
-);
+      {showBody ? <div id={contentId}>{children}</div> : null}
+    </section>
+  );
+};

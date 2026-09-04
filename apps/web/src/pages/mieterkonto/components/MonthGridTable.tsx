@@ -8,12 +8,11 @@ import {
   RiAddLine,
   RiArrowDownSLine,
   RiArrowRightSLine,
-  RiPencilLine,
 } from "@remixicon/react";
-import { Link } from "@tanstack/react-router";
 import { Fragment, useMemo, useState } from "react";
 import { RowActionButton, RowActions } from "@/components/RowActions";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import {
   Table,
   TableBody,
@@ -42,7 +41,7 @@ const yearPot = (sollCents: number, istCents: number): PotState => ({
  * Eine Topf-Spalte als eine Zelle "ist / soll"
  */
 const PotIstSollCell = ({ pot }: { pot: PotState }) => (
-  <TableCell className="px-4 py-3 text-right align-top tabular-nums">
+  <TableCell className="px-4 py-3 text-right align-middle tabular-nums">
     <span className="font-semibold">{formatEur(pot.istCents)}</span>{" "}
     <span className="text-muted-foreground">
       {`/ ${formatEur(pot.sollCents)}`}
@@ -51,11 +50,11 @@ const PotIstSollCell = ({ pot }: { pot: PotState }) => (
 );
 
 const MONTH_STATUS_VARIANT = {
-  balanced: "lightGreen",
-  credit: "lightBlue",
-  partial: "lightYellow",
-  open: "lightRed",
-  upcoming: "slate",
+  balanced: "ok",
+  credit: "info",
+  partial: "warn",
+  open: "bad",
+  upcoming: "neutral",
 } as const;
 
 const MonthStatusBadge = ({
@@ -74,7 +73,7 @@ const MonthStatusBadge = ({
 }) => {
   const status = monthStatus(base, advance, forMonth);
   return (
-    <TableCell className="px-4 py-3 align-top">
+    <TableCell className="px-4 py-3 align-middle">
       <Badge variant={MONTH_STATUS_VARIANT[status]}>
         {t(`ui.account.status.${status}`)}
       </Badge>
@@ -82,51 +81,12 @@ const MonthStatusBadge = ({
   );
 };
 
-/**
- * Aktion für einen Monat ohne Zahlung: Inline-Erfassung öffnen
- * (`onRecordPayment`) oder als Fallback `/zahlungen/neu`.
- */
-const RecordPaymentCell = ({
-  row,
-  tenantId,
-  onRecordPayment,
-}: {
-  row: MonthGridRow;
-  tenantId: string;
-  onRecordPayment?: (row: MonthGridRow) => void;
-}) =>
-  onRecordPayment ? (
-    <RowActionButton
-      label={t("ui.account.recordPayment")}
-      icon={<RiAddLine />}
-      onSelect={() => onRecordPayment(row)}
-    />
-  ) : (
-    <RowActionButton label={t("ui.account.recordPayment")}>
-      <Link
-        to="/zahlungen/neu"
-        search={{
-          tenantId,
-          forMonth: row.forMonth,
-          baseRentCents: row.baseRent.sollCents,
-          advanceCents: row.advance.sollCents,
-        }}
-      >
-        <RiAddLine />
-      </Link>
-    </RowActionButton>
-  );
-
 type MonthGridTableProps = {
   monthRows: MonthGridRow[];
   payments: Payment[];
-  tenantId: string;
   deletion: ReturnType<typeof useDeleteResource<Payment>>;
-  /**
-   * Monats-"+" öffnet die eingebettete Inline-Erfassung (vorbelegt)
-   * statt der Route `/zahlungen/neu`.
-   */
-  onRecordPayment?: (row: MonthGridRow) => void;
+  onRecordPayment: (row: MonthGridRow) => void;
+  onEditPayment: (payment: Payment) => void;
 };
 
 /**
@@ -137,9 +97,9 @@ type MonthGridTableProps = {
 export const MonthGridTable = ({
   monthRows,
   payments,
-  tenantId,
   deletion,
   onRecordPayment,
+  onEditPayment,
 }: MonthGridTableProps) => {
   const monthsByYear = useMemo(() => {
     const sorted = [...monthRows].reverse();
@@ -185,6 +145,12 @@ export const MonthGridTable = ({
       [year]: !(prev[year] ?? year === latestYear),
     }));
 
+  // Ältere Jahre kappen, damit die Seitenhöhe bei langen Verträgen
+  // konstant bleibt: neben dem aktuellen Jahr nur drei zurückliegende.
+  const [showAllYears, setShowAllYears] = useState(false);
+  const visibleGroups = showAllYears ? monthsByYear : monthsByYear.slice(0, 4);
+  const hasHiddenYears = visibleGroups.length < monthsByYear.length;
+
   const paymentById = useMemo(() => {
     const map = new Map<string, Payment>();
     for (const payment of payments) {
@@ -223,25 +189,31 @@ export const MonthGridTable = ({
             </TableCell>
           </TableRow>
         ) : (
-          monthsByYear.map((group) => {
+          visibleGroups.map((group) => {
             const { year, rows } = group;
             const open = isYearOpen(year);
             return (
               <Fragment key={year}>
-                <TableRow className="bg-muted/40">
-                  <TableCell />
+                <TableRow className="border-schiefer-200 border-t-2 bg-schiefer-100 hover:bg-schiefer-100">
+                  <TableCell className="px-4 py-2 align-middle">
+                    <Button
+                      type="button"
+                      variant="ghostMuted"
+                      size="icon-sm"
+                      aria-expanded={open}
+                      aria-label={t("ui.account.toggleYear", { year })}
+                      onClick={() => toggleYear(year)}
+                    >
+                      {open ? <RiArrowDownSLine /> : <RiArrowRightSLine />}
+                    </Button>
+                  </TableCell>
                   <TableCell className="p-0 align-middle">
                     <button
                       type="button"
                       onClick={() => toggleYear(year)}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left font-semibold hover:bg-muted"
+                      className="w-full px-4 py-2 text-left text-base font-semibold tabular-nums"
                     >
-                      {open ? (
-                        <RiArrowDownSLine className="size-4" />
-                      ) : (
-                        <RiArrowRightSLine className="size-4" />
-                      )}
-                      <span className="tabular-nums">{year}</span>
+                      {year}
                     </button>
                   </TableCell>
                   <PotIstSollCell
@@ -261,12 +233,12 @@ export const MonthGridTable = ({
                 {open
                   ? rows.map((row) => (
                       <TableRow key={row.forMonth}>
-                        <TableCell className="px-4 py-3">
+                        <TableCell className="px-4 py-3 align-middle">
                           {row.paymentIds.length === 0 ? (
-                            <RecordPaymentCell
-                              row={row}
-                              tenantId={tenantId}
-                              onRecordPayment={onRecordPayment}
+                            <RowActionButton
+                              label={t("ui.account.recordPayment")}
+                              icon={<RiAddLine />}
+                              onSelect={() => onRecordPayment(row)}
                             />
                           ) : (
                             <div className="flex flex-col items-start gap-1">
@@ -281,15 +253,7 @@ export const MonthGridTable = ({
                                     isDeleting={
                                       paymentId === deletion.deletingId
                                     }
-                                    editLink={
-                                      <Link
-                                        to="/zahlungen/$paymentId/bearbeiten"
-                                        params={{ paymentId }}
-                                        search={{ tenantId }}
-                                      >
-                                        <RiPencilLine />
-                                      </Link>
-                                    }
+                                    onEdit={() => onEditPayment(payment)}
                                     onDelete={() => deletion.request(payment)}
                                   />
                                 );
@@ -297,7 +261,7 @@ export const MonthGridTable = ({
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="px-4 py-3 align-top font-medium tabular-nums">
+                        <TableCell className="px-4 py-3 align-middle font-medium tabular-nums">
                           {formatForMonth(row.forMonth)}
                         </TableCell>
                         <PotIstSollCell pot={row.baseRent} />
@@ -314,6 +278,20 @@ export const MonthGridTable = ({
             );
           })
         )}
+        {hasHiddenYears ? (
+          <TableRow>
+            <TableCell colSpan={5} className="px-4 py-2">
+              <Button
+                type="button"
+                variant="addLink"
+                size="text"
+                onClick={() => setShowAllYears(true)}
+              >
+                {t("ui.account.showEarlierYears")}
+              </Button>
+            </TableCell>
+          </TableRow>
+        ) : null}
       </TableBody>
     </Table>
   );

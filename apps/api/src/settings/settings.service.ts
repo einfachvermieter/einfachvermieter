@@ -14,6 +14,11 @@ import type {
   SenderSettingsDto,
   SenderSettingsUpdateDto,
 } from "@einfachvermieter/shared";
+import {
+  toLogoAlignment,
+  toLogoMode,
+  toLogoScalePercent,
+} from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import {
@@ -98,7 +103,9 @@ const toDto = (row: AppSettings): SenderSettingsDto => ({
   senderBankName: row.senderBankName,
   senderBankIban: row.senderBankIban,
   senderBankBic: row.senderBankBic,
-  useLogo: row.useLogo,
+  logoMode: toLogoMode(row.logoMode),
+  logoAlignment: toLogoAlignment(row.logoAlignment),
+  logoScalePercent: toLogoScalePercent(row.logoScalePercent),
   hasLogo: row.logoStorageKey !== null,
   logoMimeType: row.logoMimeType,
 });
@@ -152,7 +159,9 @@ export class SettingsService {
       senderBankName: dto.senderBankName ?? null,
       senderBankIban: dto.senderBankIban ?? null,
       senderBankBic: dto.senderBankBic ?? null,
-      useLogo: dto.useLogo,
+      logoMode: dto.logoMode,
+      logoAlignment: dto.logoAlignment,
+      logoScalePercent: dto.logoScalePercent,
       updatedAt: new Date().toISOString(),
     });
 
@@ -449,7 +458,7 @@ export class SettingsService {
       senderAddressStreet: "",
       senderAddressPostalCode: "",
       senderAddressCity: "",
-      useLogo: true,
+      logoMode: "app",
       lastAppVersion: currentAppVersion,
     });
 

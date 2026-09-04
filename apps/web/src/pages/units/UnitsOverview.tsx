@@ -1,19 +1,18 @@
 import { formatNumber, pad2 } from "@einfachvermieter/shared";
-import { RiAddLine, RiHome4Line } from "@remixicon/react";
+import { RiAddLine, RiHome6Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "../../components/common/DataTable";
+import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { gradients } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
@@ -23,6 +22,7 @@ import {
   type UnitSortColumn,
   unitsOverviewQueryOptions,
 } from "../../lib/units";
+import { UnitCreateSheet } from "./UnitCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<UnitSortColumn> = new Set([
   "name",
@@ -43,14 +43,10 @@ const vacantFromMonth = (vacantFrom: string): string => {
 const occupancyBadge = (occupancy: UnitOverviewRow["occupancy"]) => {
   switch (occupancy.status) {
     case "rented":
-      return (
-        <Badge variant="ok" dot={true}>
-          {t("ui.units.status.rented")}
-        </Badge>
-      );
+      return <Badge variant="ok">{t("ui.units.status.rented")}</Badge>;
     case "vacant_from":
       return (
-        <Badge variant="warn" dot={true}>
+        <Badge variant="warn">
           {t("ui.units.status.vacantFrom", {
             month: occupancy.vacantFrom
               ? vacantFromMonth(occupancy.vacantFrom)
@@ -59,17 +55,9 @@ const occupancyBadge = (occupancy: UnitOverviewRow["occupancy"]) => {
         </Badge>
       );
     case "owner":
-      return (
-        <Badge variant="slate" dot={true}>
-          {t("ui.units.status.owner")}
-        </Badge>
-      );
+      return <Badge variant="neutral">{t("ui.units.status.owner")}</Badge>;
     default:
-      return (
-        <Badge variant="warn" dot={true}>
-          {t("ui.units.status.vacant")}
-        </Badge>
-      );
+      return <Badge variant="warn">{t("ui.units.status.vacant")}</Badge>;
   }
 };
 
@@ -80,6 +68,7 @@ export const UnitsOverview = () => {
     storageKey: "units",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -102,20 +91,7 @@ export const UnitsOverview = () => {
       {
         accessorKey: "name",
         header: t("ui.units.fields.name"),
-        cell: ({ row }) => (
-          <EntityCell
-            tile={<IconTile icon={RiHome4Line} background={gradients.units} />}
-            name={
-              <Link
-                to="/wohnungen/$unitId"
-                params={{ unitId: row.original.id }}
-                className={ROW_TITLE_LINK}
-              >
-                {row.original.name}
-              </Link>
-            }
-          />
-        ),
+        cell: ({ row }) => <EntityCell name={row.original.name} />,
       },
       {
         accessorKey: "unitNumber",
@@ -126,7 +102,10 @@ export const UnitsOverview = () => {
       {
         accessorKey: "areaSqm",
         header: t("ui.units.fields.area"),
-        cell: ({ row }) => `${formatNumber(row.original.areaSqm, 2)}\u00A0m²`,
+        cell: ({ row }) =>
+          t("ui.common.measures.sqm", {
+            value: formatNumber(row.original.areaSqm, 2),
+          }),
         meta: {
           cellClassName: "text-right tabular-nums",
           headerClassName: "text-right",
@@ -140,10 +119,18 @@ export const UnitsOverview = () => {
       {
         id: "tenant",
         header: t("ui.units.fields.tenant"),
-        cell: ({ row }) =>
-          row.original.occupancy.tenantNames.join(
-            t("ui.common.separators.comma"),
-          ) || t("ui.common.emptyValue"),
+        cell: ({ row }) => {
+          const { tenantId, tenantNames } = row.original.occupancy;
+          const names = tenantNames.join(t("ui.common.separators.comma"));
+          if (!tenantId || !names) {
+            return t("ui.common.emptyValue");
+          }
+          return (
+            <DomainLink to="/mieter/$tenantId" params={{ tenantId }}>
+              {names}
+            </DomainLink>
+          );
+        },
       },
     ],
     [],
@@ -172,19 +159,15 @@ export const UnitsOverview = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile icon={RiHome4Line} size={44} background={gradients.units} />
-        }
+        tile={<PageHeaderIcon icon={RiHome6Line} />}
         title={t("ui.units.title")}
         sub={sub}
         subLoading={!data}
         action={
           canAddUnit ? (
-            <Button asChild={true}>
-              <Link to="/wohnungen/neu" search={{ buildingId }}>
-                <RiAddLine />
-                <span className="hidden sm:inline">{t("ui.units.add")}</span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">{t("ui.units.add")}</span>
             </Button>
           ) : undefined
         }
@@ -213,6 +196,10 @@ export const UnitsOverview = () => {
           pageCount: table.pageCount(data?.total ?? 0),
         }}
       />
+
+      {createOpen ? (
+        <UnitCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

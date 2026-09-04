@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
 /**
- * Karte der rechten Infospalte. Caps-Label oben,
- * darunter Key-Value-Zeilen und/oder freier Inhalt.
+ * Abschnitt der rechten Infospalte: Versalien-Titel mit Trennlinie,
+ * darunter Key-Value-Zeilen und/oder freier Inhalt. Ohne Kartenrahmen.
  */
 export const InfoCard = ({
   title,
@@ -13,19 +13,22 @@ export const InfoCard = ({
   rows?: { label: string; value: ReactNode }[];
   children?: ReactNode;
 }) => (
-  <div className="rounded-xl border border-border bg-card p-5.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-    <div className="mb-3.5 text-[11px] font-semibold tracking-[0.06em] text-slate-400 uppercase">
-      {title}
+  <section>
+    <div className="mb-2.5 flex items-center gap-3">
+      <h3 className="text-2xs font-semibold tracking-[0.07em] text-muted-foreground uppercase">
+        {title}
+      </h3>
+      <span aria-hidden={true} className="h-px flex-1 bg-border" />
     </div>
     {rows?.map((row) => (
       <div
         key={row.label}
-        className="flex items-center justify-between gap-3 border-t border-border py-2.5 text-[13.5px] first:border-t-0"
+        className="flex items-center justify-between gap-3 border-b border-schiefer-100 px-2 py-2.5 text-sm last:border-b-0"
       >
         <span className="text-muted-foreground">{row.label}</span>
-        <span className="min-w-0 text-right font-semibold">{row.value}</span>
+        <span className="min-w-0 text-right font-medium">{row.value}</span>
       </div>
     ))}
     {children}
-  </div>
+  </section>
 );

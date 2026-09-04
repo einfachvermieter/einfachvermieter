@@ -81,7 +81,7 @@ export const SwitchGroupInput = <T extends FieldValues>({
             <FieldLegend variant="label">
               {label}
               {optional ? (
-                <span className="font-normal text-slate-400 dark:text-slate-500">
+                <span className="font-normal text-muted-foreground">
                   {t("ui.common.forms.optionalSuffix")}
                 </span>
               ) : null}
@@ -113,7 +113,7 @@ export const SwitchGroupInput = <T extends FieldValues>({
                       <div className="min-w-0">
                         <FieldLabel htmlFor={id}>{option.label}</FieldLabel>
                         {option.description ? (
-                          <p className="mt-0.5 text-xs text-slate-400">
+                          <p className="mt-0.5 text-xs text-muted-foreground">
                             {option.description}
                           </p>
                         ) : null}

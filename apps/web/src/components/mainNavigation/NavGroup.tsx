@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { IconTile } from "@/components/common/IconTile";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -19,7 +18,10 @@ export const NavGroup = ({
   buildingId,
   counts,
 }: {
-  label: string;
+  /**
+   * Ohne Label entfällt die Gruppenüberschrift
+   */
+  label?: string;
   items: NavItem[];
   currentPath: string;
 
@@ -33,7 +35,7 @@ export const NavGroup = ({
   counts?: Partial<Record<NavItem["domain"], number>>;
 }) => (
   <SidebarGroup>
-    <SidebarGroupLabel>{label}</SidebarGroupLabel>
+    {label ? <SidebarGroupLabel>{label}</SidebarGroupLabel> : null}
     <SidebarMenu>
       {items.map((item) => {
         const active = isNavActive(item, currentPath);
@@ -52,11 +54,7 @@ export const NavGroup = ({
                 to={item.to}
                 search={buildingId ? { buildingId } : undefined}
               >
-                <IconTile
-                  icon={visual.icon}
-                  size={26}
-                  background={visual.accent}
-                />
+                <visual.icon aria-hidden={true} />
                 <span>{itemLabel}</span>
               </Link>
             </SidebarMenuButton>

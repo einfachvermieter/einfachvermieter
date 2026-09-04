@@ -7,7 +7,6 @@ import {
   QUIET_TABLE_GROUP_HEAD,
   QUIET_TABLE_HEAD_ROW,
 } from "../../../../components/common/tableStyles";
-import { gradients } from "../../../../lib/domainVisuals";
 import { t } from "../../../../lib/i18n";
 
 type Category = "household_service" | "craftsman";
@@ -28,7 +27,6 @@ export const TaxableLaborCard = ({ detail }: { detail: TaxableLaborCosts }) => {
   return (
     <SectionCard
       icon={RiGovernmentLine}
-      iconBackground={gradients.slate}
       title={t("statements.pdf.taxableLabor.title")}
       description={t("statements.pdf.taxableLabor.intro")}
     >

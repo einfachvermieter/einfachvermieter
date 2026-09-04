@@ -105,7 +105,7 @@ export const DateInput = <T extends FieldValues>({
       <FieldLabel htmlFor={id}>
         {label}
         {optional ? (
-          <span className="font-normal text-slate-400 dark:text-slate-500">
+          <span className="font-normal text-muted-foreground">
             {t("ui.common.forms.optionalSuffix")}
           </span>
         ) : null}

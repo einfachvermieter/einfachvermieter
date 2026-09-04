@@ -32,6 +32,28 @@ const optionalIban = z
       .nullable(),
   );
 
+export const senderLogoModes = ["own", "app", "none"] as const;
+export type SenderLogoMode = (typeof senderLogoModes)[number];
+export const senderLogoAlignments = ["left", "center", "right"] as const;
+export type SenderLogoAlignment = (typeof senderLogoAlignments)[number];
+export const senderLogoScalePercents = [100, 75, 50] as const;
+export type SenderLogoScalePercent = (typeof senderLogoScalePercents)[number];
+
+export const toLogoMode = (value: string): SenderLogoMode =>
+  (senderLogoModes as readonly string[]).includes(value)
+    ? (value as SenderLogoMode)
+    : "app";
+
+export const toLogoAlignment = (value: string): SenderLogoAlignment =>
+  (senderLogoAlignments as readonly string[]).includes(value)
+    ? (value as SenderLogoAlignment)
+    : "center";
+
+export const toLogoScalePercent = (value: number): SenderLogoScalePercent =>
+  (senderLogoScalePercents as readonly number[]).includes(value)
+    ? (value as SenderLogoScalePercent)
+    : 100;
+
 export const senderSettingsUpdateSchema = z
   .object({
     senderName: z
@@ -60,7 +82,16 @@ export const senderSettingsUpdateSchema = z
     senderBankName: optionalText(200),
     senderBankIban: optionalIban,
     senderBankBic: optionalText(20),
-    useLogo: z.boolean(),
+    logoMode: z.enum(senderLogoModes),
+    logoAlignment: z.enum(senderLogoAlignments),
+    logoScalePercent: z
+      .union([z.string(), z.number()])
+      .transform(Number)
+      .refine(
+        (value): value is SenderLogoScalePercent =>
+          (senderLogoScalePercents as readonly number[]).includes(value),
+        { message: messageKey("ui.settings.sender.validation.logoScale") },
+      ),
   })
   .strict();
 

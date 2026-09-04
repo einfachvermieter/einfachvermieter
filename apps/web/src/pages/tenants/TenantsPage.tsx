@@ -3,15 +3,14 @@ import { RiAddLine, RiWallet3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { DataTable } from "../../components/common/DataTable";
+import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
-import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { RowActionButton } from "../../components/RowActions";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -20,7 +19,7 @@ import {
   type TenantBalanceSummary,
 } from "../../lib/accounts";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
@@ -32,6 +31,7 @@ import {
   tenantKindLabel,
   tenantsOverviewQueryOptions,
 } from "../../lib/tenants";
+import { TenantCreateSheet } from "./TenantCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<TenantSortColumn> = new Set([
   "unit",
@@ -57,22 +57,21 @@ const tenantColumns = (
     header: t("ui.common.columns.contractParty"),
     cell: ({ row }) => {
       const names = contractPartyNames(row.original);
-      return (
-        <EntityCell
-          tile={<InitialsAvatar name={names || row.original.unitName} />}
-          name={
-            <Link
-              to="/mieter/$tenantId"
-              params={{ tenantId: row.original.id }}
-              className={ROW_TITLE_LINK}
-            >
-              {names || t("common.none")}
-            </Link>
-          }
-          subline={row.original.unitName}
-        />
-      );
+      return <EntityCell name={names || t("common.none")} />;
     },
+  },
+  {
+    id: "unit",
+    accessorKey: "unitName",
+    header: t("ui.common.columns.unit"),
+    cell: ({ row }) => (
+      <DomainLink
+        to="/wohnungen/$unitId"
+        params={{ unitId: row.original.unitId }}
+      >
+        {row.original.unitName}
+      </DomainLink>
+    ),
   },
   {
     id: "kind",
@@ -114,13 +113,9 @@ const tenantColumns = (
     header: t("ui.common.columns.status"),
     cell: ({ row }) =>
       row.original.active ? (
-        <Badge variant="ok" dot={true}>
-          {t("ui.tenants.active")}
-        </Badge>
+        <Badge variant="ok">{t("ui.tenants.active")}</Badge>
       ) : (
-        <Badge variant="slate" dot={true}>
-          {t("ui.tenants.inactive")}
-        </Badge>
+        <Badge variant="neutral">{t("ui.tenants.inactive")}</Badge>
       ),
   },
   {
@@ -135,13 +130,12 @@ const tenantColumns = (
 
       // Kontosaldo ist aus Mietersicht signiert, die Anzeige aus Vermietersicht
       return (
-        <Link
+        <DomainLink
           to="/mieter/$tenantId/konto"
           params={{ tenantId: row.original.id }}
-          className="underline-offset-4 hover:underline"
         >
           <BalanceAmount receivableCents={-summary.balanceCents} />
-        </Link>
+        </DomainLink>
       );
     },
     meta: {
@@ -169,6 +163,7 @@ export const TenantsPage = () => {
     storageKey: "tenants",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -233,25 +228,17 @@ export const TenantsPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.tenants.icon}
-            size={44}
-            background={gradients.tenants}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.tenants.icon} />}
         title={t("ui.tenants.title")}
         sub={sub}
         subLoading={!data}
         action={
           canAddTenant ? (
-            <Button asChild={true}>
-              <Link to="/mieter/neu">
-                <RiAddLine />
-                <span className="hidden sm:inline">
-                  {t("ui.tenants.addTenant")}
-                </span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">
+                {t("ui.tenants.addTenant")}
+              </span>
             </Button>
           ) : undefined
         }
@@ -277,6 +264,10 @@ export const TenantsPage = () => {
           pageCount: table.pageCount(total),
         }}
       />
+
+      {createOpen ? (
+        <TenantCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

@@ -1,15 +1,14 @@
 import { formatDate, formatEur } from "@einfachvermieter/shared";
 import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import {
@@ -25,15 +24,13 @@ import {
   costEntriesOverviewQueryOptions,
   costTypesQueryOptions,
 } from "../../lib/costs";
-import {
-  costTypeVisual,
-  domainVisuals,
-  gradients,
-} from "../../lib/domainVisuals";
+import { costTypeVisual, domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
+import { rowIconColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
+import { CostEntryCreateSheet } from "./CostEntryCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<CostEntrySortColumn> = new Set([
   "invoiceDate",
@@ -45,6 +42,14 @@ const SORTABLE_COLUMNS: ReadonlySet<CostEntrySortColumn> = new Set([
 const invoiceColumns = (
   costTypeByName: Map<string, CostType>,
 ): ColumnDef<CostEntryOverviewRow>[] => [
+  // Icon nach der ersten Kostenart der Rechnung
+  rowIconColumn<CostEntryOverviewRow>((entry) => {
+    const [firstName] = entry.costTypeNames;
+    const firstCostType = firstName ? costTypeByName.get(firstName) : undefined;
+    return costTypeVisual(
+      firstCostType ?? { category: "operating", defaultAllocationKey: null },
+    ).icon;
+  }),
   {
     id: "costType",
     accessorKey: "costTypeNames",
@@ -52,28 +57,19 @@ const invoiceColumns = (
     header: t("ui.invoices.columns.invoice"),
     cell: ({ row }) => {
       const [firstName, ...moreNames] = row.original.costTypeNames;
-      const firstCostType = firstName
-        ? costTypeByName.get(firstName)
-        : undefined;
-      const visual = costTypeVisual(
-        firstCostType ?? { category: "operating", defaultAllocationKey: null },
-      );
       return (
         <EntityCell
-          tile={<IconTile icon={visual.icon} background={visual.gradient} />}
           name={
             <span className="flex items-center gap-1.5">
-              <Link
-                to="/rechnungen/$costEntryId"
-                params={{ costEntryId: row.original.id }}
-                className={ROW_TITLE_LINK}
-              >
-                {firstName ?? t("common.unknown")}
-              </Link>
+              {firstName ?? (
+                <span className="text-muted-foreground">
+                  {t("ui.invoices.noItems")}
+                </span>
+              )}
               {moreNames.length > 0 ? (
                 <Tooltip>
                   <TooltipTrigger asChild={true}>
-                    <Badge variant="morechip">
+                    <Badge variant="neutral">
                       {t("ui.common.moreChip", { count: moreNames.length })}
                     </Badge>
                   </TooltipTrigger>
@@ -122,7 +118,7 @@ const invoiceColumns = (
     header: t("ui.costs.columns.invoiceNumber"),
     cell: ({ row }) =>
       row.original.invoiceNumber ? (
-        <span className="text-[13px] text-muted-foreground tabular-nums">
+        <span className="text-sm text-muted-foreground tabular-nums">
           {row.original.invoiceNumber}
         </span>
       ) : (
@@ -152,6 +148,7 @@ export const InvoicesPage = () => {
     storageKey: "invoices",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -208,25 +205,17 @@ export const InvoicesPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.invoices.icon}
-            size={44}
-            background={gradients.invoices}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.invoices.icon} />}
         title={t("ui.invoices.title")}
         sub={sub}
         subLoading={!data}
         action={
           canAddInvoice ? (
-            <Button asChild={true}>
-              <Link to="/rechnungen/neu">
-                <RiAddLine />
-                <span className="hidden sm:inline">
-                  {t("ui.invoices.addEntry")}
-                </span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">
+                {t("ui.invoices.addEntry")}
+              </span>
             </Button>
           ) : undefined
         }
@@ -248,6 +237,7 @@ export const InvoicesPage = () => {
           navigate({
             to: "/rechnungen/$costEntryId",
             params: { costEntryId: entry.id },
+            search: { costTypeId: undefined, extract: undefined },
           })
         }
         server={{
@@ -255,6 +245,10 @@ export const InvoicesPage = () => {
           pageCount: table.pageCount(total),
         }}
       />
+
+      {createOpen ? (
+        <CostEntryCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

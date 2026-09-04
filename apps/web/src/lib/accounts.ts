@@ -11,20 +11,6 @@ import { queryOptions } from "@tanstack/react-query";
 import { api } from "./api";
 import { t } from "./i18n";
 
-/**
- * Reiter des Mieterkontos
- * Erster Eintrag ist der Standard
- */
-export const kontoTabs = [
-  "miete",
-  "zahlungen",
-  "abrechnungen",
-  "kaution",
-  "gebuehren",
-] as const;
-
-export type KontoTab = (typeof kontoTabs)[number];
-
 export type {
   AccountFeeCreateDto,
   AccountFeeUpdateDto,

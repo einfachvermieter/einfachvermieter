@@ -7,7 +7,7 @@ export type NavItem = {
   exact?: boolean;
 };
 
-export const dashboardNav: NavItem[] = [
+export const globalNav: NavItem[] = [
   {
     to: "/",
     labelKey: "ui.navigation.dashboard",
@@ -15,14 +15,23 @@ export const dashboardNav: NavItem[] = [
     exact: true,
   },
   {
-    to: "/einstellungen",
-    labelKey: "ui.navigation.configuration",
-    domain: "configuration",
+    to: "/gebaeude",
+    labelKey: "ui.navigation.buildings",
+    domain: "buildings",
   },
 ];
 
 /**
- * Gebäudegebundene Bereiche (alles unter dem Switcher).
+ * Einstellungen sitzen im Fuß der Sidebar
+ */
+export const settingsNav: NavItem = {
+  to: "/einstellungen",
+  labelKey: "ui.navigation.configuration",
+  domain: "configuration",
+};
+
+/**
+ * Gebäudegebundene Bereiche (alles unter dem Switcher)
  */
 export const stammdatenNav: NavItem[] = [
   {

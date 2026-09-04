@@ -1,25 +1,25 @@
 import {
-  RiCheckboxCircleLine,
-  RiErrorWarningLine,
-  RiInformationLine,
+  RiCheckboxCircleFill,
+  RiErrorWarningFill,
+  RiInformationFill,
 } from "@remixicon/react";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 const alertVariants = cva(
-  "group/alert relative grid w-full gap-0.5 rounded-lg border text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2.5 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
+  "group/alert relative grid w-full gap-0.5 rounded-lg border text-left text-sm text-foreground has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2.5 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default: "bg-card text-card-foreground",
-        info: "border-sky-200 bg-sky-50 text-sky-900 *:data-[slot=alert-description]:text-sky-900/80 *:[svg]:text-sky-700 dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-100 dark:*:data-[slot=alert-description]:text-sky-100/80 dark:*:[svg]:text-sky-300",
+        info: "border-azur-200 bg-azur-50 text-azur-900 *:data-[slot=alert-description]:text-azur-800 *:[svg]:text-azur-500",
         success:
-          "border-teal-200 bg-teal-50 text-teal-900 *:data-[slot=alert-description]:text-teal-900/80 *:[svg]:text-teal-700 dark:border-teal-900/40 dark:bg-teal-950/40 dark:text-teal-100 dark:*:data-[slot=alert-description]:text-teal-100/80 dark:*:[svg]:text-teal-300",
+          "border-limette-200 bg-limette-50 text-limette-900 *:data-[slot=alert-description]:text-limette-800 *:[svg]:text-limette-500",
         warning:
-          "border-amber-200 bg-amber-50 text-amber-900 *:data-[slot=alert-description]:text-amber-900/80 *:[svg]:text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-100 dark:*:data-[slot=alert-description]:text-amber-100/80 dark:*:[svg]:text-amber-300",
+          "border-honig-200 bg-honig-50 text-honig-900 *:data-[slot=alert-description]:text-honig-800 *:[svg]:text-honig-500",
         error:
-          "border-rose-200 bg-rose-50 text-rose-900 *:data-[slot=alert-description]:text-rose-900/80 *:[svg]:text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-100 dark:*:data-[slot=alert-description]:text-rose-100/80 dark:*:[svg]:text-rose-300",
+          "border-himbeere-200 bg-himbeere-50 text-himbeere-900 *:data-[slot=alert-description]:text-himbeere-800 *:[svg]:text-himbeere-500",
       },
       size: {
         default: "px-4 py-3",
@@ -35,10 +35,10 @@ const alertVariants = cva(
 
 const variantIcon = {
   default: null,
-  info: RiInformationLine,
-  success: RiCheckboxCircleLine,
-  warning: RiErrorWarningLine,
-  error: RiErrorWarningLine,
+  info: RiInformationFill,
+  success: RiCheckboxCircleFill,
+  warning: RiErrorWarningFill,
+  error: RiErrorWarningFill,
 } as const;
 
 const Alert = ({

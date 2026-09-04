@@ -4,7 +4,7 @@
  * abgeleiteten Anzeigewerte, nur das Markup bleibt getrennt).
  */
 
-import type { TranslateFn } from "@einfachvermieter/i18n";
+import { MONTH_KEYS, type TranslateFn } from "@einfachvermieter/i18n";
 import { formatDate, formatEur, formatNumber } from "../format.js";
 import type {
   EnergyComparison,
@@ -311,24 +311,9 @@ export const co2TenantShareCents = (
   );
 };
 
-const MONTH_KEYS = [
-  "jan",
-  "feb",
-  "mar",
-  "apr",
-  "may",
-  "jun",
-  "jul",
-  "aug",
-  "sep",
-  "oct",
-  "nov",
-  "dec",
-] as const;
-
 /**
  * Liste der bewohnten Monate mit ihrem festen Gradtagszahlen-Anteil,
- * z. B. „Jan 170 ‰, Feb 150 ‰". Nur Monate, in die die Mietzeit
+ * z. B. "Jan 170 ‰, Feb 150 ‰". Nur Monate, in die die Mietzeit
  * (teilweise) fällt.
  */
 const residentMonthsPromille = (

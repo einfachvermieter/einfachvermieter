@@ -1,4 +1,4 @@
-import type { StatementResult } from "@einfachvermieter/shared";
+import type { CostLineResult, StatementResult } from "@einfachvermieter/shared";
 import { queryOptions } from "@tanstack/react-query";
 import { api } from "./api";
 import { t } from "./i18n";
@@ -16,9 +16,27 @@ export const statementTabs = [
   "belegung",
   "steuer",
   "heizkosten",
-  "vorauszahlung",
   "pdf",
 ] as const;
+
+/**
+ * i18n-Schlüssel des Umlageschlüssel-Labels je Kostenzeile
+ */
+export const ALLOCATION_BY_LABEL_KEY: Record<
+  CostLineResult["allocationKey"],
+  string
+> = {
+  // biome-ignore-start lint/style/useNamingConvention: domain bedingte keys
+  per_living_area: "costs.allocationsBy.perLivingArea",
+  per_heating_area: "costs.allocationsBy.perHeatingArea",
+  per_person: "costs.allocationsBy.perPerson",
+  per_unit: "costs.allocationsBy.perUnit",
+  per_consumption_m3: "costs.allocationsBy.perConsumptionM3",
+  per_consumption_kwh: "costs.allocationsBy.perConsumptionKwh",
+  heating_ordinance: "costs.allocationsBy.heizkostenV",
+  // biome-ignore-end lint/style/useNamingConvention: domain bedingte keys
+  fixed: "costs.allocationsBy.fixed",
+};
 
 export type StatementTab = (typeof statementTabs)[number];
 

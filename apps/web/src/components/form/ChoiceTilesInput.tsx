@@ -1,4 +1,3 @@
-import type { RemixiconComponentType } from "@remixicon/react";
 import { type ReactNode, useId } from "react";
 import {
   type Control,
@@ -7,53 +6,19 @@ import {
   type FieldValues,
 } from "react-hook-form";
 import {
+  type ChoiceTileOption,
+  ChoiceTiles,
+} from "@/components/form/ChoiceTiles";
+import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
 } from "@/components/ui/Field";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
-
-export type ChoiceTileOption = {
-  value: string;
-  icon?: RemixiconComponentType;
-  /**
-   * Freier Bildinhalt anstelle des Icons, etwa ein Anbieter-Logo. Anders
-   * als `icon` wird er nicht eingefärbt und behält seine eigenen Farben.
-   */
-  media?: ReactNode;
-  title: ReactNode;
-  description?: ReactNode;
-  disabled?: boolean;
-};
-
-/**
- * Vorangestelltes Bildelement einer Kachel: freier Inhalt hat Vorrang vor
- * dem Icon, damit Logos ihre eigenen Farben behalten.
- */
-const tileLeading = (option: ChoiceTileOption): ReactNode => {
-  if (option.media) {
-    return (
-      <span className="flex size-5 shrink-0 items-center justify-center">
-        {option.media}
-      </span>
-    );
-  }
-
-  if (!option.icon) {
-    return null;
-  }
-
-  const Icon = option.icon;
-  return (
-    <Icon data-slot="tile-icon" className="size-4.25 shrink-0 text-slate-400" />
-  );
-};
 
 type ChoiceTilesInputProps<T extends FieldValues> = {
   control: Control<T>;
   name: FieldPath<T>;
-  /** Feld-Label über den Kacheln (optional) */
   label?: string;
   description?: ReactNode;
   options: ChoiceTileOption[];
@@ -63,8 +28,7 @@ type ChoiceTilesInputProps<T extends FieldValues> = {
 };
 
 /**
- * Auswahl als getönte Radio-Kacheln (Icon, Titel, Beschreibung) statt
- * Select oder blanker RadioGroup
+ * Auswahl-Kacheln als Formularfeld
  */
 export const ChoiceTilesInput = <T extends FieldValues>({
   control,
@@ -77,7 +41,7 @@ export const ChoiceTilesInput = <T extends FieldValues>({
   onValueChange,
 }: ChoiceTilesInputProps<T>) => {
   const descriptionId = useId();
-  const baseId = useId();
+
   return (
     <Controller
       control={control}
@@ -90,45 +54,16 @@ export const ChoiceTilesInput = <T extends FieldValues>({
               {description}
             </FieldDescription>
           ) : null}
-          <RadioGroup
-            columns={columns}
+          <ChoiceTiles
             value={field.value}
             onValueChange={(value) => {
               field.onChange(value);
               onValueChange?.(value);
             }}
+            options={options}
+            columns={columns}
             disabled={disabled}
-          >
-            {options.map((option) => {
-              const optionId = `${baseId}-${option.value}`;
-              return (
-                <label
-                  key={option.value}
-                  htmlFor={optionId}
-                  className="block cursor-pointer rounded-[13px] border-[1.5px] border-input bg-card px-4 py-3.5 transition hover:border-slate-400 has-data-checked:border-sky-700 has-data-disabled:cursor-not-allowed has-data-disabled:opacity-60 has-data-disabled:hover:border-input has-data-checked:**:data-[slot=tile-icon]:text-sky-700 has-data-checked:**:data-[slot=tile-title]:text-foreground"
-                >
-                  <RadioGroupItem
-                    id={optionId}
-                    value={option.value}
-                    disabled={option.disabled}
-                    className="absolute size-px opacity-0"
-                  />
-                  <span
-                    data-slot="tile-title"
-                    className="flex items-center gap-2 text-sm font-semibold text-slate-400"
-                  >
-                    {tileLeading(option)}
-                    {option.title}
-                  </span>
-                  {option.description ? (
-                    <span className="mt-1 block text-sm leading-normal text-slate-400">
-                      {option.description}
-                    </span>
-                  ) : null}
-                </label>
-              );
-            })}
-          </RadioGroup>
+          />
           {fieldState.invalid ? (
             <FieldError errors={[fieldState.error]} />
           ) : null}

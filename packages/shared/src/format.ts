@@ -29,6 +29,17 @@ export const formatEur = (
 };
 
 /**
+ * Ausgeschriebenes Datum mit Wochentag (Freitag, 4. September 2026)
+ */
+export const formatDateLong = (iso: string): string =>
+  new Date(`${iso}T00:00:00`).toLocaleDateString("de-DE", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+/**
  * ISO YYYY-MM-DD -> "DD.MM.YYYY". null/undefined/"" -> fallback (Default "-").
  */
 export const formatDate = (
@@ -106,10 +117,10 @@ export const formatBytes = (bytes: number): string => {
   }
 
   if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${formatNumberLoose(bytes / 1024, 1)} KB`;
   }
 
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${formatNumberLoose(bytes / (1024 * 1024), 1)} MB`;
 };
 
 /**

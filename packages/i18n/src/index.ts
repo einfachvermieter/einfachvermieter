@@ -11,6 +11,7 @@ export {
   messageKey,
   parseMessageKey,
 } from "./messageKey.js";
+export { MONTH_KEYS, type MonthKey, monthKeyOf } from "./months.js";
 export {
   createTranslate,
   type TranslateFn,

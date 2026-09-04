@@ -255,7 +255,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   );
 
   const recommendedBadge = (
-    <Badge variant="secondary">{t("ui.internetAccess.recommended")}</Badge>
+    <Badge variant="ok">{t("ui.internetAccess.recommended")}</Badge>
   );
 
   // Badge nur bei Schritten mit Feldern: Admin Pflicht, Absender optional.
@@ -268,8 +268,8 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
     internet: t("ui.setup.internet.hint"),
   };
   const stepBadges: Partial<Record<StepKey, ReactNode>> = {
-    admin: <Badge variant="outline">{t("ui.setup.requiredBadge")}</Badge>,
-    sender: <Badge variant="secondary">{t("ui.setup.optionalBadge")}</Badge>,
+    admin: <Badge variant="neutral">{t("ui.setup.requiredBadge")}</Badge>,
+    sender: <Badge variant="neutral">{t("ui.setup.optionalBadge")}</Badge>,
   };
   const stepHint = stepHints[stepKey];
   const stepBadge = stepBadges[stepKey] ?? null;
@@ -303,7 +303,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
       />
 
       <div className="flex flex-col gap-1">
-        <h3 className="text-base font-heading font-semibold text-foreground flex items-center gap-2">
+        <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
           {t(`ui.setup.${stepKey}.heading`)}
           {stepBadge}
         </h3>
@@ -412,7 +412,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
             description={t("ui.internetAccess.telemetry.description")}
           />
           <div className="flex justify-center pt-2">
-            <Button type="button" variant="success" onClick={enableRecommended}>
+            <Button type="button" variant="outline" onClick={enableRecommended}>
               <RiToggleFill />
               {t("ui.setup.internet.enableRecommended")}
             </Button>

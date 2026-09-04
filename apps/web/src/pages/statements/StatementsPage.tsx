@@ -1,17 +1,15 @@
 import { formatName } from "@einfachvermieter/shared";
 import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
-import { InitialsAvatar } from "../../components/common/InitialsAvatar";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import {
@@ -20,7 +18,7 @@ import {
   TooltipTrigger,
 } from "../../components/ui/Tooltip";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { domainVisuals, gradients } from "../../lib/domainVisuals";
+import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
@@ -31,6 +29,7 @@ import {
   statementsOverviewQueryOptions,
 } from "../../lib/statements";
 import { useServerTableState } from "../../lib/tableState";
+import { StatementCreateSheet } from "./StatementCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<StatementSortColumn> = new Set([
   "tenant",
@@ -47,31 +46,17 @@ const residentNames = (row: StatementOverviewRow): string =>
 const statusBadge = (status: StatementStatus) => {
   switch (status) {
     case "finalized":
-      return (
-        <Badge variant="ok" dot={true}>
-          {t("ui.statements.statusFinalized")}
-        </Badge>
-      );
+      return <Badge variant="ok">{t("ui.statements.statusFinalized")}</Badge>;
 
     case "draft":
-      return (
-        <Badge variant="slate" dot={true}>
-          {t("ui.statements.statusDraft")}
-        </Badge>
-      );
+      return <Badge variant="neutral">{t("ui.statements.statusDraft")}</Badge>;
 
     case "cancelled":
-      return (
-        <Badge variant="rose" dot={true}>
-          {t("ui.statements.statusCancelled")}
-        </Badge>
-      );
+      return <Badge variant="bad">{t("ui.statements.statusCancelled")}</Badge>;
 
     case "superseded":
       return (
-        <Badge variant="slate" dot={true}>
-          {t("ui.statements.statusSuperseded")}
-        </Badge>
+        <Badge variant="neutral">{t("ui.statements.statusSuperseded")}</Badge>
       );
 
     default:
@@ -87,6 +72,7 @@ export const StatementsPage = () => {
     storageKey: "statements",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -115,16 +101,7 @@ export const StatementsPage = () => {
           const names = residentNames(row.original);
           return (
             <EntityCell
-              tile={<InitialsAvatar name={names || row.original.unitName} />}
-              name={
-                <Link
-                  to="/abrechnungen/$statementId"
-                  params={{ statementId: row.original.id }}
-                  className={ROW_TITLE_LINK}
-                >
-                  {names || row.original.unitName}
-                </Link>
-              }
+              name={names || row.original.unitName}
               subline={names ? row.original.unitName : undefined}
             />
           );
@@ -207,25 +184,17 @@ export const StatementsPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.statements.icon}
-            size={44}
-            background={gradients.statements}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
         title={t("ui.statements.pageTitle")}
         sub={sub}
         subLoading={!data}
         action={
           canAddStatement ? (
-            <Button asChild={true}>
-              <Link to="/abrechnungen/neu">
-                <RiAddLine />
-                <span className="hidden sm:inline">
-                  {t("ui.statements.addStatement")}
-                </span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">
+                {t("ui.statements.addStatement")}
+              </span>
             </Button>
           ) : undefined
         }
@@ -255,6 +224,10 @@ export const StatementsPage = () => {
           searchPlaceholder: t("ui.statements.searchPlaceholder"),
         }}
       />
+
+      {createOpen ? (
+        <StatementCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

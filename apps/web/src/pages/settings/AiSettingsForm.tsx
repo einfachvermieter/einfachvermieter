@@ -21,14 +21,13 @@ import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { AI_PROVIDER_NONE, type AiSettings } from "@/lib/aiSettings";
-import { gradients } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import { ApiKeyField } from "./ApiKeyField";
 import { ProviderLogo } from "./ProviderLogo";
 
 /**
  * Formularwerte. Der Anbieter ist hier immer ein String, damit die Auswahl
- * auch den Zustand „abgeschaltet" abbilden kann; die Umsetzung auf das
+ * auch den Zustand "abgeschaltet" abbilden kann; die Umsetzung auf das
  * API-Format übernimmt die Seite.
  */
 const aiSettingsFormSchema = z.object({
@@ -103,7 +102,7 @@ export const AiSettingsForm = ({
     })),
     {
       value: AI_PROVIDER_NONE,
-      media: <RiProhibitedLine className="size-4.5 text-rose-500" />,
+      media: <RiProhibitedLine className="size-4.5 text-himbeere-500" />,
       title: t("ui.settings.ai.fields.providerNone"),
     },
   ];
@@ -121,7 +120,6 @@ export const AiSettingsForm = ({
         <div>
           <SectionCard
             icon={RiSparkling2Line}
-            iconBackground={gradients.statements}
             title={t("ui.settings.ai.sections.provider")}
             description={t("ui.settings.ai.sections.providerDescription")}
           >
@@ -152,9 +150,7 @@ export const AiSettingsForm = ({
           {provider && info ? (
             <SectionCard
               icon={RiKey2Line}
-              iconBackground={gradients.money}
               title={t("ui.settings.ai.sections.connection")}
-              description={t("ui.settings.ai.sections.connectionDescription")}
             >
               <div className="flex flex-col gap-4">
                 {info.requiresApiKey ? (
@@ -216,7 +212,7 @@ export const AiSettingsForm = ({
               </div>
             </SectionCard>
           ) : null}
-          <p className="px-1 text-xs leading-relaxed text-slate-400 dark:text-slate-500">
+          <p className="px-1 text-xs leading-relaxed text-muted-foreground">
             {t("ui.settings.ai.trademarkNotice")}
           </p>
         </div>

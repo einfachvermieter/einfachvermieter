@@ -22,10 +22,10 @@ export const Disclose = ({
         aria-expanded={open}
         aria-controls={contentId}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex items-center gap-1.25 text-sm font-semibold text-sky-700"
+        className="inline-flex items-center gap-1.25 text-sm font-semibold text-azur-700"
       >
         <RiArrowDownSLine
-          className={`size-[15px] transition-transform ${open ? "rotate-180" : ""}`}
+          className={`size-3.75 transition-transform ${open ? "rotate-180" : ""}`}
         />
         {label}
       </button>

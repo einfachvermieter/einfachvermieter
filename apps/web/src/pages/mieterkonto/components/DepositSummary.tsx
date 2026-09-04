@@ -24,11 +24,9 @@ export const DepositSummary = ({ row }: { row: DepositRow | null }) => {
   const openCents = row.pot.sollCents - row.pot.istCents;
   const status =
     openCents <= 0 ? (
-      <Badge variant="ok" dot={true}>
-        {t("ui.account.depositComplete")}
-      </Badge>
+      <Badge variant="ok">{t("ui.account.depositComplete")}</Badge>
     ) : (
-      <Badge variant="warn" dot={true}>
+      <Badge variant="warn">
         {t("ui.account.depositOpen", { amount: formatEur(openCents) })}
       </Badge>
     );

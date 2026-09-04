@@ -6,6 +6,7 @@ import {
   groupCalcWarnings,
   hasHeatingBreakdown,
   isTenantWarning,
+  type SenderLogoAlignment,
   type StatementResult,
 } from "@einfachvermieter/shared";
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
@@ -21,7 +22,7 @@ import { SummaryBlock } from "./components/SummaryBlock.js";
 
 import { TaxableLaborAppendix } from "./components/TaxableLaborAppendix.js";
 import { t } from "./i18n.js";
-import { HEADING_PRESENCE_AHEAD, styles } from "./styles.js";
+import { HEADING_PRESENCE_AHEAD, senderLogoStyle, styles } from "./styles.js";
 
 export type StatementDocumentProps = {
   result: StatementResult;
@@ -73,6 +74,16 @@ export type StatementDocumentProps = {
      * Absolute oder app-relative URL zum Logo im Briefkopf
      */
     senderLogoUrl?: string | null;
+    /**
+     * Ausrichtung und Größe des Logos aus den Absender-Einstellungen
+     */
+    senderLogoAlignment?: SenderLogoAlignment | null;
+    senderLogoScalePercent?: number | null;
+    /**
+     * Breite geteilt durch Höhe des Logos, soweit bekannt. Nötig, um ein
+     * SVG links oder rechts auszurichten.
+     */
+    senderLogoAspectRatio?: number | null;
     documentDate: string; // YYYY-MM-DD
     /**
      * True, wenn zum Periodenende ein aktives SEPA-Lastschriftmandat
@@ -174,6 +185,12 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
   const { showHeatingAppendix, showBillingInfoAppendix } =
     heatingAppendixFlags(result);
 
+  const logoStyle = senderLogoStyle({
+    alignment: meta.senderLogoAlignment,
+    scalePercent: meta.senderLogoScalePercent,
+    aspectRatio: meta.senderLogoAspectRatio,
+  });
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -182,7 +199,7 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
         {/* Logo eigenständig mittig im Briefkopf, unabhängig vom
             rechts platzierten Sender-Block. */}
         {meta.senderLogoUrl ? (
-          <Image src={meta.senderLogoUrl} style={styles.senderLogo} />
+          <Image src={meta.senderLogoUrl} style={logoStyle} />
         ) : null}
 
         {/* Sender-Block oben rechts, nur Kontaktdaten, ohne Logo. */}

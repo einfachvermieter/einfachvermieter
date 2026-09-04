@@ -20,12 +20,12 @@ export const ResultRows = ({ rows }: { rows: ResultRow[] }) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: statische Zeilen
         key={index}
         className={cn(
-          "flex items-center justify-between border-t border-border py-3 text-[14.5px] text-slate-600 first:border-t-0",
+          "flex items-start justify-between gap-6 border-t border-border py-3 text-base text-muted-foreground first:border-t-0",
           row.kind === "sum" && "font-semibold text-foreground",
         )}
       >
         <span>{row.label}</span>
-        <span className="font-semibold tabular-nums text-foreground">
+        <span className="text-right font-semibold tabular-nums text-foreground">
           {row.value}
         </span>
       </div>

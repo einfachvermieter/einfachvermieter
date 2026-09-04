@@ -94,10 +94,11 @@ export const CostTypeSchema = new EntitySchema<CostType>({
 
 /**
  * Eingehende Lieferantenrechnung.
- * Enthält 1..N Positionen (cost_entry_items)
+ * Enthält 0..N Positionen (cost_entry_items)
  */
 export type CostEntry = {
   id: string;
+  buildingId: string;
   invoiceDate: string;
   invoiceNumber: string | null;
   vendor: string | null;
@@ -112,6 +113,7 @@ export const CostEntrySchema = new EntitySchema<CostEntry>({
   tableName: "cost_entries",
   properties: {
     id: { type: "string", primary: true, onCreate: () => crypto.randomUUID() },
+    buildingId: fk(() => BuildingSchema, "building_id", "restrict"),
     invoiceDate: { type: "string", fieldName: "invoice_date" },
     invoiceNumber: {
       type: "string",
@@ -132,6 +134,7 @@ export const CostEntrySchema = new EntitySchema<CostEntry>({
       defaultRaw: "current_timestamp",
     },
   },
+  indexes: [{ name: "cost_entries_building_id", properties: ["buildingId"] }],
 });
 
 /**
@@ -283,7 +286,7 @@ export type HeatingSetting = {
    */
   districtHeatPrimaryEnergyFactor: number | null;
   /**
-   * Ob die Seite „Abrechnungsinformationen nach § 6a HeizkostenV" mit der
+   * Ob die Seite "Abrechnungsinformationen nach § 6a HeizkostenV" mit der
    * Abrechnung gedruckt wird. Nur im externen Modus abwählbar.
    */
   includeBillingInfo: Opt<boolean>;

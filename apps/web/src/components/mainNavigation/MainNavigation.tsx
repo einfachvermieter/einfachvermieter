@@ -5,6 +5,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroupLabel,
   SidebarHeader,
 } from "@/components/ui/Sidebar";
 import { statsQueryOptions } from "@/lib/stats";
@@ -16,7 +17,12 @@ import { BuildingSwitcher } from "./BuildingSwitcher";
 import { MainNavigationUser } from "./MainNavigationUser";
 import { NavGroup } from "./NavGroup";
 import { NewBuildingButton } from "./NewBuildingButton";
-import { dashboardNav, kostenAbrechnungNav, stammdatenNav } from "./navConfig";
+import {
+  globalNav,
+  kostenAbrechnungNav,
+  settingsNav,
+  stammdatenNav,
+} from "./navConfig";
 import { UpdateHint } from "./UpdateHint";
 
 export const MainNavigation = () => {
@@ -35,31 +41,28 @@ export const MainNavigation = () => {
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader>
-        <div className="flex h-12 items-center px-2 pl-3.5">
+        <div className="flex items-center px-2.5 pt-2 pb-3">
           <AppBrand />
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <UpdateHint />
-        <div className="px-2.25">
-          <NavGroup
-            label={t("ui.navigation.groups.general")}
-            items={dashboardNav}
-            currentPath={currentPath}
-          />
+        <NavGroup items={globalNav} currentPath={currentPath} />
+
+        <div className="px-1.5 pt-3">
+          <SidebarGroupLabel>
+            {t("ui.navigation.buildingSwitcher.label")}
+          </SidebarGroupLabel>
+          {buildingId === undefined && !buildingsPending ? (
+            <NewBuildingButton />
+          ) : null}
+          {buildingId !== undefined ? <BuildingSwitcher /> : null}
         </div>
 
-        {buildingId === undefined && !buildingsPending ? (
-          <div className="mx-2 mt-1 rounded-[14px] border border-sidebar-border bg-card shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-            <NewBuildingButton />
-          </div>
-        ) : null}
+        {/* Gebäudebezogene Punkte, eingerückt mit Führungslinie */}
         {buildingId !== undefined ? (
-          <div className="mx-2 mt-1 rounded-[14px] border border-sidebar-border bg-card pb-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-            <div className="border-b border-sidebar-border">
-              <BuildingSwitcher />
-            </div>
+          <div className="ml-4.5 border-l-2 border-sidebar-border pl-1.5">
             <NavGroup
               label={t("ui.navigation.groups.masterData")}
               items={stammdatenNav}
@@ -81,7 +84,8 @@ export const MainNavigation = () => {
         ) : null}
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">
+        <NavGroup items={[settingsNav]} currentPath={currentPath} />
         {/* Desktop-App (`local`): kein Konto, kein Benutzer-Menü  */}
         {user && authMode !== "local" ? (
           <MainNavigationUser

@@ -1,6 +1,5 @@
 import {
   BuildingSchema,
-  CostEntryItemSchema,
   CostEntrySchema,
   CostTypeSchema,
   MeterSchema,
@@ -84,7 +83,6 @@ export class StatsService {
     const scope = await this.resolveScope(buildingId);
     // Leeres $in ist nicht in allen Dialekten gültig. Platzhalter zählt 0.
     const tenantIds = scope.tenantIds.length > 0 ? scope.tenantIds : [""];
-    const costTypeIds = scope.costTypeIds.length > 0 ? scope.costTypeIds : [""];
 
     const [
       buildings,
@@ -104,7 +102,7 @@ export class StatsService {
       }),
       this.countResidents(tenantIds),
       this.em.count(PaymentSchema, { tenantId: { $in: tenantIds } }),
-      this.countCostEntries(costTypeIds),
+      this.em.count(CostEntrySchema, { buildingId }),
     ]);
 
     return {
@@ -123,7 +121,7 @@ export class StatsService {
 
   /**
    * Mieter hängen nur über die Wohnung am Gebäude, Bewohner/Zahlungen nur
-   * über den Mietvertrag, Rechnungen über ihre Positionen an der Kostenart.
+   * über den Mietvertrag.
    */
   private async resolveScope(buildingId: string): Promise<Scope> {
     const [units, costTypes] = await Promise.all([
@@ -162,19 +160,5 @@ export class StatsService {
     );
 
     return new Set(links.map((link) => link.residentId)).size;
-  }
-
-  /**
-   * Positionen zählen.
-   * Eine Rechnung kann mehrere Positionen im Gebäude haben
-   */
-  private async countCostEntries(costTypeIds: string[]): Promise<number> {
-    const items = await this.em.find(
-      CostEntryItemSchema,
-      { costTypeId: { $in: costTypeIds } },
-      { fields: ["costEntryId"] },
-    );
-
-    return new Set(items.map((item) => item.costEntryId)).size;
   }
 }

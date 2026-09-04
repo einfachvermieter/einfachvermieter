@@ -2,23 +2,26 @@ import { Card, CardContent } from "./ui/Card";
 import { Skeleton } from "./ui/Skeleton";
 
 /**
- * Platzhalter für den Formular-Body (Karte mit Feldzeilen). Der Seitenkopf
+ * Platzhalter für den Formular-Body (Card mit Feldzeilen). Der Seitenkopf
  * wird separat gerendert und bleibt beim Laden stehen, damit Kachel und
  * Breadcrumb nicht springen.
  *
  * `aside` rechte Sidebar als Skeleton ja/nein
  * `tabs` Tabs in Skeleton entweder als Pills oder Switches, je nach Seite
+ * `kpis` Anzahl Kennzahl-Kacheln über dem Body (Abrechnungs-Detail)
  */
 export const FormSkeleton = ({
   rows = 4,
   aside = false,
   tabs,
+  kpis = 0,
 }: {
   rows?: number;
   aside?: boolean;
   tabs?: "default" | "pills";
+  kpis?: number;
 }) => {
-  const body = (
+  const card = (
     <Card>
       <CardContent className="flex flex-col gap-4">
         {Array.from({ length: rows }, (_, index) => (
@@ -32,10 +35,25 @@ export const FormSkeleton = ({
     </Card>
   );
 
+  const body =
+    kpis > 0 ? (
+      <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {Array.from({ length: kpis }, (_, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: statischer Platzhalter
+            <Skeleton key={index} className="h-21 rounded-lg" />
+          ))}
+        </div>
+        {card}
+      </div>
+    ) : (
+      card
+    );
+
   const main =
     tabs === "pills" ? (
       <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap gap-2">
+        <div className="mb-2.5 flex flex-wrap gap-2">
           {Array.from({ length: 4 }, (_, index) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: statischer Platzhalter
             <Skeleton key={index} className="h-8.75 w-24 rounded-full" />
@@ -68,7 +86,7 @@ export const FormSkeleton = ({
 
   return (
     <div>
-      <Skeleton className="h-11 w-64 rounded-[13px]" />
+      <Skeleton className="h-11 w-64 rounded-lg" />
       <div className="mt-6">{content}</div>
     </div>
   );

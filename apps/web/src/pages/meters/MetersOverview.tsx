@@ -2,22 +2,16 @@ import { RiAddLine, RiListOrdered2 } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
 import { RowActionButton } from "../../components/RowActions";
-import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import {
-  domainVisuals,
-  gradients,
-  meterTypeVisual,
-} from "../../lib/domainVisuals";
+import { domainVisuals, meterTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   type Meter,
@@ -28,9 +22,10 @@ import {
 } from "../../lib/meters";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
-import { rowActionsColumn } from "../../lib/tableColumns";
+import { rowActionsColumn, rowIconColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 import { unitsQueryOptions } from "../../lib/units";
+import { MeterCreateSheet } from "./MeterCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<MeterSortColumn> = new Set([
   "label",
@@ -40,24 +35,6 @@ const SORTABLE_COLUMNS: ReadonlySet<MeterSortColumn> = new Set([
 
 const routeApi = getRouteApi("/zaehler");
 
-/**
- * Wohnungs-/Unterzähler sky, Allgemeinzähler indigo,
- * Hauptzähler und Differenzzähler slate
- */
-const roleBadgeVariant = (role: Meter["role"]) => {
-  if (role === "unit" || role === "sub") {
-    return "blue";
-  }
-  if (role === "common") {
-    return "indigo";
-  }
-  return "slate";
-};
-
-const roleBadge = (role: Meter["role"]) => (
-  <Badge variant={roleBadgeVariant(role)}>{meterRoleLabel(role)}</Badge>
-);
-
 export const MetersOverview = () => {
   const table = useServerTableState<MeterSortColumn>({
     allowedSorts: SORTABLE_COLUMNS,
@@ -65,6 +42,7 @@ export const MetersOverview = () => {
     storageKey: "meters",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -99,46 +77,29 @@ export const MetersOverview = () => {
 
   const columns = useMemo<ColumnDef<Meter>[]>(
     () => [
+      rowIconColumn<Meter>((meter) => meterTypeVisual(meter.type).icon),
       {
         accessorKey: "label",
         header: t("ui.meters.columns.label"),
-        cell: ({ row }) => {
-          const visual = meterTypeVisual(row.original.type);
-          return (
-            <EntityCell
-              tile={
-                <IconTile icon={visual.icon} background={visual.gradient} />
-              }
-              name={
-                <Link
-                  to="/zaehler/$meterId"
-                  params={{ meterId: row.original.id }}
-                  className={ROW_TITLE_LINK}
-                >
-                  {row.original.label}
-                </Link>
-              }
-              subline={
-                row.original.serialNumber
-                  ? t("ui.meters.serialNumberShort", {
-                      value: row.original.serialNumber,
-                    })
-                  : undefined
-              }
-              mono={true}
-            />
-          );
-        },
+        cell: ({ row }) => <EntityCell name={row.original.label} />,
+      },
+      {
+        accessorKey: "serialNumber",
+        enableSorting: false,
+        header: t("ui.meters.columns.serialNumber"),
+        cell: ({ row }) =>
+          row.original.serialNumber || t("ui.common.emptyValue"),
+        meta: { cellClassName: "tabular-nums" },
       },
       {
         accessorKey: "type",
-        header: t("ui.common.columns.type"),
+        header: t("ui.meters.fields.type"),
         cell: ({ row }) => meterTypeLabel(row.original.type),
       },
       {
         accessorKey: "role",
-        header: t("ui.common.columns.role"),
-        cell: ({ row }) => roleBadge(row.original.role),
+        header: t("ui.meters.fields.role"),
+        cell: ({ row }) => meterRoleLabel(row.original.role),
       },
       {
         id: "unit",
@@ -192,26 +153,15 @@ export const MetersOverview = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.meters.icon}
-            size={44}
-            background={gradients.water}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
         title={t("ui.meters.title")}
         sub={sub}
         subLoading={!data}
         action={
           canAddMeter ? (
-            <Button asChild={true}>
-              <Link
-                to="/zaehler/neu"
-                search={{ buildingId, type: undefined, unitId: undefined }}
-              >
-                <RiAddLine />
-                <span className="hidden sm:inline">{t("ui.meters.add")}</span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">{t("ui.meters.add")}</span>
             </Button>
           ) : undefined
         }
@@ -237,6 +187,10 @@ export const MetersOverview = () => {
           pageCount: table.pageCount(data?.total ?? 0),
         }}
       />
+
+      {createOpen ? (
+        <MeterCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

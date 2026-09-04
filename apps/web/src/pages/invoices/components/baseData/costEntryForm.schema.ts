@@ -11,6 +11,7 @@ import type {
   CostTypeAllocationKey,
   CostTypeCategory,
 } from "../../../../lib/costs";
+import { t } from "../../../../lib/i18n";
 
 const amountRegex = /^-?\d+([.,]\d{1,2})?$/u;
 const unitPriceRegex = /^\d+([.,]\d{1,4})?$/u;
@@ -45,25 +46,43 @@ export const unitPriceDisplayConfig = (
   allocationKey: CostTypeAllocationKey | null,
 ): UnitPriceDisplayConfig | null => {
   if (category === "heating") {
-    return { suffix: "ct/kWh", inputScale: STORAGE_SCALE_PER_CENT };
+    return {
+      suffix: t("ui.common.unitPrices.ctPerKwh"),
+      inputScale: STORAGE_SCALE_PER_CENT,
+    };
   }
 
   switch (allocationKey) {
     case "per_consumption_m3":
-      return { suffix: "€/m³", inputScale: STORAGE_SCALE_PER_EURO };
+      return {
+        suffix: t("ui.common.unitPrices.eurPerCubicMeter"),
+        inputScale: STORAGE_SCALE_PER_EURO,
+      };
 
     case "per_consumption_kwh":
-      return { suffix: "ct/kWh", inputScale: STORAGE_SCALE_PER_CENT };
+      return {
+        suffix: t("ui.common.unitPrices.ctPerKwh"),
+        inputScale: STORAGE_SCALE_PER_CENT,
+      };
 
     case "per_person":
-      return { suffix: "€/Person", inputScale: STORAGE_SCALE_PER_EURO };
+      return {
+        suffix: t("ui.common.unitPrices.eurPerPerson"),
+        inputScale: STORAGE_SCALE_PER_EURO,
+      };
 
     case "per_living_area":
     case "per_heating_area":
-      return { suffix: "€/m²", inputScale: STORAGE_SCALE_PER_EURO };
+      return {
+        suffix: t("ui.common.unitPrices.eurPerSqm"),
+        inputScale: STORAGE_SCALE_PER_EURO,
+      };
 
     case "per_unit":
-      return { suffix: "€/Wohnung", inputScale: STORAGE_SCALE_PER_EURO };
+      return {
+        suffix: t("ui.common.unitPrices.eurPerUnit"),
+        inputScale: STORAGE_SCALE_PER_EURO,
+      };
 
     default:
       return null;
@@ -195,6 +214,7 @@ export type CostEntryItemFormValues = {
 };
 
 export type CostEntryFormValues = {
+  buildingId: string;
   invoiceDate: string;
   invoiceNumber: string;
   vendor: string;
@@ -328,12 +348,18 @@ const itemSchema = z
   );
 
 export const costEntryFormSchema = z.object({
+  buildingId: z
+    .string()
+    .min(1, messageKey("ui.costs.validation.buildingRequired"))
+    .pipe(z.guid()),
   invoiceDate: z
     .string()
     .min(1, messageKey("ui.costs.validation.invoiceDateRequired")),
   invoiceNumber: z.string(),
   vendor: z.string(),
-  items: z.array(itemSchema).min(1, messageKey("ui.costs.validation.itemsMin")),
+  // Positionen dürfen fehlen: eine aus einem Beleg angelegte Rechnung
+  // bekommt sie erst auf der Rechnung.
+  items: z.array(itemSchema),
 });
 
 export type CostEntryItemSubmitValues = {
@@ -351,6 +377,7 @@ export type CostEntryItemSubmitValues = {
 };
 
 export type CostEntrySubmitValues = {
+  buildingId: string;
   invoiceDate: string;
   invoiceNumber: string | null;
   vendor: string | null;
@@ -362,6 +389,7 @@ export const costEntryFormToDto = (
   values: CostEntryFormValues,
   costTypes: CostType[],
 ): CostEntrySubmitValues => ({
+  buildingId: values.buildingId,
   invoiceDate: values.invoiceDate,
   invoiceNumber: values.invoiceNumber.trim() || null,
   vendor: values.vendor.trim() || null,
@@ -417,6 +445,7 @@ type CostEntryItemSource = {
 };
 
 type CostEntrySource = {
+  buildingId: string;
   invoiceDate: string;
   invoiceNumber: string | null;
   vendor: string | null;
@@ -427,6 +456,7 @@ export const costEntryToFormValues = (
   entry: CostEntrySource,
   costTypes: CostType[],
 ): CostEntryFormValues => ({
+  buildingId: entry.buildingId,
   invoiceDate: entry.invoiceDate,
   invoiceNumber: entry.invoiceNumber ?? "",
   vendor: entry.vendor ?? "",

@@ -1,11 +1,9 @@
 import {
   type MeterType,
   meterTypes,
-  type PaymentPurposeKind,
-  paymentPurposeKinds,
   type SetupStatus,
 } from "@einfachvermieter/shared";
-import { RiBuilding4Line, RiHome4Line } from "@remixicon/react";
+import { RiHome6Line } from "@remixicon/react";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
@@ -18,18 +16,12 @@ import {
 } from "@tanstack/react-router";
 import { AppShell } from "./components/AppShell";
 import { DetailPending } from "./components/common/DetailPending";
-import { IconTile } from "./components/common/IconTile";
+import { PageHeaderIcon } from "./components/common/PageHeaderIcon";
 import { TenantScopedNotFound } from "./components/common/TenantScopedNotFound";
 import { ErrorFallback } from "./components/ErrorBoundary";
 import { NotFound } from "./components/NotFound";
 import { Button } from "./components/ui/Button";
-import {
-  type FeeRow,
-  feeIdentityLabel,
-  type KontoTab,
-  kontoTabs,
-  tenantFeesQueryOptions,
-} from "./lib/accounts";
+import { ActiveBuildingProvider } from "./lib/activeBuilding";
 import { ApiError } from "./lib/api";
 import { authMeQueryOptions } from "./lib/auth";
 import { type Building, buildingQueryOptions } from "./lib/buildings";
@@ -41,7 +33,7 @@ import {
   costTypeQueryOptions,
 } from "./lib/costs";
 import { useDocumentTitle } from "./lib/documentTitle";
-import { domainVisuals, gradients } from "./lib/domainVisuals";
+import { domainVisuals } from "./lib/domainVisuals";
 import {
   type HeatingSettings,
   heatingIdentityLabel,
@@ -49,16 +41,6 @@ import {
 } from "./lib/heating";
 import { t } from "./lib/i18n";
 import { type Meter, meterQueryOptions } from "./lib/meters";
-import {
-  type Payment,
-  paymentIdentityLabel,
-  paymentQueryOptions,
-} from "./lib/payments";
-import {
-  ensurePrerequisiteMet,
-  type GatedDomain,
-  PREREQUISITES,
-} from "./lib/prerequisites";
 import { setupStatusQueryOptions } from "./lib/setup";
 import {
   type Statement,
@@ -79,40 +61,27 @@ import { type Unit, unitQueryOptions, unitsQueryOptions } from "./lib/units";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { OutdatedVersionPage } from "./pages/auth/OutdatedVersionPage";
 import { PasswordRecoveryPage } from "./pages/auth/PasswordRecoveryPage";
-import { BuildingCreatePage } from "./pages/buildings/BuildingCreatePage";
 import { BuildingEditPage } from "./pages/buildings/BuildingEditPage";
 import { BuildingsOverview } from "./pages/buildings/BuildingsOverview";
 import { CostsOverview } from "./pages/costs/CostsOverview";
-import { CostTypeCreatePage } from "./pages/costs/CostTypeCreatePage";
 import { CostTypeEditPage } from "./pages/costs/CostTypeEditPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import { HeatingOverviewPage } from "./pages/heating/HeatingOverviewPage";
-import { HeatingVersionCreatePage } from "./pages/heating/HeatingVersionCreatePage";
 import { HeatingVersionEditPage } from "./pages/heating/HeatingVersionEditPage";
-import { CostEntryCreatePage } from "./pages/invoices/CostEntryCreatePage";
 import { CostEntryEditPage } from "./pages/invoices/CostEntryEditPage";
 import { InvoicesPage } from "./pages/invoices/InvoicesPage";
-import { MeterCreatePage } from "./pages/meters/MeterCreatePage";
 import { MeterDetailPage } from "./pages/meters/MeterDetailPage";
 import { MeterReadingsPage } from "./pages/meters/MeterReadingsPage";
 import { MetersOverview } from "./pages/meters/MetersOverview";
-import { FeePage } from "./pages/mieterkonto/FeePage";
 import { MieterkontoDetail } from "./pages/mieterkonto/MieterkontoDetail";
-import { PaymentCreatePage } from "./pages/payments/PaymentCreatePage";
-import { PaymentEditPage } from "./pages/payments/PaymentEditPage";
 import { AiSettingsPage } from "./pages/settings/AiSettingsPage";
 import { InternetSettingsPage } from "./pages/settings/InternetSettingsPage";
-import { PasswordSettingsPage } from "./pages/settings/PasswordSettingsPage";
-import { ProfileSettingsPage } from "./pages/settings/ProfileSettingsPage";
 import { SenderSettingsPage } from "./pages/settings/SenderSettingsPage";
 import { SetupPage } from "./pages/setup/SetupPage";
-import { StatementCreatePage } from "./pages/statements/StatementCreatePage";
 import { StatementDetailPage } from "./pages/statements/StatementDetailPage";
 import { StatementsPage } from "./pages/statements/StatementsPage";
-import { TenantCreatePage } from "./pages/tenants/TenantCreatePage";
 import { TenantEditPage } from "./pages/tenants/TenantEditPage";
 import { TenantsPage } from "./pages/tenants/TenantsPage";
-import { UnitCreatePage } from "./pages/units/UnitCreatePage";
 import { UnitEditPage } from "./pages/units/UnitEditPage";
 import { UnitsOverview } from "./pages/units/UnitsOverview";
 
@@ -169,31 +138,6 @@ const requireAuth = async ({ context }: { context: RouterContext }) => {
 };
 
 /**
- * Anlage-Route absichern: erst Auth, dann ob die fachliche Voraussetzung fürs
- * aktive Gebäude erfüllt ist. Fehlt sie, zurück zur Liste, deren Leer-Hinweis
- * auf die zuerst benötigte Entität verweist.
- */
-const requirePrerequisite =
-  (domain: GatedDomain) =>
-  async ({
-    context,
-    search,
-  }: {
-    context: RouterContext;
-    search?: { buildingId?: string };
-  }) => {
-    await requireAuth({ context });
-    const met = await ensurePrerequisiteMet(
-      context.queryClient,
-      domain,
-      search ?? {},
-    );
-    if (!met) {
-      throw redirect({ to: PREREQUISITES[domain].listTo });
-    }
-  };
-
-/**
  * Login-Seite: ist die App noch nicht eingerichtet, zuerst zum Assistenten.
  * Im `local`-Auth-Modus (Desktop-App) gibt es keinen Login -> Dashboard.
  */
@@ -209,20 +153,6 @@ const redirectToSetupIfNeeded = async ({
 
   if (status?.authMode === "local") {
     throw redirect({ to: "/" });
-  }
-};
-
-/**
- * Passwort-Seite: im `local`-Auth-Modus gibt es kein Konto-Passwort.
- */
-const redirectAwayIfLocalAuth = async ({
-  context,
-}: {
-  context: RouterContext;
-}) => {
-  await requireAuth({ context });
-  if ((await getSetupStatus(context))?.authMode === "local") {
-    throw redirect({ to: "/einstellungen/absender" });
   }
 };
 
@@ -277,21 +207,26 @@ const redirectAwayIfSetupDone = async ({
   }
 };
 
+const AUTH_PATHNAMES: ReadonlySet<string> = new Set([
+  "/anmelden",
+  "/einrichtung",
+  "/passwort-zuruecksetzen",
+  "/version-veraltet",
+]);
+
 const RootComponent = () => {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
+  const isAuthPage = AUTH_PATHNAMES.has(pathname);
 
-  if (
-    pathname === "/anmelden" ||
-    pathname === "/einrichtung" ||
-    pathname === "/passwort-zuruecksetzen" ||
-    pathname === "/version-veraltet"
-  ) {
-    return <Outlet />;
-  }
-
-  return <AppShell />;
+  // Der Provider liegt über beiden Zweigen: Beim Abmelden wechselt der
+  // Zweig, während die alte Seite noch einmal rendert
+  return (
+    <ActiveBuildingProvider enabled={!isAuthPage}>
+      {isAuthPage ? <Outlet /> : <AppShell />}
+    </ActiveBuildingProvider>
+  );
 };
 
 export const rootRoute = createRootRouteWithContext<RouterContext>()({
@@ -342,24 +277,14 @@ const buildingsRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.buildings") },
 });
 
-const buildingCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/gebaeude/neu",
-  beforeLoad: requireAuth,
-  component: BuildingCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.buildings"), to: "/gebaeude" },
-      { label: t("ui.common.crumbs.buildingNew") },
-    ],
-  },
-});
-
 const buildingEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/gebaeude/$buildingId",
   beforeLoad: requireAuth,
   loader: async ({ context, params }) => {
+    if (params.buildingId === "neu") {
+      throw redirect({ to: "/gebaeude" });
+    }
     try {
       return await context.queryClient.ensureQueryData(
         buildingQueryOptions(params.buildingId),
@@ -374,16 +299,9 @@ const buildingEditRoute = createRoute({
   component: BuildingEditPage,
   pendingComponent: () => (
     <DetailPending
-      tile={
-        <IconTile
-          icon={RiBuilding4Line}
-          size={44}
-          background={gradients.buildings}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.buildings.icon} />}
       statsSkeleton={3}
       rows={4}
-      aside={true}
     />
   ),
   pendingMs: 0,
@@ -412,25 +330,14 @@ const unitsRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.units") },
 });
 
-const unitCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/wohnungen/neu",
-  beforeLoad: requirePrerequisite("units"),
-  validateSearch: unitsSearchSchema,
-  component: UnitCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.units"), to: "/wohnungen" },
-      { label: t("ui.common.crumbs.unitNew") },
-    ],
-  },
-});
-
 const unitEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/wohnungen/$unitId",
   beforeLoad: requireAuth,
   loader: async ({ context, params }) => {
+    if (params.unitId === "neu") {
+      throw redirect({ to: "/wohnungen", search: { buildingId: undefined } });
+    }
     try {
       return await context.queryClient.ensureQueryData(
         unitQueryOptions(params.unitId),
@@ -446,9 +353,7 @@ const unitEditRoute = createRoute({
   component: UnitEditPage,
   pendingComponent: () => (
     <DetailPending
-      tile={
-        <IconTile icon={RiHome4Line} size={44} background={gradients.units} />
-      }
+      tile={<PageHeaderIcon icon={RiHome6Line} />}
       statsSkeleton={3}
       rows={3}
       aside={true}
@@ -481,24 +386,14 @@ const tenantsRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.tenants") },
 });
 
-const tenantCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/mieter/neu",
-  beforeLoad: requirePrerequisite("tenants"),
-  component: TenantCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.tenants"), to: "/mieter" },
-      { label: t("ui.common.crumbs.tenantNew") },
-    ],
-  },
-});
-
 const tenantEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mieter/$tenantId",
   beforeLoad: requireAuth,
   loader: async ({ context, params }) => {
+    if (params.tenantId === "neu") {
+      throw redirect({ to: "/mieter", search: { buildingId: undefined } });
+    }
     const [aggregate, units] = await Promise.all([
       context.queryClient.ensureQueryData(tenantQueryOptions(params.tenantId)),
       context.queryClient.ensureQueryData(unitsQueryOptions),
@@ -507,19 +402,14 @@ const tenantEditRoute = createRoute({
   },
   component: TenantEditPage,
   pendingComponent: () => (
-    <DetailPending
-      tile={
-        <IconTile
-          icon={domainVisuals.tenants.icon}
-          size={44}
-          background={gradients.tenants}
-        />
-      }
-      statsSkeleton={4}
-      rows={6}
-      aside={true}
-      tabs="default"
-    />
+    <div className="max-w-225">
+      <DetailPending
+        tile={<PageHeaderIcon icon={domainVisuals.tenants.icon} />}
+        rows={6}
+        tabs="pills"
+        kpis={3}
+      />
+    </div>
   ),
   pendingMs: 0,
   errorComponent: TenantScopedNotFound,
@@ -540,19 +430,6 @@ const tenantEditRoute = createRoute({
   },
 });
 
-const kontoTabSet: ReadonlySet<KontoTab> = new Set(kontoTabs);
-
-const kontoSearchSchema = (
-  search: Record<string, unknown>,
-): { tab?: KontoTab } => {
-  const tab =
-    typeof search.tab === "string" && kontoTabSet.has(search.tab as KontoTab)
-      ? (search.tab as KontoTab)
-      : undefined;
-
-  return tab ? { tab } : {};
-};
-
 /**
  * Konto-Tab des Mieters. Lädt Mieter-Aggregat nur für die Breadcrumb vor;
  * die Seite selbst holt ihre Daten via useQueries.
@@ -561,7 +438,6 @@ const tenantAccountRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/mieter/$tenantId/konto",
   beforeLoad: requireAuth,
-  validateSearch: kontoSearchSchema,
   loader: async ({ context, params }) => {
     const [aggregate, units] = await Promise.all([
       context.queryClient.ensureQueryData(tenantQueryOptions(params.tenantId)),
@@ -584,232 +460,6 @@ const tenantAccountRoute = createRoute({
           label: data
             ? tenantIdentityLabel(data)
             : t("ui.common.crumbs.tenantContract"),
-        },
-      ];
-    },
-  },
-});
-
-const purposeKindSet: ReadonlySet<PaymentPurposeKind> = new Set(
-  paymentPurposeKinds,
-);
-
-type PaymentsSearchParams = {
-  tenantId?: string;
-  // Vorbelegung beim Buchen eines konkreten Monats (abweichend erfassen).
-  forMonth?: string;
-  baseRentCents?: number;
-  advanceCents?: number;
-  // Festgelegter Zahlungszweck (z. B. Kaution/Gebühr aus dem Mieterkonto
-  // heraus) und, bei Gebühr, die Ziel-Gebühr.
-  purposeKind?: PaymentPurposeKind;
-  forFeeId?: string;
-};
-
-const paymentsSearchSchema = (
-  search: Record<string, unknown>,
-): PaymentsSearchParams => ({
-  tenantId: typeof search.tenantId === "string" ? search.tenantId : undefined,
-  forMonth: typeof search.forMonth === "string" ? search.forMonth : undefined,
-  baseRentCents:
-    typeof search.baseRentCents === "number" ? search.baseRentCents : undefined,
-  advanceCents:
-    typeof search.advanceCents === "number" ? search.advanceCents : undefined,
-  purposeKind:
-    typeof search.purposeKind === "string" &&
-    purposeKindSet.has(search.purposeKind as PaymentPurposeKind)
-      ? (search.purposeKind as PaymentPurposeKind)
-      : undefined,
-  forFeeId: typeof search.forFeeId === "string" ? search.forFeeId : undefined,
-});
-
-const paymentCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/zahlungen/neu",
-  beforeLoad: requireAuth,
-  validateSearch: paymentsSearchSchema,
-  loaderDeps: ({ search }) => ({ tenantId: search.tenantId }),
-  loader: async ({ context, deps }) => {
-    if (!deps.tenantId) {
-      return null;
-    }
-
-    try {
-      const [aggregate, units] = await Promise.all([
-        context.queryClient.ensureQueryData(tenantQueryOptions(deps.tenantId)),
-        context.queryClient.ensureQueryData(unitsQueryOptions),
-      ]);
-
-      return { aggregate, units, tenantId: deps.tenantId };
-    } catch {
-      return null;
-    }
-  },
-  component: PaymentCreatePage,
-  staticData: {
-    crumb: ({ loaderData }) => {
-      const data = loaderData as {
-        aggregate: TenantAggregate;
-        units: Unit[];
-        tenantId: string;
-      } | null;
-      if (!data) {
-        return [
-          { label: t("ui.common.crumbs.tenants"), to: "/mieter" },
-          { label: t("ui.common.crumbs.paymentNew") },
-        ];
-      }
-
-      return [
-        ...tenantAccountCrumbBase(data, data.tenantId),
-        { label: t("ui.common.crumbs.paymentNew") },
-      ];
-    },
-  },
-});
-
-const paymentEditRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/zahlungen/$paymentId/bearbeiten",
-  beforeLoad: requireAuth,
-  validateSearch: paymentsSearchSchema,
-  // Lädt Zahlung + Mietvertrag + Wohnungen, damit die Breadcrumb den
-  // Mieter-Kontext zeigt (Zahlungen gehören zu einem Mieterkonto, haben
-  // keine eigene Übersicht).
-  loader: async ({ context, params }) => {
-    try {
-      const payment = await context.queryClient.ensureQueryData(
-        paymentQueryOptions(params.paymentId),
-      );
-
-      const [aggregate, units] = await Promise.all([
-        context.queryClient.ensureQueryData(
-          tenantQueryOptions(payment.tenantId),
-        ),
-        context.queryClient.ensureQueryData(unitsQueryOptions),
-      ]);
-
-      return { payment, aggregate, units };
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 404) {
-        return null;
-      }
-
-      throw error;
-    }
-  },
-  component: PaymentEditPage,
-  staticData: {
-    crumb: ({ loaderData }) => {
-      const data = loaderData as {
-        payment: Payment;
-        aggregate: TenantAggregate;
-        units: Unit[];
-      } | null;
-      if (!data) {
-        return [{ label: t("ui.common.crumbs.paymentEdit") }];
-      }
-
-      return [
-        { label: t("ui.common.crumbs.tenants"), to: "/mieter" },
-        {
-          label: tenantIdentityLabel({
-            aggregate: data.aggregate,
-            units: data.units,
-          }),
-          to: `/mieter/${data.payment.tenantId}/konto`,
-        },
-        { label: paymentIdentityLabel(data.payment) },
-      ];
-    },
-  },
-});
-
-/**
- * Gebühren leben im Mieterkonto: gemeinsame Crumb-Basis "Mieter ›
- * {Mietvertrag, verlinkt aufs Konto}"; die Blatt-Crumb variiert je Seite.
- */
-const tenantAccountCrumbBase = (
-  data: { aggregate: TenantAggregate; units: Unit[] } | undefined,
-  tenantId: string,
-): CrumbEntry[] => [
-  { label: t("ui.common.crumbs.tenants"), to: "/mieter" },
-  {
-    label: data
-      ? tenantIdentityLabel(data)
-      : t("ui.common.crumbs.tenantContract"),
-    to: `/mieter/${tenantId}/konto`,
-  },
-];
-
-const feeContextLoader = async ({
-  context,
-  params,
-}: {
-  context: RouterContext;
-  params: Record<string, string>;
-}) => {
-  const [aggregate, units] = await Promise.all([
-    context.queryClient.ensureQueryData(
-      tenantQueryOptions(params.tenantId ?? ""),
-    ),
-    context.queryClient.ensureQueryData(unitsQueryOptions),
-  ]);
-  return { aggregate, units };
-};
-
-const feeCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/mieter/$tenantId/gebuehren/neu",
-  beforeLoad: requireAuth,
-  loader: feeContextLoader,
-  component: FeePage,
-  errorComponent: TenantScopedNotFound,
-  staticData: {
-    crumb: ({ loaderData, params }) => [
-      ...tenantAccountCrumbBase(
-        loaderData as { aggregate: TenantAggregate; units: Unit[] } | undefined,
-        (params as { tenantId: string }).tenantId,
-      ),
-      { label: t("ui.common.crumbs.feeNew") },
-    ],
-  },
-});
-
-const feeEditRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/mieter/$tenantId/gebuehren/$feeId/bearbeiten",
-  beforeLoad: requireAuth,
-  loader: async ({ context, params }) => {
-    const [aggregate, units, fees] = await Promise.all([
-      context.queryClient.ensureQueryData(tenantQueryOptions(params.tenantId)),
-      context.queryClient.ensureQueryData(unitsQueryOptions),
-      context.queryClient.ensureQueryData(
-        tenantFeesQueryOptions(params.feeId ? params.tenantId : ""),
-      ),
-    ]);
-    return {
-      aggregate,
-      units,
-      fee: fees.find((row) => row.feeId === params.feeId) ?? null,
-    };
-  },
-  component: FeePage,
-  errorComponent: TenantScopedNotFound,
-  staticData: {
-    crumb: ({ loaderData, params }) => {
-      const data = loaderData as
-        | { aggregate: TenantAggregate; units: Unit[]; fee: FeeRow | null }
-        | undefined;
-      return [
-        ...tenantAccountCrumbBase(
-          data,
-          (params as { tenantId: string }).tenantId,
-        ),
-        {
-          label: data?.fee
-            ? feeIdentityLabel(data.fee)
-            : t("ui.common.crumbs.feeEdit"),
         },
       ];
     },
@@ -850,25 +500,17 @@ const metersRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.meters") },
 });
 
-const meterCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/zaehler/neu",
-  beforeLoad: requirePrerequisite("meters"),
-  validateSearch: metersSearchSchema,
-  component: MeterCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.meters"), to: "/zaehler" },
-      { label: t("ui.common.crumbs.meterNew") },
-    ],
-  },
-});
-
 const meterEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/zaehler/$meterId",
   beforeLoad: requireAuth,
   loader: async ({ context, params }) => {
+    if (params.meterId === "neu") {
+      throw redirect({
+        to: "/zaehler",
+        search: { buildingId: undefined, type: undefined, unitId: undefined },
+      });
+    }
     try {
       return await context.queryClient.ensureQueryData(
         meterQueryOptions(params.meterId),
@@ -883,13 +525,7 @@ const meterEditRoute = createRoute({
   component: MeterDetailPage,
   pendingComponent: () => (
     <DetailPending
-      tile={
-        <IconTile
-          icon={domainVisuals.meters.icon}
-          size={44}
-          background={gradients.water}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
       statsSkeleton={3}
       rows={4}
       aside={true}
@@ -931,13 +567,7 @@ const meterReadingsRoute = createRoute({
   component: MeterReadingsPage,
   pendingComponent: () => (
     <DetailPending
-      tile={
-        <IconTile
-          icon={domainVisuals.meters.icon}
-          size={44}
-          background={gradients.water}
-        />
-      }
+      tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
       statsSkeleton={3}
       rows={4}
       tabs="default"
@@ -969,25 +599,14 @@ const heatingRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.heating") },
 });
 
-const heatingVersionCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/heizkosten/neu",
-  beforeLoad: requirePrerequisite("heating"),
-  validateSearch: heatingSearchSchema,
-  component: HeatingVersionCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.heating"), to: "/heizkosten" },
-      { label: t("ui.common.crumbs.heatingVersionNew") },
-    ],
-  },
-});
-
 const heatingVersionEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/heizkosten/$id",
   beforeLoad: requireAuth,
   loader: async ({ context, params }) => {
+    if (params.id === "neu") {
+      throw redirect({ to: "/heizkosten", search: { buildingId: undefined } });
+    }
     try {
       return await context.queryClient.ensureQueryData(
         heatingSettingsByIdQueryOptions(params.id),
@@ -1029,25 +648,14 @@ const costsRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.costTypes") },
 });
 
-const costTypeCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/kostenarten/neu",
-  beforeLoad: requirePrerequisite("costTypes"),
-  validateSearch: costsSearchSchema,
-  component: CostTypeCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.costTypes"), to: "/kostenarten" },
-      { label: t("ui.common.crumbs.costTypeNew") },
-    ],
-  },
-});
-
 const costTypeEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/kostenarten/$costTypeId",
   beforeLoad: requireAuth,
   loader: async ({ context, params }) => {
+    if (params.costTypeId === "neu") {
+      throw redirect({ to: "/kostenarten", search: { buildingId: undefined } });
+    }
     try {
       return await context.queryClient.ensureQueryData(
         costTypeQueryOptions(params.costTypeId),
@@ -1087,24 +695,21 @@ const invoicesRoute = createRoute({
   staticData: { crumb: t("ui.common.crumbs.invoices") },
 });
 
-const costEntryCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/rechnungen/neu",
-  beforeLoad: requirePrerequisite("invoices"),
-  component: CostEntryCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.invoices"), to: "/rechnungen" },
-      { label: t("ui.common.crumbs.invoiceNew") },
-    ],
-  },
-});
-
 const costEntryEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/rechnungen/$costEntryId",
   beforeLoad: requireAuth,
+  // Nach dem Anlegen: entweder gleich das Blatt der ersten Position für
+  // diese Kostenart öffnen oder den hochgeladenen Beleg auswerten
+  validateSearch: (search: Record<string, unknown>) => ({
+    costTypeId:
+      typeof search.costTypeId === "string" ? search.costTypeId : undefined,
+    extract: search.extract === true || search.extract === "true" || undefined,
+  }),
   loader: async ({ context, params }) => {
+    if (params.costEntryId === "neu") {
+      throw redirect({ to: "/rechnungen", search: { buildingId: undefined } });
+    }
     try {
       return await context.queryClient.ensureQueryData(
         costEntryQueryOptions(params.costEntryId),
@@ -1132,25 +737,18 @@ const costEntryEditRoute = createRoute({
   },
 });
 
+const statementsSearchSchema = (search: Record<string, unknown>) => ({
+  buildingId:
+    typeof search.buildingId === "string" ? search.buildingId : undefined,
+});
+
 const statementsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/abrechnungen",
   beforeLoad: requireAuth,
+  validateSearch: statementsSearchSchema,
   component: StatementsPage,
   staticData: { crumb: t("ui.common.crumbs.statements") },
-});
-
-const statementCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/abrechnungen/neu",
-  beforeLoad: requirePrerequisite("statements"),
-  component: StatementCreatePage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.statements"), to: "/abrechnungen" },
-      { label: t("ui.common.crumbs.statementNew") },
-    ],
-  },
 });
 
 /**
@@ -1173,6 +771,9 @@ const statementDetailLoader = async ({
   context: RouterContext;
   params: { statementId: string };
 }): Promise<StatementDetailLoaderData | null> => {
+  if (params.statementId === "neu") {
+    throw redirect({ to: "/abrechnungen", search: { buildingId: undefined } });
+  }
   try {
     const statement = await context.queryClient.ensureQueryData(
       statementQueryOptions(params.statementId),
@@ -1222,19 +823,14 @@ const statementDetailRoute = createRoute({
   loader: statementDetailLoader,
   component: StatementDetailPage,
   pendingComponent: () => (
-    <DetailPending
-      tile={
-        <IconTile
-          icon={domainVisuals.statements.icon}
-          size={44}
-          background={gradients.statements}
-        />
-      }
-      statsSkeleton={3}
-      rows={8}
-      aside={true}
-      tabs="pills"
-    />
+    <div className="max-w-225">
+      <DetailPending
+        tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
+        rows={8}
+        kpis={3}
+        tabs="pills"
+      />
+    </div>
   ),
   pendingMs: 0,
   staticData: { crumb: statementDetailCrumb },
@@ -1249,25 +845,7 @@ const settingsIndexRoute = createRoute({
   path: "/einstellungen",
   beforeLoad: async ({ context }) => {
     await requireAuth({ context });
-    throw redirect({
-      to:
-        (await getSetupStatus(context))?.authMode === "local"
-          ? "/einstellungen/absender"
-          : "/einstellungen/profil",
-    });
-  },
-});
-
-const profileSettingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/einstellungen/profil",
-  beforeLoad: redirectAwayIfLocalAuth,
-  component: ProfileSettingsPage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.settings"), to: "/einstellungen" },
-      { label: t("ui.common.crumbs.settingsProfile") },
-    ],
+    throw redirect({ to: "/einstellungen/absender" });
   },
 });
 
@@ -1310,19 +888,6 @@ const internetSettingsRoute = createRoute({
   },
 });
 
-const passwordSettingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/einstellungen/passwort",
-  beforeLoad: redirectAwayIfLocalAuth,
-  component: PasswordSettingsPage,
-  staticData: {
-    crumb: () => [
-      { label: t("ui.common.crumbs.settings"), to: "/einstellungen" },
-      { label: t("ui.common.crumbs.settingsPassword") },
-    ],
-  },
-});
-
 const routeTree = rootRoute.addChildren([
   loginRoute,
   setupRoute,
@@ -1330,42 +895,28 @@ const routeTree = rootRoute.addChildren([
   outdatedVersionRoute,
   dashboardRoute,
   buildingsRoute,
-  buildingCreateRoute,
   buildingEditRoute,
   unitsRoute,
-  unitCreateRoute,
   unitEditRoute,
   tenantsRoute,
-  tenantCreateRoute,
   tenantEditRoute,
   tenantAccountRoute,
-  feeCreateRoute,
-  feeEditRoute,
-  paymentCreateRoute,
-  paymentEditRoute,
   mieterkontoDetailRedirectRoute,
   metersRoute,
-  meterCreateRoute,
   meterEditRoute,
   meterReadingsRoute,
   heatingRoute,
-  heatingVersionCreateRoute,
   heatingVersionEditRoute,
   costsRoute,
-  costTypeCreateRoute,
   costTypeEditRoute,
   invoicesRoute,
-  costEntryCreateRoute,
   costEntryEditRoute,
   statementsRoute,
-  statementCreateRoute,
   statementDetailRoute,
   settingsIndexRoute,
-  profileSettingsRoute,
   senderSettingsRoute,
   aiSettingsRoute,
   internetSettingsRoute,
-  passwordSettingsRoute,
 ]);
 
 /**

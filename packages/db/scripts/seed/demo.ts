@@ -82,7 +82,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     senderBankName: "Sparkasse Musterstadt",
     senderBankIban: "DE02500105170137075030",
     senderBankBic: "SPMUDE3MXXX",
-    useLogo: true,
+    logoMode: "own",
     logoStorageKey: demoLogoStorageKey,
     logoMimeType: "image/svg+xml",
   });
@@ -747,6 +747,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const aGasEntry2024 = nid();
   insert(schema.costEntries, {
     id: aGasEntry2024,
+    buildingId: aBuilding,
     invoiceDate: "2025-02-08",
     invoiceNumber: "GAS-2024-3917",
     vendor: "Stadtwerke Musterstadt",
@@ -768,6 +769,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const aMeterServiceEntry2024 = nid();
   insert(schema.costEntries, {
     id: aMeterServiceEntry2024,
+    buildingId: aBuilding,
     invoiceDate: "2025-01-17",
     invoiceNumber: "MD-2025-0733",
     vendor: "Messdienst Musterstadt",
@@ -788,6 +790,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const aGasEntry = nid();
   insert(schema.costEntries, {
     id: aGasEntry,
+    buildingId: aBuilding,
     invoiceDate: "2026-02-10",
     invoiceNumber: "GAS-2025-4471",
     vendor: "Stadtwerke Musterstadt",
@@ -810,6 +813,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const aMeterServiceEntry = nid();
   insert(schema.costEntries, {
     id: aMeterServiceEntry,
+    buildingId: aBuilding,
     invoiceDate: "2026-01-15",
     invoiceNumber: "MD-2026-0815",
     vendor: "Messdienst Musterstadt",
@@ -838,6 +842,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const aWaterEntry = nid();
   insert(schema.costEntries, {
     id: aWaterEntry,
+    buildingId: aBuilding,
     invoiceDate: "2026-01-20",
     invoiceNumber: "WAS-2025-9921",
     vendor: "Stadtwerke Musterstadt",
@@ -866,6 +871,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const aCityEntry = nid();
   insert(schema.costEntries, {
     id: aCityEntry,
+    buildingId: aBuilding,
     invoiceDate: "2025-01-15",
     invoiceNumber: "ESS-2025-000123",
     vendor: "Stadt Musterstadt",
@@ -904,6 +910,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const aInsuranceEntry = nid();
   insert(schema.costEntries, {
     id: aInsuranceEntry,
+    buildingId: aBuilding,
     invoiceDate: "2024-11-05",
     invoiceNumber: "VS-2025-77310",
     vendor: "Muster Versicherung AG",
@@ -931,6 +938,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const aMiscEntry = nid();
   insert(schema.costEntries, {
     id: aMiscEntry,
+    buildingId: aBuilding,
     invoiceDate: "2025-03-01",
     invoiceNumber: "DIV-2025-001",
     vendor: "Diverse",
@@ -1429,6 +1437,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const bOilEntry = nid();
   insert(schema.costEntries, {
     id: bOilEntry,
+    buildingId: bBuilding,
     invoiceDate: "2025-09-12",
     invoiceNumber: "OEL-2025-3322",
     vendor: "Heizöl Musterland GmbH",
@@ -1450,6 +1459,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const bWaterEntry = nid();
   insert(schema.costEntries, {
     id: bWaterEntry,
+    buildingId: bBuilding,
     invoiceDate: "2026-01-22",
     invoiceNumber: "WAS-B-2025-55",
     vendor: "Stadtwerke Bochum",
@@ -1478,6 +1488,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const bMiscEntry = nid();
   insert(schema.costEntries, {
     id: bMiscEntry,
+    buildingId: bBuilding,
     invoiceDate: "2025-02-01",
     invoiceNumber: "DIV-B-2025-1",
     vendor: "Diverse",
@@ -1817,6 +1828,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const cWaterEntry = nid();
   insert(schema.costEntries, {
     id: cWaterEntry,
+    buildingId: cBuilding,
     invoiceDate: "2026-01-30",
     invoiceNumber: "WAS-C-2025-7",
     vendor: "Stadtwerke Düsseldorf",
@@ -1845,6 +1857,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const cMiscEntry = nid();
   insert(schema.costEntries, {
     id: cMiscEntry,
+    buildingId: cBuilding,
     invoiceDate: "2025-02-15",
     invoiceNumber: "DIV-C-2025-1",
     vendor: "Diverse",

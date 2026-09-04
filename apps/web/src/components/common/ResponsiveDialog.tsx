@@ -66,8 +66,7 @@ export const ResponsiveDialogTitle = ({
 }) => {
   const isMobile = useIsMobile();
   const titleClassName =
-    className ??
-    "font-heading text-lg leading-normal font-semibold text-sky-900";
+    className ?? "text-lg leading-normal font-semibold text-foreground";
 
   if (isMobile) {
     return <DrawerTitle className={titleClassName}>{children}</DrawerTitle>;

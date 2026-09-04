@@ -1,7 +1,6 @@
 import type { FeeRow } from "@einfachvermieter/shared";
 import { formatDate } from "@einfachvermieter/shared";
-import { RiMoneyEuroCircleLine, RiPencilLine } from "@remixicon/react";
-import { Link } from "@tanstack/react-router";
+import { RiMoneyEuroCircleLine } from "@remixicon/react";
 import { RowActionButton, RowActions } from "@/components/RowActions";
 import {
   Table,
@@ -23,14 +22,20 @@ export type FeeDeletionTarget = {
 
 type FeesTableProps = {
   rows: FeeRow[];
-  tenantId: string;
   deletion: ReturnType<typeof useDeleteResource<FeeDeletionTarget>>;
+  onEditFee: (row: FeeRow) => void;
+  onRecordPayment: (row: FeeRow) => void;
 };
 
 /**
  * Gebühren (Mahn-/Rücklauf-/Verzugsgebühren) des Mieterkontos
  */
-export const FeesTable = ({ rows, tenantId, deletion }: FeesTableProps) => {
+export const FeesTable = ({
+  rows,
+  deletion,
+  onEditFee,
+  onRecordPayment,
+}: FeesTableProps) => {
   if (rows.length === 0) {
     return (
       <p className="px-4 py-6 text-center text-muted-foreground">
@@ -59,27 +64,13 @@ export const FeesTable = ({ rows, tenantId, deletion }: FeesTableProps) => {
             <TableCell className="px-4 py-3">
               <RowActions
                 isDeleting={row.feeId === deletion.deletingId}
-                editLink={
-                  <Link
-                    to="/mieter/$tenantId/gebuehren/$feeId/bearbeiten"
-                    params={{ tenantId, feeId: row.feeId }}
-                  >
-                    <RiPencilLine />
-                  </Link>
-                }
+                onEdit={() => onEditFee(row)}
                 extraActions={
-                  <RowActionButton label={t("ui.account.fee.recordPayment")}>
-                    <Link
-                      to="/zahlungen/neu"
-                      search={{
-                        tenantId,
-                        purposeKind: "fee",
-                        forFeeId: row.feeId,
-                      }}
-                    >
-                      <RiMoneyEuroCircleLine />
-                    </Link>
-                  </RowActionButton>
+                  <RowActionButton
+                    label={t("ui.account.fee.recordPayment")}
+                    icon={<RiMoneyEuroCircleLine />}
+                    onSelect={() => onRecordPayment(row)}
+                  />
                 }
                 onDelete={() =>
                   deletion.request({

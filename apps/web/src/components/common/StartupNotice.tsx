@@ -22,13 +22,13 @@ export const StartupNotice = ({
   description?: string;
   children?: ReactNode;
 }) => (
-  <div className="auth-wash flex min-h-dvh items-center justify-center p-6">
+  <div className="flex min-h-dvh items-center justify-center p-6">
     <div className="w-full max-w-md">
       <Card>
         <CardHeader>
           <div className="flex flex-col items-center gap-3 text-center">
             <div className="pb-3">
-              <AppBrand />
+              <AppBrand tone="light" />
             </div>
             <CardTitle>{title}</CardTitle>
             {description ? (

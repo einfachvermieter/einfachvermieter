@@ -1,17 +1,11 @@
-import { formatDate, todayIso } from "@einfachvermieter/shared";
-import { RiAddLine, RiPencilLine } from "@remixicon/react";
+import { formatDate } from "@einfachvermieter/shared";
+import { RiListOrdered2, RiPencilLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import {
-  ResponsiveDialog,
-  ResponsiveDialogBody,
-  ResponsiveDialogHeader,
-  ResponsiveDialogTitle,
-} from "@/components/common/ResponsiveDialog";
+import { useMemo } from "react";
+import { EmptyNote } from "@/components/common/EmptyNote";
+import { SectionCard } from "@/components/common/SectionCard";
 import { RowActionButton, RowActions } from "@/components/RowActions";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import {
   Table,
@@ -21,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
-import { api } from "../../../../lib/api";
 import { t } from "../../../../lib/i18n";
 import {
   type MeasurementUnit,
@@ -31,13 +24,7 @@ import {
   type Reading,
   readingsQueryOptions,
 } from "../../../../lib/meters";
-import { useCrudMutation } from "../../../../lib/useCrudMutation";
 import { useDeleteResource } from "../../../../lib/useDeleteResource";
-import { ReadingForm } from "./ReadingForm";
-import type {
-  ReadingFormValues,
-  ReadingSubmitValues,
-} from "./readingForm.schema";
 import { isInSettledPeriod, useSettledPeriods } from "./useSettledPeriods";
 
 /**
@@ -96,7 +83,7 @@ const ReadingRow = ({
         <span className="flex items-center gap-2">
           {formatDate(reading.readingDate)}
           {settled ? (
-            <Badge variant="slate">{t("ui.reading.settledBadge")}</Badge>
+            <Badge variant="neutral">{t("ui.reading.settledBadge")}</Badge>
           ) : null}
         </span>
       </TableCell>
@@ -107,7 +94,7 @@ const ReadingRow = ({
         <TableCell
           className={
             delta !== null && delta < 0
-              ? "px-4 py-3 text-right tabular-nums text-rose-600 dark:text-rose-400"
+              ? "px-4 py-3 text-right tabular-nums text-himbeere-500"
               : "px-4 py-3 text-right tabular-nums text-muted-foreground"
           }
         >
@@ -149,14 +136,15 @@ export const MeterReadingsTab = ({
   buildingId,
   measurementUnit,
   role,
+  onEditReading,
 }: {
   meterId: string;
   buildingId: string;
   measurementUnit: MeasurementUnit;
   role: MeterRole;
+  onEditReading: (reading: Reading) => void;
 }) => {
   const isVirtual = role === "virtual_difference";
-  const [editTarget, setEditTarget] = useState<Reading | null | "new">(null);
 
   const { data: readings, isPending } = useQuery(readingsQueryOptions(meterId));
 
@@ -177,25 +165,11 @@ export const MeterReadingsTab = ({
     [readings],
   );
 
-  const latestReadingDate = sorted[0]?.readingDate;
+  const _latestReadingDate = sorted[0]?.readingDate;
 
   const settledPeriods = useSettledPeriods(buildingId);
   const isSettled = (date: string): boolean =>
     isInSettledPeriod(settledPeriods, date);
-
-  const createMutation = useCrudMutation({
-    mutationFn: (dto: ReadingSubmitValues) =>
-      api.post<Reading>("/meters/readings", { ...dto, meterId }),
-    invalidateKeys: [["readings", meterId]],
-    onSuccess: () => setEditTarget(null),
-  });
-
-  const updateMutation = useCrudMutation({
-    mutationFn: (variables: { id: string; dto: ReadingSubmitValues }) =>
-      api.patch<Reading>(`/meters/readings/${variables.id}`, variables.dto),
-    invalidateKeys: [["readings", meterId]],
-    onSuccess: () => setEditTarget(null),
-  });
 
   const deletion = useDeleteResource<Reading>({
     endpoint: (reading) => `/meters/readings/${reading.id}`,
@@ -211,54 +185,12 @@ export const MeterReadingsTab = ({
           }),
   });
 
-  const dialogOpen = editTarget !== null;
-  const dialogEntry = editTarget && editTarget !== "new" ? editTarget : null;
-
-  const otherReadings = useMemo(
-    () =>
-      sorted
-        .filter((reading) => reading.id !== dialogEntry?.id)
-        .map((reading) => ({
-          readingDate: reading.readingDate,
-          value: reading.value,
-        })),
-    [sorted, dialogEntry],
-  );
-
-  const defaultValues: ReadingFormValues = dialogEntry
-    ? {
-        readingDate: dialogEntry.readingDate,
-        value: String(dialogEntry.value).replace(".", ","),
-        isEstimated: dialogEntry.isEstimated,
-        readBy: dialogEntry.readBy,
-        notes: dialogEntry.notes ?? "",
-      }
-    : {
-        readingDate: todayIso(),
-        value: "",
-        isEstimated: false,
-        readBy: "landlord",
-        notes: "",
-      };
-
   const renderBody = () => {
     if (isVirtual) {
-      return (
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {t("ui.meters.hints.virtualNoReadings")}
-          </p>
-        </CardContent>
-      );
+      return <EmptyNote>{t("ui.meters.hints.virtualNoReadings")}</EmptyNote>;
     }
     if (!isPending && sorted.length === 0) {
-      return (
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {t("ui.meters.noReadings")}
-          </p>
-        </CardContent>
-      );
+      return <EmptyNote>{t("ui.meters.noReadings")}</EmptyNote>;
     }
     // Verbrauch (Delta) nur bei mindestens zwei Ständen; die Spalten "Geschätzt"
     // und "Notiz" erst zeigen, wenn wenigstens ein Eintrag sie füllt
@@ -329,7 +261,7 @@ export const MeterReadingsTab = ({
                   showEstimated={showEstimated}
                   showNotes={showNotes}
                   deletion={deletion}
-                  onEdit={setEditTarget}
+                  onEdit={onEditReading}
                 />
               ))}
         </TableBody>
@@ -338,60 +270,13 @@ export const MeterReadingsTab = ({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{t("ui.meters.readingsTitle")}</CardTitle>
-          {isVirtual ? null : (
-            <Button type="button" onClick={() => setEditTarget("new")}>
-              <RiAddLine />
-              <span className="hidden sm:inline">
-                {t("ui.meters.addReading")}
-              </span>
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      {renderBody()}
-      <ResponsiveDialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditTarget(null);
-          }
-        }}
-      >
-        <ResponsiveDialogHeader>
-          <ResponsiveDialogTitle>
-            {dialogEntry
-              ? t("ui.reading.editTitle")
-              : t("ui.reading.createTitle")}
-          </ResponsiveDialogTitle>
-        </ResponsiveDialogHeader>
-        <ResponsiveDialogBody>
-          {dialogOpen ? (
-            <ReadingForm
-              defaultValues={defaultValues}
-              warnIfBefore={dialogEntry ? null : (latestReadingDate ?? null)}
-              settledPeriods={settledPeriods}
-              otherReadings={otherReadings}
-              onSubmit={async (values) => {
-                if (dialogEntry) {
-                  await updateMutation.mutateAsync({
-                    id: dialogEntry.id,
-                    dto: values,
-                  });
-                } else {
-                  await createMutation.mutateAsync(values);
-                }
-              }}
-              onCancel={() => setEditTarget(null)}
-              submitting={createMutation.isPending || updateMutation.isPending}
-            />
-          ) : null}
-        </ResponsiveDialogBody>
-      </ResponsiveDialog>
+    <SectionCard
+      icon={RiListOrdered2}
+      title={t("ui.meters.readingsTitle")}
+      description={t("ui.meters.readingsDescription")}
+    >
+      <div className="-mx-2">{renderBody()}</div>
       {deletion.dialog}
-    </Card>
+    </SectionCard>
   );
 };

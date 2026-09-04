@@ -1,43 +1,63 @@
+import type {
+  SenderLogoAlignment,
+  SenderLogoMode,
+} from "@einfachvermieter/shared";
 import { RiDeleteBinLine, RiUploadCloud2Line } from "@remixicon/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import appLogoUrl from "@/img/logo/logo_light.svg";
 import { ApiError } from "@/lib/api";
 import { t } from "@/lib/i18n";
 import {
   type PendingLogo,
   previewSenderLogoPdf,
   type SenderSettings,
-  senderLogoPreviewUrl,
   senderLogoUrl,
 } from "@/lib/senderSettings";
+import {
+  SenderLetterPreview,
+  type SenderLetterValues,
+} from "./SenderLetterPreview";
 
 const ACCEPT_ATTR = "image/png,image/jpeg,image/webp,image/svg+xml";
 const SVG_MIME = "image/svg+xml";
 
-/**
- * Native PDF-Viewer-Bedienelemente ausblenden (Best effort je nach Browser)
- */
-const PDF_VIEWER_PARAMS = "#toolbar=0&navpanes=0&scrollbar=0";
+const LOGO_AREA_LEFT = 11.905;
+const LOGO_AREA_WIDTH = 78.571;
+const LOGO_AREA_HEIGHT = 55.556;
 
-/**
- * Briefkopf-Band: A4-Breite (210 mm) x 45 mm Höhe, dasselbe Verhältnis wie
- * die PDF-Vorschau, damit Raster-Logos identisch platziert wirken.
- */
-const BAND_ASPECT = "210 / 45";
+const LOGO_OFFSET_FACTOR: Record<SenderLogoAlignment, number> = {
+  left: 0,
+  center: 0.5,
+  right: 1,
+};
 
-/**
- * Logo-Box innerhalb des Bandes, prozentual passend zu styles.senderLogo
- * (links 25 mm, oben 10 mm, 165 mm x 25 mm in einem 210 x 45 mm Band).
- */
-const RASTER_LOGO_BOX = {
-  left: "11.905%",
-  top: "22.222%",
-  width: "78.571%",
-  height: "55.556%",
-} as const;
+const LOGO_OBJECT_POSITION: Record<SenderLogoAlignment, string> = {
+  left: "left center",
+  center: "center",
+  right: "right center",
+};
+
+const logoBox = (alignment: SenderLogoAlignment, scalePercent: number) => {
+  const scale = scalePercent / 100;
+  const width = LOGO_AREA_WIDTH * scale;
+  const freeSpace = LOGO_AREA_WIDTH - width;
+
+  return {
+    left: `${LOGO_AREA_LEFT + freeSpace * LOGO_OFFSET_FACTOR[alignment]}%`,
+    top: "22.222%",
+    width: `${width}%`,
+    height: `${LOGO_AREA_HEIGHT * scale}%`,
+    objectPosition: LOGO_OBJECT_POSITION[alignment],
+  };
+};
 
 type SenderLogoSectionProps = {
   settings: SenderSettings;
+  letterValues: SenderLetterValues;
+  logoMode: SenderLogoMode;
+  logoAlignment: SenderLogoAlignment;
+  logoScalePercent: number;
   pendingLogo: PendingLogo;
   onPendingLogoChange: (pending: PendingLogo) => void;
   logoVersion: string;
@@ -45,39 +65,38 @@ type SenderLogoSectionProps = {
 
 export const SenderLogoSection = ({
   settings,
+  letterValues,
+  logoMode,
+  logoAlignment,
+  logoScalePercent,
   pendingLogo,
   onPendingLogoChange,
   logoVersion,
 }: SenderLogoSectionProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
   const pendingFile = pendingLogo?.kind === "replace" ? pendingLogo.file : null;
-  const pendingIsSvg = pendingFile?.type === SVG_MIME;
 
-  // SVG-Vorschau kommt aus dem PDF-Viewer (so rendert react-pdf es im echten
-  // PDF. Die Browser-<img>-Darstellung weicht ggf. davon ab). Raster bleibt <img>.
+  // Gezeigt wird das SVG als Bild; das PDF wird trotzdem gerendert, weil sich
+  // nur so zeigt, ob react-pdf mit der Datei zurechtkommt. Scheitert es,
+  // erscheint der Fehler unter der Vorschau.
   useEffect(() => {
     if (!pendingFile || pendingFile.type !== SVG_MIME) {
-      setPreviewPdfUrl(null);
       setPreviewError(null);
       setPreviewLoading(false);
       return;
     }
 
     let cancelled = false;
-    let objectUrl: string | null = null;
     setPreviewLoading(true);
     setPreviewError(null);
     previewSenderLogoPdf(pendingFile)
-      .then((blob) => {
-        if (cancelled) {
-          return;
+      .then(() => {
+        if (!cancelled) {
+          setPreviewError(null);
         }
-        objectUrl = URL.createObjectURL(blob);
-        setPreviewPdfUrl(objectUrl);
       })
       .catch((err: unknown) => {
         if (cancelled) {
@@ -88,7 +107,6 @@ export const SenderLogoSection = ({
             ? err.message
             : t("ui.settings.sender.logo.previewError"),
         );
-        setPreviewPdfUrl(null);
       })
       .finally(() => {
         if (!cancelled) {
@@ -97,31 +115,24 @@ export const SenderLogoSection = ({
       });
     return () => {
       cancelled = true;
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
     };
   }, [pendingFile]);
 
   // Raster-Vorschau der noch nicht hochgeladenen Datei.
-  const rasterPreviewUrl = useMemo(
-    () =>
-      pendingFile && pendingFile.type !== SVG_MIME
-        ? URL.createObjectURL(pendingFile)
-        : null,
+  const filePreviewUrl = useMemo(
+    () => (pendingFile ? URL.createObjectURL(pendingFile) : null),
     [pendingFile],
   );
 
   useEffect(
     () => () => {
-      if (rasterPreviewUrl) {
-        URL.revokeObjectURL(rasterPreviewUrl);
+      if (filePreviewUrl) {
+        URL.revokeObjectURL(filePreviewUrl);
       }
     },
-    [rasterPreviewUrl],
+    [filePreviewUrl],
   );
 
-  const storedIsSvg = settings.hasLogo && settings.logoMimeType === SVG_MIME;
   const hasVisibleLogo =
     pendingLogo?.kind === "replace" ||
     (pendingLogo === null && settings.hasLogo);
@@ -137,76 +148,56 @@ export const SenderLogoSection = ({
     }
   };
 
-  const pdfFrame = (url: string) => (
-    <div
-      className="overflow-hidden rounded-md border border-foreground/10 bg-white"
-      style={{ aspectRatio: BAND_ASPECT }}
-    >
-      <object
-        data={`${url}${PDF_VIEWER_PARAMS}`}
-        type="application/pdf"
-        className="h-full w-full"
-        aria-label={t("ui.settings.sender.logo.current")}
-      />
-    </div>
-  );
-
-  // Raster im A4-Band wie im finalen PDF platziert (object-contain in der
-  // senderLogo-Box), statt nur zentriert. Simuliert die echte Einpassung
-  const rasterFrame = (url: string) => (
-    <div
-      className="relative rounded-md border border-foreground/10 bg-white"
-      style={{ aspectRatio: BAND_ASPECT }}
-    >
+  // Logo im A4-Band wie im finalen PDF platziert
+  // Simuliert die echte Einpassung
+  const logoFrame = (url: string) => (
+    <div className="relative h-full w-full">
       <img
         src={url}
         alt={t("ui.settings.sender.logo.current")}
         className="absolute object-contain"
-        style={RASTER_LOGO_BOX}
+        style={logoBox(logoAlignment, logoScalePercent)}
       />
     </div>
   );
 
-  const fallback = (
-    <p className="text-sm text-muted-foreground">
-      {t("ui.settings.sender.logo.fallback")}
-    </p>
+  const missingLogoNote = (
+    <div className="relative h-full w-full">
+      <span
+        className="absolute flex items-center text-2xs text-muted-foreground"
+        style={logoBox(logoAlignment, logoScalePercent)}
+      >
+        {t("ui.settings.sender.logo.fallback")}
+      </span>
+    </div>
   );
 
   const renderPreview = () => {
+    if (logoMode === "none") {
+      return null;
+    }
+
+    if (logoMode === "app") {
+      return logoFrame(appLogoUrl);
+    }
+
     if (pendingLogo?.kind === "replace") {
-      if (pendingIsSvg) {
-        if (previewLoading) {
-          return (
-            <div
-              className="flex items-center justify-center rounded-md border border-foreground/10 bg-white text-sm text-muted-foreground"
-              style={{ aspectRatio: BAND_ASPECT }}
-            >
-              {t("ui.settings.sender.logo.previewLoading")}
-            </div>
-          );
-        }
-        return previewPdfUrl ? pdfFrame(previewPdfUrl) : null;
-      }
-      return rasterPreviewUrl ? rasterFrame(rasterPreviewUrl) : null;
+      return filePreviewUrl ? logoFrame(filePreviewUrl) : null;
     }
 
     if (pendingLogo?.kind === "delete" || !settings.hasLogo) {
-      return fallback;
+      return missingLogoNote;
     }
 
-    return storedIsSvg
-      ? pdfFrame(senderLogoPreviewUrl(logoVersion))
-      : rasterFrame(senderLogoUrl(logoVersion));
+    return logoFrame(senderLogoUrl(logoVersion));
   };
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">
-        {t("ui.settings.sender.logo.description")}
+      <SenderLetterPreview values={letterValues} logo={renderPreview()} />
+      <p className="text-xs text-muted-foreground">
+        {t("ui.settings.sender.preview.note")}
       </p>
-
-      {renderPreview()}
 
       <input
         ref={fileInputRef}
@@ -216,28 +207,36 @@ export const SenderLogoSection = ({
         onChange={(event) => onFilesSelected(event.target.files)}
       />
 
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <RiUploadCloud2Line aria-hidden={true} />
-          {hasVisibleLogo
-            ? t("ui.settings.sender.logo.replaceAction")
-            : t("ui.settings.sender.logo.uploadAction")}
-        </Button>
-        {hasVisibleLogo ? (
+      {logoMode === "own" ? (
+        <div className="flex flex-wrap gap-2">
           <Button
             type="button"
-            variant="ghostRed"
-            onClick={() => onPendingLogoChange({ kind: "delete" })}
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
           >
-            <RiDeleteBinLine aria-hidden={true} />
-            {t("ui.settings.sender.logo.removeAction")}
+            <RiUploadCloud2Line aria-hidden={true} />
+            {hasVisibleLogo
+              ? t("ui.settings.sender.logo.replaceAction")
+              : t("ui.settings.sender.logo.uploadAction")}
           </Button>
-        ) : null}
-      </div>
+          {hasVisibleLogo ? (
+            <Button
+              type="button"
+              variant="ghostDestructive"
+              onClick={() => onPendingLogoChange({ kind: "delete" })}
+            >
+              <RiDeleteBinLine aria-hidden={true} />
+              {t("ui.settings.sender.logo.removeAction")}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {previewLoading ? (
+        <p className="text-sm text-muted-foreground">
+          {t("ui.settings.sender.logo.previewLoading")}
+        </p>
+      ) : null}
 
       {previewError ? (
         <p className="text-sm text-destructive">{previewError}</p>

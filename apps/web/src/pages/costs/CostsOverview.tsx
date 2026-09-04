@@ -1,15 +1,14 @@
-import { RiAddLine, RiArrowRightUpLine } from "@remixicon/react";
+import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "../../components/common/DataTable";
+import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
-import { IconTile } from "../../components/common/IconTile";
 import { PageHeader } from "../../components/common/PageHeader";
+import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
-import { ROW_TITLE_LINK } from "../../components/common/tableStyles";
-import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import {
   Tooltip,
@@ -24,15 +23,13 @@ import {
   costTypeCategoryLabel,
   costTypesOverviewQueryOptions,
 } from "../../lib/costs";
-import {
-  costTypeVisual,
-  domainVisuals,
-  gradients,
-} from "../../lib/domainVisuals";
+import { costTypeVisual, domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
+import { rowIconColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
+import { CostTypeCreateSheet } from "./CostTypeCreateSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<CostTypeSortColumn> = new Set([
   "name",
@@ -46,6 +43,7 @@ export const CostsOverview = () => {
     storageKey: "costTypes",
   });
   const navigate = useNavigate();
+  const [createOpen, setCreateOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -65,39 +63,16 @@ export const CostsOverview = () => {
 
   const columns = useMemo<ColumnDef<CostType>[]>(
     () => [
+      rowIconColumn<CostType>((costType) => costTypeVisual(costType).icon),
       {
         accessorKey: "name",
         header: t("ui.common.columns.name"),
-        cell: ({ row }) => {
-          const visual = costTypeVisual(row.original);
-          return (
-            <EntityCell
-              tile={
-                <IconTile icon={visual.icon} background={visual.gradient} />
-              }
-              name={
-                <Link
-                  to="/kostenarten/$costTypeId"
-                  params={{ costTypeId: row.original.id }}
-                  className={ROW_TITLE_LINK}
-                >
-                  {row.original.name}
-                </Link>
-              }
-            />
-          );
-        },
+        cell: ({ row }) => <EntityCell name={row.original.name} />,
       },
       {
         accessorKey: "category",
         header: t("ui.costs.columns.category"),
-        cell: ({ row }) => (
-          <Badge
-            variant={row.original.category === "heating" ? "warn" : "blue"}
-          >
-            {costTypeCategoryLabel(row.original.category)}
-          </Badge>
-        ),
+        cell: ({ row }) => costTypeCategoryLabel(row.original.category),
       },
       {
         id: "allocation",
@@ -111,17 +86,9 @@ export const CostsOverview = () => {
             return (
               <Tooltip>
                 <TooltipTrigger asChild={true}>
-                  <Link
-                    to="/heizkosten"
-                    search={{ buildingId }}
-                    className="inline-flex items-center gap-0.5 text-sky-700 underline-offset-4 hover:underline dark:text-sky-400"
-                  >
+                  <DomainLink to="/heizkosten" search={{ buildingId }}>
                     {t("ui.costs.allocationHeatingSettlement")}
-                    <RiArrowRightUpLine
-                      className="size-3.5"
-                      aria-hidden={true}
-                    />
-                  </Link>
+                  </DomainLink>
                 </TooltipTrigger>
                 <TooltipContent>
                   {t("ui.costs.allocationHeatingSettlementTooltip")}
@@ -155,25 +122,15 @@ export const CostsOverview = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={
-          <IconTile
-            icon={domainVisuals.costTypes.icon}
-            size={44}
-            background={gradients.notes}
-          />
-        }
+        tile={<PageHeaderIcon icon={domainVisuals.costTypes.icon} />}
         title={t("ui.costs.title")}
         sub={sub}
         subLoading={!data}
         action={
           canAddCostType ? (
-            <Button asChild={true}>
-              <Link to="/kostenarten/neu" search={{ buildingId }}>
-                <RiAddLine />
-                <span className="hidden sm:inline">
-                  {t("ui.costs.addType")}
-                </span>
-              </Link>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <RiAddLine />
+              <span className="hidden sm:inline">{t("ui.costs.addType")}</span>
             </Button>
           ) : undefined
         }
@@ -202,6 +159,10 @@ export const CostsOverview = () => {
           pageCount: table.pageCount(data?.total ?? 0),
         }}
       />
+
+      {createOpen ? (
+        <CostTypeCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { RiDeleteBin6Line } from "@remixicon/react";
+import { RiDeleteBin6Line, RiPencilLine } from "@remixicon/react";
 import type { ReactNode } from "react";
 import { t } from "@/lib/i18n";
 import { Spinner } from "./common/Spinner";
@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/Tooltip";
 
 type RowActionButtonProps = {
   label: string;
-  variant?: "ghostMuted" | "ghostRed";
+  variant?: "ghostMuted" | "ghostDestructive";
   icon?: ReactNode;
   onSelect?: () => void;
   children?: ReactNode;
@@ -49,6 +49,7 @@ export const RowActionButton = ({
 type RowActionsProps = {
   isDeleting?: boolean;
   editLink?: ReactNode;
+  onEdit?: () => void;
   editLabel?: string;
   extraActions?: ReactNode;
   onDelete?: () => void;
@@ -58,6 +59,7 @@ type RowActionsProps = {
 export const RowActions = ({
   isDeleting,
   editLink,
+  onEdit,
   editLabel = t("ui.common.action.edit"),
   extraActions,
   onDelete,
@@ -70,7 +72,7 @@ export const RowActions = ({
   ) : (
     <RowActionButton
       label={deleteLabel}
-      variant="ghostRed"
+      variant="ghostDestructive"
       icon={<RiDeleteBin6Line />}
       onSelect={onDelete}
     />
@@ -80,6 +82,13 @@ export const RowActions = ({
     <div className="flex items-center justify-start gap-0.5">
       {editLink ? (
         <RowActionButton label={editLabel}>{editLink}</RowActionButton>
+      ) : null}
+      {onEdit ? (
+        <RowActionButton
+          label={editLabel}
+          icon={<RiPencilLine />}
+          onSelect={onEdit}
+        />
       ) : null}
       {extraActions}
       {onDelete ? deleteAction : null}

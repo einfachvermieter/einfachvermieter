@@ -17,7 +17,6 @@ import {
   climateFactorsSettingsQueryOptions,
   updateClimateFactorsAutoFetch,
 } from "../../../../lib/climateFactors";
-import { gradients } from "../../../../lib/domainVisuals";
 import { formatPeriod } from "../../../../lib/format";
 import { t } from "../../../../lib/i18n";
 
@@ -47,7 +46,7 @@ const sourceBadge = (row: ClimateFactorRow) => {
     );
   }
   return (
-    <Badge variant="slate">{t("ui.heating.climateFactors.sourceDwd")}</Badge>
+    <Badge variant="neutral">{t("ui.heating.climateFactors.sourceDwd")}</Badge>
   );
 };
 
@@ -56,7 +55,7 @@ const sourceBadge = (row: ClimateFactorRow) => {
  * des Vorperiodenvergleichs (§ 6a Abs. 3 Nr. 5 HeizkostenV): der eigene
  * Abrechnungszeitraum und - falls vorhanden - der der Vorperiode, mit dem
  * gecachten DWD-Wert der Gebäude-PLZ. Bearbeiten nur hinter dem Schalter
- * (Notausgang ohne Internet); „Neu laden" holt den DWD-Wert zurück und
+ * (Notausgang ohne Internet); "Neu laden" holt den DWD-Wert zurück und
  * überschreibt manuelle Eingaben. Werte gelten je PLZ + Zeitraum, also
  * automatisch für alle Abrechnungen und Gebäude derselben PLZ.
  */
@@ -154,7 +153,6 @@ export const ClimateFactorsCard = ({
   return (
     <SectionCard
       icon={RiCloudLine}
-      iconBackground={gradients.slate}
       title={t("ui.heating.climateFactors.title")}
       description={
         data.postalCode

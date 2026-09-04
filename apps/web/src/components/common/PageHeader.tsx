@@ -6,25 +6,32 @@ import { cn } from "@/lib/utils";
 import { useBreadcrumbTrail } from "../useBreadcrumbTrail";
 
 /**
- * Einheitlicher Seitenkopf für Listen- und Detailseiten: Icon-Kachel,
- * Breadcrumb-Eyebrow, Titel, Unterzeile und rechts entweder ein
+ * Einheitlicher Seitenkopf für Listen- und Detailseiten: Breadcrumb,
+ * Titel-Kachel bzw. Avatar, Titel, Unterzeile und rechts entweder ein
  * Primärbutton (Listen) oder Kennzahlen (Detail).
  */
 export const PageHeader = ({
   tile,
   title,
+  titleExtra,
   sub,
   loading = false,
   subLoading = false,
   stats,
   statsSkeleton,
   action,
+  breadcrumb = true,
 }: {
   /**
-   * IconTile oder InitialsAvatar in Größe 44
+   * PageHeaderIcon mit dem Icon des Menüpunkts
    */
   tile: ReactNode;
   title: string;
+
+  /**
+   * Zusatz neben dem Titel, z.B. Status-Badge
+   */
+  titleExtra?: ReactNode;
   sub?: ReactNode;
 
   /**
@@ -48,35 +55,35 @@ export const PageHeader = ({
    * Aktions-Buttons rechts (z. B. Hinzufügen/Finalisieren)
    */
   action?: ReactNode;
+
+  /**
+   * Breadcrumb ausblenden (z.B. Einstellungen mit eigener Reiter-Navigation)
+   */
+  breadcrumb?: boolean;
 }) => {
-  // Der Eyebrow ist Breadcrumb: die volle Kette ohne die aktuelle Seite,
-  // die selbst als Titel erscheint.
-  const ancestors = useBreadcrumbTrail()
-    .slice(0, -1)
-    .filter((entry) => entry.label.length > 0);
+  // Die volle Kette ohne die aktuelle Seite, die selbst als Titel erscheint
+  const trail = useBreadcrumbTrail();
+  const ancestors = breadcrumb
+    ? trail.slice(0, -1).filter((entry) => entry.label.length > 0)
+    : [];
   const statsSkeletonKeys = Array.from(
     { length: loading ? (statsSkeleton ?? 0) : 0 },
     (_, index) => `stat-skeleton-${index}`,
   );
 
   return (
-    <header
-      className={cn(
-        "page-header-wash relative mb-5.5 px-5 pb-6.5",
-        ancestors.length > 0 ? "pt-0.5" : "pt-3.5",
-      )}
-    >
+    <header className={cn("mb-6.5", ancestors.length > 0 ? "pt-0" : "pt-3.5")}>
       {ancestors.length > 0 ? (
-        <nav className="mb-4 flex flex-wrap items-center gap-1.75 text-xs leading-4 font-semibold tracking-[0.005em] text-slate-400">
+        <nav className="mb-3.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {ancestors.map((entry, index) => (
             <Fragment key={entry.to ?? entry.label}>
               {index > 0 ? (
-                <RiArrowRightSLine className="size-3.5 shrink-0 opacity-70" />
+                <RiArrowRightSLine className="size-3.25 shrink-0 text-schiefer-400" />
               ) : null}
               {entry.to ? (
                 <Link
                   to={entry.to}
-                  className="text-teal-600 transition-colors hover:text-teal-700"
+                  className="underline-offset-3 transition-colors hover:text-azur-700 hover:underline"
                 >
                   {entry.label}
                 </Link>
@@ -88,27 +95,26 @@ export const PageHeader = ({
         </nav>
       ) : null}
 
-      <div className="flex items-center gap-4 max-lg:flex-wrap sm:gap-5.5">
+      <div className="flex items-center gap-3.25 max-lg:flex-wrap">
         <div className="shrink-0">{tile}</div>
 
         <div className="min-w-0 flex-1">
           {loading ? (
             // Höhe der geladenen h1-Zeile reservieren,
             // damit die mittig ausgerichtete Kachel nicht springt
-            <div className="flex h-7.5 items-center">
-              <Skeleton className="h-5 w-56 bg-slate-400/15" />
+            <div className="flex h-7 items-center">
+              <Skeleton className="h-5 w-56" />
             </div>
           ) : (
-            <h1 className="text-2xl leading-tight font-semibold">{title}</h1>
+            <h1 className="flex items-center gap-2.5 font-heading text-2xl font-semibold tracking-heading">
+              <span className="truncate">{title}</span>
+              {titleExtra}
+            </h1>
           )}
           {/* Zeile immer reservieren, damit nachladende Unterzeilen die
               Kopfhöhe nicht springen lassen */}
-          <div className="mt-0.75 flex min-h-4 items-center text-xs leading-4 font-medium text-slate-400">
-            {loading || subLoading ? (
-              <Skeleton className="h-3.5 w-56 bg-slate-400/15" />
-            ) : (
-              sub
-            )}
+          <div className="mt-0.75 flex min-h-5 items-center text-sm text-muted-foreground">
+            {loading || subLoading ? <Skeleton className="h-3.5 w-56" /> : sub}
           </div>
         </div>
 
@@ -119,8 +125,8 @@ export const PageHeader = ({
                 key={key}
                 className="border-l border-border px-4 text-right first:border-l-0 last:pr-0 max-lg:first:pl-0 sm:px-5 max-sm:border-l-0 max-sm:px-0"
               >
-                <Skeleton className="ml-auto h-3 w-16 bg-slate-400/15" />
-                <Skeleton className="mt-1.5 ml-auto h-5 w-20 bg-slate-400/15" />
+                <Skeleton className="ml-auto h-4 w-16" />
+                <Skeleton className="mt-0.5 ml-auto h-7 w-20" />
               </div>
             ))}
           </div>
@@ -133,10 +139,10 @@ export const PageHeader = ({
                 key={stat.label}
                 className="border-l border-border px-4 text-right first:border-l-0 last:pr-0 max-lg:first:pl-0 sm:px-5 max-sm:border-l-0 max-sm:px-0"
               >
-                <div className="text-[11.5px] leading-3.75 font-semibold text-slate-400">
+                <div className="text-2xs font-medium text-muted-foreground">
                   {stat.label}
                 </div>
-                <div className="mt-0.75 text-[19px] leading-[1.29] font-semibold tracking-[-0.02em] tabular-nums">
+                <div className="mt-0.5 font-heading text-xl font-semibold tracking-heading tabular-nums">
                   {stat.value}
                 </div>
               </div>
@@ -146,11 +152,10 @@ export const PageHeader = ({
 
         {action ? (
           <div
-            className={
-              stats && stats.length > 0
-                ? "flex shrink-0 items-center gap-2"
-                : "ml-auto flex shrink-0 items-center gap-2"
-            }
+            className={cn(
+              "flex shrink-0 items-center gap-2",
+              !(stats && stats.length > 0) && "ml-auto",
+            )}
           >
             {action}
           </div>

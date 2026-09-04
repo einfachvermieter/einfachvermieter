@@ -11,6 +11,7 @@ import { createRoot } from "react-dom/client";
 // Font vor der Tailwind-CSS und via JS-Entry importieren,
 // damit Vite die woff2-Dateien mitbundelt.
 import "@fontsource-variable/geist/index.css";
+import "@fontsource-variable/bricolage-grotesque/index.css";
 import "./index.css";
 import "./lib/i18n";
 

@@ -5,7 +5,7 @@ import { PageHeader } from "./PageHeader";
 /**
  * Ladeansicht einer Detailseite (Route-`pendingComponent`): der Seitenkopf als
  * Skeleton-Variante (Kachel + Breadcrumb stehen, Titel/Unterzeile/Kennzahlen
- * als Skeleton) plus die Formular-Körper-Karte. So bleibt der Kopf beim
+ * als Skeleton) plus die Formular-Card. So bleibt der Kopf beim
  * Übergang zur geladenen Seite an fester Position.
  */
 export const DetailPending = ({
@@ -14,6 +14,7 @@ export const DetailPending = ({
   rows = 4,
   aside = false,
   tabs,
+  kpis,
 }: {
   /**
    * Statische Domänen-Kachel (Name/Typ sind beim Laden noch unbekannt)
@@ -31,6 +32,11 @@ export const DetailPending = ({
    * Platzhalter für die Tab-Leiste der Detailseite
    */
   tabs?: "default" | "pills";
+
+  /**
+   * Kennzahl-Kachel-Platzhalter über dem Card-Body
+   */
+  kpis?: number;
 }) => (
   <div className="pb-24">
     <PageHeader
@@ -39,6 +45,6 @@ export const DetailPending = ({
       loading={true}
       statsSkeleton={statsSkeleton}
     />
-    <FormSkeleton rows={rows} aside={aside} tabs={tabs} />
+    <FormSkeleton rows={rows} aside={aside} tabs={tabs} kpis={kpis} />
   </div>
 );

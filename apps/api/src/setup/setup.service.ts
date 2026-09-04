@@ -111,7 +111,7 @@ export class SetupService {
           senderAddressStreet: "",
           senderAddressPostalCode: "",
           senderAddressCity: "",
-          useLogo: false,
+          logoMode: "none",
           lastAppVersion: currentAppVersion,
         });
 
