@@ -6,9 +6,16 @@ import cookieParser from "cookie-parser";
 import type { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import { AppModule } from "./app.module.js";
+import { authMode } from "./auth/auth-mode.js";
 import { checkDatabaseVersion } from "./updates/database-version-guard.js";
 
 const bootstrap = async (): Promise<void> => {
+  // `local` ist nur mit Loopback-Token sicher: ohne Token wäre jeder Request
+  // Admin, auch aus dem Netz, wenn die API nicht an 127.0.0.1 gebunden ist.
+  if (authMode() === "local" && !process.env.LOOPBACK_TOKEN) {
+    throw new Error("Für AUTH_MODE=local muss LOOPBACK_TOKEN gesetzt sein.");
+  }
+
   const app = await NestFactory.create(AppModule);
 
   // Produktion provisioniert sich beim Start selbst: Datenbank anlegen (falls
