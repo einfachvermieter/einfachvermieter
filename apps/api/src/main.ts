@@ -84,7 +84,7 @@ const bootstrap = async (): Promise<void> => {
   // HOST erlaubt der Desktop-App, die API strikt an 127.0.0.1 zu binden;
   // ohne Angabe wie bisher alle Interfaces (Container-Betrieb).
   const port = Number(process.env.PORT ?? 7273);
-  await app.listen(port, process.env.HOST ?? "0.0.0.0");
+  await app.listen(port, process.env.HOST || "0.0.0.0");
 };
 
 bootstrap().catch((err) => {

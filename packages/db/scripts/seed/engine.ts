@@ -94,7 +94,7 @@ const fixturesBaseDir = resolve(scriptsDir, "seed-fixtures");
  * `UPLOADS_DIR` (relativ -> repoRoot, absolut 1:1), Default `data/uploads`.
  */
 const resolveUploadsDir = (): string => {
-  const configured = process.env.UPLOADS_DIR ?? "data/uploads";
+  const configured = process.env.UPLOADS_DIR || "data/uploads";
   return isAbsolute(configured) ? configured : resolve(repoRoot, configured);
 };
 

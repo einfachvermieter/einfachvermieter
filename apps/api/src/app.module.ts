@@ -25,7 +25,7 @@ import { UnitsModule } from "./units/units.module.js";
 import { UpdatesModule } from "./updates/updates.module.js";
 
 const webDistPath =
-  process.env.WEB_DIST_PATH ?? join(process.cwd(), "apps/web/dist");
+  process.env.WEB_DIST_PATH || join(process.cwd(), "apps/web/dist");
 
 @Module({
   imports: [
