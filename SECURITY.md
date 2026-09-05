@@ -7,7 +7,7 @@ Sicherheitslücken bitte **nicht** öffentlich über Issues oder Pull Requests m
 vulnerability[@]baumer.dev (mit Version bzw. Commit, Schritten zum Nachstellen
 und Auswirkung).
 
-Das Projekt wird ehrenamtlich gepflegt: Rückmeldung meist binnen 7 Tagen, Fixes
+Das Projekt wird nebenberuflich gepflegt: Rückmeldung meist binnen 7 Tagen, Fixes
 nur für die aktuelle Version. Bitte erst nach dem Fix veröffentlichen.
 
 ## English
