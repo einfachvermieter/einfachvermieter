@@ -4,13 +4,13 @@ import {
   Injectable,
   type PipeTransform,
 } from "@nestjs/common";
-import type { ZodSchema } from "zod";
+import type { ZodType } from "zod";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { FieldValidationException } from "./field-validation.exception.js";
 
 @Injectable()
 export class ZodValidationPipe<T> implements PipeTransform<unknown, T> {
-  constructor(private readonly schema: ZodSchema<T>) {}
+  constructor(private readonly schema: ZodType<T>) {}
 
   /**
    * Parst den Wert gegen das Schema, liefert bei Erfolg die typisierten Daten

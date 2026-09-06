@@ -1,7 +1,7 @@
-import type { ZodErrorMap } from "zod";
+import type { z } from "zod";
 import { messageKey } from "./messageKey.js";
 
-export const i18nZodErrorMap: ZodErrorMap = (issue) => {
+export const i18nZodErrorMap: z.core.$ZodErrorMap = (issue) => {
   switch (issue.code) {
     case "invalid_type":
       if (issue.input === undefined || issue.input === null) {
