@@ -2,6 +2,7 @@
   "name": "@einfachvermieter/i18n",
   "version": "2026.1.0-beta.1",
   "private": true,
+  "license": "FSL-1.1-MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
