@@ -2,7 +2,6 @@ import type { StatementResult } from "@einfachvermieter/shared";
 import {
   formatDate,
   formatEur,
-  formatName,
   hasHeatingBreakdown,
   isoDatePlusOneYear,
   todayIso,
@@ -72,7 +71,7 @@ import {
   statementIdentityLabel,
   statementTabs,
 } from "../../lib/statements";
-import { tenantQueryOptions } from "../../lib/tenants";
+import { contractPartyNames, tenantQueryOptions } from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
 import { AdvanceAdjustmentCard } from "./components/AdvanceAdjustmentCard";
 import { BillingInfoCard } from "./components/detail/BillingInfoCard";
@@ -574,10 +573,7 @@ export const StatementDetailPage = () => {
   };
 
   const tenantName = tenantAggregate
-    ? tenantAggregate.residents
-        .filter((resident) => resident.isContractParty)
-        .map((resident) => formatName(resident.firstName, resident.lastName))
-        .join(t("ui.common.separators.comma"))
+    ? contractPartyNames(tenantAggregate.residents)
     : "";
   const unit = units?.find(
     (entry) => entry.id === tenantAggregate?.tenant.unitId,

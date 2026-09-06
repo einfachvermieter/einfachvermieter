@@ -1,4 +1,4 @@
-import { formatName, todayIso } from "@einfachvermieter/shared";
+import { todayIso } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Fragment, type ReactNode } from "react";
@@ -9,7 +9,11 @@ import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
-import { currentResidentCount, tenantQueryOptions } from "../../lib/tenants";
+import {
+  contractPartyNames,
+  currentResidentCount,
+  tenantQueryOptions,
+} from "../../lib/tenants";
 import { unitsQueryOptions } from "../../lib/units";
 
 /**
@@ -54,10 +58,7 @@ export const TenantHero = ({
     tenant.startDate <= today &&
     (tenant.endDate === null || tenant.endDate >= today);
 
-  const names = aggregate.residents
-    .filter((resident) => resident.isContractParty)
-    .map((resident) => formatName(resident.firstName, resident.lastName))
-    .join(t("ui.common.separators.comma"));
+  const names = contractPartyNames(aggregate.residents);
   const heroName = names || (unit?.name ?? "");
 
   const residentCount = currentResidentCount(

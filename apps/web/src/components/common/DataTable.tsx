@@ -410,8 +410,8 @@ export const DataTable = <TData,>({
                 />
               ),
               meta: {
-                cellClassName: "w-10 text-right",
-                headerClassName: "w-10",
+                cellClassName: "w-10 pl-0 text-right",
+                headerClassName: "w-10 pl-0",
               },
             },
           ]

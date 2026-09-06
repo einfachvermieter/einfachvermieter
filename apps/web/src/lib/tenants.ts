@@ -62,8 +62,13 @@ export const currentResidentCount = (
 export const contractPartyNames = (residents: TenantResidentLink[]): string =>
   residents
     .filter((resident) => resident.isContractParty)
+    .sort(
+      (a, b) =>
+        a.lastName.localeCompare(b.lastName, "de") ||
+        a.firstName.localeCompare(b.firstName, "de"),
+    )
     .map((resident) => formatName(resident.firstName, resident.lastName))
-    .join(", ");
+    .join(t("ui.common.separators.comma"));
 
 /**
  * Identifizierende Bezeichnung eines Mietvertrags für Überschrift,

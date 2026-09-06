@@ -2,6 +2,7 @@ import type {
   SenderSettingsUpdateDto,
   senderSettingsUpdateSchema,
 } from "@einfachvermieter/shared";
+import { formatIban } from "@einfachvermieter/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import type { z } from "zod";
@@ -30,7 +31,9 @@ const toFormDefaults = (
   senderFax: settings.senderFax ?? "",
   senderEmail: settings.senderEmail ?? "",
   senderBankName: settings.senderBankName ?? "",
-  senderBankIban: settings.senderBankIban ?? "",
+  senderBankIban: settings.senderBankIban
+    ? formatIban(settings.senderBankIban)
+    : "",
   senderBankBic: settings.senderBankBic ?? "",
   logoMode: settings.logoMode,
   logoAlignment: settings.logoAlignment,

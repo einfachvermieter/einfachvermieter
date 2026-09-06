@@ -230,9 +230,11 @@ export const UnitEditPage = () => {
             buildingId: unit.buildingId,
             name: unit.name,
             unitNumber: unit.unitNumber ?? "",
-            areaSqm: String(unit.areaSqm),
+            areaSqm: String(unit.areaSqm).replace(".", ","),
             heatingAreaSqm:
-              unit.heatingAreaSqm === null ? "" : String(unit.heatingAreaSqm),
+              unit.heatingAreaSqm === null
+                ? ""
+                : String(unit.heatingAreaSqm).replace(".", ","),
           }}
           onSubmit={async (values) => {
             await updateUnit.mutateAsync(values);
