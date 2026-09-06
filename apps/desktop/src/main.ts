@@ -24,6 +24,17 @@ import {
 
 const t = createTranslate(createI18nSync());
 
+/**
+ * Veröffentlichungsweg dieses Pakets, beim Bündeln eingebrannt. Leer bei
+ * einem Bundle ohne gesetztes `APP_PLATFORM` (Entwicklung); dann gilt der
+ * heute je System einzige Weg.
+ */
+declare const __APP_PLATFORM__: string;
+
+const appPlatform =
+  __APP_PLATFORM__ ||
+  (process.platform === "darwin" ? "macos-download" : "win-store");
+
 // Vor jedem `getPath("userData")` und vor dem Single-Instance-Lock setzen:
 // beide hängen am App-Namen (Entwicklung liefe sonst unter dem Paketnamen).
 app.setName("EinfachVermieter");
@@ -120,7 +131,7 @@ const startApi = async (): Promise<{ port: number; token: string }> => {
       DATA_DIR: dataDir(),
       DATABASE_URL: dbPath(),
       LOOPBACK_TOKEN: token,
-      APP_PLATFORM: process.platform === "darwin" ? "macos" : "win",
+      APP_PLATFORM: appPlatform,
     },
   });
 

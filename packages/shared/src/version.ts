@@ -84,6 +84,14 @@ export const compareVersions = (a: string, b: string): number => {
 };
 
 /**
+ * True, wenn die Version ein Vorab-Kennzeichen trägt ("2026.1.0-beta.1").
+ * Daran hängt der Kanal der Versionsprüfung: wer eine Vorabversion nutzt,
+ * bekommt auch die nächste angeboten.
+ */
+export const isPrerelease = (version: string): boolean =>
+  parseVersion(version).prerelease.length > 0;
+
+/**
  * True, wenn `candidate` eine höhere Version als `current` ist.
  */
 export const isNewerVersion = (candidate: string, current: string): boolean =>

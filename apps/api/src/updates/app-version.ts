@@ -13,10 +13,12 @@ const readCurrentVersion = (): string => {
   return packageJson.version ?? "0.0.0";
 };
 
-const platformFromEnv = (): AppPlatform => {
-  const value = process.env.APP_PLATFORM;
-  return value === "macos" || value === "win" ? value : "server";
-};
+/**
+ * Den Key des Builds setzt der Electron-Hauptprozess (bzw. das
+ * Container-Image); ohne ist es eine Server-Installation.
+ */
+const platformFromEnv = (): AppPlatform =>
+  process.env.APP_PLATFORM?.trim() || "server";
 
 export const currentAppVersion = readCurrentVersion();
 export const appPlatform = platformFromEnv();

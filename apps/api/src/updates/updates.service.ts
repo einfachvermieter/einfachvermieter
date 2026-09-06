@@ -1,7 +1,9 @@
 import { APP_SETTINGS_ID, AppSettingsSchema } from "@einfachvermieter/db";
 import {
   type AppPlatform,
+  compareVersions,
   isNewerVersion,
+  isPrerelease,
   type UpdateStatus,
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
@@ -22,6 +24,12 @@ type FeedEntry = {
   releaseNotesUrl: string | null;
   availableFrom: string | null;
 };
+type UpdateChannel = "stable" | "beta";
+
+/**
+ * Aufbau der Versionsdatei: je Build-Schlüssel ein Kanal-Paar, je Kanal ein
+ * Eintrag.
+ */
 type Feed = Partial<Record<AppPlatform, unknown>>;
 
 const toFeedEntry = (candidate: unknown): FeedEntry | null => {
@@ -41,11 +49,38 @@ const toFeedEntry = (candidate: unknown): FeedEntry | null => {
     : null;
 };
 
+/**
+ * Eintrag für diesen Kanal. Eine stabile Installation sieht nur den stabilen
+ * Zweig. Eine Vorabversion nimmt den höheren von beiden, damit sie nicht auf
+ * einer alten Beta hängen bleibt, wenn der Kanal ruht oder dieser
+ * Veröffentlichungsweg gar keine Betas anbietet.
+ */
+export const pickEntry = (
+  byChannel: unknown,
+  channel: UpdateChannel,
+): FeedEntry | null => {
+  if (typeof byChannel !== "object" || byChannel === null) {
+    return null;
+  }
+
+  const { stable, beta } = byChannel as Record<UpdateChannel, unknown>;
+
+  return (
+    (channel === "beta" ? [stable, beta] : [stable])
+      .map(toFeedEntry)
+      .filter((entry) => entry !== null)
+      .sort((a, b) => compareVersions(b.version, a.version))[0] ?? null
+  );
+};
+
 @Injectable()
 export class UpdatesService {
   private readonly logger = new Logger(UpdatesService.name);
   private readonly currentVersion = currentAppVersion;
   private readonly platform = appPlatform;
+  private readonly channel: UpdateChannel = isPrerelease(currentAppVersion)
+    ? "beta"
+    : "stable";
   private readonly feedUrl = process.env.UPDATE_FEED_URL || DEFAULT_FEED_URL;
 
   // In-Memory-Cache: ein Abruf pro Tag reicht. Fehlschläge werden ebenfalls
@@ -129,7 +164,7 @@ export class UpdatesService {
         entry = this.cached?.entry ?? null;
       } else if (response.ok) {
         const feed = (await response.json()) as Feed;
-        entry = toFeedEntry(feed[this.platform]);
+        entry = pickEntry(feed[this.platform], this.channel);
         this.etag = response.headers.get("etag");
       } else {
         this.logger.warn(

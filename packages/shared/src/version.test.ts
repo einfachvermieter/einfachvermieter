@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareVersions, isNewerVersion } from "./version.js";
+import { compareVersions, isNewerVersion, isPrerelease } from "./version.js";
 
 describe("isNewerVersion", () => {
   it("vergleicht numerisch je Stelle", () => {
@@ -27,5 +27,13 @@ describe("isNewerVersion", () => {
 
   it("liefert 0 für gleiche Versionen", () => {
     expect(compareVersions("v1.2.3-rc.1", "1.2.3-rc.1")).toBe(0);
+  });
+});
+
+describe("isPrerelease", () => {
+  it("erkennt das Vorab-Kennzeichen", () => {
+    expect(isPrerelease("2026.1.0-beta.1")).toBe(true);
+    expect(isPrerelease("v2026.1.0-rc.1")).toBe(true);
+    expect(isPrerelease("2026.1.0")).toBe(false);
   });
 });
