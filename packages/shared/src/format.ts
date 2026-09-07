@@ -167,6 +167,18 @@ export const centsToEurInput = (cents: number): string =>
   (cents / 100).toFixed(2).replace(".", ",");
 
 /**
+ * Dezimalzahl -> "72,50" (für form-input). `null`/`undefined` ergeben einen
+ * leeren String, damit optionale Felder leer bleiben.
+ */
+export const decimalToInput = (
+  value: number | null | undefined,
+  digits = 2,
+): string =>
+  value === null || value === undefined
+    ? ""
+    : value.toFixed(digits).replace(".", ",");
+
+/**
  * Wie `centsToEurInput`, aber `null`/`undefined` ergeben einen leeren String
  * (für Formularfelder mit optionalem Betrag).
  */

@@ -1,4 +1,5 @@
 import {
+  decimalToInput,
   formatName,
   formatNumber,
   type UnitCreateDto,
@@ -230,11 +231,8 @@ export const UnitEditPage = () => {
             buildingId: unit.buildingId,
             name: unit.name,
             unitNumber: unit.unitNumber ?? "",
-            areaSqm: String(unit.areaSqm).replace(".", ","),
-            heatingAreaSqm:
-              unit.heatingAreaSqm === null
-                ? ""
-                : String(unit.heatingAreaSqm).replace(".", ","),
+            areaSqm: decimalToInput(unit.areaSqm),
+            heatingAreaSqm: decimalToInput(unit.heatingAreaSqm),
           }}
           onSubmit={async (values) => {
             await updateUnit.mutateAsync(values);
