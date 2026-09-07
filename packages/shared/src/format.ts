@@ -132,6 +132,16 @@ export const formatName = (
 ): string => [firstName?.trim(), lastName?.trim()].filter(Boolean).join(" ");
 
 /**
+ * Vergleicht Personen nach Nachname, dann Vorname
+ */
+export const byName = (
+  a: { firstName: string; lastName: string },
+  b: { firstName: string; lastName: string },
+): number =>
+  a.lastName.localeCompare(b.lastName, "de") ||
+  a.firstName.localeCompare(b.firstName, "de");
+
+/**
  * Konvertiert Eingabe in Euro (als String) zu Cent.
  * Akzeptiert "1234,56", "1234.56", "1.234,56".
  */

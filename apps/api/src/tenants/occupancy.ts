@@ -1,4 +1,5 @@
 import type { Resident, Tenant, TenantResident } from "@einfachvermieter/db";
+import { byName, formatName } from "@einfachvermieter/shared";
 
 /**
  * Stichtag für die "Snapshot"-Anzeige eines Mietvertrags: heute, wenn aktiv;
@@ -91,14 +92,10 @@ export const deriveUnitOccupancy = (
           current.endDate,
         ),
     )
-    .map((link) => {
-      const resident = residentById.get(link.residentId);
-      return resident
-        ? `${resident.firstName} ${resident.lastName}`.trim()
-        : "";
-    })
-    .filter((name) => name.length > 0)
-    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    .map((link) => residentById.get(link.residentId))
+    .filter((resident) => resident !== undefined)
+    .sort(byName)
+    .map((resident) => formatName(resident.firstName, resident.lastName));
 
   const currentEnd = current.endDate;
   let status: UnitOccupancy["status"] = "rented";

@@ -9,6 +9,7 @@ import {
   type StatementDocumentProps,
 } from "@einfachvermieter/pdf";
 import {
+  byName,
   formatName,
   formatStatementReference,
   type StatementResult,
@@ -144,6 +145,7 @@ export class PdfService {
     const tenantName =
       contractParties.length > 0
         ? contractParties
+            .sort(byName)
             .map((r) => formatName(r.firstName, r.lastName))
             .filter(Boolean)
             .join(", ")

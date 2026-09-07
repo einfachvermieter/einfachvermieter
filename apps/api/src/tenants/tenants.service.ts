@@ -19,6 +19,7 @@ import {
   UnitSchema,
 } from "@einfachvermieter/db";
 import {
+  byName,
   daysBetween,
   enumerateMonths,
   formatDate,
@@ -247,11 +248,7 @@ const computeTenantRow = (
         lastName: resident?.lastName ?? "",
       };
     })
-    .sort(
-      (a, b) =>
-        a.lastName.toLowerCase().localeCompare(b.lastName.toLowerCase()) ||
-        a.firstName.toLowerCase().localeCompare(b.firstName.toLowerCase()),
-    );
+    .sort(byName);
 
   const currentOccupants = tenantLinks.filter((link) =>
     isPresent(

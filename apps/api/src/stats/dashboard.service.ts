@@ -13,6 +13,7 @@ import {
   UnitSchema,
 } from "@einfachvermieter/db";
 import {
+  byName,
   type DashboardResult,
   daysBetween,
   firstOfMonthIso,
@@ -23,6 +24,7 @@ import {
 import { EntityManager } from "@mikro-orm/core";
 import { Injectable } from "@nestjs/common";
 import { AccountsService } from "../accounts/accounts.service.js";
+import { isPresent, referenceDateFor } from "../tenants/occupancy.js";
 
 const MONTHS_IN_CHART = 6;
 const MAX_OVERDUE_TENANTS = 20;
@@ -68,7 +70,7 @@ export class DashboardService {
       this.accountsService.getAllBalances(today),
       this.accountsService.getMonthlyTotals(chartStart, today),
       this.accountsService.getFirstOpenMonths(today),
-      this.tenantNames(tenants.map((tenant) => tenant.id)),
+      this.tenantNames(tenants, today),
     ]);
 
     const missingByTenant = await this.missingStatements(
@@ -290,17 +292,19 @@ export class DashboardService {
   }
 
   /**
-   * Anzeigename je Mietverhältnis: die Bewohner mit Komma verbunden
+   * Anzeigename je Mietverhältnis: die zum Stichtag anwesenden
+   * Vertragspartner, sortiert nach Nachname und Vorname
    */
   private async tenantNames(
-    tenantIds: string[],
+    tenants: Tenant[],
+    today: string,
   ): Promise<Map<string, string[]>> {
-    if (tenantIds.length === 0) {
+    if (tenants.length === 0) {
       return new Map();
     }
 
     const links = await this.em.find(TenantResidentSchema, {
-      tenantId: { $in: tenantIds },
+      tenantId: { $in: tenants.map((tenant) => tenant.id) },
     });
     const residents = await this.em.find(ResidentSchema, {
       id: { $in: links.map((link) => link.residentId) },
@@ -310,14 +314,27 @@ export class DashboardService {
     );
 
     const names = new Map<string, string[]>();
-    for (const link of links) {
-      const resident = residentById.get(link.residentId);
-      if (!resident) {
-        continue;
-      }
-      const list = names.get(link.tenantId) ?? [];
-      list.push(formatName(resident.firstName, resident.lastName));
-      names.set(link.tenantId, list);
+    for (const tenant of tenants) {
+      const refDate = referenceDateFor(tenant.startDate, tenant.endDate, today);
+      const contractParties = links
+        .filter(
+          (link) =>
+            link.tenantId === tenant.id &&
+            link.isContractParty === 1 &&
+            isPresent(
+              refDate,
+              link.moveInDate,
+              link.moveOutDate,
+              tenant.startDate,
+              tenant.endDate,
+            ),
+        )
+        .map((link) => residentById.get(link.residentId))
+        .filter((resident) => resident !== undefined)
+        .sort(byName)
+        .map((resident) => formatName(resident.firstName, resident.lastName));
+
+      names.set(tenant.id, contractParties);
     }
 
     return names;

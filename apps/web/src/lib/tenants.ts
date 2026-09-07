@@ -1,4 +1,4 @@
-import { formatName } from "@einfachvermieter/shared";
+import { byName, formatName } from "@einfachvermieter/shared";
 import { queryOptions } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { api } from "./api";
@@ -62,11 +62,7 @@ export const currentResidentCount = (
 export const contractPartyNames = (residents: TenantResidentLink[]): string =>
   residents
     .filter((resident) => resident.isContractParty)
-    .sort(
-      (a, b) =>
-        a.lastName.localeCompare(b.lastName, "de") ||
-        a.firstName.localeCompare(b.firstName, "de"),
-    )
+    .sort(byName)
     .map((resident) => formatName(resident.firstName, resident.lastName))
     .join(t("ui.common.separators.comma"));
 
