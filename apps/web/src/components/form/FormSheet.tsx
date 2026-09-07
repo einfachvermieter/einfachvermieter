@@ -1,4 +1,6 @@
 import type { RemixiconComponentType } from "@remixicon/react";
+// biome-ignore lint/suspicious/noDeprecatedImports: False positive, nur overloads deprecated
+import { useBlocker } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { FieldValues, UseFormReturn } from "react-hook-form";
 import { Spinner } from "@/components/common/Spinner";
@@ -57,6 +59,15 @@ export const FormSheet = <T extends FieldValues>({
   // Bildlauf-Hinweis an den stehenden Leisten.
   const [overflow, setOverflow] = useState({ top: false, bottom: false });
   const { isDirty, isSubmitting } = form.formState;
+
+  // Router-Navigation (Zurück-Button etc.) muss bei dirty Forms auch
+  // warnen, dass Daten verloren gehen.
+  const blocker = useBlocker({
+    shouldBlockFn: () => isDirty && !isSubmitting,
+    enableBeforeUnload: () => isDirty,
+    withResolver: true,
+  });
+  const navigationBlocked = blocker.status === "blocked";
 
   // Das Fehlerbanner sitzt ganz oben im Inhalt; bei Fehlern
   // dorthin scrollen, sonst bleibt es unsichtbar.
@@ -179,21 +190,40 @@ export const FormSheet = <T extends FieldValues>({
         </SheetContent>
       </Sheet>
 
-      <AlertDialog open={confirmDiscard} onOpenChange={setConfirmDiscard}>
+      <AlertDialog
+        open={confirmDiscard || navigationBlocked}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmDiscard(false);
+            blocker.reset?.();
+          }
+        }}
+      >
         <AlertDialogContent size="default">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t("ui.common.forms.unsavedTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {t("ui.common.forms.unsavedMessageClose")}
+              {navigationBlocked
+                ? t("ui.common.forms.unsavedMessage")
+                : t("ui.common.forms.unsavedMessageClose")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel variant="outline">
               {t("ui.common.forms.unsavedKeepEditing")}
             </AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={onClose}>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (navigationBlocked) {
+                  blocker.proceed?.();
+                } else {
+                  onClose();
+                }
+              }}
+            >
               {t("ui.common.forms.unsavedDiscard")}
             </AlertDialogAction>
           </AlertDialogFooter>
