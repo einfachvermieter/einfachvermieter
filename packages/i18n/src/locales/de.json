@@ -1663,7 +1663,6 @@
           "confirmDeleteMessageWithTenant": "Der Entwurf für {tenant}, „{unit}“ ({period}) wird gelöscht. Erfasste Kosten, Zahlungen und Zählerstände bleiben erhalten. Nur diese Abrechnung entfällt und kann jederzeit neu erstellt werden.",
           "hintText": "Nach dem Finalisieren sind keine Änderungen mehr möglich. Danach stehen „Stornieren“ und „Korrekturabrechnung“ zur Verfügung."
         },
-        "pdfFilename": "Nebenkostenabrechnung_{start}_{end}.pdf",
         "loadingData": "Lade Daten …",
         "computing": "Berechnung läuft …",
         "calculationErrorTitle": "Berechnung nicht möglich",
@@ -2396,6 +2395,7 @@
   "statements": {
     "pdf": {
       "draftWatermark": "ENTWURF",
+      "filenameDraft": "NK-{year} {unit} (Entwurf).pdf",
       "correctionNote": "Diese Abrechnung ersetzt die Abrechnung Nr. {reference} und tritt vollständig an deren Stelle.",
       "documentType": "Nebenkostenabrechnung",
       "subject": "Ihre Nebenkostenabrechnung",

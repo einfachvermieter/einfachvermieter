@@ -211,7 +211,7 @@ const StatementTabs = ({
   isDraft,
   periodEnd,
   pdfSrc,
-  pdfFilename,
+  pdfDownloadSrc,
   tenantName,
   unitName,
 }: {
@@ -222,7 +222,7 @@ const StatementTabs = ({
   isDraft: boolean;
   periodEnd: string;
   pdfSrc: string;
-  pdfFilename: string;
+  pdfDownloadSrc: string;
   tenantName: string;
   unitName: string | undefined;
 }) => {
@@ -354,10 +354,7 @@ const StatementTabs = ({
             </Description>
             <CardAction>
               <Button asChild={true} variant="outline">
-                {/* `download` erzwingt den Download unabhängig vom
-                    Content-Disposition-Header, auch als Fallback, wenn der
-                    Browser kein Inline-PDF rendert. */}
-                <a href={pdfSrc} download={pdfFilename}>
+                <a href={pdfDownloadSrc}>
                   <RiDownloadLine data-icon="inline-start" />
                   {t("ui.statements.detail.downloadPdf")}
                 </a>
@@ -550,10 +547,7 @@ export const StatementDetailPage = () => {
     ? String(previewUpdatedAt ?? 0)
     : (statement.finalizedAt ?? "");
   const pdfSrc = `/api/statements/${statement.id}/pdf?v=${encodeURIComponent(pdfCacheBust)}`;
-  const pdfFilename = t("ui.statements.detail.pdfFilename", {
-    start: statement.periodStart,
-    end: statement.periodEnd,
-  });
+  const pdfDownloadSrc = `${pdfSrc}&download=1`;
 
   const identity =
     tenantAggregate && units
@@ -562,15 +556,6 @@ export const StatementDetailPage = () => {
           start: formatDate(statement.periodStart),
           end: formatDate(statement.periodEnd),
         });
-
-  const downloadPdf = () => {
-    const anchor = document.createElement("a");
-    anchor.href = pdfSrc;
-    anchor.download = pdfFilename;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-  };
 
   const tenantName = tenantAggregate
     ? contractPartyNames(tenantAggregate.residents)
@@ -652,9 +637,11 @@ export const StatementDetailPage = () => {
     );
   } else if (statement.status === "finalized") {
     primaryAction = (
-      <Button onClick={downloadPdf}>
-        <RiDownloadLine data-icon="inline-start" />
-        {t("ui.statements.detail.downloadPdf")}
+      <Button asChild={true}>
+        <a href={pdfDownloadSrc}>
+          <RiDownloadLine data-icon="inline-start" />
+          {t("ui.statements.detail.downloadPdf")}
+        </a>
       </Button>
     );
     menuItems.push(
@@ -679,16 +666,20 @@ export const StatementDetailPage = () => {
       </Button>
     );
     menuItems.push(
-      <DropdownMenuItem key="download" onSelect={downloadPdf}>
-        <RiDownloadLine />
-        {t("ui.statements.detail.downloadPdf")}
+      <DropdownMenuItem key="download" asChild={true}>
+        <a href={pdfDownloadSrc}>
+          <RiDownloadLine />
+          {t("ui.statements.detail.downloadPdf")}
+        </a>
       </DropdownMenuItem>,
     );
   } else {
     primaryAction = (
-      <Button onClick={downloadPdf}>
-        <RiDownloadLine data-icon="inline-start" />
-        {t("ui.statements.detail.downloadPdf")}
+      <Button asChild={true}>
+        <a href={pdfDownloadSrc}>
+          <RiDownloadLine data-icon="inline-start" />
+          {t("ui.statements.detail.downloadPdf")}
+        </a>
       </Button>
     );
   }
@@ -773,7 +764,7 @@ export const StatementDetailPage = () => {
             isDraft={isDraft}
             periodEnd={statement.periodEnd}
             pdfSrc={pdfSrc}
-            pdfFilename={pdfFilename}
+            pdfDownloadSrc={pdfDownloadSrc}
             tenantName={tenantName}
             unitName={unit?.name}
           />

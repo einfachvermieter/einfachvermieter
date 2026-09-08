@@ -23,6 +23,7 @@ import { EntityManager } from "@mikro-orm/core";
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { BuildingsService } from "../buildings/buildings.service.js";
 import { renderStatementDocument } from "../common/pdf-worker.js";
+import { getI18n } from "../i18n/i18n.registry.js";
 import { SettingsService } from "../settings/settings.service.js";
 import {
   STATEMENT_STORAGE,
@@ -35,6 +36,49 @@ import { StatementsService } from "./statements.service.js";
 const FAR_FUTURE = "9999-12-31";
 
 type StatementRow = OperatingCostStatement;
+
+/**
+ * Entschärft Strings für die Verwendung in einem Dateinamen.
+ * Erlaubt sind nur Buchstaben, Ziffern, Satzzeichen, Symbole und
+ * Leerzeichen; führende und schließende Punkte fallen weg
+ */
+const toFilenamePart = (name: string): string =>
+  name
+    .replace(/[^\p{L}\p{N}\p{P}\p{S} ]|[/\\:*?"<>|]/gu, " ")
+    .replace(/\s+/gu, " ")
+    .replace(/^[\s.]+|[\s.]+$/gu, "");
+
+/**
+ * Dateiname des Abrechnungs-PDFs. Finalisierte Abrechnungen tragen ihre
+ * Abrechnungsnummer. Entwürfe haben noch keine, sie werden deshalb über
+ * Jahr und Wohnung benannt.
+ */
+export const statementPdfFilename = (
+  statement: Pick<
+    StatementRow,
+    "periodStart" | "sequenceNumber" | "revisionNumber"
+  >,
+  unitName: string,
+): string => {
+  const year = statement.periodStart.slice(0, 4);
+
+  if (statement.sequenceNumber !== null && statement.revisionNumber !== null) {
+    const reference = formatStatementReference(
+      Number(year),
+      statement.sequenceNumber,
+      statement.revisionNumber,
+    );
+
+    return `${reference}.pdf`;
+  }
+
+  return getI18n()
+    .t("statements.pdf.filenameDraft", {
+      year,
+      unit: toFilenamePart(unitName),
+    })
+    .replace(/\s{2,}/gu, " ");
+};
 
 @Injectable()
 export class PdfService {
@@ -58,6 +102,18 @@ export class PdfService {
     const meta = await this.buildMeta(statement);
 
     return renderStatementDocument({ result, meta });
+  }
+
+  /**
+   * Liefert den Dateinamen für den PDF-Download der Abrechnung
+   */
+  async filenameFor(statement: StatementRow): Promise<string> {
+    const aggregate = await this.tenantsService.getAggregate(
+      statement.tenantId,
+    );
+    const unit = await this.unitsService.get(aggregate.tenant.unitId);
+
+    return statementPdfFilename(statement, unit.name);
   }
 
   /**

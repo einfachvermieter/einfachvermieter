@@ -1,5 +1,4 @@
 import {
-  formatStatementReference,
   isoDate,
   type OperatingCostStatementAdvanceAdjustmentDto,
   type OperatingCostStatementCancelDto,
@@ -188,15 +187,10 @@ export class StatementsController {
   async downloadPdf(
     @Param("id") id: string,
     @Res({ passthrough: true }) response: Response,
+    @Query("download") download?: string,
   ) {
     const statement = await this.statementsService.get(id);
-    const periodYear = Number(statement.periodStart.slice(0, 4));
-    const reference = formatStatementReference(
-      periodYear,
-      statement.sequenceNumber,
-      statement.revisionNumber,
-    );
-    const filename = `${reference}.pdf`;
+    const filename = await this.pdfService.filenameFor(statement);
 
     // Finalisierte Statements werden aus dem persistierten PDF geliefert.
     // Fehlt die Datei (z.B. nach Umzug des Storage-Verzeichnisses), rendern
@@ -211,7 +205,7 @@ export class StatementsController {
     response.setHeader("Content-Type", "application/pdf");
     response.setHeader(
       "Content-Disposition",
-      `inline; filename*=UTF-8''${encodeURIComponent(filename)}`,
+      `${download === "1" ? "attachment" : "inline"}; filename*=UTF-8''${encodeURIComponent(filename)}`,
     );
     response.setHeader("Content-Length", String(data.byteLength));
     response.setHeader(
