@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { AppBrand } from "@/components/common/AppBrand";
+import { OuterShell } from "@/components/common/OuterShell";
 import {
   Card,
   CardContent,
@@ -22,26 +22,21 @@ export const StartupNotice = ({
   description?: string;
   children?: ReactNode;
 }) => (
-  <div className="flex min-h-dvh items-center justify-center p-6">
-    <div className="w-full max-w-md">
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="pb-3">
-              <AppBrand tone="light" />
-            </div>
-            <CardTitle>{title}</CardTitle>
-            {description ? (
-              <CardDescription>{description}</CardDescription>
-            ) : null}
-          </div>
-        </CardHeader>
-        {children ? (
-          <CardContent>
-            <div className="flex justify-center">{children}</div>
-          </CardContent>
-        ) : null}
-      </Card>
-    </div>
-  </div>
+  <OuterShell width="md">
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col items-center gap-1 text-center">
+          <CardTitle>{title}</CardTitle>
+          {description ? (
+            <CardDescription>{description}</CardDescription>
+          ) : null}
+        </div>
+      </CardHeader>
+      {children ? (
+        <CardContent>
+          <div className="flex justify-center">{children}</div>
+        </CardContent>
+      ) : null}
+    </Card>
+  </OuterShell>
 );

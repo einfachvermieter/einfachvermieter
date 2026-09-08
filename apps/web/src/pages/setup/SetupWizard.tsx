@@ -287,164 +287,184 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
     currentStepEmpty,
   });
 
+  const stepperProps = {
+    labels: stepKeys.map((key) => t(`ui.setup.${key}.heading`)),
+    current: step,
+    srLabel: t("ui.setup.stepIndicator", {
+      current: step + 1,
+      total: stepKeys.length,
+    }),
+  };
+
   return (
-    <form
-      onSubmit={handlePrimary}
-      noValidate={true}
-      className="flex flex-col gap-6"
-    >
-      <SetupStepper
-        labels={stepKeys.map((key) => t(`ui.setup.${key}.heading`))}
-        current={step}
-        srLabel={t("ui.setup.stepIndicator", {
-          current: step + 1,
-          total: stepKeys.length,
-        })}
-      />
+    <div className="grid sm:min-h-130 sm:grid-cols-[15rem_minmax(0,1fr)]">
+      <aside className="border-b border-border bg-muted px-6 py-5 sm:border-r sm:border-b-0 sm:py-7">
+        <p className="mb-4 text-2xs font-medium uppercase tracking-wider text-muted-foreground max-sm:hidden">
+          {t("ui.setup.title")}
+        </p>
+        <SetupStepper
+          {...stepperProps}
+          orientation="vertical"
+          className="max-sm:hidden"
+        />
+        <SetupStepper {...stepperProps} className="sm:hidden" />
+      </aside>
 
-      <div className="flex flex-col gap-1">
-        <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
-          {t(`ui.setup.${stepKey}.heading`)}
-          {stepBadge}
-        </h3>
-        {stepHint ? <Description>{stepHint}</Description> : null}
-      </div>
-
-      {stepKey === "admin" ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <TextInput
-            control={form.control}
-            name="adminFirstName"
-            label={t("ui.setup.admin.firstName")}
-            required={true}
-            autoComplete="given-name"
-          />
-          <TextInput
-            control={form.control}
-            name="adminLastName"
-            label={t("ui.setup.admin.lastName")}
-            required={true}
-            autoComplete="family-name"
-          />
-          <div className="sm:col-span-2">
-            <TextInput
-              control={form.control}
-              name="adminEmail"
-              label={t("ui.setup.admin.email")}
-              required={true}
-              type="email"
-              autoComplete="username"
-            />
+      <form
+        onSubmit={handlePrimary}
+        noValidate={true}
+        className="flex flex-col"
+      >
+        <div className="flex flex-1 flex-col gap-6 p-6 sm:p-7">
+          <div className="flex flex-col gap-1">
+            <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+              {t(`ui.setup.${stepKey}.heading`)}
+              {stepBadge}
+            </h3>
+            {stepHint ? <Description>{stepHint}</Description> : null}
           </div>
-          <TextInput
-            control={form.control}
-            name="adminPassword"
-            label={t("ui.setup.admin.password")}
-            required={true}
-            description={<PasswordPolicyHint policy={policy} />}
-            type="password"
-            autoComplete="new-password"
-          />
-          <TextInput
-            control={form.control}
-            name="adminPasswordConfirm"
-            label={t("ui.setup.admin.passwordConfirm")}
-            required={true}
-            type="password"
-            autoComplete="new-password"
-          />
-        </div>
-      ) : null}
 
-      {stepKey === "sender" ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <TextInput
-            control={form.control}
-            name="senderName"
-            label={t("ui.setup.sender.name")}
-            required={true}
-          />
-          <TextInput
-            control={form.control}
-            name="senderStreet"
-            label={t("ui.setup.sender.street")}
-            required={true}
-          />
-          <TextInput
-            control={form.control}
-            name="senderPostalCode"
-            label={t("ui.setup.sender.postalCode")}
-            required={true}
-          />
-          <TextInput
-            control={form.control}
-            name="senderCity"
-            label={t("ui.setup.sender.city")}
-            required={true}
-          />
-        </div>
-      ) : null}
+          {stepKey === "admin" ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <TextInput
+                control={form.control}
+                name="adminFirstName"
+                label={t("ui.setup.admin.firstName")}
+                required={true}
+                autoComplete="given-name"
+              />
+              <TextInput
+                control={form.control}
+                name="adminLastName"
+                label={t("ui.setup.admin.lastName")}
+                required={true}
+                autoComplete="family-name"
+              />
+              <div className="sm:col-span-2">
+                <TextInput
+                  control={form.control}
+                  name="adminEmail"
+                  label={t("ui.setup.admin.email")}
+                  required={true}
+                  type="email"
+                  autoComplete="username"
+                />
+              </div>
+              <TextInput
+                control={form.control}
+                name="adminPassword"
+                label={t("ui.setup.admin.password")}
+                required={true}
+                description={<PasswordPolicyHint policy={policy} />}
+                type="password"
+                autoComplete="new-password"
+              />
+              <TextInput
+                control={form.control}
+                name="adminPasswordConfirm"
+                label={t("ui.setup.admin.passwordConfirm")}
+                required={true}
+                type="password"
+                autoComplete="new-password"
+              />
+            </div>
+          ) : null}
 
-      {stepKey === "internet" ? (
-        <div className="flex flex-col gap-4">
-          <SwitchInput
-            control={form.control}
-            name="climateFactorsAutoFetch"
-            label={t("ui.internetAccess.climateFactors.label")}
-            labelBadge={recommendedBadge}
-            labelHelp={t("ui.internetAccess.climateFactors.details")}
-            description={t("ui.internetAccess.climateFactors.description")}
-          />
-          <SwitchInput
-            control={form.control}
-            name="updateCheckEnabled"
-            label={t("ui.internetAccess.updateCheck.label")}
-            labelBadge={recommendedBadge}
-            labelHelp={t("ui.internetAccess.updateCheck.details")}
-            description={t("ui.internetAccess.updateCheck.description")}
-          />
-          <SwitchInput
-            control={form.control}
-            name="telemetryEnabled"
-            label={t("ui.internetAccess.telemetry.label")}
-            labelBadge={recommendedBadge}
-            labelHelp={t("ui.internetAccess.telemetry.details")}
-            description={t("ui.internetAccess.telemetry.description")}
-          />
-          <div className="flex justify-center pt-2">
-            <Button type="button" variant="outline" onClick={enableRecommended}>
-              <RiToggleFill />
-              {t("ui.setup.internet.enableRecommended")}
+          {stepKey === "sender" ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <TextInput
+                control={form.control}
+                name="senderName"
+                label={t("ui.setup.sender.name")}
+                required={true}
+              />
+              <TextInput
+                control={form.control}
+                name="senderStreet"
+                label={t("ui.setup.sender.street")}
+                required={true}
+              />
+              <TextInput
+                control={form.control}
+                name="senderPostalCode"
+                label={t("ui.setup.sender.postalCode")}
+                required={true}
+              />
+              <TextInput
+                control={form.control}
+                name="senderCity"
+                label={t("ui.setup.sender.city")}
+                required={true}
+              />
+            </div>
+          ) : null}
+
+          {stepKey === "internet" ? (
+            <div className="flex flex-col gap-4">
+              <SwitchInput
+                control={form.control}
+                name="climateFactorsAutoFetch"
+                label={t("ui.internetAccess.climateFactors.label")}
+                labelBadge={recommendedBadge}
+                labelHelp={t("ui.internetAccess.climateFactors.details")}
+                description={t("ui.internetAccess.climateFactors.description")}
+              />
+              <SwitchInput
+                control={form.control}
+                name="updateCheckEnabled"
+                label={t("ui.internetAccess.updateCheck.label")}
+                labelBadge={recommendedBadge}
+                labelHelp={t("ui.internetAccess.updateCheck.details")}
+                description={t("ui.internetAccess.updateCheck.description")}
+              />
+              <SwitchInput
+                control={form.control}
+                name="telemetryEnabled"
+                label={t("ui.internetAccess.telemetry.label")}
+                labelBadge={recommendedBadge}
+                labelHelp={t("ui.internetAccess.telemetry.details")}
+                description={t("ui.internetAccess.telemetry.description")}
+              />
+              <div className="flex justify-center pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={enableRecommended}
+                >
+                  <RiToggleFill />
+                  {t("ui.setup.internet.enableRecommended")}
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
+          {runSetup.isError ? (
+            <p className="text-sm text-destructive">
+              {alreadyDone
+                ? t("ui.setup.error.alreadyDone")
+                : t("ui.setup.error.generic")}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-between sm:px-7">
+          {step > 0 ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={runSetup.isPending}
+              onClick={() => setStep((current) => current - 1)}
+            >
+              {t("ui.setup.action.back")}
+            </Button>
+          ) : null}
+          <div className="flex flex-col sm:ml-auto">
+            <Button type="submit" disabled={runSetup.isPending}>
+              {primaryLabel}
             </Button>
           </div>
         </div>
-      ) : null}
-
-      {runSetup.isError ? (
-        <p className="text-sm text-destructive">
-          {alreadyDone
-            ? t("ui.setup.error.alreadyDone")
-            : t("ui.setup.error.generic")}
-        </p>
-      ) : null}
-
-      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-        {step > 0 ? (
-          <Button
-            type="button"
-            variant="outline"
-            disabled={runSetup.isPending}
-            onClick={() => setStep((current) => current - 1)}
-          >
-            {t("ui.setup.action.back")}
-          </Button>
-        ) : null}
-        <div className="flex flex-col sm:ml-auto">
-          <Button type="submit" disabled={runSetup.isPending}>
-            {primaryLabel}
-          </Button>
-        </div>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };

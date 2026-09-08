@@ -1,7 +1,7 @@
 import type { PasswordRecoveryDto } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { AppBrand } from "@/components/common/AppBrand";
+import { OuterShell } from "@/components/common/OuterShell";
 import { Spinner } from "@/components/common/Spinner";
 import {
   Card,
@@ -49,37 +49,32 @@ export const PasswordRecoveryPage = () => {
   };
 
   return (
-    <div className="flex min-h-dvh items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col items-center gap-3 text-center">
-              <div className="pb-3">
-                <AppBrand tone="light" />
+    <OuterShell width="md">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col items-center gap-1 text-center">
+            <CardTitle>
+              {done ? t("ui.recovery.successTitle") : t("ui.recovery.title")}
+            </CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </div>
+        </CardHeader>
+        {done || empty ? null : (
+          <CardContent>
+            {policy && status ? (
+              <PasswordRecoveryForm
+                policy={policy}
+                emails={emails}
+                onSubmit={handleSubmit}
+              />
+            ) : (
+              <div className="flex justify-center py-6">
+                <Spinner className="size-6 text-muted-foreground" />
               </div>
-              <CardTitle>
-                {done ? t("ui.recovery.successTitle") : t("ui.recovery.title")}
-              </CardTitle>
-              <CardDescription>{description}</CardDescription>
-            </div>
-          </CardHeader>
-          {done || empty ? null : (
-            <CardContent>
-              {policy && status ? (
-                <PasswordRecoveryForm
-                  policy={policy}
-                  emails={emails}
-                  onSubmit={handleSubmit}
-                />
-              ) : (
-                <div className="flex justify-center py-6">
-                  <Spinner className="size-6 text-muted-foreground" />
-                </div>
-              )}
-            </CardContent>
-          )}
-        </Card>
-      </div>
-    </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
+    </OuterShell>
   );
 };

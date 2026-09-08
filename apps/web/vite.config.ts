@@ -1,6 +1,14 @@
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv, type Plugin } from "vite";
+
+/**
+ * Versionsnummer für Seiten ohne API-Zugriff (Anmeldung, Hinweise)
+ */
+const appVersion: string = JSON.parse(
+  readFileSync(resolve(import.meta.dirname, "package.json"), "utf8"),
+).version;
 
 /**
  * Dev-only: erzwingt einen Full-Reload, sobald sich die kompilierte Locale des
@@ -40,6 +48,10 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), i18nHotReload()],
+    define: {
+      // biome-ignore lint/style/useNamingConvention: Vite-Define-Konstante
+      __APP_VERSION__: JSON.stringify(appVersion),
+    },
     // i18n-Paket nicht pre-bundlen, damit Vite die live aktualisierte dist
     // serviert (siehe i18nHotReload).
     optimizeDeps: {
