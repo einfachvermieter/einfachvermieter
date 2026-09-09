@@ -1,6 +1,10 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import { z } from "zod";
-import { centsToEurInputOrEmpty } from "../format.js";
+import {
+  centsToEurInputOrEmpty,
+  normalizeNumberInput,
+  parseEurToCents,
+} from "../format.js";
 import { isoDate } from "./common.js";
 
 export const heatingModes = ["internal", "external"] as const;
@@ -364,10 +368,10 @@ const tempIntRegex = /^\d{1,2}$/u;
 const energyKwhRegex = /^\d{1,9}([.,]\d{1,3})?$/u;
 
 /**
- * Parst "12345" oder "12345,5" in eine kWh-Zahl. NaN bei Unfug.
+ * Parst "12345", "12345,5" oder "12345.5" in eine kWh-Zahl. NaN bei Unfug.
  */
 const parseEnergyKwh = (raw: string): number =>
-  Number.parseFloat(raw.replace(/\./gu, "").replace(",", "."));
+  Number.parseFloat(normalizeNumberInput(raw));
 
 const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/u;
 
@@ -755,15 +759,8 @@ export const emptyExternalHeatingEntryFormValues: ExternalHeatingEntryFormValues
  */
 const parseCents = (value: string): number | null => {
   const trimmed = value.trim();
-  if (trimmed.length === 0) {
-    return null;
-  }
-  const normalized = trimmed.replace(/\./gu, "").replace(",", ".");
-  const euros = Number.parseFloat(normalized);
-  if (!Number.isFinite(euros)) {
-    return null;
-  }
-  return Math.round(euros * 100);
+
+  return trimmed.length === 0 ? null : parseEurToCents(trimmed);
 };
 
 export const externalHeatingEntryFormToDto = (

@@ -6,6 +6,7 @@ import {
   centsToEurInput,
   parseEurToCents,
   todayIso,
+  unsignedAmountRegex,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -31,10 +32,7 @@ import { useCrudMutation } from "@/lib/useCrudMutation";
 const feeFormSchema = z.object({
   kind: z.enum(["charge", "credit"]),
   date: z.string().min(1),
-  amountInput: z
-    .string()
-    .min(1)
-    .regex(/^\d+([.,]\d{1,2})?$/u),
+  amountInput: z.string().min(1).regex(unsignedAmountRegex),
   reason: z.string().min(1).max(500),
 });
 type FeeFormValues = z.infer<typeof feeFormSchema>;

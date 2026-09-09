@@ -1,6 +1,10 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import { z } from "zod";
-import { parseEurToCents } from "../format.js";
+import {
+  amountRegex,
+  parseEurToCents,
+  unsignedAmountRegex,
+} from "../format.js";
 import { ISO_DATE_REGEX } from "./common.js";
 import {
   type PaymentCreateDto,
@@ -8,8 +12,6 @@ import {
   paymentPurposeKinds,
 } from "./payments.js";
 
-const amountRegex = /^-?\d+([.,]\d{1,2})?$/u;
-const positiveAmountRegex = /^\d+([.,]\d{1,2})?$/u;
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/u;
 
 export const monthInputModes = ["sum", "split"] as const;
@@ -55,7 +57,7 @@ export const paymentFormSchema = z
       }
 
       if (data.inputMode === "sum") {
-        if (!positiveAmountRegex.test(data.sumInput)) {
+        if (!unsignedAmountRegex.test(data.sumInput)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["sumInput"],
@@ -75,7 +77,7 @@ export const paymentFormSchema = z
         return;
       }
       // split-Modus: getrennt Kaltmiete + NK validieren
-      if (!positiveAmountRegex.test(data.baseRentInput)) {
+      if (!unsignedAmountRegex.test(data.baseRentInput)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["baseRentInput"],
@@ -83,7 +85,7 @@ export const paymentFormSchema = z
         });
       }
 
-      if (!positiveAmountRegex.test(data.advanceInput)) {
+      if (!unsignedAmountRegex.test(data.advanceInput)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["advanceInput"],

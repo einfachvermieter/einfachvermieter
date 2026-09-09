@@ -1844,7 +1844,7 @@
     },
     "form": {
       "dateFormat": "Datum im Format YYYY-MM-DD",
-      "amountFormat": "Betrag im Format 123,45",
+      "amountFormat": "Betrag im Format 1.234,56",
       "firstNameRequired": "Vorname erforderlich",
       "lastNameRequired": "Nachname erforderlich",
       "unitRequired": "Bitte Wohnung wählen",

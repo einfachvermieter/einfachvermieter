@@ -5,6 +5,7 @@ import {
   emptyExternalHeatingEntryFormValues,
   externalHeatingEntryFormToDto,
   externalHeatingEntryToFormValues,
+  unsignedAmountRegex,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiExternalLinkLine } from "@remixicon/react";
@@ -17,13 +18,20 @@ import { TextInput } from "@/components/form/TextInput";
 import { t } from "../../../lib/i18n";
 import type { Unit } from "../../../lib/units";
 
+const amountOrEmpty = z
+  .string()
+  .refine(
+    (value) => value === "" || unsignedAmountRegex.test(value),
+    t("ui.form.amountFormat"),
+  );
+
 const formSchema = z.object({
   unitId: z.string().min(1),
   periodStart: z.string().min(1),
   periodEnd: z.string().min(1),
-  totalCents: z.string().min(1),
-  baseCostCents: z.string(),
-  consumptionCostCents: z.string(),
+  totalCents: z.string().regex(unsignedAmountRegex, t("ui.form.amountFormat")),
+  baseCostCents: amountOrEmpty,
+  consumptionCostCents: amountOrEmpty,
   notes: z.string(),
 });
 

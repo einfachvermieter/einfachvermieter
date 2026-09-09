@@ -142,16 +142,50 @@ export const byName = (
   a.firstName.localeCompare(b.firstName, "de");
 
 /**
+ * Vereinheitlicht deutsche und englische Zahlenschreibweise zu einem String,
+ * den `Number.parseFloat` lesen kann.
+ *
+ * Ein Komma ist immer das Dezimaltrennzeichen, Punkte davor sind
+ * Tausenderpunkte. Steht ein Punkt allein, ist er das Dezimaltrennzeichen,
+ * es sei denn, ihm folgen genau drei Ziffern: "1.234" ist die deutsche
+ * Tausenderschreibweise, "1.23" und "0.0789" sind Dezimalzahlen.
+ */
+export const normalizeNumberInput = (input: string): string => {
+  const cleaned = input.replace(/\s/gu, "");
+  const decimalsAfterLoneDot = /^-?\d+\.(\d+)$/u.exec(cleaned)?.[1];
+
+  if (decimalsAfterLoneDot !== undefined && decimalsAfterLoneDot.length !== 3) {
+    return cleaned;
+  }
+
+  return cleaned.replace(/\./gu, "").replace(",", ".");
+};
+
+/**
+ * Rumpf der Betragsmuster: entweder deutsche Tausenderschreibweise
+ * ("1.234", "12.345,67") oder eine Zahl ohne Tausenderpunkt, deren
+ * Trennzeichen Komma oder Punkt sein darf ("1234,56", "1234.56").
+ */
+const amountBody = String.raw`(?:\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)`;
+
+/**
+ * Muster für Geldbeträge in Eingabefeldern, Minuszeichen erlaubt. Lässt genau
+ * die Schreibweisen zu, die `parseEurToCents` richtig liest.
+ */
+export const amountRegex = new RegExp(`^-?${amountBody}$`, "u");
+
+/**
+ * Wie `amountRegex`, aber ohne Minuszeichen. Für Felder, die keinen
+ * negativen Betrag annehmen dürfen (Miete, Kaution, Zahlungseingang).
+ */
+export const unsignedAmountRegex = new RegExp(`^${amountBody}$`, "u");
+
+/**
  * Konvertiert Eingabe in Euro (als String) zu Cent.
- * Akzeptiert "1234,56", "1234.56", "1.234,56".
+ * Akzeptiert "1234,56", "1234.56" und "1.234,56".
  */
 export const parseEurToCents = (input: string): number => {
-  const cleaned = input
-    .replace(/\s/gu, "")
-    .replace(/\./gu, "")
-    .replace(",", ".");
-
-  const value = Number.parseFloat(cleaned);
+  const value = Number.parseFloat(normalizeNumberInput(input));
 
   if (Number.isNaN(value)) {
     return 0;

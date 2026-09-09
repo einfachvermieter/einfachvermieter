@@ -1,7 +1,11 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import { isValidIBAN } from "ibantools-germany";
 import { z } from "zod";
-import { centsToEurInput, parseEurToCents } from "../format.js";
+import {
+  centsToEurInput,
+  parseEurToCents,
+  unsignedAmountRegex,
+} from "../format.js";
 import { ISO_DATE_REGEX } from "./common.js";
 import type { TenantSaveDto } from "./tenants.js";
 
@@ -10,17 +14,15 @@ const isoDateOrEmpty = z
   .regex(ISO_DATE_REGEX, messageKey("ui.form.dateFormat"))
   .or(z.literal(""));
 
-const amountRegex = /^\d+([.,]\d{1,2})?$/u;
-
 const rentRowSchema = z.object({
   startDate: isoDateOrEmpty,
   endDate: isoDateOrEmpty,
   monthlyBaseRentEuros: z
     .string()
-    .regex(amountRegex, messageKey("ui.form.amountFormat")),
+    .regex(unsignedAmountRegex, messageKey("ui.form.amountFormat")),
   monthlyAdvanceEuros: z
     .string()
-    .regex(amountRegex, messageKey("ui.form.amountFormat"))
+    .regex(unsignedAmountRegex, messageKey("ui.form.amountFormat"))
     .refine((value) => parseEurToCents(value) > 0, {
       message: messageKey("ui.tenant.validation.advanceRequired"),
     }),
@@ -98,7 +100,7 @@ export const tenantFormSchema = z.object({
   endDate: isoDateOrEmpty,
   depositEuros: z
     .string()
-    .regex(amountRegex, messageKey("ui.form.amountFormat")),
+    .regex(unsignedAmountRegex, messageKey("ui.form.amountFormat")),
   notes: z.string(),
   residents: z
     .array(residentRowSchema)

@@ -6,6 +6,7 @@ import {
   suggestAdvanceValidFromDate,
   suggestNextMonthlyAdvanceCentsWithTariffs,
   todayIso,
+  unsignedAmountRegex,
 } from "@einfachvermieter/shared";
 import { z } from "zod";
 import { t } from "../../../lib/i18n";
@@ -28,8 +29,6 @@ export type TariffEntry = {
   costTypeName: string;
   tenantAmountCents: number;
 };
-
-const amountRegex = /^\d+([.,]\d{1,2})?$/u;
 
 /**
  * Betrag und Stichtag sind nur relevant, wenn überhaupt eine Anpassung
@@ -55,7 +54,7 @@ export const buildAdvanceFormSchema = (periodEnd: string) =>
               "ui.statements.advanceAdjustment.validation.amountRequired",
             ),
           });
-        } else if (!amountRegex.test(values.amountInput)) {
+        } else if (!unsignedAmountRegex.test(values.amountInput)) {
           ctx.addIssue({
             code: "custom",
             path: ["amountInput"],

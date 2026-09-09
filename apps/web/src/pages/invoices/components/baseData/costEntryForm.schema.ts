@@ -1,5 +1,6 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import {
+  amountRegex,
   type ContainedTaxKind,
   centsToEurInput,
   containedTaxKinds,
@@ -13,7 +14,6 @@ import type {
 } from "../../../../lib/costs";
 import { t } from "../../../../lib/i18n";
 
-const amountRegex = /^-?\d+([.,]\d{1,2})?$/u;
 const unitPriceRegex = /^\d+([.,]\d{1,4})?$/u;
 /**
  * CO2-Menge wird in kg eingegeben, intern in Gramm (Integer) gespeichert.
