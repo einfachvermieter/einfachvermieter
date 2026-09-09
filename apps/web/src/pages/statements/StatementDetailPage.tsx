@@ -2,6 +2,7 @@ import type { StatementResult } from "@einfachvermieter/shared";
 import {
   formatDate,
   formatEur,
+  hasBlockingWarning,
   hasHeatingBreakdown,
   isoDatePlusOneYear,
   todayIso,
@@ -572,8 +573,12 @@ export const StatementDetailPage = () => {
     result !== undefined &&
     result.balanceCents > 0 &&
     todayIso() > isoDatePlusOneYear(statement.periodEnd);
+
   // Solange die DWD-Abruf-Frage unbeantwortet ist und deshalb Klimafaktoren
   // fehlen, bliebe der Vorperiodenvergleich im Anhang unbereinigt.
+  // Ein negativer Verbrauch wurde auf null begrenzt; die Abrechnung ist so
+  // nicht finalisierbar.
+  const finalizeBlocked = result !== undefined && hasBlockingWarning(result);
   const climateFactorQuestionOpen =
     result?.heatingDetail?.energyComparison?.previous !== undefined &&
     climateFactors?.autoFetch === null &&
@@ -785,6 +790,7 @@ export const StatementDetailPage = () => {
           balanceCents={result?.balanceCents ?? 0}
           tenantName={tenantName}
           isPending={finalize.isPending}
+          blocked={finalizeBlocked}
           onConfirm={() => {
             setConfirmFinalizeOpen(false);
             finalize.mutate();

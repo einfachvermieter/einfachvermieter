@@ -23,6 +23,23 @@ const TENANT_WARNING_CODES = new Set([
 export const isTenantWarning = (warning: CalcWarning): boolean =>
   TENANT_WARNING_CODES.has(warning.code);
 
+/**
+ * Warncodes, die das Finalisieren verhindern
+ */
+const BLOCKING_WARNING_CODES = new Set(["consumptionNegative"]);
+
+/**
+ * Ob eine Berechnung Warnungen enthält, die das Finalisieren blockieren.
+ */
+export const hasBlockingWarning = (result: {
+  heatingDetail?: { warnings?: CalcWarning[] } | null;
+  waterDetail?: { warnings?: CalcWarning[] } | null;
+}): boolean =>
+  [
+    ...(result.heatingDetail?.warnings ?? []),
+    ...(result.waterDetail?.warnings ?? []),
+  ].some((warning) => BLOCKING_WARNING_CODES.has(warning.code));
+
 export type CalcWarningGroup = {
   code: string;
   /**

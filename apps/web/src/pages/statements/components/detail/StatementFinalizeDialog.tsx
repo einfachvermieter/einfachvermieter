@@ -80,6 +80,7 @@ export const StatementFinalizeDialog = ({
   balanceCents,
   tenantName,
   isPending,
+  blocked,
   onConfirm,
   onAdjustAdvance,
 }: {
@@ -93,6 +94,7 @@ export const StatementFinalizeDialog = ({
   balanceCents: number;
   tenantName: string;
   isPending: boolean;
+  blocked: boolean;
   onConfirm: () => void;
   onAdjustAdvance: () => void;
 }) => {
@@ -138,6 +140,11 @@ export const StatementFinalizeDialog = ({
           {climateFactorQuestionOpen ? (
             <CheckRow kind="warn">
               {t("ui.statements.detail.finalizeClimateFactorWarning")}
+            </CheckRow>
+          ) : null}
+          {blocked ? (
+            <CheckRow kind="warn">
+              {t("ui.statements.detail.finalizeDialog.blocked")}
             </CheckRow>
           ) : null}
           {advanceDetail ? (
@@ -207,7 +214,7 @@ export const StatementFinalizeDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("ui.common.action.cancel")}
           </Button>
-          <Button disabled={isPending} onClick={onConfirm}>
+          <Button disabled={isPending || blocked} onClick={onConfirm}>
             <RiLockLine data-icon="inline-start" />
             {t("ui.statements.detail.finalizeDialog.confirm")}
           </Button>

@@ -284,6 +284,44 @@ describe("readingNonMonotonic-Warnung", () => {
   });
 });
 
+describe("negativer Verbrauch", () => {
+  it("begrenzt einen rückläufigen Zähler auf 0 und warnt", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [reading("2025-01-01", 500), reading("2025-12-31", 10)];
+
+    const consumption = consumptionBetween(
+      readings,
+      "2025-01-01",
+      "2025-12-31",
+      { warnings, label: "Wohnung A" },
+    );
+
+    expect(consumption).toBe(0);
+    expect(warnings).toContainEqual({
+      code: "consumptionNegative",
+      params: { label: "Wohnung A" },
+    });
+  });
+
+  it("meldet denselben Zähler nur einmal", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [reading("2025-01-01", 500), reading("2025-12-31", 10)];
+
+    consumptionBetween(readings, "2025-01-01", "2025-06-30", {
+      warnings,
+      label: "Wohnung A",
+    });
+    consumptionBetween(readings, "2025-07-01", "2025-12-31", {
+      warnings,
+      label: "Wohnung A",
+    });
+
+    expect(
+      warnings.filter((warning) => warning.code === "consumptionNegative"),
+    ).toHaveLength(1);
+  });
+});
+
 describe("isDerivedConsumption", () => {
   const readings = [
     reading("2025-01-01", 1000),

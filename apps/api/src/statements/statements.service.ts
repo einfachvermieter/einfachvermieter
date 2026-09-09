@@ -42,6 +42,7 @@ import {
   groupCalcWarnings,
   type HeatingDetail,
   type HotWaterInput,
+  hasBlockingWarning,
   hotWaterCorrectionFactor,
   inferTariffAdjustmentBpsFromInvoices,
   intersect,
@@ -2082,6 +2083,15 @@ export class StatementsService {
     }
 
     const result = await this.calculateForStatement(statement);
+
+    // Ein auf null begrenzter negativer Verbrauch verschiebt Kosten auf die
+    // übrigen Wohnungen. Das darf nicht unbemerkt in eine unveränderbare
+    // Abrechnung wandern.
+    if (hasBlockingWarning(result)) {
+      throw new BadRequestException(
+        getI18n().t("errors.statementFinalizeNegativeConsumption"),
+      );
+    }
 
     const parsed = statementResultSchema.safeParse(result);
     if (!parsed.success) {

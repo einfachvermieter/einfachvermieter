@@ -117,6 +117,42 @@ describe("calculateWater", () => {
     ]);
   });
 
+  it("rückläufiger Wohnungszähler ergibt keinen negativen Anteil", () => {
+    // EG liest 500 -> 10 (Zahlendreher oder Zählertausch ohne Endstand), OG
+    // 0 -> 60. Ohne Begrenzung entstünde für EG ein Verbrauch von -490 m3 und
+    // damit ein negatives Gewicht, das die Verteilung für alle Wohnungen
+    // verzerrt.
+    const result = calculateWater({
+      units: [unitEg, unitOg],
+      waterMeters: [
+        physicalBundle("main", "main", null, "Hauptzähler", [
+          reading("2025-01-01", 0),
+          reading("2025-12-31", 100),
+        ]),
+        physicalBundle("eg", "unit", "unit-eg", "EG-Wohnung", [
+          reading("2025-01-01", 500),
+          reading("2025-12-31", 10),
+        ]),
+        physicalBundle("og", "unit", "unit-og", "OG-Wohnung", [
+          reading("2025-01-01", 0),
+          reading("2025-12-31", 60),
+        ]),
+      ],
+      periodStart: "2025-01-01",
+      periodEnd: "2025-12-31",
+    });
+
+    const eg = result.perUnit.find((u) => u.unitId === "unit-eg");
+    const og = result.perUnit.find((u) => u.unitId === "unit-og");
+
+    expect(eg?.consumptionM3).toBe(0);
+    expect(og?.consumptionM3).toBe(60);
+    expect(result.warnings).toContainEqual({
+      code: "consumptionNegative",
+      params: { label: "EG-Wohnung" },
+    });
+  });
+
   it("Differenzzähler + zusätzlicher Wohnungs-Zähler: beide Beiträge separat", () => {
     // EG hat einen Differenzzähler UND einen weiteren common-Zähler
     // (Waschmaschine EG). meterContributions muss beide ausweisen - den

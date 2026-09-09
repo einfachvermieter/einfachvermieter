@@ -239,6 +239,30 @@ const warnNonMonotonic = (
 };
 
 /**
+ * Meldet einen auf null begrenzten negativen Verbrauch. Je Zähler nur
+ * einmal, weil derselbe Zähler während einer Abrechnung mehrfach
+ * ausgewertet wird (je Wohnung, je Kostenart).
+ */
+const warnNegativeConsumption = (options?: InterpolateOptions): void => {
+  if (!options?.warnings) {
+    return;
+  }
+
+  const duplicate = options.warnings.some(
+    (existing) =>
+      existing.code === "consumptionNegative" &&
+      existing.params?.label === options.label,
+  );
+
+  if (!duplicate) {
+    options.warnings.push({
+      code: "consumptionNegative",
+      ...(options.label ? { params: { label: options.label } } : {}),
+    });
+  }
+};
+
+/**
  * Verbrauch zwischen zwei Stichtagen für einen kumulativen Zähler.
  *
  * Wichtig: Angrenzende Mietperioden nutzen die tatsächlichen
@@ -255,6 +279,18 @@ export const consumptionBetween = (
 
   const startValue = interpolateReading(readings, periodStart, options);
   const endValue = interpolateReading(readings, periodEnd, options);
+  const consumption = endValue - startValue;
 
-  return endValue - startValue;
+  // Ein rückwärts laufender Zähler, ein Zahlendreher beim Ablesen oder ein
+  // Gerätetausch ohne Endstand ergäben einen negativen Verbrauch. Der würde
+  // als negatives Gewicht die proportionale Verteilung für ALLE Wohnungen
+  // verzerren (eine Wohnung zahlt mehr als den ganzen Topf, die andere bekommt
+  // etwas gutgeschrieben). Darum 0 und Warnung, wie beim Differenzzähler.
+  if (consumption < 0) {
+    warnNegativeConsumption(options);
+
+    return 0;
+  }
+
+  return consumption;
 };
