@@ -44,6 +44,7 @@
     "saveFailed": "Speichern fehlgeschlagen",
     "deleted": "Gelöscht",
     "deleteFailed": "Löschen fehlgeschlagen",
+    "actionFailed": "Die Aktion konnte nicht ausgeführt werden",
     "loadingShort": "Laden …",
     "yes": "Ja",
     "no": "Nein",

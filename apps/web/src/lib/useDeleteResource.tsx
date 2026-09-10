@@ -2,8 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { DestructiveConfirmDialog } from "@/components/DestructiveConfirmDialog";
-import { ApiError, api } from "./api";
+import { api } from "./api";
 import { t } from "./i18n";
+import { toastApiError } from "./toastApiError";
 import { AGGREGATE_QUERY_KEYS } from "./useCrudMutation";
 
 type UseDeleteResourceOptions<T extends { id: string }> = {
@@ -52,12 +53,10 @@ export const useDeleteResource = <T extends { id: string }>({
       toast.success(t("common.deleted"));
       onDeleted?.();
     },
-    onError: (err: unknown) => {
-      // Der Bestätigungsdialog schließt beim Klick auf "Löschen" (Radix
-      // AlertDialogAction), die Meldung braucht also ein eigenes Ziel -
-      // dieselbe Stelle, an der auch der Erfolg quittiert wird.
-      toast.error(err instanceof ApiError ? err.message : defaultErrorMessage);
-    },
+    // Der Bestätigungsdialog schließt beim Klick auf "Löschen" (Radix
+    // AlertDialogAction), die Meldung braucht also ein eigenes Ziel,
+    // dieselbe Stelle, an der auch der Erfolg quittiert wird.
+    onError: toastApiError(defaultErrorMessage),
   });
 
   const deletingId = mutation.isPending ? mutation.variables?.id : undefined;

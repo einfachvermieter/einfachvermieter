@@ -73,6 +73,7 @@ import {
   statementTabs,
 } from "../../lib/statements";
 import { contractPartyNames, tenantQueryOptions } from "../../lib/tenants";
+import { toastApiError } from "../../lib/toastApiError";
 import { unitsQueryOptions } from "../../lib/units";
 import { AdvanceAdjustmentCard } from "./components/AdvanceAdjustmentCard";
 import { BillingInfoCard } from "./components/detail/BillingInfoCard";
@@ -450,6 +451,7 @@ export const StatementDetailPage = () => {
     mutationFn: () =>
       api.post<StatementDetail>(`/statements/${statementId}/finalize`),
     onSuccess: invalidateStatementQueries,
+    onError: toastApiError(),
   });
   const [confirmFinalizeOpen, setConfirmFinalizeOpen] = useState(false);
 
@@ -477,6 +479,7 @@ export const StatementDetailPage = () => {
         params: { statementId: created.id },
       });
     },
+    onError: toastApiError(),
   });
 
   const remove = useMutation({
@@ -491,6 +494,7 @@ export const StatementDetailPage = () => {
         search: { buildingId: undefined },
       });
     },
+    onError: toastApiError(t("common.deleteFailed")),
   });
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -802,8 +806,16 @@ export const StatementDetailPage = () => {
         />
       ) : null}
 
-      <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
-        <AlertDialogContent size="sm">
+      <AlertDialog
+        open={cancelOpen}
+        onOpenChange={(open) => {
+          setCancelOpen(open);
+          if (!open) {
+            cancel.reset();
+          }
+        }}
+      >
+        <AlertDialogContent size="default">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t("ui.statements.detail.cancelStatement")}
@@ -818,6 +830,11 @@ export const StatementDetailPage = () => {
             placeholder={t("ui.statements.detail.cancelReasonPlaceholder")}
             rows={3}
           />
+          {cancel.error ? (
+            <Alert variant="error">
+              <AlertDescription>{cancel.error.message}</AlertDescription>
+            </Alert>
+          ) : null}
           <AlertDialogFooter>
             <AlertDialogCancel variant="outline">
               {t("ui.common.action.cancel")}
