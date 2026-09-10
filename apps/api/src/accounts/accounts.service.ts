@@ -630,6 +630,8 @@ export class AccountsService {
    * Forderung aufs Mieterkonto.
    *
    * @param em - Optionaler EntityManager (z.B. für Aufruf in Transaction)
+   * @param keepZero - Auch bei Saldo null buchen (nötig, wenn Zahlungen auf
+   *   der Abrechnung liegen und sonst unsichtbar würden)
    */
   async recordSettlement(
     tenantId: string,
@@ -637,8 +639,9 @@ export class AccountsService {
     date: string,
     amountCents: number,
     em: EntityManager = this.em,
+    keepZero = false,
   ) {
-    if (amountCents === 0) {
+    if (amountCents === 0 && !keepZero) {
       return null;
     }
 

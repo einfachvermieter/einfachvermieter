@@ -171,6 +171,7 @@
     "statementAlreadyFinalized": "Abrechnung ist bereits finalisiert",
     "statementDeleteFinalized": "Finalisierte Abrechnungen können nicht gelöscht werden",
     "statementNotCancellable": "Nur finalisierte Abrechnungen können storniert werden",
+    "statementCancelHasPayments": "Auf diese Abrechnung sind bereits Zahlungen gebucht. Löschen Sie zuerst die Zahlungen oder erstellen Sie stattdessen eine Korrektur.",
     "statementNotCorrectable": "Zu dieser Abrechnung kann keine Korrektur erstellt werden (sie muss finalisiert oder storniert sein)",
     "statementPeriodOverlapsFinalized": "Für diesen Mieter existiert bereits eine finalisierte Abrechnung für den Zeitraum {periodStart} – {periodEnd}. Eine erneute Abrechnung dieser Periode ist nur als Korrektur der bestehenden möglich.",
     "statementFinalizeNegativeConsumption": "Mindestens ein Zähler weist einen negativen Verbrauch aus. Bitte korrigieren Sie die Zählerstände, danach lässt sich die Abrechnung finalisieren.",

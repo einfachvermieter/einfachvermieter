@@ -2207,10 +2207,18 @@ export class StatementsService {
       // derselben Transaktion wie der Statuswechsel. Sonst könnte ein
       // Fehler hier ein finalisiertes Statement ohne Mieterkonto-Buchung
       // hinterlassen.
+      let movedPayments = 0;
       if (row.supersedesStatementId) {
         await this.accountsService.removeSettlementForStatement(
           row.supersedesStatementId,
           em,
+        );
+        // Zahlungen auf die ersetzte Abrechnung wandern mit auf die
+        // Korrektur. Sonst stünde die Forderung offen obwohl beglichen.
+        movedPayments = await em.nativeUpdate(
+          PaymentSchema,
+          { forStatementId: row.supersedesStatementId },
+          { forStatementId: id, updatedAt: new Date().toISOString() },
         );
       }
 
@@ -2220,6 +2228,9 @@ export class StatementsService {
         statement.periodEnd,
         result.balanceCents,
         em,
+        // Geht eine Korrektur genau auf null auf, braucht es die Kontozeile
+        // trotzdem, damit die umgehängten Zahlungen sichtbar bleiben.
+        movedPayments > 0,
       );
 
       return row;
@@ -2233,7 +2244,8 @@ export class StatementsService {
    * Mieterkonto wird zurückgenommen, der Status auf `cancelled` gesetzt und
    * die Begründung revisionssicher festgehalten. Der Snapshot bleibt als
    * Beleg erhalten. Eine bereits ersetzte (`superseded`) Abrechnung kann nicht
-   * erneut storniert werden.
+   * erneut storniert werden, ebenso wenig eine, auf die schon Zahlungen
+   * gebucht sind.
    */
   async cancel(
     id: string,
@@ -2254,6 +2266,17 @@ export class StatementsService {
       const row = await em.findOne(OperatingCostStatementSchema, { id });
       if (!row) {
         throw new NotFoundException(notFoundMessage("statement", id));
+      }
+
+      // Ein Storno würde die Forderung entfernen, die Zahlungen blieben aber
+      // an dieser Abrechnung hängen und fielen aus dem Mieterkonto heraus.
+      const bookedPayments = await em.count(PaymentSchema, {
+        forStatementId: id,
+      });
+      if (bookedPayments > 0) {
+        throw new BadRequestException(
+          getI18n().t("errors.statementCancelHasPayments"),
+        );
       }
 
       await this.accountsService.removeSettlementForStatement(id, em);

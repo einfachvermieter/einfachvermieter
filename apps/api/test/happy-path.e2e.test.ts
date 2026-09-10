@@ -384,6 +384,77 @@ describe("Happy Path", () => {
       { expect: 200 },
     );
     expect(settlementsAfterCancel).toHaveLength(0);
+
+    // ── Korrektur: Zahlung auf die Abrechnung bleibt erhalten ───────────
+    const correction = await api(`/statements/${statement.id}/correct`, {
+      method: "POST",
+      expect: 201,
+    });
+    const correctionFinalized = await api(
+      `/statements/${correction.id}/finalize`,
+      { method: "POST", expect: 201 },
+    );
+    expect(correctionFinalized.status).toBe("finalized");
+
+    const settlementPayment = await api("/payments", {
+      method: "POST",
+      body: {
+        tenantId,
+        paymentDate: "2026-03-01",
+        purpose: {
+          kind: "statement",
+          forStatementId: correction.id,
+          amountCents: 5000,
+        },
+      },
+      expect: 201,
+    });
+
+    const balanceOf = async () => {
+      const rows = await api("/accounts/balances?asOf=2026-12-31", {
+        expect: 200,
+      });
+      return rows.find((row: { tenantId: string }) => row.tenantId === tenantId)
+        .balanceCents as number;
+    };
+
+    const balanceWithPayment = await balanceOf();
+
+    // Storno ist gesperrt, solange die Zahlung auf der Abrechnung liegt.
+    const cancelBlocked = await api(`/statements/${correction.id}/cancel`, {
+      method: "POST",
+      body: { reason: "darf nicht gehen" },
+      expect: 400,
+    });
+    expect(JSON.stringify(cancelBlocked)).toContain("Zahlungen");
+
+    // Zweite Korrektur: die Zahlung hängt danach an der neuen Abrechnung,
+    // der Saldo ändert sich nur um die Differenz der beiden Forderungen.
+    const secondCorrection = await api(`/statements/${correction.id}/correct`, {
+      method: "POST",
+      expect: 201,
+    });
+    const secondFinalized = await api(
+      `/statements/${secondCorrection.id}/finalize`,
+      { method: "POST", expect: 201 },
+    );
+
+    const movedPayment = await api(`/payments/${settlementPayment.id}`, {
+      expect: 200,
+    });
+    expect(movedPayment.forStatementId).toBe(secondCorrection.id);
+
+    const settlementRows = await api(`/accounts/${tenantId}/settlements`, {
+      expect: 200,
+    });
+    expect(settlementRows).toHaveLength(1);
+    expect(settlementRows[0].statementId).toBe(secondCorrection.id);
+    expect(settlementRows[0].paymentIds).toContain(settlementPayment.id);
+
+    expect(await balanceOf()).toBe(
+      balanceWithPayment -
+        (secondFinalized.balanceCents - correctionFinalized.balanceCents),
+    );
   }, 120_000);
 
   it("rechnet zentrale Heizung mit Warmwasser-WMZ ohne Fehler ab", async () => {

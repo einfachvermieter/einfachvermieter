@@ -8,6 +8,7 @@
  * Prüft:
  *  1) Überlappende Mietverträge (Tenants) pro Unit.
  *  2) Finalisierte Abrechnungen ohne gültige Snapshot-Version.
+ *  3) Zahlungen, deren Zweck ins Leere zeigt (Abrechnung oder Gebühr).
  *
  * Aufruf:  npm run check:consistency -w @einfachvermieter/db
  * Exit-Code: 0 wenn alles sauber, 1 bei mindestens einem Fund.
@@ -15,8 +16,10 @@
 
 import type { EntityManager } from "@mikro-orm/core";
 import {
+  AccountFeeSchema,
   initOrm,
   OperatingCostStatementSchema,
+  PaymentSchema,
   TenantSchema,
 } from "../src/index.js";
 
@@ -34,6 +37,7 @@ const main = async () => {
   try {
     await checkTenantOverlaps(em, findings);
     await checkFinalizedStatementsHaveVersion(em, findings);
+    await checkPaymentPurposes(em, findings);
   } finally {
     await orm.close(true);
   }
@@ -116,6 +120,58 @@ const checkFinalizedStatementsHaveVersion = async (
         level: "warn",
         area: "statements",
         message: `Finalized Statement ${s.id} (Tenant ${s.tenantId}) hat keine gültige Snapshot-Version (aktuell: ${String(version)}). PDF (Altbestand) bleibt gültig, aber Reporting sollte diesen Fall kennen.`,
+      });
+    }
+  }
+};
+
+/**
+ * Findet Zahlungen, deren Zweck auf eine gelöschte, stornierte oder ersetzte
+ * Abrechnung bzw. eine gelöschte Gebühr zeigt. Solche Zahlungen tauchen im
+ * Mieterkonto nicht mehr auf, der Saldo ist dann zu hoch.
+ */
+const checkPaymentPurposes = async (em: EntityManager, findings: Finding[]) => {
+  const payments = await em.find(PaymentSchema, {});
+  const statements = await em.find(OperatingCostStatementSchema, {});
+  const fees = await em.find(AccountFeeSchema, {});
+  const statementById = new Map(statements.map((row) => [row.id, row]));
+  const feeIds = new Set(fees.map((fee) => fee.id));
+
+  for (const payment of payments) {
+    if (payment.forFeeId && !feeIds.has(payment.forFeeId)) {
+      findings.push({
+        level: "error",
+        area: "payments",
+        message: `Zahlung ${payment.id} (Tenant ${payment.tenantId}) verweist auf die nicht vorhandene Gebühr ${payment.forFeeId}.`,
+      });
+    }
+
+    if (!payment.forStatementId) {
+      continue;
+    }
+
+    const statement = statementById.get(payment.forStatementId);
+    if (!statement) {
+      findings.push({
+        level: "error",
+        area: "payments",
+        message: `Zahlung ${payment.id} (Tenant ${payment.tenantId}) verweist auf die nicht vorhandene Abrechnung ${payment.forStatementId}.`,
+      });
+      continue;
+    }
+    if (statement.status !== "finalized") {
+      findings.push({
+        level: "error",
+        area: "payments",
+        message: `Zahlung ${payment.id} (Tenant ${payment.tenantId}) hängt an Abrechnung ${statement.id} mit Status „${statement.status}“ und fehlt damit im Mieterkonto.`,
+      });
+      continue;
+    }
+    if (statement.tenantId !== payment.tenantId) {
+      findings.push({
+        level: "error",
+        area: "payments",
+        message: `Zahlung ${payment.id} (Tenant ${payment.tenantId}) verweist auf Abrechnung ${statement.id} eines anderen Mietvertrags (${statement.tenantId}).`,
       });
     }
   }
