@@ -7,7 +7,18 @@ import type { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import { AppModule } from "./app.module.js";
 import { authMode } from "./auth/auth-mode.js";
+import { currentAppVersion } from "./updates/app-version.js";
 import { checkDatabaseVersion } from "./updates/database-version-guard.js";
+
+/**
+ * Startmeldung im ASCII-Rahmen
+ */
+const printStartupBanner = (lines: string[]): void => {
+  const width = Math.max(...lines.map((line) => line.length));
+  const border = `+${"-".repeat(width + 2)}+`;
+  const framed = lines.map((line) => `| ${line.padEnd(width)} |`);
+  process.stdout.write(`${[border, ...framed, border].join("\n")}\n`);
+};
 
 const bootstrap = async (): Promise<void> => {
   // `local` ist nur mit Loopback-Token sicher: ohne Token wäre jeder Request
@@ -16,12 +27,18 @@ const bootstrap = async (): Promise<void> => {
     throw new Error("Für AUTH_MODE=local muss LOOPBACK_TOKEN gesetzt sein.");
   }
 
-  const app = await NestFactory.create(AppModule);
+  // In Produktion nur Warnungen und Fehler: Nest meldet sonst jede Route und
+  // jedes Modul einzeln.
+  const isProduction = process.env.NODE_ENV === "production";
+  const app = await NestFactory.create(
+    AppModule,
+    isProduction ? { logger: ["error", "warn"] } : {},
+  );
 
   // Produktion provisioniert sich beim Start selbst: Datenbank anlegen (falls
   // nötig) und ausstehende Migrationen anwenden.
   const orm = app.get(MikroORM);
-  if (process.env.NODE_ENV === "production") {
+  if (isProduction) {
     await orm.schema.ensureDatabase();
     await orm.migrator.up();
   }
@@ -84,7 +101,13 @@ const bootstrap = async (): Promise<void> => {
   // HOST erlaubt der Desktop-App, die API strikt an 127.0.0.1 zu binden;
   // ohne Angabe wie bisher alle Interfaces (Container-Betrieb).
   const port = Number(process.env.PORT ?? 7273);
-  await app.listen(port, process.env.HOST || "0.0.0.0");
+  const host = process.env.HOST || "0.0.0.0";
+  await app.listen(port, host);
+
+  printStartupBanner([
+    `EinfachVermieter ${currentAppVersion}`,
+    `http://${host}:${port}`,
+  ]);
 };
 
 bootstrap().catch((err) => {
