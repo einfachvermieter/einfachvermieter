@@ -1,42 +1,40 @@
-# Abhaengigkeiten und Build-Artefakte werden im Image neu erzeugt
-node_modules
-**/node_modules
-dist
-**/dist
-.turbo
-**/.turbo
+# Erlaubnisliste: erst alles ausschliessen, dann gezielt hereinholen. So
+# landet nichts im Build-Kontext, was der Build nicht braucht.
+*
 
-# Versionierung und Editor
-.git
-.gitignore
-.vscode
-.idea
+# Was das Dockerfile kopiert oder der Build liest
+!package.json
+!package-lock.json
+!turbo.json
+!tsconfig.base.json
+!.npmrc
+!docker-entrypoint.sh
+!apps
+!packages
+!scripts
+
+# Abhaengigkeiten und Build-Artefakte werden im Image neu erzeugt
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+**/*.log
+**/.DS_Store
 
 # Secrets und lokale Konfiguration (nie ins Image)
-.env
-.env.*
-!.env.example
+**/.env
+**/.env.*
 
-# Logs, Coverage, Caches
-*.log
-npm-debug.log*
-coverage
-**/coverage
-.DS_Store
+# Desktop-Pakete: gross und fuer das Server-Image ohne Nutzen
+apps/desktop/staging
+apps/desktop/release
 
-# Lokale Daten (SQLite etc.)
-data
-*.db
-*.db-*
+# Private Seed-Daten (nicht im Repo, aber lokal vorhanden)
+packages/db/scripts/seed/local.ts
+packages/db/scripts/seed-fixtures/local
 
-# Generierte PDF-Assets (gespiegelt aus .gitignore): werden im Build frisch
-# erzeugt (Font-tnum-Freeze, Logo mit oklch->rgb). Host-Stand darf nicht
-# reinrutschen, sonst ueberspringt das idempotente Skript die Erzeugung.
-packages/pdf/assets/fonts/
+# Generierte PDF-Assets: werden im Build frisch erzeugt (Font-tnum-Freeze,
+# Logo mit oklch->rgb). Host-Stand darf nicht reinrutschen, sonst
+# ueberspringt das idempotente Skript die Erzeugung.
+packages/pdf/assets/fonts
 packages/pdf/assets/logo-pdf.svg
-
-# Doku, die fuer den Build irrelevant ist
-docs*
-README.md
-
-tmp/
