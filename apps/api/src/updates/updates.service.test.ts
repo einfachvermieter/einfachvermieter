@@ -35,4 +35,26 @@ describe("pickEntry", () => {
     expect(pickEntry({ beta: entry("2026.2.0-beta.1") }, "stable")).toBeNull();
     expect(pickEntry(undefined, "stable")).toBeNull();
   });
+
+  it("verwirft Eintraege, deren Download-Adresse nicht https ist", () => {
+    for (const downloadUrl of [
+      "javascript:alert(1)",
+      "http://example.test/2026.1.0",
+      "file:///etc/passwd",
+      "keine Adresse",
+    ]) {
+      expect(
+        pickEntry({ stable: { version: "2026.1.0", downloadUrl } }, "stable"),
+      ).toBeNull();
+    }
+  });
+
+  it("laesst Release-Notes ohne https weg, behaelt aber den Eintrag", () => {
+    const withUnsafeNotes = {
+      stable: { ...entry("2026.1.0"), releaseNotesUrl: "javascript:alert(1)" },
+    };
+    const picked = pickEntry(withUnsafeNotes, "stable");
+    expect(picked?.version).toBe("2026.1.0");
+    expect(picked?.releaseNotesUrl).toBeNull();
+  });
 });

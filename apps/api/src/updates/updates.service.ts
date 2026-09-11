@@ -32,18 +32,24 @@ type UpdateChannel = "stable" | "beta";
  */
 type Feed = Partial<Record<AppPlatform, unknown>>;
 
+/**
+ * Nur `https:`-Adressen: Der Wert landet als Link in der Oberfläche und in
+ * der Desktop-App in `shell.openExternal`.
+ */
+const isHttpsUrl = (value: unknown): value is string =>
+  typeof value === "string" && URL.parse(value)?.protocol === "https:";
+
 const toFeedEntry = (candidate: unknown): FeedEntry | null => {
   if (typeof candidate !== "object" || candidate === null) {
     return null;
   }
   const { version, downloadUrl, releaseNotesUrl, availableFrom } =
     candidate as Partial<FeedEntry>;
-  return typeof version === "string" && typeof downloadUrl === "string"
+  return typeof version === "string" && isHttpsUrl(downloadUrl)
     ? {
         version,
         downloadUrl,
-        releaseNotesUrl:
-          typeof releaseNotesUrl === "string" ? releaseNotesUrl : null,
+        releaseNotesUrl: isHttpsUrl(releaseNotesUrl) ? releaseNotesUrl : null,
         availableFrom: typeof availableFrom === "string" ? availableFrom : null,
       }
     : null;
