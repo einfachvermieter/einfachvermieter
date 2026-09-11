@@ -5,7 +5,7 @@
 
 appId: de.einfachvermieter.app
 productName: EinfachVermieter
-copyright: © EinfachVermieter
+copyright: © 2026 Markus Baumer
 
 directories:
   buildResources: build
@@ -13,11 +13,15 @@ directories:
 
 # Nur der gebündelte Main-Prozess wandert in die asar; die Server-Ressourcen
 # (inkl. nativer Module) liegen unverpackt unter resources/app.
+# node_modules braucht einen eigenen Eintrag: electron-builder verwirft beim
+# Kopieren das node_modules direkt unter der Quelle, bevor Filter greifen.
 files:
   - dist/**
 extraResources:
   - from: staging
     to: app
+  - from: staging/node_modules
+    to: app/node_modules
 
 # Das Staging installiert seine node_modules selbst (npm ci + rebuild).
 npmRebuild: false
@@ -35,9 +39,12 @@ mac:
   # unsigniert bauen.
   identity: null
 
+# Windows nur als MSIX über den Microsoft Store, der das Paket signiert.
 win:
-  target: nsis
+  target: appx
 
-nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
+appx:
+  identityName: MarkusBaumer.EinfachVermieter
+  publisher: CN=FD0C43CC-D9B6-476B-BA29-D6534935A09B
+  publisherDisplayName: Markus Baumer
+  backgroundColor: "#1A222C"
