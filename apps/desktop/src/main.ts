@@ -60,7 +60,6 @@ const dbPath = (): string => join(dataDir(), "einfachvermieter.db");
 
 let apiProcess: UtilityProcess | null = null;
 let mainWindow: BrowserWindow | null = null;
-let appOrigin: string | null = null;
 let quitting = false;
 
 /**
@@ -323,8 +322,21 @@ const createWindow = (origin: string): BrowserWindow => {
   window.once("ready-to-show", () => {
     window.show();
   });
-  window.on("close", () => {
+  window.on("close", (event) => {
     saveWindowState(window);
+    // macOS: Schließen versteckt das Fenster nur, damit Ansicht, offene
+    // Formulare und ggf. Beta-Hinweis beim Klick aufs Dock-Icon erhalten
+    // bleiben. Beenden setzt vorher `quitting` (before-quit).
+    if (process.platform === "darwin" && !quitting) {
+      event.preventDefault();
+      // Im Vollbild versteckt bliebe ein leerer Space zurück.
+      if (window.isFullScreen()) {
+        window.once("leave-full-screen", () => window.hide());
+        window.setFullScreen(false);
+      } else {
+        window.hide();
+      }
+    }
   });
 
   // Externe Links gehören in den System-Browser, nicht ins App-Fenster.
@@ -352,7 +364,6 @@ const init = async (): Promise<void> => {
 
   const { port, token } = await startApi();
   const origin = `http://127.0.0.1:${port}`;
-  appOrigin = origin;
 
   // Ohne Login schützt allein dieses Token den Loopback-Port: der Header wird
   // in alle Requests des App-Fensters injiziert, die API lehnt Requests ohne
@@ -379,6 +390,7 @@ if (app.requestSingleInstanceLock()) {
       if (mainWindow.isMinimized()) {
         mainWindow.restore();
       }
+      mainWindow.show();
       mainWindow.focus();
     }
   });
@@ -395,10 +407,8 @@ if (app.requestSingleInstanceLock()) {
   });
 
   app.on("activate", () => {
-    // macOS: Klick aufs Dock-Icon öffnet das Fenster wieder (API läuft noch).
-    if (BrowserWindow.getAllWindows().length === 0 && appOrigin !== null) {
-      mainWindow = createWindow(appOrigin);
-    }
+    // macOS: Klick aufs Dock-Icon holt das versteckte Fenster zurück.
+    mainWindow?.show();
   });
 
   app
