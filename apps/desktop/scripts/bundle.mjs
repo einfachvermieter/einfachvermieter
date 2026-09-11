@@ -7,10 +7,11 @@ import { build } from "esbuild";
  * (inkl. i18next) wird mitgebündelt. Die gepackte App braucht dadurch keine
  * eigenen node_modules; nur `electron` selbst bleibt extern.
  *
- * `APP_PLATFORM` brennt den Veröffentlichungsweg des Pakets ein
- * (z.B. win-store, macos-download)
+ * Veröffentlichungsweg (z.B. win-store, macos-download) entweder per ENV
+ * `APP_PLATFORM` oder als erstes Argument.
  */
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+const appPlatform = process.env.APP_PLATFORM?.trim() || process.argv[2] || "";
 
 await build({
   entryPoints: [join(packageRoot, "src/main.ts")],
@@ -21,6 +22,6 @@ await build({
   external: ["electron"],
   define: {
     // biome-ignore lint/style/useNamingConvention: esbuild-Konstante
-    __APP_PLATFORM__: JSON.stringify(process.env.APP_PLATFORM?.trim() ?? ""),
+    __APP_PLATFORM__: JSON.stringify(appPlatform),
   },
 });

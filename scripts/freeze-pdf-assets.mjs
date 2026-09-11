@@ -107,27 +107,39 @@ if (!haspyftfeatfreeze) {
 }
 
 /**
- * Python-Interpreter mit fontTools finden. Bevorzugt `python3` direkt;
- * fällt zurück auf den Interpreter aus dem Shebang von pyftfeatfreeze,
- * dessen Umgebung (z. B. pipx-Venv) fontTools garantiert enthält.
+ * Python-Interpreter mit fontTools finden. Probiert die üblichen Namen durch;
+ * unter Windows heißt der Interpreter `python` oder `py`, `python3` ist dort
+ * nur ein Platzhalter des Microsoft Store. Außerhalb von Windows fällt die
+ * Suche zurück auf den Interpreter aus dem Shebang von pyftfeatfreeze, dessen
+ * Umgebung (z. B. pipx-Venv) fontTools garantiert enthält.
  */
 const resolveFontToolsPython = () => {
   const canImport = (interpreter) =>
     spawnSync(interpreter, ["-c", "import fontTools"], { stdio: "ignore" })
       .status === 0;
-  if (canImport("python3")) {
-    return "python3";
+
+  const named = ["python3", "python", "py"].find(canImport);
+  if (named) {
+    return named;
   }
+
+  if (process.platform === "win32") {
+    return null;
+  }
+
   const which = spawnSync("which", ["pyftfeatfreeze"], { encoding: "utf-8" });
   if (which.status === 0) {
     const [shebang] = readFileSync(which.stdout.trim(), "utf-8").split("\n");
+
     if (shebang.startsWith("#!")) {
       const interpreter = shebang.slice(2).trim();
+
       if (existsSync(interpreter) && canImport(interpreter)) {
         return interpreter;
       }
     }
   }
+
   return null;
 };
 

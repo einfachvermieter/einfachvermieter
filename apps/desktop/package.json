@@ -11,8 +11,8 @@
     "start": "electron .",
     "stage": "node scripts/stage.mjs",
     "dist": "npm run build && npm run stage && electron-builder",
-    "dist:mac": "APP_PLATFORM=${APP_PLATFORM:-macos-download} npm run build && npm run stage && electron-builder --mac",
-    "dist:win": "APP_PLATFORM=${APP_PLATFORM:-win-store} npm run build && npm run stage && electron-builder --win"
+    "dist:mac": "npm run build -- macos-download && npm run stage && electron-builder --mac",
+    "dist:win": "npm run build -- win-store && npm run stage && electron-builder --win"
   },
   "devDependencies": {
     "@einfachvermieter/i18n": "*",
