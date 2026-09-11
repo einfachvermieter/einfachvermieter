@@ -1,18 +1,6 @@
 import { appDistribution, type UpdateStatus } from "@einfachvermieter/shared";
-import { RiExternalLinkLine } from "@remixicon/react";
+import { ExternalLink } from "@/components/common/ExternalLink";
 import { t } from "@/lib/i18n";
-
-const ExternalLink = ({ href, label }: { href: string; label: string }) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noreferrer"
-    className="inline-flex items-center gap-1 font-medium underline underline-offset-3 hover:text-foreground"
-  >
-    {label}
-    <RiExternalLinkLine className="size-3.5" />
-  </a>
-);
 
 /**
  * Links zu einer neuen Version: je Veröffentlichungsweg Download, Store oder

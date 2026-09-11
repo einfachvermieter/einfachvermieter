@@ -285,6 +285,14 @@
       "instructions": "Anleitung",
       "releaseNotes": "Was ist neu"
     },
+    "beta": {
+      "badge": "Beta",
+      "title": "Sie testen eine Beta-Version",
+      "intro": "EinfachVermieter ist noch in der Entwicklung. Es können Fehler auftreten. Prüfen Sie jede Abrechnung, bevor Sie sie an Ihre Mieter geben.",
+      "report": "Wenn etwas nicht stimmt oder Ihnen etwas fehlt, melden Sie es bitte:",
+      "issues": "Fehler auf GitHub melden",
+      "confirm": "Verstanden"
+    },
     "navigation": {
       "updateAvailable": "Neue Version verfügbar:",
       "groups": {

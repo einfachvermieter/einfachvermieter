@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AppBrand } from "@/components/common/AppBrand";
+import { BetaNotice } from "@/components/common/BetaNotice";
 import { UpdateVersion } from "@/components/common/UpdateVersion";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ export const OuterShell = ({
   children: ReactNode;
 }) => (
   <div className="flex min-h-dvh flex-col items-center justify-center gap-7 bg-sidebar p-6">
+    <BetaNotice />
     <AppBrand tone="dark" />
     <div className={cn("w-full", widthClasses[width])}>{children}</div>
     <p className="text-xs text-schiefer-500 tabular-nums">

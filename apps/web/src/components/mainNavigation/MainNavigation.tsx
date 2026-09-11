@@ -42,7 +42,7 @@ export const MainNavigation = () => {
     <Sidebar collapsible="offcanvas">
       <SidebarHeader>
         <div className="flex items-center px-2.5 pt-2 pb-3">
-          <AppBrand />
+          <AppBrand stacked={true} />
         </div>
       </SidebarHeader>
 
