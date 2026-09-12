@@ -26,8 +26,12 @@ jobs:
       - name: Dependency-Audit
         run: npm audit --omit=dev --audit-level=high
 
-      - name: PDF-Asset-Tooling (pyftfeatfreeze)
-        run: pipx install opentype-feature-freezer
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: PDF-Asset-Tooling (fontTools + pyftfeatfreeze)
+        run: pip install fonttools opentype-feature-freezer
 
       # .npmrc setzt ignore-scripts=true, daher Setup explizit
       # (rebuild:native + freeze-pdf-assets)
