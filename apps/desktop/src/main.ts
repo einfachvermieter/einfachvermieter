@@ -330,16 +330,16 @@ body { display: flex; flex-direction: column; align-items: center;
 .version { font-size: 12px; color: #717f8e; font-variant-numeric: tabular-nums; }
 .hint { display: none; max-width: 28rem; text-align: center; font-size: 14px;
   color: #717f8e; }
-.hint.sichtbar { display: block; }
+.hint.visible { display: block; }
 </style></head><body>
 <div class="brand">${logoDark}<span class="name">${t("common.appName.EinfachVermieter")}</span></div>
 <div class="card"><div class="title">${t("startup.connecting")}</div><div class="spinner"></div>
-<div class="hint" id="hinweis">${t("startup.firstRunHint")}</div></div>
+<div class="hint" id="hint">${t("startup.firstRunHint")}</div></div>
 <div class="version">${t("ui.updates.version", { version: app.getVersion() })}</div>
 <script>
 // Nach der Installation liest Windows beim ersten Zugriff alle Paketdateien,
 // das dauert. Ab fuenf Sekunden sagen wir warum.
-setTimeout(() => document.getElementById("hinweis").classList.add("sichtbar"), 5000);
+setTimeout(() => document.getElementById("hint").classList.add("visible"), 5000);
 </script>
 </body></html>`;
   return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;

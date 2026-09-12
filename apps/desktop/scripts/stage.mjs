@@ -1,6 +1,13 @@
 import { execSync } from "node:child_process";
-import { cpSync, mkdirSync, readdirSync, realpathSync, rmSync } from "node:fs";
-import { dirname, join } from "node:path";
+import {
+  cpSync,
+  mkdirSync,
+  readdirSync,
+  realpathSync,
+  rmSync,
+  statSync,
+} from "node:fs";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
@@ -79,3 +86,71 @@ for (const entry of readdirSync(linkedScope)) {
   rmSync(linkPath, { recursive: true, force: true });
   cpSync(target, linkPath, { recursive: true, dereference: true });
 }
+
+// Aufraeumen: Dateien, die zur Laufzeit niemand liest. Erhöht die Ladezeit
+// beim ersten ansonsten Starten enorm.
+const PRUNED_DIRECTORIES = new Set([
+  "test",
+  "tests",
+  "__tests__",
+  "example",
+  "examples",
+  "docs",
+  ".github",
+]);
+// `typescript` haengt nur als Typquelle an i18next, geladen wird es nie.
+const PRUNED_PACKAGES = ["typescript"];
+const currentPlatform = `${process.platform}-${process.arch}`;
+
+const isDisposable = (name) =>
+  name.endsWith(".map") ||
+  name.endsWith(".ts") ||
+  (name.endsWith(".md") && !name.startsWith("LICENSE"));
+
+const prune = (directory) => {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const entryPath = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      const foreignPlatform =
+        basename(directory) === "prebuilds" && entry.name !== currentPlatform;
+      if (PRUNED_DIRECTORIES.has(entry.name) || foreignPlatform) {
+        rmSync(entryPath, { recursive: true, force: true });
+        continue;
+      }
+      prune(entryPath);
+    } else if (entry.isFile() && isDisposable(entry.name)) {
+      rmSync(entryPath, { force: true });
+    }
+  }
+};
+
+const measure = (directory) => {
+  let files = 0;
+  let bytes = 0;
+  const walk = (current) => {
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const entryPath = join(current, entry.name);
+      if (entry.isDirectory()) {
+        walk(entryPath);
+      } else if (entry.isFile()) {
+        files += 1;
+        bytes += statSync(entryPath).size;
+      }
+    }
+  };
+  walk(directory);
+  return { files, mb: Math.round(bytes / 1024 / 1024) };
+};
+
+const before = measure(staging);
+for (const packageName of PRUNED_PACKAGES) {
+  rmSync(join(staging, "node_modules", packageName), {
+    recursive: true,
+    force: true,
+  });
+}
+prune(join(staging, "node_modules"));
+const after = measure(staging);
+process.stdout.write(
+  `[stage] aufgeraeumt: ${before.files} -> ${after.files} Dateien, ${before.mb} -> ${after.mb} MB\n`,
+);
