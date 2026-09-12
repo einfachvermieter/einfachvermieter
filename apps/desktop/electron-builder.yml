@@ -11,17 +11,20 @@ directories:
   buildResources: build
   output: release
 
-# Nur der gebündelte Main-Prozess wandert in die asar; die Server-Ressourcen
-# (inkl. nativer Module) liegen unverpackt unter resources/app.
-# node_modules braucht einen eigenen Eintrag: electron-builder verwirft beim
-# Kopieren das node_modules direkt unter der Quelle, bevor Filter greifen.
+# Nur der gebündelte Main-Prozess wandert in die App-asar. Die
+# Server-Ressourcen kommen als eigenes Archiv daneben (siehe stage.mjs), die
+# nativen Module ausgepackt im Ordner mit der Endung `.unpacked`.
 files:
   - dist/**
 extraResources:
-  - from: staging
-    to: app
-  - from: staging/node_modules
-    to: app/node_modules
+  - from: staging.asar
+    to: server.asar
+  - from: staging.asar.unpacked
+    to: server.asar.unpacked
+  # Eigener Eintrag, weil electron-builder das `node_modules` direkt unter
+  # einer Quelle immer verwirft, bevor Filter greifen.
+  - from: staging.asar.unpacked/node_modules
+    to: server.asar.unpacked/node_modules
 
 # Das Staging installiert seine node_modules selbst (npm ci + rebuild).
 npmRebuild: false

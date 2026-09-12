@@ -19,7 +19,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { Fragment, type ReactNode, useState } from "react";
-import { Description } from "../../components/common/Description";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { MiniKpiRow } from "../../components/common/MiniKpiRow";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -40,13 +39,6 @@ import {
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { ButtonGroup } from "../../components/ui/ButtonGroup";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/Card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,7 +76,9 @@ import { OperatingCostsCard } from "./components/detail/OperatingCostsCard";
 import { OverviewCard } from "./components/detail/OverviewCard";
 import { PaymentsCard } from "./components/detail/PaymentsCard";
 import { StatementFinalizeDialog } from "./components/detail/StatementFinalizeDialog";
+import { StatementPdfTab } from "./components/detail/StatementPdfTab";
 import { TaxableLaborCard } from "./components/detail/TaxableLaborCard";
+import { downloadStatementPdf } from "./components/detail/useStatementPdf";
 
 const routeApi = getRouteApi("/abrechnungen/$statementId");
 
@@ -214,6 +208,8 @@ const StatementTabs = ({
   periodEnd,
   pdfSrc,
   pdfDownloadSrc,
+  pdfCacheBust,
+  pdfFilename,
   tenantName,
   unitName,
 }: {
@@ -225,6 +221,8 @@ const StatementTabs = ({
   periodEnd: string;
   pdfSrc: string;
   pdfDownloadSrc: string;
+  pdfCacheBust: string;
+  pdfFilename: string;
   tenantName: string;
   unitName: string | undefined;
 }) => {
@@ -347,36 +345,12 @@ const StatementTabs = ({
           </div>
         </TabsContent>
       ) : null}
-      <TabsContent value="pdf">
-        <Card className="h-225 overflow-hidden">
-          <CardHeader>
-            <CardTitle>{t("ui.statements.detail.tabs.pdf")}</CardTitle>
-            <Description>
-              {t("ui.statements.detail.pdfPreviewDescription")}
-            </Description>
-            <CardAction>
-              <Button asChild={true} variant="outline">
-                <a href={pdfDownloadSrc}>
-                  <RiDownloadLine data-icon="inline-start" />
-                  {t("ui.statements.detail.downloadPdf")}
-                </a>
-              </Button>
-            </CardAction>
-          </CardHeader>
-          <CardContent className="h-full p-0">
-            {/* Heller Rahmen hinter dem Viewer: füllt Letterbox-/Ladeflächen */}
-            <div className="h-full bg-white">
-              <object
-                data={pdfSrc}
-                type="application/pdf"
-                width="100%"
-                height="100%"
-                aria-label={t("ui.statements.detail.tabs.pdf")}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
+      <StatementPdfTab
+        src={pdfSrc}
+        downloadSrc={pdfDownloadSrc}
+        cacheKey={`${statementId}:${pdfCacheBust}`}
+        filename={pdfFilename}
+      />
     </Tabs>
   );
 };
@@ -646,11 +620,9 @@ export const StatementDetailPage = () => {
     );
   } else if (statement.status === "finalized") {
     primaryAction = (
-      <Button asChild={true}>
-        <a href={pdfDownloadSrc}>
-          <RiDownloadLine data-icon="inline-start" />
-          {t("ui.statements.detail.downloadPdf")}
-        </a>
+      <Button onClick={() => downloadStatementPdf(pdfDownloadSrc, identity)}>
+        <RiDownloadLine data-icon="inline-start" />
+        {t("ui.statements.detail.downloadPdf")}
       </Button>
     );
     menuItems.push(
@@ -675,20 +647,19 @@ export const StatementDetailPage = () => {
       </Button>
     );
     menuItems.push(
-      <DropdownMenuItem key="download" asChild={true}>
-        <a href={pdfDownloadSrc}>
-          <RiDownloadLine />
-          {t("ui.statements.detail.downloadPdf")}
-        </a>
+      <DropdownMenuItem
+        key="download"
+        onSelect={() => downloadStatementPdf(pdfDownloadSrc, identity)}
+      >
+        <RiDownloadLine />
+        {t("ui.statements.detail.downloadPdf")}
       </DropdownMenuItem>,
     );
   } else {
     primaryAction = (
-      <Button asChild={true}>
-        <a href={pdfDownloadSrc}>
-          <RiDownloadLine data-icon="inline-start" />
-          {t("ui.statements.detail.downloadPdf")}
-        </a>
+      <Button onClick={() => downloadStatementPdf(pdfDownloadSrc, identity)}>
+        <RiDownloadLine data-icon="inline-start" />
+        {t("ui.statements.detail.downloadPdf")}
       </Button>
     );
   }
@@ -774,6 +745,8 @@ export const StatementDetailPage = () => {
             periodEnd={statement.periodEnd}
             pdfSrc={pdfSrc}
             pdfDownloadSrc={pdfDownloadSrc}
+            pdfCacheBust={pdfCacheBust}
+            pdfFilename={identity}
             tenantName={tenantName}
             unitName={unit?.name}
           />

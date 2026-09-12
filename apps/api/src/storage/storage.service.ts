@@ -119,7 +119,13 @@ export class StorageService {
    */
   private resolveSafe(key: string): string {
     const target = resolve(this.baseDir, key);
-    if (target !== this.baseDir && !target.startsWith(`${this.baseDir}/`)) {
+    // Vergleich über den relativen Pfad statt über ein Präfix: unter
+    // Windows trennt `resolve` mit Backspaces, ein fest verdrahteter
+    // Schrägstrich weist dort jeden gültigen Key ab.
+    const inside = relative(this.baseDir, target);
+    const escapes =
+      inside === ".." || inside.startsWith(`..${sep}`) || isAbsolute(inside);
+    if (escapes) {
       throw new Error(`Storage key escapes base directory: ${key}`);
     }
 

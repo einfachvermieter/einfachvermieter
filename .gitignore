@@ -28,6 +28,8 @@ packages/db/scripts/seed-fixtures/local/
 
 # Desktop-App: Staging-Verzeichnis und gebaute Installer
 apps/desktop/staging/
+apps/desktop/staging.asar
+apps/desktop/staging.asar.unpacked/
 apps/desktop/release/
 
 # Local scratch / verification artifacts (screenshots, throwaway files)

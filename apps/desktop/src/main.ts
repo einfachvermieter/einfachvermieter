@@ -2,6 +2,7 @@
 import { randomBytes } from "node:crypto";
 import {
   copyFileSync,
+  createWriteStream,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -44,12 +45,12 @@ app.setName("EinfachVermieter");
 
 /**
  * Wurzel der gebündelten Server-Ressourcen (API-Build, Web-Build, Packages).
- * Im Paket liegt sie unter `resources/app` (siehe `extraResources` in
- * electron-builder.yml), in der Entwicklung ist es der Repo-Root. Dort
+ * Im Paket ist sie das Archiv `resources/server.asar` (siehe
+ * `extraResources` in electron-builder.yml), in der Entwicklung ist es der Repo-Root. Dort
  * müssen API und Web zuvor gebaut sein (`npm run build`).
  */
 const resourcesRoot = app.isPackaged
-  ? join(process.resourcesPath, "app")
+  ? join(process.resourcesPath, "server.asar")
   : join(__dirname, "../../..");
 
 const apiEntry = join(resourcesRoot, "apps/api/dist/main.js");
@@ -59,6 +60,12 @@ const webDistPath = join(resourcesRoot, "apps/web/dist");
  * Alle volatilen Daten (DB, Uploads, Abrechnungen) im User-Space.
  */
 const dataDir = (): string => join(app.getPath("userData"), "data");
+
+/**
+ * Protokoll der API. Wird bei jedem Start neu angelegt und liegt neben den
+ * Daten, damit man es einem Fehlerbericht beilegen kann.
+ */
+const apiLogPath = (): string => join(app.getPath("userData"), "api.log");
 const dbPath = (): string => join(dataDir(), "einfachvermieter.db");
 
 let apiProcess: UtilityProcess | null = null;
@@ -121,7 +128,10 @@ const startApi = async (): Promise<{ port: number; token: string }> => {
 
   apiProcess = utilityProcess.fork(apiEntry, [], {
     serviceName: "einfachvermieter-api",
-    stdio: "inherit",
+    // `pipe` statt `inherit`: ohne Konsole (Start über Startmenü, Dock oder
+    // Explorer) waere die Ausgabe der API sonst verloren, und genau die
+    // braucht man bei einem Fehlerbericht.
+    stdio: "pipe",
     env: {
       ...process.env,
       NODE_ENV: "production",
@@ -136,6 +146,14 @@ const startApi = async (): Promise<{ port: number; token: string }> => {
       APP_PLATFORM: appPlatform,
     },
   });
+
+  const logStream = createWriteStream(apiLogPath(), { flags: "w" });
+  for (const stream of [apiProcess.stdout, apiProcess.stderr]) {
+    stream?.on("data", (chunk: Buffer) => {
+      logStream.write(chunk);
+      process.stdout.write(chunk);
+    });
+  }
 
   apiProcess.on("exit", (code) => {
     apiProcess = null;
@@ -301,7 +319,7 @@ const buildMenu = (): Menu => {
 };
 
 /**
- * Ladeseite fuer die Zeit bis die API antwortet. Ohne sie bliebe nach dem
+ * Ladeseite für die Zeit bis die API antwortet. Ohne sie bliebe nach dem
  * Start alles unsichtbar, weil der Server erst Migrationen und ORM hochfaehrt;
  * auf langsamen Rechnern wirkt das wie ein Fehlstart. Die Seite bildet den
  * Ladebildschirm der Anwendung nach, damit der Uebergang nicht auffaellt.
@@ -427,6 +445,15 @@ const init = async (): Promise<void> => {
 
   Menu.setApplicationMenu(buildMenu());
   mainWindow = createWindow(origin);
+
+  // Electron App ist für den User kein offensichtlicher Browser,
+  // daher nicht ungefragt nach Downloads mit PDF-Dateien.
+  session.defaultSession.on("will-download", (_event, item) => {
+    item.setSaveDialogOptions({
+      title: t("desktop.dialog.saveTitle"),
+      defaultPath: join(app.getPath("documents"), item.getFilename()),
+    });
+  });
 
   await waitForApi(port, token);
   mainWindow.loadURL(origin).catch(() => undefined);

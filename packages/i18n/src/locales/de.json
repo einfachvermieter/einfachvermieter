@@ -1,5 +1,8 @@
 {
   "desktop": {
+    "dialog": {
+      "saveTitle": "Speichern unter"
+    },
     "menu": {
       "about": "Über EinfachVermieter",
       "services": "Dienste",
@@ -1660,6 +1663,8 @@
         "advances": "Vorauszahlungen",
         "additionalPayment": "Nachzahlung",
         "pdfPreview": "PDF-Vorschau",
+        "pdfFailedTitle": "PDF konnte nicht erstellt werden",
+        "pdfRetry": "Erneut versuchen",
         "pdfPreviewDescription": "Exakt wie das Dokument nach dem Finalisieren",
         "downloadPdf": "PDF herunterladen",
         "info": {

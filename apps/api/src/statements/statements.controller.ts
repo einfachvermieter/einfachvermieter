@@ -210,9 +210,12 @@ export class StatementsController {
     response.setHeader("Content-Length", String(data.byteLength));
     response.setHeader(
       "Cache-Control",
+      // Entwürfe werden bei jedem Abruf neu gerendert, deshalb kurz cachen:
+      // Die Oberfläche prüft die Antwort einmal vorab und zeigt sie danach
+      // im Betrachter an, das wären sonst zwei Renderläufe.
       statement.status === "finalized"
         ? "private, max-age=3600"
-        : "private, no-cache",
+        : "private, max-age=30",
     );
     return new StreamableFile(data);
   }

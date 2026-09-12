@@ -9,6 +9,7 @@ import {
 } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createPackageWithOptions } from "@electron/asar";
 
 /**
  * Baut das Server-Ressourcen-Verzeichnis für electron-builder (`staging/`,
@@ -73,7 +74,7 @@ for (const artifact of [
 }
 
 // npm verlinkt die Workspace-Pakete in node_modules (unter Windows als
-// Junction). `makeappx` lehnt Verzeichnis-Verknuepfungen ab, deshalb echte
+// Junction). `makeappx` lehnt Verzeichnis-Verknüpfungen ab, deshalb echte
 // Kopien. Muss nach dem Kopieren der Build-Ergebnisse laufen, sonst fehlen
 // den Kopien die dist-Verzeichnisse.
 const linkedScope = join(staging, "node_modules/@einfachvermieter");
@@ -87,7 +88,7 @@ for (const entry of readdirSync(linkedScope)) {
   cpSync(target, linkPath, { recursive: true, dereference: true });
 }
 
-// Aufraeumen: Dateien, die zur Laufzeit niemand liest. Erhöht die Ladezeit
+// Aufräumen: Dateien, die zur Laufzeit niemand liest. Erhöht die Ladezeit
 // beim ersten ansonsten Starten enorm.
 const PRUNED_DIRECTORIES = new Set([
   "test",
@@ -152,5 +153,17 @@ for (const packageName of PRUNED_PACKAGES) {
 prune(join(staging, "node_modules"));
 const after = measure(staging);
 process.stdout.write(
-  `[stage] aufgeraeumt: ${before.files} -> ${after.files} Dateien, ${before.mb} -> ${after.mb} MB\n`,
+  `[stage] bereinigt: ${before.files} -> ${after.files} Dateien, ${before.mb} -> ${after.mb} MB\n`,
+);
+
+// Server-Ressourcen als Archiv ausliefern. Native Module bleiben ausgepackt,
+// Windows laedt DLLs nur aus echten Dateien; Electron findet sie über das
+// Archiv-Register.
+const archive = join(packageRoot, "staging.asar");
+rmSync(archive, { force: true });
+rmSync(`${archive}.unpacked`, { recursive: true, force: true });
+await createPackageWithOptions(staging, archive, { unpack: "**/*.node" });
+const unpacked = measure(`${archive}.unpacked`);
+process.stdout.write(
+  `[stage] Archiv: ${Math.round(statSync(archive).size / 1024 / 1024)} MB, ausgepackt daneben ${unpacked.files} Dateien\n`,
 );
