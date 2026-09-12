@@ -43,7 +43,13 @@ mac:
 win:
   target: appx
 
+# Eigene Manifest-Vorlage, abgeleitet von der aus electron-builder. Einziger
+# Unterschied ist die Abhaengigkeit auf die VC-Laufzeit
 appx:
+  # Vierte Stelle der Paketversion aus der Beta-Nummer, gesetzt von
+  # scripts/dist-win.mjs.
+  setBuildNumber: true
+  customManifestPath: appxmanifest.xml
   identityName: MarkusBaumer.EinfachVermieter
   publisher: CN=FD0C43CC-D9B6-476B-BA29-D6534935A09B
   publisherDisplayName: Markus Baumer

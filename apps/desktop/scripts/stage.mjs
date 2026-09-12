@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { cpSync, mkdirSync, rmSync } from "node:fs";
+import { cpSync, mkdirSync, readdirSync, realpathSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -63,4 +63,19 @@ for (const artifact of [
   "packages/i18n/dist",
 ]) {
   copy(artifact);
+}
+
+// npm verlinkt die Workspace-Pakete in node_modules (unter Windows als
+// Junction). `makeappx` lehnt Verzeichnis-Verknuepfungen ab, deshalb echte
+// Kopien. Muss nach dem Kopieren der Build-Ergebnisse laufen, sonst fehlen
+// den Kopien die dist-Verzeichnisse.
+const linkedScope = join(staging, "node_modules/@einfachvermieter");
+for (const entry of readdirSync(linkedScope)) {
+  const linkPath = join(linkedScope, entry);
+  const target = realpathSync(linkPath);
+  if (target === linkPath) {
+    continue;
+  }
+  rmSync(linkPath, { recursive: true, force: true });
+  cpSync(target, linkPath, { recursive: true, dereference: true });
 }

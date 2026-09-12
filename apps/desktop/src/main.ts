@@ -10,6 +10,8 @@ import {
 import { createServer } from "node:net";
 import { join } from "node:path";
 import { createI18nSync, createTranslate } from "@einfachvermieter/i18n";
+import bricolageFont from "@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2";
+import geistFont from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2";
 import {
   app,
   BrowserWindow,
@@ -21,6 +23,7 @@ import {
   type UtilityProcess,
   utilityProcess,
 } from "electron";
+import logoDark from "../../web/src/img/logo/logo_dark.svg";
 
 const t = createTranslate(createI18nSync());
 
@@ -297,6 +300,51 @@ const buildMenu = (): Menu => {
   return Menu.buildFromTemplate(template);
 };
 
+/**
+ * Ladeseite fuer die Zeit bis die API antwortet. Ohne sie bliebe nach dem
+ * Start alles unsichtbar, weil der Server erst Migrationen und ORM hochfaehrt;
+ * auf langsamen Rechnern wirkt das wie ein Fehlstart. Die Seite bildet den
+ * Ladebildschirm der Anwendung nach, damit der Uebergang nicht auffaellt.
+ */
+const loadingPage = (): string => {
+  const html = `<!doctype html><html lang="de"><head><meta charset="utf-8">
+<title>${t("common.appName.EinfachVermieter")}</title><style>
+@font-face { font-family: "Bricolage"; src: url(${bricolageFont}) format("woff2"); font-weight: 200 800; }
+@font-face { font-family: "Geist"; src: url(${geistFont}) format("woff2"); font-weight: 100 900; }
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 28px; background: #1a222c; color: #1a222c;
+  font-family: "Geist", system-ui, sans-serif; font-size: 14px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand svg { display: block; width: 32px; height: 32px; }
+.name { font-family: "Bricolage", system-ui, sans-serif; font-size: 20px;
+  font-weight: 600; letter-spacing: -0.015em; color: #f7f9fb; }
+.card { display: flex; flex-direction: column; align-items: center; gap: 24px;
+  width: 28rem; max-width: 90vw; padding: 24px; box-sizing: border-box;
+  background: #fff; border: 1px solid #e2e8ed; border-radius: 12px; }
+.title { font-size: 18px; font-weight: 600; }
+.spinner { width: 24px; height: 24px; border: 2px solid #717f8e;
+  border-top-color: transparent; border-radius: 50%;
+  animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.version { font-size: 12px; color: #717f8e; font-variant-numeric: tabular-nums; }
+.hint { display: none; max-width: 28rem; text-align: center; font-size: 14px;
+  color: #717f8e; }
+.hint.sichtbar { display: block; }
+</style></head><body>
+<div class="brand">${logoDark}<span class="name">${t("common.appName.EinfachVermieter")}</span></div>
+<div class="card"><div class="title">${t("startup.connecting")}</div><div class="spinner"></div>
+<div class="hint" id="hinweis">${t("startup.firstRunHint")}</div></div>
+<div class="version">${t("ui.updates.version", { version: app.getVersion() })}</div>
+<script>
+// Nach der Installation liest Windows beim ersten Zugriff alle Paketdateien,
+// das dauert. Ab fuenf Sekunden sagen wir warum.
+setTimeout(() => document.getElementById("hinweis").classList.add("sichtbar"), 5000);
+</script>
+</body></html>`;
+  return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+};
+
 const createWindow = (origin: string): BrowserWindow => {
   const state = readWindowState();
   const window = new BrowserWindow({
@@ -354,7 +402,8 @@ const createWindow = (origin: string): BrowserWindow => {
     }
   });
 
-  window.loadURL(origin).catch(() => undefined);
+  // Erst die Ladeseite; auf die API wird umgeschaltet, sobald sie antwortet.
+  window.loadURL(loadingPage()).catch(() => undefined);
 
   return window;
 };
@@ -376,10 +425,11 @@ const init = async (): Promise<void> => {
     },
   );
 
-  await waitForApi(port, token);
-
   Menu.setApplicationMenu(buildMenu());
   mainWindow = createWindow(origin);
+
+  await waitForApi(port, token);
+  mainWindow.loadURL(origin).catch(() => undefined);
 };
 
 // Zwei Instanzen hieße: zwei Prozesse auf derselben SQLite-Datei. Der zweite

@@ -20,6 +20,8 @@ await build({
   platform: "node",
   format: "cjs",
   external: ["electron"],
+  // Ladeseite des Hauptprozesses: Logo als Text, Hausschriften als data-URL.
+  loader: { ".svg": "text", ".woff2": "dataurl" },
   define: {
     // biome-ignore lint/style/useNamingConvention: esbuild-Konstante
     __APP_PLATFORM__: JSON.stringify(appPlatform),

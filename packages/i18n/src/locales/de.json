@@ -154,6 +154,7 @@
   },
   "startup": {
     "connecting": "Wird geladen …",
+    "firstRunHint": "Der erste Start nach Installation oder Aktualisierung kann etwas länger dauern. Bitte haben Sie noch einen Augenblick Geduld.",
     "stillUnavailableTitle": "Laden fehlgeschlagen",
     "stillUnavailable": "Die Anwendung konnte innerhalb der erwarteten Zeit nicht geladen werden. Bitte später erneut versuchen.",
     "retry": "Erneut versuchen"
