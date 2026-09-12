@@ -1,6 +1,6 @@
 import logoDarkUrl from "../../img/logo/logo_dark.svg";
 import logoLightUrl from "../../img/logo/logo_light.svg";
-import { isPrerelease, openBetaNotice } from "../../lib/appVersion";
+import { openBetaNotice, showBetaMarker } from "../../lib/appVersion";
 import { t } from "../../lib/i18n";
 import { Badge } from "../ui/Badge";
 
@@ -17,7 +17,7 @@ export const AppBrand = ({
   tone?: "light" | "dark";
   stacked?: boolean;
 }) => {
-  const badge = isPrerelease ? (
+  const badge = showBetaMarker ? (
     <button
       type="button"
       onClick={openBetaNotice}

@@ -8,6 +8,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { isScreenshotMode } from "./lib/appVersion";
 // Font vor der Tailwind-CSS und via JS-Entry importieren,
 // damit Vite die woff2-Dateien mitbundelt.
 import "@fontsource-variable/geist/index.css";
@@ -100,7 +101,7 @@ createRoot(rootElement).render(
         <Sonner />
       </TooltipProvider>
       {/* biome-ignore lint/nursery/noUndeclaredEnvVars: Vite compile-time constant, keine runtime env var */}
-      {import.meta.env.DEV ? (
+      {import.meta.env.DEV && !isScreenshotMode ? (
         <ReactQueryDevtools
           initialIsOpen={false}
           buttonPosition="bottom-left"

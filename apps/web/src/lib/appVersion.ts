@@ -1,8 +1,24 @@
 /**
  * Vorabversion, erkennbar am Suffix der Versionsnummer (2026.1.0-beta.1).
- * Schaltet die Beta-Kennzeichnung in der Oberfläche ein.
  */
 export const isPrerelease = __APP_VERSION__.includes("-");
+
+const SCREENSHOT_MODE_KEY = "screenshotMode";
+
+/**
+ * Screenshot-Modus für Anleitung:
+ * `sessionStorage.setItem("screenshotMode", "1")`
+ * Blendet die Beta-Kennzeichnung und die Entwicklerwerkzeuge aus.
+ */
+export const isScreenshotMode = ((): boolean => {
+  try {
+    return sessionStorage.getItem(SCREENSHOT_MODE_KEY) === "1";
+  } catch {
+    return false;
+  }
+})();
+
+export const showBetaMarker = isPrerelease && !isScreenshotMode;
 
 export const BETA_NOTICE_OPEN_EVENT = "betanotice:open";
 

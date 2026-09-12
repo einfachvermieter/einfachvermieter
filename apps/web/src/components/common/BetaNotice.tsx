@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog";
-import { BETA_NOTICE_OPEN_EVENT, isPrerelease } from "@/lib/appVersion";
+import { BETA_NOTICE_OPEN_EVENT, showBetaMarker } from "@/lib/appVersion";
 import { t } from "@/lib/i18n";
 
 const REPORT_MAIL = "betatest@einfachvermieter.de";
@@ -39,7 +39,7 @@ const writeSeen = (): void => {
  * das jeder Programmstart, im Browser jede neue Sitzung.
  */
 export const BetaNotice = () => {
-  const [open, setOpen] = useState(() => isPrerelease && !readSeen());
+  const [open, setOpen] = useState(() => showBetaMarker && !readSeen());
 
   useEffect(() => {
     const show = () => setOpen(true);
@@ -54,7 +54,7 @@ export const BetaNotice = () => {
     setOpen(next);
   };
 
-  if (!isPrerelease) {
+  if (!showBetaMarker) {
     return null;
   }
 
