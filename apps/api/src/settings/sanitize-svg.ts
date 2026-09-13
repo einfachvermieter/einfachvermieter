@@ -1,46 +1,64 @@
 /**
  * @file
  * Hochgeladene Logo-SVGs werden serverseitig in die PDF-Erzeugung (react-pdf)
- * eingespeist UND via /settings/sender/logo wieder ausgeliefert. Beides bringt
- * eigene Anforderungen:
+ * eingespeist UND via /settings/sender/logo wieder ausgeliefert.
  *
- *  - Sicherheit: ein SVG kann <script>, on*-Handler und externe Referenzen
- *    enthalten. Vor dem Speichern wird es daher mit DOMPurify gehärtet.
- *  - Schrift: react-pdf kann SVG-<text> nur mit registrierten Fonts rendern;
- *    fremde Schriften lassen die PDF-Erzeugung hart abstürzen. Wir können Text
- *    ohne die Originalschrift nicht optisch verlustfrei übernehmen, deshalb
- *    wird ein SVG mit Live-Text abgelehnt (der Nutzer soll Schrift vorher in
- *    Pfade umwandeln).
- *  - Farben: react-pdf versteht Hex/rgb/hsl/benannte Farben, aber keine
- *    modernen Farbfunktionen (oklch, oklab, lab, lch, hwb, color()). Diese
- *    werden nach RGB konvertiert; ein bereits vorhandener RGB-Fallback in
- *    einer style-Deklaration wird bevorzugt.
+ * Die Grafik wird neu aufgebaut: der XML-Parser liefert einen Baum,
+ * übernommen wird nur, was auf der Liste steht. Die Liste ist genau das,
+ * was der SVG-Renderer von react-pdf zeichnen kann.
+ *
+ * Farben: react-pdf versteht Hex/rgb/hsl/benannte Farben, aber keine modernen
+ * Farbfunktionen (oklch, oklab, lab, lch, hwb, color()). Diese werden nach RGB
+ * konvertiert; ein bereits vorhandener RGB-Fallback in einer style-Deklaration
+ * wird bevorzugt.
  */
 
 import { formatHex, formatRgb, parse as parseColor } from "culori";
-import createDOMPurify from "dompurify";
-import { JSDOM } from "jsdom";
+import { type SaxesAttributeNS, SaxesParser, type SaxesTagNS } from "saxes";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+const XLINK_NS = "http://www.w3.org/1999/xlink";
+const XMLNS_NS = "http://www.w3.org/2000/xmlns/";
 
 /**
  * Erlaubte URI-Referenzen: nur Fragmente (#id) und eingebettete Rasterdaten.
  */
 const SAFE_URI = /^(?:#|data:image\/(?:png|jpe?g|gif|webp);base64,)/iu;
-const URI_ATTRS = ["href", "xlink:href", "src"];
 
 /**
- * Definitions-Elemente, die react-pdf nur als direkte Kinder eines Wurzel-
- * <defs> auflöst (siehe getDefs in @react-pdf/layout). Exakte Schreibweise,
- * da im XML-Modus Selektoren case-sensitiv sind.
+ * Elemente, die react-pdf zeichnen kann. Text-Elemente fehlen bewusst, die
+ * werden gesondert abgelehnt.
  */
-const DEF_SELECTOR =
-  "linearGradient, radialGradient, pattern, clipPath, marker, symbol, mask, filter";
+const RENDERABLE_ELEMENTS = new Set([
+  "svg",
+  "g",
+  "defs",
+  "path",
+  "rect",
+  "circle",
+  "ellipse",
+  "line",
+  "polyline",
+  "polygon",
+  "clipPath",
+  "linearGradient",
+  "radialGradient",
+  "stop",
+  "marker",
+  "image",
+]);
 
 /**
- * Elemente, die Text rendern oder Schriften definieren.
+ * Reine Beschreibung ohne Darstellung. Wird samt Unterbaum verworfen, damit
+ * übliche Exporte aus Zeichenprogrammen nicht an ihren Metadaten scheitern.
  */
-const TEXT_TAGS = new Set([
+const IGNORED_ELEMENTS = new Set(["title", "desc", "metadata"]);
+
+/**
+ * Elemente, die Text rendern oder Schriften definieren (klein geschrieben,
+ * der Vergleich läuft über die Kleinschreibung des lokalen Namens).
+ */
+const TEXT_ELEMENTS = new Set([
   "text",
   "tspan",
   "textpath",
@@ -56,77 +74,119 @@ const TEXT_TAGS = new Set([
 ]);
 
 /**
+ * Definitionen, die react-pdf nur als direkte Kinder eines Wurzel-defs
+ * auflöst. Exakte Schreibweise, XML-Namen sind groß-/kleinschreibungsecht.
+ */
+const DEFINITION_ELEMENTS = new Set([
+  "linearGradient",
+  "radialGradient",
+  "clipPath",
+  "marker",
+]);
+
+/**
+ * Attribute ohne Namensraum, die übernommen werden. Unbekannte Attribute
+ * werden entfernt statt abgelehnt: Zeichenprogramme hängen an jedes Element
+ * eigene Vermerke, die nichts darstellen und nichts auslösen.
+ */
+const ALLOWED_ATTRIBUTES = new Set([
+  "id",
+  "class",
+  "style",
+  "transform",
+  "viewBox",
+  "version",
+  "preserveAspectRatio",
+  "width",
+  "height",
+  "x",
+  "y",
+  "rx",
+  "ry",
+  "cx",
+  "cy",
+  "r",
+  "d",
+  "points",
+  "x1",
+  "y1",
+  "x2",
+  "y2",
+  "fx",
+  "fy",
+  "fr",
+  "pathLength",
+  "offset",
+  "gradientUnits",
+  "gradientTransform",
+  "spreadMethod",
+  "clipPathUnits",
+  "clip-path",
+  "clip-rule",
+  "markerUnits",
+  "markerWidth",
+  "markerHeight",
+  "refX",
+  "refY",
+  "orient",
+  "overflow",
+  "opacity",
+  "color",
+  "fill",
+  "fill-opacity",
+  "fill-rule",
+  "stroke",
+  "stroke-opacity",
+  "stroke-width",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "stroke-miterlimit",
+  "stroke-dasharray",
+  "stroke-dashoffset",
+  "stop-color",
+  "stop-opacity",
+  "display",
+  "visibility",
+  "vector-effect",
+  "paint-order",
+  "shape-rendering",
+  "mix-blend-mode",
+  "marker-start",
+  "marker-mid",
+  "marker-end",
+]);
+
+/**
  * Farbtragende Präsentations-Attribute bzw. CSS-Eigenschaften.
  */
-const COLOR_PROPS = [
-  "fill",
-  "stroke",
-  "stop-color",
-  "color",
-  "flood-color",
-  "lighting-color",
-  "solid-color",
-];
+const COLOR_PROPS = new Set(["fill", "stroke", "stop-color", "color"]);
 
 /**
  * Moderne Farbfunktionen, die react-pdf nicht parsen kann.
  */
 const MODERN_COLOR = /\b(?:oklch|oklab|lch|lab|hwb|color-mix|color)\s*\(/iu;
 
-export type SvgSanitizeReason = "text" | "invalid";
+/**
+ * `url(...)`, das nicht auf ein Fragment im selben Dokument zeigt. Solche
+ * Verweise laden beim Anzeigen fremde Dateien nach.
+ */
+const FOREIGN_URL = /url\(\s*["']?(?!#)/iu;
+
+export type SvgSanitizeReason = "text" | "forbidden" | "invalid";
 
 export class SvgSanitizeError extends Error {
-  constructor(readonly reason: SvgSanitizeReason) {
-    super(`SVG sanitize failed: ${reason}`);
+  constructor(
+    readonly reason: SvgSanitizeReason,
+    options?: ErrorOptions,
+  ) {
+    super(`SVG sanitize failed: ${reason}`, options);
   }
 }
 
-/**
- * Parst das SVG im strikten XML-Modus und wirft `SvgSanitizeError("invalid")`
- * bei Parserfehlern oder fremdem Wurzelelement.
- */
-const parseXml = (svg: string): Document => {
-  const doc = new JSDOM(svg, { contentType: "image/svg+xml" }).window.document;
-
-  if (doc.getElementsByTagName("parsererror").length > 0) {
-    throw new SvgSanitizeError("invalid");
-  }
-
-  if (doc.documentElement?.localName.toLowerCase() !== "svg") {
-    throw new SvgSanitizeError("invalid");
-  }
-
-  return doc;
-};
-
-/**
- * Erkennt Live-Text und Schriftdefinitionen (Text-Tags, `font-family`,
- * `@font-face`). Solche SVGs werden abgelehnt, weil react-pdf sie ohne
- * registrierte Fonts nicht rendern kann und dabei abstürzt.
- */
-const containsText = (doc: Document): boolean => {
-  for (const el of Array.from(doc.querySelectorAll("*"))) {
-    if (TEXT_TAGS.has(el.localName.toLowerCase())) {
-      return true;
-    }
-
-    if (el.hasAttribute("font-family") || el.hasAttribute("font")) {
-      return true;
-    }
-
-    const style = el.getAttribute("style");
-    if (style && /font-family|@font-face/iu.test(style)) {
-      return true;
-    }
-  }
-
-  for (const styleEl of Array.from(doc.querySelectorAll("style"))) {
-    if (/@font-face|font-family/iu.test(styleEl.textContent ?? "")) {
-      return true;
-    }
-  }
-
-  return false;
+type SvgElement = {
+  name: string;
+  attributes: Map<string, string>;
+  children: SvgElement[];
 };
 
 /**
@@ -153,7 +213,6 @@ const renderableColor = (value: string): string | null => {
  * Wendet die Farbnormalisierung auf eine inline `style`-Deklaration an.
  */
 const normalizeStyle = (style: string): string => {
-  const colorProps = new Set(COLOR_PROPS);
   const passthrough: string[] = [];
 
   // Pro Farb-Eigenschaft gewinnt die letzte renderbare Deklaration (CSS:
@@ -168,16 +227,16 @@ const normalizeStyle = (style: string): string => {
 
     const prop = declaration.slice(0, separator).trim().toLowerCase();
     const value = declaration.slice(separator + 1).trim();
-    if (!prop || !value) {
+    if (!prop || !value || FOREIGN_URL.test(value)) {
       continue;
     }
 
-    if (colorProps.has(prop)) {
+    if (COLOR_PROPS.has(prop)) {
       const renderable = renderableColor(value);
       if (renderable !== null) {
         resolvedColors.set(prop, renderable);
       }
-    } else {
+    } else if (ALLOWED_ATTRIBUTES.has(prop)) {
       passthrough.push(`${prop}: ${value}`);
     }
   }
@@ -190,117 +249,249 @@ const normalizeStyle = (style: string): string => {
 };
 
 /**
- * Normalisiert alle Farb-Attribute und inline-Styles im Dokument auf von
- * react-pdf verstehbare Werte; nicht konvertierbare Farben werden entfernt.
+ * Prüft ein einzelnes Attribut und liefert Name und Wert für die Ausgabe
+ * oder `null`, wenn es entfällt. `xlink:href` wird auf `href` normalisiert,
+ * weil react-pdf nur den Namen ohne Präfix liest.
  */
-const normalizeColors = (doc: Document): void => {
-  for (const el of Array.from(doc.querySelectorAll("*"))) {
-    for (const prop of COLOR_PROPS) {
-      if (!el.hasAttribute(prop)) {
-        continue;
-      }
+const resolveAttribute = (
+  attribute: SaxesAttributeNS,
+): [string, string] | null => {
+  const { local, uri, value } = attribute;
 
-      const renderable = renderableColor(el.getAttribute(prop) ?? "");
-
-      if (renderable === null) {
-        el.removeAttribute(prop);
-      } else if (renderable !== el.getAttribute(prop)) {
-        el.setAttribute(prop, renderable);
-      }
-    }
-
-    const style = el.getAttribute("style");
-    if (style) {
-      el.setAttribute("style", normalizeStyle(style));
-    }
+  if (uri === XMLNS_NS || local === "xmlns") {
+    return null;
   }
+
+  if (local.toLowerCase().startsWith("on")) {
+    throw new SvgSanitizeError("forbidden");
+  }
+
+  if (local === "href" && (uri === "" || uri === XLINK_NS)) {
+    if (!SAFE_URI.test(value.trim())) {
+      throw new SvgSanitizeError("forbidden");
+    }
+
+    return ["href", value.trim()];
+  }
+
+  if (uri !== "" || !ALLOWED_ATTRIBUTES.has(local)) {
+    return null;
+  }
+
+  if (local === "style") {
+    const style = normalizeStyle(value);
+
+    return style ? ["style", style] : null;
+  }
+
+  if (FOREIGN_URL.test(value)) {
+    return null;
+  }
+
+  if (COLOR_PROPS.has(local)) {
+    const color = renderableColor(value);
+
+    return color === null ? null : [local, color];
+  }
+
+  return [local, value];
 };
 
 /**
- * Verschiebt Definitions-Elemente (Gradients, Pattern, clipPath ...) in ein
- * einzelnes Wurzel-<defs>. react-pdf löst `url(#id)`-Referenzen sonst nicht auf
- * und zeichnet die referenzierenden Formen ungefüllt (= unsichtbar).
+ * Übernimmt die erlaubten Attribute eines Elements.
  */
-const consolidateDefs = (doc: Document): void => {
-  const svg = doc.documentElement;
+const collectAttributes = (tag: SaxesTagNS): Map<string, string> => {
+  const attributes = new Map<string, string>();
 
-  const defElements = Array.from(svg.querySelectorAll(DEF_SELECTOR));
-  if (defElements.length === 0) {
+  for (const attribute of Object.values(tag.attributes)) {
+    const resolved = resolveAttribute(attribute);
+
+    if (resolved) {
+      attributes.set(resolved[0], resolved[1]);
+    }
+  }
+
+  return attributes;
+};
+
+/**
+ * Baut aus dem SVG einen Baum aus erlaubten Elementen. Wirft bei allem, was
+ * nicht auf die Liste passt; unbekannte Namensräume und Metadaten fallen
+ * samt Unterbaum weg.
+ */
+const parseDocument = (rawSvg: string): SvgElement => {
+  const parser = new SaxesParser({ xmlns: true });
+  const stack: SvgElement[] = [];
+  let root: SvgElement | null = null;
+  let skipDepth = 0;
+  let documentNamespace: string | null = null;
+
+  parser.on("error", () => {
+    throw new SvgSanitizeError("invalid");
+  });
+
+  // Ein DOCTYPE mit internem Teil darf eigene Entities erklären. Die stehen
+  // im Rohtext nirgends als Markup, landen aber nach dem Auflösen im Baum.
+  parser.on("doctype", (doctype) => {
+    if (doctype.includes("[")) {
+      throw new SvgSanitizeError("forbidden");
+    }
+  });
+
+  parser.on("processinginstruction", () => {
+    throw new SvgSanitizeError("forbidden");
+  });
+
+  parser.on("opentag", (tag) => {
+    if (skipDepth > 0) {
+      skipDepth += 1;
+      return;
+    }
+
+    const { local } = tag;
+
+    if (documentNamespace === null) {
+      // Die Wurzel legt den Namensraum fest. Fehlt die xmlns-Angabe, gilt das
+      // Dokument trotzdem als SVG; ausgeliefert wird es später mit xmlns.
+      if (local !== "svg" || (tag.uri !== SVG_NS && tag.uri !== "")) {
+        throw new SvgSanitizeError("invalid");
+      }
+      documentNamespace = tag.uri;
+    } else if (tag.uri !== documentNamespace) {
+      skipDepth = 1;
+      return;
+    }
+
+    if (TEXT_ELEMENTS.has(local.toLowerCase())) {
+      throw new SvgSanitizeError("text");
+    }
+
+    if (IGNORED_ELEMENTS.has(local)) {
+      skipDepth = 1;
+      return;
+    }
+
+    if (!RENDERABLE_ELEMENTS.has(local)) {
+      throw new SvgSanitizeError("forbidden");
+    }
+
+    const element: SvgElement = {
+      name: local,
+      attributes: collectAttributes(tag),
+      children: [],
+    };
+
+    stack.at(-1)?.children.push(element);
+    stack.push(element);
+    root ??= element;
+  });
+
+  parser.on("closetag", () => {
+    if (skipDepth > 0) {
+      skipDepth -= 1;
+      return;
+    }
+
+    stack.pop();
+  });
+
+  try {
+    parser.write(rawSvg).close();
+  } catch (error) {
+    if (error instanceof SvgSanitizeError) {
+      throw error;
+    }
+
+    throw new SvgSanitizeError("invalid", { cause: error });
+  }
+
+  if (root === null) {
+    throw new SvgSanitizeError("invalid");
+  }
+
+  return root;
+};
+
+/**
+ * Löst alle Definitionen aus dem Baum und sammelt sie ein. react-pdf löst
+ * `url(#id)` sonst nicht auf und zeichnet die verweisende Form ungefüllt
+ * (= unsichtbar).
+ */
+const extractDefinitions = (
+  element: SvgElement,
+  collected: SvgElement[],
+): void => {
+  const kept: SvgElement[] = [];
+
+  for (const child of element.children) {
+    if (child.name === "defs") {
+      collected.push(...child.children);
+      continue;
+    }
+
+    if (DEFINITION_ELEMENTS.has(child.name)) {
+      collected.push(child);
+      continue;
+    }
+
+    extractDefinitions(child, collected);
+    kept.push(child);
+  }
+
+  element.children = kept;
+};
+
+/**
+ * Hängt alle Definitionen in ein einzelnes Wurzel-defs.
+ */
+const consolidateDefs = (root: SvgElement): void => {
+  const definitions: SvgElement[] = [];
+  extractDefinitions(root, definitions);
+
+  if (definitions.length === 0) {
     return;
   }
 
-  const rootChildren = Array.from(svg.children);
-  let canonicalDefs =
-    rootChildren.find((child) => child.localName.toLowerCase() === "defs") ??
-    null;
-  if (!canonicalDefs) {
-    canonicalDefs = doc.createElementNS(SVG_NS, "defs");
-    svg.insertBefore(canonicalDefs, svg.firstChild);
+  root.children.unshift({
+    name: "defs",
+    attributes: new Map(),
+    children: definitions,
+  });
+};
+
+const escapeAttribute = (value: string): string =>
+  value
+    .replace(/&/gu, "&amp;")
+    .replace(/</gu, "&lt;")
+    .replace(/>/gu, "&gt;")
+    .replace(/"/gu, "&quot;")
+    .replace(/[\n\r\t]/gu, " ");
+
+const serialize = (element: SvgElement): string => {
+  const attributes = [...element.attributes]
+    .map(([name, value]) => ` ${name}="${escapeAttribute(value)}"`)
+    .join("");
+
+  if (element.children.length === 0) {
+    return `<${element.name}${attributes}/>`;
   }
 
-  // Mehrere Wurzel-<defs> zusammenführen. React-pdf liest nur das erste.
-  for (const child of rootChildren) {
-    if (child !== canonicalDefs && child.localName.toLowerCase() === "defs") {
-      while (child.firstChild) {
-        canonicalDefs.appendChild(child.firstChild);
-      }
-      child.remove();
-    }
-  }
-
-  // Lose (nicht in einem <defs> steckende) Definitionen einsammeln.
-  for (const el of defElements) {
-    if (!el.closest("defs")) {
-      canonicalDefs.appendChild(el);
-    }
-  }
+  return `<${element.name}${attributes}>${element.children
+    .map(serialize)
+    .join("")}</${element.name}>`;
 };
 
 /**
- * Härtet und normalisiert ein hochgeladenes Logo-SVG. Wirft
- * `SvgSanitizeError("text")` bei Live-Text/Schrift und
- * `SvgSanitizeError("invalid")` bei nicht parsbarem SVG.
+ * Baut ein hochgeladenes Logo-SVG aus erlaubten Elementen neu auf. Wirft
+ * `SvgSanitizeError("text")` bei Live-Text/Schrift, `("forbidden")` bei
+ * nicht erlaubten Elementen, Attributen oder Verweisen und `("invalid")` bei
+ * nicht parsbarem SVG.
  */
 export const sanitizeSvgLogo = (rawSvg: string): string => {
-  if (containsText(parseXml(rawSvg))) {
-    throw new SvgSanitizeError("text");
-  }
+  const root = parseDocument(rawSvg);
 
-  const { window } = new JSDOM("");
-  const purify = createDOMPurify(
-    window as unknown as Parameters<typeof createDOMPurify>[0],
-  );
+  consolidateDefs(root);
+  root.attributes.set("xmlns", SVG_NS);
 
-  // Externe Referenzen gezielt nur auf echten URI-Attributen entfernen, nicht
-  // global via ALLOWED_URI_REGEXP, da DOMPurify das auch auf fill/stroke
-  // (url(#...)-Paint-Server) anwendet und sonst alle nicht-Hex-Farben verwirft.
-  purify.addHook("afterSanitizeAttributes", (node) => {
-    for (const attr of URI_ATTRS) {
-      const value = node.getAttribute?.(attr);
-      if (value && !SAFE_URI.test(value)) {
-        node.removeAttribute(attr);
-      }
-    }
-  });
-
-  // biome-ignore-start lint/style/useNamingConvention: DOMPurify-Config-Keys sind extern vorgegeben (SCREAMING_SNAKE).
-  const cleaned = purify.sanitize(rawSvg, {
-    USE_PROFILES: { svg: true, svgFilters: true },
-    // Defense in depth: Text-Tags sind oben bereits abgelehnt; <a>/foreignObject
-    // sind in einem Logo unnötig und vergrößern die Angriffsfläche.
-    FORBID_TAGS: [...TEXT_TAGS, "a", "foreignObject"],
-    FORBID_ATTR: ["font-family", "font"],
-  });
-  // biome-ignore-end lint/style/useNamingConvention: siehe oben.
-
-  const doc = parseXml(cleaned);
-
-  normalizeColors(doc);
-  consolidateDefs(doc);
-
-  if (!doc.documentElement.getAttribute("xmlns")) {
-    doc.documentElement.setAttribute("xmlns", SVG_NS);
-  }
-
-  return new window.XMLSerializer().serializeToString(doc.documentElement);
+  return serialize(root);
 };

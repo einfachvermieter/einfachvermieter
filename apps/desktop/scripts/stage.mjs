@@ -1,8 +1,10 @@
 import { execSync } from "node:child_process";
 import {
   cpSync,
+  existsSync,
   mkdirSync,
   readdirSync,
+  readFileSync,
   realpathSync,
   rmSync,
   statSync,
@@ -99,8 +101,91 @@ const PRUNED_DIRECTORIES = new Set([
   "docs",
   ".github",
 ]);
-// `typescript` haengt nur als Typquelle an i18next, geladen wird es nie.
+// `typescript` hängt nur als Typquelle an i18next, geladen wird es nie.
 const PRUNED_PACKAGES = ["typescript"];
+
+// Die Desktop-App läuft immer auf der eingebetteten SQLite (libsql). Die
+// beiden Server-Dialekte und ihre Libs können raus.
+const UNUSED_DIALECTS = ["@mikro-orm/postgresql", "@mikro-orm/mariadb"];
+
+const readManifest = (packageDir) => {
+  const manifestPath = join(packageDir, "package.json");
+  return existsSync(manifestPath)
+    ? JSON.parse(readFileSync(manifestPath, "utf8"))
+    : null;
+};
+
+/**
+ * Sucht ein Paket wie Node: erst im `node_modules` des Verzeichnisses, dann
+ * aufwärts bis zur Staging-Wurzel.
+ */
+const resolveDependency = (fromDir, name) => {
+  let current = fromDir;
+
+  while (current.startsWith(staging)) {
+    const candidate = join(current, "node_modules", name);
+    if (existsSync(join(candidate, "package.json"))) {
+      return candidate;
+    }
+    current = dirname(current);
+  }
+
+  return null;
+};
+
+/**
+ * Alle von Staging-Wurzel und API aus erreichbaren Paketverzeichnisse.
+ * `blocked` kappt Kanten, damit sich zwei Läufe vergleichen lassen.
+ */
+const reachablePackages = (blocked) => {
+  const found = new Set();
+
+  const visit = (packageDir) => {
+    const manifest = readManifest(packageDir);
+    if (!manifest) {
+      return;
+    }
+
+    const dependencies = {
+      ...manifest.dependencies,
+      ...manifest.optionalDependencies,
+      ...manifest.peerDependencies,
+    };
+
+    for (const name of Object.keys(dependencies)) {
+      if (blocked.includes(name)) {
+        continue;
+      }
+
+      const target = resolveDependency(packageDir, name);
+      if (!target || found.has(target)) {
+        continue;
+      }
+
+      found.add(target);
+      visit(target);
+    }
+  };
+
+  visit(staging);
+  visit(join(staging, "apps/api"));
+
+  return found;
+};
+
+/**
+ * Pakete, die es nur wegen der ungenutzten Dialekte gibt (die Dialekt-Pakete
+ * selbst eingeschlossen).
+ */
+const dbDialectOnlyPackages = () => {
+  const withDialects = reachablePackages([]);
+  const withoutDialects = reachablePackages(UNUSED_DIALECTS);
+
+  return [...withDialects].filter(
+    (packageDir) => !withoutDialects.has(packageDir),
+  );
+};
+
 const currentPlatform = `${process.platform}-${process.arch}`;
 
 const isDisposable = (name) =>
@@ -150,14 +235,20 @@ for (const packageName of PRUNED_PACKAGES) {
     force: true,
   });
 }
+
+for (const packageDir of dbDialectOnlyPackages()) {
+  rmSync(packageDir, { recursive: true, force: true });
+}
+
 prune(join(staging, "node_modules"));
+
 const after = measure(staging);
 process.stdout.write(
   `[stage] bereinigt: ${before.files} -> ${after.files} Dateien, ${before.mb} -> ${after.mb} MB\n`,
 );
 
 // Server-Ressourcen als Archiv ausliefern. Native Module bleiben ausgepackt,
-// Windows laedt DLLs nur aus echten Dateien; Electron findet sie über das
+// Windows lädt DLLs nur aus echten Dateien; Electron findet sie über das
 // Archiv-Register.
 const archive = join(packageRoot, "staging.asar");
 rmSync(archive, { force: true });

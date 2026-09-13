@@ -34,7 +34,16 @@ import { assertUploadAllowed } from "../common/upload-guard.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { StorageService } from "../storage/storage.service.js";
 import { currentAppVersion } from "../updates/app-version.js";
-import { SvgSanitizeError } from "./sanitize-svg.js";
+import { SvgSanitizeError, type SvgSanitizeReason } from "./sanitize-svg.js";
+
+/**
+ * Meldungen zu den Ablehnungsgründen des SVG-Sanitizers.
+ */
+const SVG_ERROR_KEYS: Record<SvgSanitizeReason, string> = {
+  text: "errors.logoSvgText",
+  forbidden: "errors.logoSvgForbidden",
+  invalid: "errors.logoSvgInvalid",
+};
 
 export const ALLOWED_LOGO_MIME_TYPES = new Set([
   "image/png",
@@ -367,8 +376,9 @@ export class SettingsService {
       MAX_LOGO_BYTES,
     );
 
-    // SVGs werden gehärtet (Skripte/externe Refs entfernt), auf RGB-Farben
-    // normalisiert und bei Live-Text abgelehnt. Sonst crasht die PDF-Erzeugung.
+    // SVGs werden aus erlaubten Elementen neu aufgebaut und auf RGB-Farben
+    // normalisiert; Live-Text und alles, was react-pdf nicht zeichnen kann,
+    // wird abgelehnt. Sonst crasht die PDF-Erzeugung oder das Logo fehlt.
     return file.mimetype === "image/svg+xml"
       ? Buffer.from(await this.sanitizeSvg(file.buffer))
       : file.buffer;
@@ -376,20 +386,17 @@ export class SettingsService {
 
   /**
    * Härtet ein SVG und übersetzt Sanitize-Fehler in lokalisierte
-   * `BadRequestException`s (Live-Text vs. ungültiges SVG).
+   * `BadRequestException`s.
    */
   private async sanitizeSvg(buffer: Buffer): Promise<string> {
     try {
       return await sanitizeSvgInWorker(buffer.toString("utf8"));
     } catch (error) {
       if (error instanceof SvgSanitizeError) {
-        const messageKey =
-          error.reason === "text"
-            ? "errors.logoSvgText"
-            : "errors.logoSvgInvalid";
-        throw new BadRequestException(getI18n().t(messageKey), {
-          cause: error,
-        });
+        throw new BadRequestException(
+          getI18n().t(SVG_ERROR_KEYS[error.reason]),
+          { cause: error },
+        );
       }
 
       throw error;

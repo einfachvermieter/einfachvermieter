@@ -5,103 +5,190 @@ const wrap = (inner: string): string =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">${inner}</svg>`;
 
 /**
- * Führt `fn` aus und liefert den geworfenen Fehler zurück (oder undefined).
+ * Liefert den Ablehnungsgrund des Sanitizers. Läuft er durch oder scheitert er
+ * an etwas anderem, beschreibt der Rückgabewert genau das.
  */
-const captureError = (fn: () => unknown): unknown => {
+const rejectionReason = (svg: string): string => {
   try {
-    fn();
+    sanitizeSvgLogo(svg);
   } catch (error) {
-    return error;
+    return error instanceof SvgSanitizeError
+      ? error.reason
+      : `fremder Fehler: ${String(error)}`;
   }
+
+  return "keine Ablehnung";
 };
 
 describe("sanitizeSvgLogo", () => {
   it("converts modern color functions to RGB in presentation attributes", () => {
     const out = sanitizeSvgLogo(wrap('<rect fill="oklch(0.7 0.15 250)" />'));
+
+    expect(out).toMatch(/fill="#[0-9a-f]{6}"/iu);
     expect(out).not.toMatch(/oklch/iu);
-    expect(out).toMatch(/fill="(#[0-9a-f]{6}|rgba?\()/iu);
   });
 
   it("leaves supported colors (hex/rgb/named) untouched", () => {
     const out = sanitizeSvgLogo(wrap('<rect fill="#0d9488" stroke="red" />'));
-    expect(out).toMatch(/fill="#0d9488"/u);
-    expect(out).toMatch(/stroke="red"/u);
+
+    expect(out).toContain('fill="#0d9488"');
+    expect(out).toContain('stroke="red"');
   });
 
   it("prefers an existing RGB fallback over an unconvertible modern color", () => {
-    // Zweite Deklaration ist Unsinn -> Fallback der ersten bleibt erhalten.
     const out = sanitizeSvgLogo(
-      wrap('<rect style="fill: #123456; fill: oklch(nonsense)" />'),
+      wrap(
+        '<rect style="fill: #123456; fill: color-mix(in srgb, red, blue)" />',
+      ),
     );
-    expect(out).toMatch(/fill:\s*#123456/u);
+
+    expect(out).toContain("#123456");
+    expect(out).not.toMatch(/color-mix/iu);
   });
 
   it("rejects SVGs containing a <text> element", () => {
-    const error = captureError(() =>
-      sanitizeSvgLogo(wrap("<text>Muster</text>")),
+    expect(rejectionReason(wrap("<text>Muster</text>"))).toBe("text");
+  });
+
+  it("rejects SVGs containing a font definition", () => {
+    expect(rejectionReason(wrap('<font-face font-family="Eigen" />'))).toBe(
+      "text",
     );
-    expect(error).toBeInstanceOf(SvgSanitizeError);
-    expect((error as SvgSanitizeError).reason).toBe("text");
   });
 
-  it("rejects SVGs that reference a font-family", () => {
-    expect(() =>
-      sanitizeSvgLogo(wrap('<rect font-family="Arial" />')),
-    ).toThrowError(SvgSanitizeError);
-  });
-
-  it("strips <script> elements (security hardening)", () => {
+  it("drops a font-family attribute on a shape", () => {
     const out = sanitizeSvgLogo(
-      wrap('<script>alert(1)</script><rect fill="#000000" />'),
+      wrap('<rect font-family="Arial" fill="red" />'),
     );
-    expect(out).not.toMatch(/<script/iu);
-    expect(out).not.toMatch(/alert/u);
+
+    expect(out).not.toMatch(/font-family/iu);
+    expect(out).toContain('fill="red"');
   });
 
-  it("strips inline event handlers", () => {
+  it("rejects a <script> element", () => {
+    expect(rejectionReason(wrap("<script>alert(1)</script><rect />"))).toBe(
+      "forbidden",
+    );
+  });
+
+  it("rejects a script element hidden behind a foreign namespace prefix", () => {
+    const svg = wrap(
+      '<x:script xmlns:x="http://www.w3.org/2000/svg">alert(1)</x:script>',
+    );
+
+    expect(rejectionReason(svg)).toBe("forbidden");
+  });
+
+  it("rejects inline event handlers", () => {
+    expect(rejectionReason(wrap('<rect onload="alert(1)" />'))).toBe(
+      "forbidden",
+    );
+  });
+
+  it("rejects a script URL that only appears after character references are resolved", () => {
+    expect(
+      rejectionReason(wrap('<image href="java&#9;script:alert(1)" />')),
+    ).toBe("forbidden");
+  });
+
+  it("rejects a doctype with an internal subset", () => {
+    const svg =
+      '<!DOCTYPE svg [<!ENTITY payload "<rect />">]><svg xmlns="http://www.w3.org/2000/svg">&payload;</svg>';
+
+    expect(rejectionReason(svg)).toBe("forbidden");
+  });
+
+  it("accepts a plain doctype without an internal subset", () => {
     const out = sanitizeSvgLogo(
-      wrap('<rect fill="#000000" onload="evil()" />'),
+      '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red" /></svg>',
     );
-    expect(out).not.toMatch(/onload/iu);
+
+    expect(out).toContain('<rect fill="red"/>');
   });
 
-  it("removes external image references but keeps the graphic", () => {
+  it("rejects external references on an image", () => {
+    const svg = wrap('<image href="https://example.test/logo.png" />');
+
+    expect(rejectionReason(svg)).toBe("forbidden");
+  });
+
+  it("keeps an embedded raster image", () => {
+    const out = sanitizeSvgLogo(
+      '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image xlink:href="data:image/png;base64,AAA" /></svg>',
+    );
+
+    expect(out).toContain('href="data:image/png;base64,AAA"');
+  });
+
+  it("rejects elements that react-pdf cannot draw", () => {
+    expect(rejectionReason(wrap('<mask id="m"><rect /></mask>'))).toBe(
+      "forbidden",
+    );
+    expect(rejectionReason(wrap('<use href="#a" />'))).toBe("forbidden");
+  });
+
+  it("keeps a paint server reference but drops one pointing elsewhere", () => {
     const out = sanitizeSvgLogo(
       wrap(
-        '<image href="https://evil.example/x.png" /><rect fill="#000000" />',
+        '<linearGradient id="a"><stop offset="0" stop-color="red" /></linearGradient><rect fill="url(#a)" /><circle fill="url(https://example.test/p.svg#a)" />',
       ),
     );
-    expect(out).not.toMatch(/evil\.example/u);
-    expect(out).toMatch(/<rect/u);
+
+    expect(out).toContain('fill="url(#a)"');
+    expect(out).toContain("<circle/>");
+  });
+
+  it("drops metadata and annotations left behind by drawing programs", () => {
+    const out = sanitizeSvgLogo(
+      '<svg xmlns="http://www.w3.org/2000/svg" xmlns:serif="http://www.serif.com/" xml:space="preserve"><title>Logo</title><metadata><custom xmlns="urn:x-test">ignoriert</custom></metadata><rect serif:id="Ebene" data-name="rect" fill="red" /></svg>',
+    );
+
+    expect(out).toBe(
+      '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="red"/></svg>',
+    );
   });
 
   it("moves a loose gradient into a root <defs> so url() refs resolve", () => {
     const out = sanitizeSvgLogo(
       wrap(
-        '<linearGradient id="a"><stop offset="0" stop-color="#0369a1"/><stop offset="1" stop-color="#0d9488"/></linearGradient><rect fill="url(#a)" />',
+        '<g><linearGradient id="a"><stop offset="0" stop-color="red" /></linearGradient><rect fill="url(#a)" /></g>',
       ),
     );
-    // Gradient sitzt jetzt im <defs>, die url()-Referenz bleibt erhalten.
-    expect(out).toMatch(/<defs>\s*<linearGradient id="a"/u);
-    expect(out).toMatch(/fill="url\(#a\)"/u);
+
+    expect(out).toMatch(/^<svg[^>]*><defs><linearGradient id="a">/u);
   });
 
   it("merges multiple root <defs> into one", () => {
     const out = sanitizeSvgLogo(
       wrap(
-        '<defs><linearGradient id="a"><stop offset="0" stop-color="#000"/></linearGradient></defs><defs><radialGradient id="b"><stop offset="0" stop-color="#fff"/></radialGradient></defs><rect fill="url(#a)" stroke="url(#b)" />',
+        '<defs><linearGradient id="a"><stop offset="0" stop-color="red" /></linearGradient></defs><defs><clipPath id="b"><rect /></clipPath></defs><rect fill="url(#a)" />',
       ),
     );
-    expect(out.match(/<defs>/gu)?.length).toBe(1);
-    expect(out).toMatch(/id="a"/u);
-    expect(out).toMatch(/id="b"/u);
+
+    expect(out.match(/<defs>/gu)).toHaveLength(1);
+    expect(out).toContain('<linearGradient id="a">');
+    expect(out).toContain('<clipPath id="b">');
+  });
+
+  it("adds the SVG namespace when the file omits it", () => {
+    const out = sanitizeSvgLogo('<svg viewBox="0 0 10 10"><rect /></svg>');
+
+    expect(out).toContain('xmlns="http://www.w3.org/2000/svg"');
   });
 
   it("throws an invalid error for non-SVG input", () => {
-    const error = captureError(() =>
-      sanitizeSvgLogo("<html><body>nope</body></html>"),
-    );
-    expect(error).toBeInstanceOf(SvgSanitizeError);
-    expect((error as SvgSanitizeError).reason).toBe("invalid");
+    expect(rejectionReason("<html><body>nope</body></html>")).toBe("invalid");
+  });
+
+  it("throws an invalid error for malformed XML", () => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><rect>';
+
+    expect(rejectionReason(svg)).toBe("invalid");
+  });
+
+  it("escapes special characters in attribute values", () => {
+    const out = sanitizeSvgLogo(wrap('<rect id="a&quot;&lt;b" />'));
+
+    expect(out).toContain('id="a&quot;&lt;b"');
   });
 });

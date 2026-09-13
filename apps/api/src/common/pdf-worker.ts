@@ -1,6 +1,6 @@
 /**
  * Manager für den PDF-/SVG-Worker. react-pdf layoutet CPU-gebunden in JS und
- * das SVG-Sanitizing geht per JSDOM synchron. Beides blockiert sonst den
+ * das SVG-Sanitizing parst und baut synchron. Beides blockiert sonst den
  * Event Loop für alle parallelen Requests. Deshalb das ganze über einen Worker-Thread:
  * er serialisiert die Jobs intern nd hält den Haupt-Loop frei.
  *

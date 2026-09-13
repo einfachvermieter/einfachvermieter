@@ -167,6 +167,7 @@
     "databaseNewerThanApp": "Die Datenbank wurde zuletzt mit Version {lastVersion} benutzt, diese App ist Version {currentVersion}. Die App ist gesperrt, bis die aktuelle Version läuft.",
     "fileRequired": "Es wurde keine Datei übermittelt.",
     "logoSvgText": "Das SVG enthält Text bzw. Schriftverweise. Bitte wandeln Sie die Schrift vor dem Hochladen in Pfade (Kurven) um.",
+    "logoSvgForbidden": "Das SVG enthält nicht unterstützte Inhalte, zum Beispiel Skripte, Verweise auf fremde Dateien oder Effekte wie Masken und Filter. Bitte exportieren Sie das Logo als einfache Vektorgrafik.",
     "logoSvgInvalid": "Die SVG-Datei konnte nicht verarbeitet werden. Bitte prüfen Sie, ob es sich um eine gültige SVG-Grafik handelt.",
     "buildingHasUnits": "Gebäude mit Wohnungen kann nicht gelöscht werden",
     "unitHasTenants": "Wohnung mit Mietverträgen kann nicht gelöscht werden",
