@@ -10,6 +10,7 @@
     "DATABASE_URL",
     "DB_DRIVER",
     "HOST",
+    "LICENSE_URL",
     "LOOPBACK_TOKEN",
     "PASSWORD_RESET",
     "PASSWORD_MIN_LENGTH",

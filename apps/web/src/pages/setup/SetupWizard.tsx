@@ -18,7 +18,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ApiError } from "@/lib/api";
 import { t } from "@/lib/i18n";
-import { useAuthMode, usePrivacyUrl, useRunSetup } from "@/lib/setup";
+import {
+  useAuthMode,
+  useLicenseUrl,
+  usePrivacyUrl,
+  useRunSetup,
+} from "@/lib/setup";
 import {
   type InternetRecommendation,
   InternetRecommendationDialog,
@@ -197,6 +202,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   // Desktop-App (`local`): kein Login, also auch kein Admin-Konto-Schritt
   const withAdmin = useAuthMode() !== "local";
   const privacyUrl = usePrivacyUrl();
+  const licenseUrl = useLicenseUrl();
   const stepKeys: StepKey[] = withAdmin
     ? ["welcome", "admin", "sender", "internet"]
     : ["welcome", "sender", "internet"];
@@ -367,6 +373,32 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
             </h3>
             {stepHint ? <Description>{stepHint}</Description> : null}
           </div>
+
+          {stepKey === "welcome" ? (
+            <div className="flex flex-col gap-3 rounded-lg bg-muted px-4 py-3 text-xs leading-normal text-muted-foreground">
+              <div className="flex flex-col gap-0.5">
+                <p className="font-semibold text-foreground">
+                  {t("ui.about.usage.title")}
+                </p>
+                <p>{t("ui.about.usage.text")}</p>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <p className="font-semibold text-foreground">
+                  {t("ui.about.license.title")}
+                </p>
+                <p>
+                  {licenseUrl ? (
+                    <ExternalLink
+                      href={licenseUrl}
+                      label={t("ui.about.license.name")}
+                    />
+                  ) : (
+                    t("ui.about.license.name")
+                  )}
+                </p>
+              </div>
+            </div>
+          ) : null}
 
           {stepKey === "admin" ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -82,7 +82,7 @@ const ConsentCard = ({
 
 /**
  * Alle Internetzugriffe der App an einer Stelle, jeder einzeln erlaubbar:
- * Klimafaktoren vom DWD, Prüfung auf neue Versionen, anonyme
+ * Klimafaktoren vom DWD, Prüfung auf neue Versionen, pseudonyme
  * Nutzungsstatistik. Solange eine Entscheidung nicht getroffen ist, ruft
  * die App nichts ab.
  */

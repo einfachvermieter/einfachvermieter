@@ -269,6 +269,7 @@ export class SettingsService {
       climateFactorsAutoFetch: row.climateFactorsAutoFetch,
       updateCheckEnabled: row.updateCheckEnabled,
       telemetryEnabled: row.telemetryEnabled,
+      installationId: row.installationId,
     };
   }
 

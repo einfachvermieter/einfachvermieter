@@ -1,6 +1,7 @@
 import {
   RiContactsBook2Line,
   RiGlobalLine,
+  RiInformationLine,
   RiSparkling2Line,
 } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
@@ -11,12 +12,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 
-type SettingsTab = "sender" | "ai" | "internet";
+type SettingsTab = "sender" | "ai" | "internet" | "about";
 
 const TAB_ROUTES: Record<SettingsTab, string> = {
   sender: "/einstellungen/absender",
   ai: "/einstellungen/ki",
   internet: "/einstellungen/internet",
+  about: "/einstellungen/ueber",
 };
 
 /**
@@ -66,6 +68,10 @@ export const SettingsLayout = ({
             <TabsTrigger value="internet">
               <RiGlobalLine />
               {t("ui.settings.nav.internet")}
+            </TabsTrigger>
+            <TabsTrigger value="about">
+              <RiInformationLine />
+              {t("ui.settings.nav.about")}
             </TabsTrigger>
           </TabsList>
         </Tabs>

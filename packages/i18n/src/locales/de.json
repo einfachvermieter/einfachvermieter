@@ -387,7 +387,8 @@
         "settings": "Einstellungen",
         "settingsSender": "Absenderdaten",
         "settingsAi": "KI-Anbieter",
-        "settingsInternet": "Internetzugriffe"
+        "settingsInternet": "Internetzugriffe",
+        "settingsAbout": "Über"
       },
       "columns": {
         "label": "Bezeichnung",
@@ -1736,6 +1737,7 @@
           "resultRefund": "Ergebnis: {tenant} erhält {amount} zurück.",
           "resultArrears": "Ergebnis: {tenant} muss {amount} nachzahlen.",
           "blocked": "Solange ein Zähler einen negativen Verbrauch ausweist, lässt sich die Abrechnung nicht finalisieren.",
+          "reviewHint": "Prüfen Sie die Abrechnung auf Richtigkeit. Die App ersetzt keine rechtliche oder steuerliche Beratung.",
           "confirm": "Jetzt finalisieren"
         },
         "columnBemessungFraction": "Bemessung Mieter / gesamt",
@@ -1764,6 +1766,16 @@
         "special": "Es fehlt ein Sonderzeichen."
       }
     },
+    "about": {
+      "license": {
+        "title": "Lizenz",
+        "name": "FSL-1.1-MIT"
+      },
+      "usage": {
+        "title": "Hinweis zur Nutzung",
+        "text": "EinfachVermieter unterstützt bei der Verwaltung von Mietobjekten und der Erstellung von Abrechnungen und Dokumenten. Die Software ersetzt keine rechtliche oder steuerliche Beratung. Prüfen Sie Berechnungen, Abrechnungen und Dokumente vor ihrer Verwendung auf Richtigkeit."
+      }
+    },
     "internetAccess": {
       "recommended": "Empfohlen",
       "privacy": "Datenschutzerklärung",
@@ -1778,7 +1790,7 @@
         "details": "Die App überprüft regelmäßig api.einfachvermieter.de, ob eine neue Version vorliegt."
       },
       "telemetry": {
-        "label": "Anonyme Nutzungsstatistik senden",
+        "label": "Pseudonyme Nutzungsstatistik senden",
         "description": "Zeigt, welche Versionen und Betriebssysteme genutzt werden. So können Support und Entwicklung dort ansetzen, wo es am meisten hilft.",
         "details": "Die App übermittelt an api.einfachvermieter.de: eine zufällige Kennung dieser Installation, die Versionsnummer, die Plattform (Server, macOS, Windows), den Datenbank-Typ sowie die Anzahl der Gebäude, Wohnungen, Mieter und Abrechnungen, sowie allgemeine Einstellungen zur Nutzung wie z. B. Heizkostenabrechnung (intern, extern), etc. Es werden keine Namen, Adressen oder Beträge übertragen."
       }
@@ -2175,7 +2187,18 @@
       "nav": {
         "sender": "Absenderdaten",
         "ai": "KI-Anbieter",
-        "internet": "Internetzugriffe"
+        "internet": "Internetzugriffe",
+        "about": "Über"
+      },
+      "about": {
+        "title": "Über EinfachVermieter",
+        "description": "Version, Lizenz und Hinweise zur Nutzung.",
+        "versionCardTitle": "Version",
+        "installedVersion": "Installierte Version:",
+        "installationIdCardTitle": "Installationskennung",
+        "installationId": "Kennung dieser Installation:",
+        "installationIdHint": "Diese zufällige Kennung wird mit der Nutzungsstatistik übermittelt. Sie enthält keine Angaben zu Ihrer Person.",
+        "installationIdNone": "Noch keine Kennung. Sie wird erzeugt, sobald die Nutzungsstatistik zum ersten Mal gesendet wird."
       },
       "internet": {
         "title": "Internetzugriffe",
@@ -2193,7 +2216,7 @@
           "noneKnown": "Keine neuere Version bekannt."
         },
         "telemetry": {
-          "cardTitle": "Anonyme Nutzungsstatistik",
+          "cardTitle": "Pseudonyme Nutzungsstatistik",
           "undecidedNote": "Sie haben noch nicht entschieden. Bis dahin sendet die App nichts."
         }
       },

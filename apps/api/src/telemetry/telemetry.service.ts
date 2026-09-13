@@ -35,7 +35,7 @@ type TelemetryPayload = {
 };
 
 /**
- * Anonyme Nutzungsstatistik, nur nach Einwilligung
+ * Pseudonyme Nutzungsstatistik, nur nach Einwilligung
  * Server: einmal am Tag, Zeitpunkt der letzten Meldung in der DB.
  * Desktop-App: bei jedem Programmstart und dann alle 24 Stunden.
  */

@@ -36,6 +36,15 @@ export const usePrivacyUrl = (): string => {
   return data?.privacyUrl ?? "";
 };
 
+/**
+ * Adresse des Lizenztexts (`LICENSE_URL`). Leer heißt: kein Link.
+ */
+export const useLicenseUrl = (): string => {
+  const { data } = useQuery(setupStatusQueryOptions);
+
+  return data?.licenseUrl ?? "";
+};
+
 export const useRunSetup = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -48,6 +57,7 @@ export const useRunSetup = () => {
           needsSetup: false,
           authMode: previous?.authMode ?? "session",
           privacyUrl: previous?.privacyUrl ?? "",
+          licenseUrl: previous?.licenseUrl ?? "",
           recovery: previous?.recovery ?? false,
           recoveryEmails: previous?.recoveryEmails ?? [],
           recoveryUsed: previous?.recoveryUsed ?? false,

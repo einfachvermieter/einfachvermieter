@@ -19,11 +19,14 @@ import { currentAppVersion } from "../updates/app-version.js";
 import { databaseNewerThanApp } from "../updates/database-version-guard.js";
 
 const DEFAULT_PRIVACY_URL = "https://einfachvermieter.de/datenschutz/";
+const DEFAULT_LICENSE_URL = "https://einfachvermieter.de/lizenz/";
 
 @Injectable()
 export class SetupService {
   /** Leer gesetzt blendet den Link auf die Datenschutzerklärung aus. */
   private readonly privacyUrl = process.env.PRIVACY_URL ?? DEFAULT_PRIVACY_URL;
+  /** Leer gesetzt blendet den Link auf den Lizenztext aus. */
+  private readonly licenseUrl = process.env.LICENSE_URL ?? DEFAULT_LICENSE_URL;
 
   constructor(
     private readonly em: EntityManager,
@@ -56,6 +59,7 @@ export class SetupService {
         needsSetup: settingsCount === 0,
         authMode: mode,
         privacyUrl: this.privacyUrl,
+        licenseUrl: this.licenseUrl,
         recovery,
         recoveryEmails,
         recoveryUsed,
@@ -69,6 +73,7 @@ export class SetupService {
       needsSetup: userCount === 0,
       authMode: mode,
       privacyUrl: this.privacyUrl,
+      licenseUrl: this.licenseUrl,
       recovery,
       recoveryEmails,
       recoveryUsed,

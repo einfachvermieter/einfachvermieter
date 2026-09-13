@@ -186,6 +186,11 @@ export const StatementFinalizeDialog = ({
                   })}
             </CheckRow>
           ) : null}
+          {blocked ? null : (
+            <CheckRow kind="info">
+              {t("ui.statements.detail.finalizeDialog.reviewHint")}
+            </CheckRow>
+          )}
           <CheckRow kind="info">
             {t("ui.statements.detail.info.hintText")}
           </CheckRow>

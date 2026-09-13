@@ -74,6 +74,7 @@ import { MeterDetailPage } from "./pages/meters/MeterDetailPage";
 import { MeterReadingsPage } from "./pages/meters/MeterReadingsPage";
 import { MetersOverview } from "./pages/meters/MetersOverview";
 import { MieterkontoDetail } from "./pages/mieterkonto/MieterkontoDetail";
+import { AboutSettingsPage } from "./pages/settings/AboutSettingsPage";
 import { AiSettingsPage } from "./pages/settings/AiSettingsPage";
 import { InternetSettingsPage } from "./pages/settings/InternetSettingsPage";
 import { SenderSettingsPage } from "./pages/settings/SenderSettingsPage";
@@ -888,6 +889,19 @@ const internetSettingsRoute = createRoute({
   },
 });
 
+const aboutSettingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/einstellungen/ueber",
+  beforeLoad: requireAuth,
+  component: AboutSettingsPage,
+  staticData: {
+    crumb: () => [
+      { label: t("ui.common.crumbs.settings"), to: "/einstellungen" },
+      { label: t("ui.common.crumbs.settingsAbout") },
+    ],
+  },
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   setupRoute,
@@ -917,6 +931,7 @@ const routeTree = rootRoute.addChildren([
   senderSettingsRoute,
   aiSettingsRoute,
   internetSettingsRoute,
+  aboutSettingsRoute,
 ]);
 
 /**
