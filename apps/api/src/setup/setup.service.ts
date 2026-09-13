@@ -18,8 +18,13 @@ import { getI18n } from "../i18n/i18n.registry.js";
 import { currentAppVersion } from "../updates/app-version.js";
 import { databaseNewerThanApp } from "../updates/database-version-guard.js";
 
+const DEFAULT_PRIVACY_URL = "https://einfachvermieter.de/datenschutz/";
+
 @Injectable()
 export class SetupService {
+  /** Leer gesetzt blendet den Link auf die Datenschutzerklärung aus. */
+  private readonly privacyUrl = process.env.PRIVACY_URL ?? DEFAULT_PRIVACY_URL;
+
   constructor(
     private readonly em: EntityManager,
     private readonly localAdmin: LocalAdminService,
@@ -50,6 +55,7 @@ export class SetupService {
       return {
         needsSetup: settingsCount === 0,
         authMode: mode,
+        privacyUrl: this.privacyUrl,
         recovery,
         recoveryEmails,
         recoveryUsed,
@@ -62,6 +68,7 @@ export class SetupService {
     return {
       needsSetup: userCount === 0,
       authMode: mode,
+      privacyUrl: this.privacyUrl,
       recovery,
       recoveryEmails,
       recoveryUsed,

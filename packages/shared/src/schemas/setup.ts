@@ -14,10 +14,13 @@ import { type PasswordPolicy, passwordSchema } from "./password.js";
  * `databaseNewerThanApp` ist gesetzt, wenn die Datenbank zuletzt von einer
  * neueren App-Version benutzt wurde: die App ist dann gesperrt und zeigt nur
  * den Hinweis, die aktuelle Version zu installieren.
+ * `privacyUrl` ist die verlinkte Datenschutzerklaerung (`PRIVACY_URL`); leer
+ * bedeutet, dass die App keinen Link anzeigt.
  */
 export type SetupStatus = {
   needsSetup: boolean;
   authMode: "session" | "local";
+  privacyUrl: string;
   recovery: boolean;
   recoveryEmails: string[];
   recoveryUsed: boolean;

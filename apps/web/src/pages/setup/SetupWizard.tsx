@@ -10,6 +10,7 @@ import { type FormEvent, type ReactNode, useMemo, useState } from "react";
 import { type FieldPath, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Description } from "@/components/common/Description";
+import { ExternalLink } from "@/components/common/ExternalLink";
 import { PasswordPolicyHint } from "@/components/form/PasswordPolicyHint";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -17,7 +18,11 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ApiError } from "@/lib/api";
 import { t } from "@/lib/i18n";
-import { useAuthMode, useRunSetup } from "@/lib/setup";
+import { useAuthMode, usePrivacyUrl, useRunSetup } from "@/lib/setup";
+import {
+  type InternetRecommendation,
+  InternetRecommendationDialog,
+} from "./InternetRecommendationDialog";
 import { SetupStepper } from "./SetupStepper";
 
 /**
@@ -103,6 +108,18 @@ type SetupFormValues = z.infer<ReturnType<typeof makeSetupFormSchema>>;
 
 type StepKey = "welcome" | "admin" | "sender" | "internet";
 
+/**
+ * Die drei empfohlenen Internetzugriffe und ihr Feld im Formular.
+ */
+const INTERNET_RECOMMENDATIONS: {
+  key: InternetRecommendation;
+  field: FieldPath<SetupFormValues>;
+}[] = [
+  { key: "climateFactors", field: "climateFactorsAutoFetch" },
+  { key: "updateCheck", field: "updateCheckEnabled" },
+  { key: "telemetry", field: "telemetryEnabled" },
+];
+
 const STEP_FIELDS: Record<StepKey, FieldPath<SetupFormValues>[]> = {
   welcome: [],
   admin: [
@@ -113,11 +130,7 @@ const STEP_FIELDS: Record<StepKey, FieldPath<SetupFormValues>[]> = {
     "adminPasswordConfirm",
   ],
   sender: ["senderName", "senderStreet", "senderPostalCode", "senderCity"],
-  internet: [
-    "climateFactorsAutoFetch",
-    "updateCheckEnabled",
-    "telemetryEnabled",
-  ],
+  internet: INTERNET_RECOMMENDATIONS.map(({ field }) => field),
 };
 
 const toDto = (values: SetupFormValues, withAdmin: boolean): SetupDto => ({
@@ -183,10 +196,16 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   const runSetup = useRunSetup();
   // Desktop-App (`local`): kein Login, also auch kein Admin-Konto-Schritt
   const withAdmin = useAuthMode() !== "local";
+  const privacyUrl = usePrivacyUrl();
   const stepKeys: StepKey[] = withAdmin
     ? ["welcome", "admin", "sender", "internet"]
     : ["welcome", "sender", "internet"];
   const [step, setStep] = useState(0);
+  const [missingRecommendations, setMissingRecommendations] = useState<
+    InternetRecommendation[]
+  >([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAnswered, setConfirmAnswered] = useState(false);
   const stepKey: StepKey = stepKeys[step] ?? "internet";
   const schema = useMemo(
     () => makeSetupFormSchema(policy, withAdmin),
@@ -230,6 +249,12 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
 
   const isLastStep = step === stepKeys.length - 1;
 
+  const enableRecommended = () => {
+    for (const field of STEP_FIELDS.internet) {
+      form.setValue(field, true, { shouldDirty: true });
+    }
+  };
+
   const handlePrimary = async (event: FormEvent) => {
     event.preventDefault();
     syncOptionalSkip();
@@ -240,6 +265,31 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
       }
 
       return;
+    }
+
+    // Vor dem Abschluss einmal nachfragen, welche Empfehlungen aus sind.
+    if (!confirmAnswered) {
+      const missing = INTERNET_RECOMMENDATIONS.filter(
+        ({ field }) => form.getValues(field) !== true,
+      ).map(({ key }) => key);
+
+      if (missing.length > 0) {
+        setMissingRecommendations(missing);
+        setConfirmOpen(true);
+
+        return;
+      }
+    }
+
+    await submit();
+  };
+
+  const finishAfterConfirm = async (acceptRecommendations: boolean) => {
+    setConfirmAnswered(true);
+    setConfirmOpen(false);
+
+    if (acceptRecommendations) {
+      enableRecommended();
     }
 
     await submit();
@@ -273,12 +323,6 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   };
   const stepHint = stepHints[stepKey];
   const stepBadge = stepBadges[stepKey] ?? null;
-
-  const enableRecommended = () => {
-    for (const field of STEP_FIELDS.internet) {
-      form.setValue(field, true, { shouldDirty: true });
-    }
-  };
 
   const primaryLabel = primaryButtonLabel({
     stepKey,
@@ -428,13 +472,21 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
               <div className="flex justify-center pt-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="default"
                   onClick={enableRecommended}
                 >
                   <RiToggleFill />
                   {t("ui.setup.internet.enableRecommended")}
                 </Button>
               </div>
+              {privacyUrl ? (
+                <div className="flex justify-center text-sm text-muted-foreground">
+                  <ExternalLink
+                    href={privacyUrl}
+                    label={t("ui.internetAccess.privacy")}
+                  />
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -465,6 +517,14 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
           </div>
         </div>
       </form>
+
+      <InternetRecommendationDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        missing={missingRecommendations}
+        onKeep={() => finishAfterConfirm(false)}
+        onAccept={() => finishAfterConfirm(true)}
+      />
     </div>
   );
 };

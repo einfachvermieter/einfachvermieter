@@ -27,6 +27,15 @@ export const useAuthMode = (): SetupStatus["authMode"] => {
   return data?.authMode ?? "session";
 };
 
+/**
+ * Adresse der Datenschutzerklärung (`PRIVACY_URL`). Leer heißt: kein Link.
+ */
+export const usePrivacyUrl = (): string => {
+  const { data } = useQuery(setupStatusQueryOptions);
+
+  return data?.privacyUrl ?? "";
+};
+
 export const useRunSetup = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -38,6 +47,7 @@ export const useRunSetup = () => {
         (previous) => ({
           needsSetup: false,
           authMode: previous?.authMode ?? "session",
+          privacyUrl: previous?.privacyUrl ?? "",
           recovery: previous?.recovery ?? false,
           recoveryEmails: previous?.recoveryEmails ?? [],
           recoveryUsed: previous?.recoveryUsed ?? false,

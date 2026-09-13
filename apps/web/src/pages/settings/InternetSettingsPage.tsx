@@ -3,6 +3,7 @@ import { RiBarChartLine, RiCloudLine, RiRefreshLine } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
+import { ExternalLink } from "@/components/common/ExternalLink";
 import { SectionCard } from "@/components/common/SectionCard";
 import { UpdateLinks } from "@/components/common/UpdateLinks";
 import { UpdateVersion } from "@/components/common/UpdateVersion";
@@ -12,6 +13,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Switch } from "@/components/ui/Switch";
 import { climateFactorsSettingsQueryOptions } from "@/lib/climateFactors";
 import { t } from "@/lib/i18n";
+import { usePrivacyUrl } from "@/lib/setup";
 import {
   internetSettingsQueryOptions,
   updateInternetSettings,
@@ -87,6 +89,7 @@ const ConsentCard = ({
 export const InternetSettingsPage = () => {
   const queryClient = useQueryClient();
   const settingsQuery = useQuery(internetSettingsQueryOptions);
+  const privacyUrl = usePrivacyUrl();
   const updateStatusQuery = useQuery(updateStatusQueryOptions);
 
   const save = useMutation({
@@ -190,6 +193,15 @@ export const InternetSettingsPage = () => {
             undecidedNote={t("ui.settings.internet.telemetry.undecidedNote")}
             onChange={(checked) => save.mutate({ telemetryEnabled: checked })}
           />
+
+          {privacyUrl ? (
+            <p className="text-sm text-muted-foreground">
+              <ExternalLink
+                href={privacyUrl}
+                label={t("ui.internetAccess.privacy")}
+              />
+            </p>
+          ) : null}
         </div>
       )}
     </SettingsLayout>
