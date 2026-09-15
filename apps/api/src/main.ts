@@ -7,6 +7,7 @@ import type { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import { AppModule } from "./app.module.js";
 import { authMode } from "./auth/auth-mode.js";
+import { startApiLogFile } from "./diagnostics/api-log.js";
 import { currentAppVersion } from "./updates/app-version.js";
 import { checkDatabaseVersion } from "./updates/database-version-guard.js";
 
@@ -21,6 +22,13 @@ const printStartupBanner = (lines: string[]): void => {
 };
 
 const bootstrap = async (): Promise<void> => {
+  // Im Container ist die Datei der einzige Weg zum Protokoll, `docker logs`
+  // kann der Nutzer der Anwendung nicht lesen. Auch in der Desktop-App
+  // mitschreiben, damit der Bericht aus der Oberfläche überall gleich
+  // aussieht; der Electron-Hauptprozess führt daneben sein eigenes
+  // Protokoll, das auch einen Absturz vor dem Hochfahren festhält.
+  startApiLogFile();
+
   // `local` ist nur mit Loopback-Token sicher: ohne Token wäre jeder Request
   // Admin, auch aus dem Netz, wenn die API nicht an 127.0.0.1 gebunden ist.
   if (authMode() === "local" && !process.env.LOOPBACK_TOKEN) {

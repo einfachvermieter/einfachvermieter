@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { ApiError } from "../lib/api";
+import { downloadDiagnosticsReport } from "../lib/diagnostics";
 import { t } from "../lib/i18n";
 import { OuterShell } from "./common/OuterShell";
 import { Button } from "./ui/Button";
@@ -61,13 +62,19 @@ export const ErrorFallback = ({
                 </pre>
               </div>
             ) : null}
-            <div className="flex justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
               <Button onClick={onRetry}>{t("errors.boundary.retry")}</Button>
               <Button
                 variant="outline"
                 onClick={() => window.location.reload()}
               >
                 {t("errors.boundary.reload")}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => downloadDiagnosticsReport(error)}
+              >
+                {t("errors.boundary.saveReport")}
               </Button>
             </div>
           </div>

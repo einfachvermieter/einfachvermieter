@@ -10,6 +10,7 @@ import { AuthModule } from "./auth/auth.module.js";
 import { BuildingsModule } from "./buildings/buildings.module.js";
 import { CostsModule } from "./costs/costs.module.js";
 import { DatabaseModule } from "./database/database.module.js";
+import { DiagnosticsModule } from "./diagnostics/diagnostics.module.js";
 import { HealthModule } from "./health/health.module.js";
 import { HeatingModule } from "./heating/heating.module.js";
 import { I18nModule } from "./i18n/i18n.module.js";
@@ -42,6 +43,7 @@ const webDistPath =
     I18nModule,
     DatabaseModule,
     HealthModule,
+    DiagnosticsModule,
     AuthModule,
     BuildingsModule,
     UnitsModule,

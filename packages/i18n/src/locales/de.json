@@ -12,6 +12,7 @@
       "quit": "EinfachVermieter beenden",
       "file": "Datei",
       "openDataFolder": "Datenordner öffnen",
+      "saveReport": "Fehlerbericht sichern …",
       "edit": "Bearbeiten",
       "undo": "Widerrufen",
       "redo": "Wiederholen",
@@ -33,10 +34,41 @@
     },
     "error": {
       "apiStartTitle": "EinfachVermieter konnte nicht gestartet werden.",
-      "apiStartMessage": "Der interne Server hat nicht geantwortet. Bitte starten Sie die App neu.",
       "apiCrashTitle": "EinfachVermieter wurde unerwartet beendet.",
-      "apiCrashMessage": "Der interne Server ist abgestürzt. Bitte starten Sie die App neu."
+      "apiCrashMessage": "Der interne Server ist abgestürzt. Bitte starten Sie die App neu.",
+      "apiStartDetail": "Der interne Server hat nicht geantwortet. Bitte starten Sie die App neu.\n\n{message}",
+      "quitButton": "Beenden"
+    },
+    "report": {
+      "saveTitle": "Fehlerbericht sichern",
+      "saveButton": "Fehlerbericht sichern …",
+      "fileType": "Textdatei",
+      "savedTitle": "Fehlerbericht gespeichert",
+      "savedMessage": "Die Datei wurde hier abgelegt:\n{path}\n\nBitte hängen Sie sie an Ihre Fehlermeldung an.",
+      "saveFailedTitle": "Der Fehlerbericht konnte nicht gespeichert werden.",
+      "contextApiCrash": "Der interne Server wurde unerwartet beendet (Code {code}).",
+      "contextStartFailed": "Der Start ist fehlgeschlagen: {message}"
     }
+  },
+  "report": {
+    "heading": "EinfachVermieter Fehlerbericht",
+    "fileName": "EinfachVermieter-Fehlerbericht-{stamp}.txt",
+    "createdAt": "Erstellt: {value}",
+    "version": "Version: {value}",
+    "platform": "Paket: {value}",
+    "system": "System: {os} {arch}, {runtime}",
+    "database": "Datenbank: {value}",
+    "startedAt": "Server gestartet: {value}",
+    "dataFolder": "Datenordner: {value}",
+    "address": "Seite: {value}",
+    "browser": "Browser: {value}",
+    "serverSection": "Angaben des Servers",
+    "errorSection": "Fehler",
+    "noError": "Kein Fehler gemeldet, von Hand erstellt",
+    "logSection": "Protokoll des letzten Starts",
+    "previousLogSection": "Protokoll des vorherigen Starts",
+    "logMissing": "Kein Protokoll vorhanden",
+    "serverUnavailable": "Der Serverbericht konnte nicht geladen werden: {message}"
   },
   "common": {
     "appName": {
@@ -245,7 +277,8 @@
       "generic": "Ein unerwarteter Fehler ist aufgetreten.",
       "detailsLabel": "Fehlermeldung",
       "retry": "Erneut versuchen",
-      "reload": "Seite neu laden"
+      "reload": "Seite neu laden",
+      "saveReport": "Fehlerbericht sichern"
     }
   },
   "warnings": {
@@ -1791,8 +1824,8 @@
       },
       "telemetry": {
         "label": "Pseudonyme Nutzungsstatistik senden",
-        "description": "Zeigt, welche Versionen und Betriebssysteme genutzt werden. So können Support und Entwicklung dort ansetzen, wo es am meisten hilft.",
-        "details": "Die App übermittelt an api.einfachvermieter.de: eine zufällige Kennung dieser Installation, die Versionsnummer, die Plattform (Server, macOS, Windows), den Datenbank-Typ sowie die Anzahl der Gebäude, Wohnungen, Mieter und Abrechnungen, sowie allgemeine Einstellungen zur Nutzung wie z. B. Heizkostenabrechnung (intern, extern), etc. Es werden keine Namen, Adressen oder Beträge übertragen."
+        "description": "Zeigt, welche Versionen und Betriebssysteme genutzt werden. So können Support und Entwicklung dort ansetzen, wo es am meisten hilft. Es werden keine Namen, Adressen oder Beträge übertragen, auch keine Zugangsdaten und keine Modell- oder Serveradressen.",
+        "details": "Die App übermittelt an api.einfachvermieter.de: eine zufällige Kennung dieser Installation, die Versionsnummer, die Plattform (Server, macOS, Windows), Betriebssystem und Prozessortyp, den Datenbank-Typ mit Version, das Alter der Installation sowie die Anzahl der Benutzerkonten, Gebäude, Wohnungen, Mieter, Zähler und Abrechnungen. Dazu kommen allgemeine Einstellungen zur Nutzung: Heizkostenabrechnung (intern oder extern), der gewählte KI-Anbieter, ob Klimafaktoren automatisch geladen werden und ob nach neuen Versionen gesucht wird. Es werden keine Namen, Adressen oder Beträge übertragen, auch keine Zugangsdaten und keine Modell- oder Serveradressen."
       }
     },
     "setup": {
@@ -2198,7 +2231,11 @@
         "installationIdCardTitle": "Installationskennung",
         "installationId": "Kennung dieser Installation:",
         "installationIdHint": "Diese zufällige Kennung wird mit der Nutzungsstatistik übermittelt. Sie enthält keine Angaben zu Ihrer Person.",
-        "installationIdNone": "Noch keine Kennung. Sie wird erzeugt, sobald die Nutzungsstatistik zum ersten Mal gesendet wird."
+        "installationIdNone": "Noch keine Kennung. Sie wird erzeugt, sobald die Nutzungsstatistik zum ersten Mal gesendet wird.",
+        "reportCardTitle": "Fehlerbericht",
+        "reportDescription": "Lädt eine Textdatei mit Version, Systemangaben und den Protokollen des Servers herunter. Hängen Sie sie an Ihre Fehlermeldung an.",
+        "reportButton": "Fehlerbericht herunterladen",
+        "reportFailed": "Der Fehlerbericht konnte nicht erstellt werden."
       },
       "internet": {
         "title": "Internetzugriffe",

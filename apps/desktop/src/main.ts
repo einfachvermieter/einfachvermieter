@@ -2,7 +2,6 @@
 import { randomBytes } from "node:crypto";
 import {
   copyFileSync,
-  createWriteStream,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -11,6 +10,14 @@ import {
 import { createServer } from "node:net";
 import { join } from "node:path";
 import { createI18nSync, createTranslate } from "@einfachvermieter/i18n";
+import {
+  reportFileStamp,
+  reportSection,
+} from "@einfachvermieter/shared/diagnostics";
+import {
+  openApiLog,
+  readApiLogs,
+} from "@einfachvermieter/shared/diagnostics/api-log-file";
 import bricolageFont from "@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2";
 import geistFont from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2";
 import {
@@ -61,12 +68,80 @@ const webDistPath = join(resourcesRoot, "apps/web/dist");
  */
 const dataDir = (): string => join(app.getPath("userData"), "data");
 
-/**
- * Protokoll der API. Wird bei jedem Start neu angelegt und liegt neben den
- * Daten, damit man es einem Fehlerbericht beilegen kann.
- */
-const apiLogPath = (): string => join(app.getPath("userData"), "api.log");
 const dbPath = (): string => join(dataDir(), "einfachvermieter.db");
+
+/**
+ * Stellt den Fehlerbericht als Klartext zusammen: Eckdaten der Installation,
+ * der gemeldete Fehler und die Protokolle der API
+ */
+const buildReport = (errorDetail?: string): string => {
+  const logs = readApiLogs(dataDir());
+
+  const lines = [
+    t("report.heading"),
+    t("report.createdAt", {
+      value: new Date().toLocaleString("de-DE"),
+    }),
+    t("report.version", { value: app.getVersion() }),
+    t("report.platform", { value: appPlatform }),
+    t("report.system", {
+      os: process.platform,
+      arch: process.arch,
+      runtime: `Electron ${process.versions.electron}`,
+    }),
+    t("report.dataFolder", { value: app.getPath("userData") }),
+    ...reportSection(
+      t("report.errorSection"),
+      errorDetail ?? t("report.noError"),
+    ),
+    ...reportSection(
+      t("report.logSection"),
+      logs.current ?? t("report.logMissing"),
+    ),
+  ];
+
+  if (logs.previous) {
+    lines.push(...reportSection(t("report.previousLogSection"), logs.previous));
+  }
+
+  return `${lines.join("\n")}\n`;
+};
+
+/**
+ * Fragt nach einem Speicherort (vorgeschlagen ist der Schreibtisch) und legt
+ * den Bericht dort ab.
+ */
+const saveReport = (errorDetail?: string): void => {
+  const stamp = reportFileStamp(new Date());
+
+  const target = dialog.showSaveDialogSync({
+    title: t("desktop.report.saveTitle"),
+    defaultPath: join(app.getPath("desktop"), t("report.fileName", { stamp })),
+    filters: [{ name: t("desktop.report.fileType"), extensions: ["txt"] }],
+  });
+
+  if (!target) {
+    return;
+  }
+
+  try {
+    writeFileSync(target, buildReport(errorDetail), "utf8");
+  } catch (error) {
+    dialog.showErrorBox(
+      t("desktop.report.saveFailedTitle"),
+      error instanceof Error ? error.message : String(error),
+    );
+    return;
+  }
+
+  shell.showItemInFolder(target);
+  dialog.showMessageBoxSync({
+    type: "info",
+    title: t("desktop.report.savedTitle"),
+    message: t("desktop.report.savedTitle"),
+    detail: t("desktop.report.savedMessage", { path: target }),
+  });
+};
 
 let apiProcess: UtilityProcess | null = null;
 let mainWindow: BrowserWindow | null = null;
@@ -144,13 +219,16 @@ const startApi = async (): Promise<{ port: number; token: string }> => {
       DATABASE_URL: dbPath(),
       LOOPBACK_TOKEN: token,
       APP_PLATFORM: appPlatform,
+      API_LOG_BY_PARENT: "true",
     },
   });
 
-  const logStream = createWriteStream(apiLogPath(), { flags: "w" });
+  // Schreibt anstelle der API (`API_LOG_BY_PARENT`), um auch Absturzmeldungen
+  // festzuhalten.
+  const writeLog = openApiLog(dataDir());
   for (const stream of [apiProcess.stdout, apiProcess.stderr]) {
     stream?.on("data", (chunk: Buffer) => {
-      logStream.write(chunk);
+      writeLog(chunk);
       process.stdout.write(chunk);
     });
   }
@@ -158,10 +236,23 @@ const startApi = async (): Promise<{ port: number; token: string }> => {
   apiProcess.on("exit", (code) => {
     apiProcess = null;
     if (!quitting && code !== 0) {
-      dialog.showErrorBox(
-        t("desktop.error.apiCrashTitle"),
-        t("desktop.error.apiCrashMessage"),
-      );
+      const choice = dialog.showMessageBoxSync({
+        type: "error",
+        title: t("desktop.error.apiCrashTitle"),
+        message: t("desktop.error.apiCrashTitle"),
+        detail: t("desktop.error.apiCrashMessage"),
+        buttons: [
+          t("desktop.report.saveButton"),
+          t("desktop.error.quitButton"),
+        ],
+        defaultId: 0,
+        cancelId: 1,
+      });
+
+      if (choice === 0) {
+        saveReport(t("desktop.report.contextApiCrash", { code: code ?? 0 }));
+      }
+
       app.quit();
     }
   });
@@ -248,6 +339,12 @@ const buildMenu = (): Menu => {
       label: t("desktop.menu.openDataFolder"),
       click: () => {
         shell.showItemInFolder(dbPath());
+      },
+    },
+    {
+      label: t("desktop.menu.saveReport"),
+      click: () => {
+        saveReport();
       },
     },
   ];
@@ -492,12 +589,24 @@ if (app.requestSingleInstanceLock()) {
     .whenReady()
     .then(init)
     .catch((error: unknown) => {
-      dialog.showErrorBox(
-        t("desktop.error.apiStartTitle"),
-        error instanceof Error
-          ? `${t("desktop.error.apiStartMessage")}\n\n${error.message}`
-          : t("desktop.error.apiStartMessage"),
-      );
+      const message = error instanceof Error ? error.message : String(error);
+      const choice = dialog.showMessageBoxSync({
+        type: "error",
+        title: t("desktop.error.apiStartTitle"),
+        message: t("desktop.error.apiStartTitle"),
+        detail: t("desktop.error.apiStartDetail", { message }),
+        buttons: [
+          t("desktop.report.saveButton"),
+          t("desktop.error.quitButton"),
+        ],
+        defaultId: 0,
+        cancelId: 1,
+      });
+
+      if (choice === 0) {
+        saveReport(t("desktop.report.contextStartFailed", { message }));
+      }
+
       app.quit();
     });
 } else {

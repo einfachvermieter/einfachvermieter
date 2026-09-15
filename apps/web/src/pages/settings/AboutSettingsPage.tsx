@@ -1,4 +1,5 @@
 import {
+  RiBugLine,
   RiFingerprintLine,
   RiInformationLine,
   RiScalesLine,
@@ -8,6 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ExternalLink } from "@/components/common/ExternalLink";
 import { SectionCard } from "@/components/common/SectionCard";
 import { UpdateVersion } from "@/components/common/UpdateVersion";
+import { Button } from "@/components/ui/Button";
+import { downloadDiagnosticsReport } from "@/lib/diagnostics";
 import { t } from "@/lib/i18n";
 import { useLicenseUrl } from "@/lib/setup";
 import { internetSettingsQueryOptions } from "@/lib/updates";
@@ -62,6 +65,16 @@ export const AboutSettingsPage = () => {
           <p className="text-sm text-muted-foreground">
             {t("ui.about.usage.text")}
           </p>
+        </SectionCard>
+
+        <SectionCard
+          icon={RiBugLine}
+          title={t("ui.settings.about.reportCardTitle")}
+          description={t("ui.settings.about.reportDescription")}
+        >
+          <Button variant="outline" onClick={() => downloadDiagnosticsReport()}>
+            {t("ui.settings.about.reportButton")}
+          </Button>
         </SectionCard>
 
         {showTelemetry ? (

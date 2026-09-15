@@ -15,6 +15,14 @@
       "types": "./dist/calculations/index.d.ts",
       "default": "./dist/calculations/index.js"
     },
+    "./diagnostics": {
+      "types": "./dist/diagnostics/report.d.ts",
+      "default": "./dist/diagnostics/report.js"
+    },
+    "./diagnostics/api-log-file": {
+      "types": "./dist/diagnostics/api-log-file.d.ts",
+      "default": "./dist/diagnostics/api-log-file.js"
+    },
     "./schemas": {
       "types": "./dist/schemas/index.d.ts",
       "default": "./dist/schemas/index.js"

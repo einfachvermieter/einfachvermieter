@@ -4,6 +4,7 @@
     "NODE_ENV",
     "ADMIN_EMAIL",
     "ADMIN_PASSWORD",
+    "API_LOG_BY_PARENT",
     "APP_PLATFORM",
     "AUTH_MODE",
     "DATA_DIR",
