@@ -33,6 +33,7 @@ import {
 import { assertUploadAllowed } from "../common/upload-guard.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { StorageService } from "../storage/storage.service.js";
+import { TelemetryService } from "../telemetry/telemetry.service.js";
 import { currentAppVersion } from "../updates/app-version.js";
 import { SvgSanitizeError, type SvgSanitizeReason } from "./sanitize-svg.js";
 
@@ -139,6 +140,7 @@ export class SettingsService {
   constructor(
     private readonly em: EntityManager,
     private readonly storage: StorageService,
+    private readonly telemetry: TelemetryService,
   ) {}
 
   /**
@@ -281,6 +283,8 @@ export class SettingsService {
     dto: InternetSettingsUpdateDto,
   ): Promise<InternetSettingsDto> {
     const row = await this.ensureRow();
+    const consentGiven =
+      dto.telemetryEnabled === true && row.telemetryEnabled !== true;
 
     this.em.assign(row, {
       ...(dto.climateFactorsAutoFetch !== undefined && {
@@ -296,6 +300,10 @@ export class SettingsService {
     });
 
     await this.em.flush();
+
+    if (consentGiven) {
+      this.telemetry.sendAfterConsent();
+    }
 
     return this.getInternetSettings();
   }

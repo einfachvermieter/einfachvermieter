@@ -15,6 +15,7 @@ import { authMode, recoveryMode } from "../auth/auth-mode.js";
 import { LocalAdminService } from "../auth/local-admin.service.js";
 import { isRecoveryUsed } from "../auth/recovery-state.js";
 import { getI18n } from "../i18n/i18n.registry.js";
+import { TelemetryService } from "../telemetry/telemetry.service.js";
 import { currentAppVersion } from "../updates/app-version.js";
 import { databaseNewerThanApp } from "../updates/database-version-guard.js";
 
@@ -31,6 +32,7 @@ export class SetupService {
   constructor(
     private readonly em: EntityManager,
     private readonly localAdmin: LocalAdminService,
+    private readonly telemetry: TelemetryService,
   ) {}
 
   /**
@@ -97,8 +99,8 @@ export class SetupService {
    * Ist die Einrichtung bereits erledigt, wird abgewiesen. Der öffentliche Endpoint
    * darf nach der Einrichtung keine weiteren Admins anlegen können.
    */
-  runSetup(dto: SetupDto) {
-    return this.em.transactional(async (em) => {
+  async runSetup(dto: SetupDto) {
+    const account = await this.em.transactional(async (em) => {
       const local = authMode() === "local";
 
       if (local) {
@@ -183,5 +185,12 @@ export class SetupService {
         residentId: user.residentId,
       };
     });
+
+    // Erst nach dem Commit, sonst sieht der Sendelauf die Einwilligung nicht
+    if (dto.internet?.telemetryEnabled === true) {
+      this.telemetry.sendAfterConsent();
+    }
+
+    return account;
   }
 }
