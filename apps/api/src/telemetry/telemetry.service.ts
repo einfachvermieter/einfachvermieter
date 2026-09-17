@@ -193,7 +193,6 @@ export class TelemetryService
 
   constructor(private readonly em: EntityManager) {}
 
-
   onApplicationBootstrap(): void {
     this.trigger(this.desktop);
 

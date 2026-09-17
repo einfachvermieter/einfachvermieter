@@ -33,6 +33,7 @@ export type OperatingCostStatement = {
   finalizedAt: string | null;
   finalizedByUserId: string | null;
   pdfPath: string | null;
+  sequenceYear: number | null;
   sequenceNumber: number | null;
   revisionNumber: number | null;
   sentAt: string | null;
@@ -112,6 +113,12 @@ export const OperatingCostStatementSchema =
         { nullable: true },
       ),
       pdfPath: { type: "text", fieldName: "pdf_path", nullable: true },
+      // Jahr der laufenden Nummer. FÜr Unique Key eigene Spalte
+      sequenceYear: {
+        type: "integer",
+        fieldName: "sequence_year",
+        nullable: true,
+      },
       sequenceNumber: {
         type: "integer",
         fieldName: "sequence_number",
@@ -166,6 +173,14 @@ export const OperatingCostStatementSchema =
       {
         name: "operating_cost_statements_building_id",
         properties: ["buildingId"],
+      },
+    ],
+    uniques: [
+      // Jede Abrechnungsnummer gibt es je Jahr und Fassung nur einmal.
+      // Entwürfe tragen keine Nummer <null>, daher kein Problem
+      {
+        name: "operating_cost_statements_reference_unique",
+        properties: ["sequenceYear", "sequenceNumber", "revisionNumber"],
       },
     ],
   });

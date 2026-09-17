@@ -66,9 +66,14 @@ import {
   todayIso,
   type UnitInfo,
 } from "@einfachvermieter/shared";
-import { EntityManager, LockMode } from "@mikro-orm/core";
+import {
+  EntityManager,
+  LockMode,
+  UniqueConstraintViolationException,
+} from "@mikro-orm/core";
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -268,6 +273,17 @@ const heatingTenantShareOf = (
     (target?.totalCents ?? 0) + (targetHotWater?.totalCents ?? 0);
 
   return tenantHeatingCents / total;
+};
+
+/**
+ * Kollisions-Check für zwei gleiche NK-Nummern. In DB über Unique-Key
+ * abgesichert, daher Warnung an User.
+ */
+const asStatementNumberConflict = (error: unknown): never => {
+  if (error instanceof UniqueConstraintViolationException) {
+    throw new ConflictException(getI18n().t("errors.statementNumberTaken"));
+  }
+  throw error;
 };
 
 /**
@@ -2111,10 +2127,8 @@ export class StatementsService {
         adjustment.currentMonthlyAdvanceCents;
 
     const periodYear = Number(statement.periodStart.slice(0, 4));
-    const yearStart = `${periodYear}-01-01`;
-    const yearEnd = `${periodYear}-12-31`;
 
-    const updated = await this.em.transactional(async (em) => {
+    const finalization = this.em.transactional(async (em) => {
       // Status erneut checken: zwei parallele Finalize-Requests
       // (z.B. Doppelklick, Retry) könnten sonst doppelt Soll buchen etc.
       const row = await em.findOne(
@@ -2150,10 +2164,7 @@ export class StatementsService {
       }
       const seqRows = await em.find(
         OperatingCostStatementSchema,
-        {
-          periodStart: { $gte: yearStart, $lte: yearEnd },
-          sequenceNumber: { $ne: null },
-        },
+        { sequenceYear: periodYear },
         { fields: ["sequenceNumber"] },
       );
       const maxSeq = seqRows.reduce(
@@ -2194,6 +2205,7 @@ export class StatementsService {
         totalCostsCents: result.totalCostsCents,
         totalAdvancesCents: result.totalAdvancesCents,
         balanceCents: result.balanceCents,
+        sequenceYear: periodYear,
         sequenceNumber,
         revisionNumber,
         finalizedAt: new Date().toISOString(),
@@ -2235,6 +2247,8 @@ export class StatementsService {
 
       return row;
     });
+
+    const updated = await finalization.catch(asStatementNumberConflict);
 
     return updated;
   }

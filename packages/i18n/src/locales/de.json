@@ -207,6 +207,7 @@
     "tenantOverlapsExisting": "Die Wohnung ist im Zeitraum {start} – {end} bereits vermietet. Schließen Sie den bestehenden Vertrag zuerst.",
     "tenantOpenEnd": "unbefristet",
     "statementAlreadyFinalized": "Abrechnung ist bereits finalisiert",
+    "statementNumberTaken": "Die Abrechnungsnummer wurde gerade vergeben. Bitte laden Sie die Seite neu und finalisieren Sie erneut.",
     "statementDeleteFinalized": "Finalisierte Abrechnungen können nicht gelöscht werden",
     "statementNotCancellable": "Nur finalisierte Abrechnungen können storniert werden",
     "statementCancelHasPayments": "Auf diese Abrechnung sind bereits Zahlungen gebucht. Löschen Sie zuerst die Zahlungen oder erstellen Sie stattdessen eine Korrektur.",
