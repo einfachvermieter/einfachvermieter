@@ -337,6 +337,34 @@ describe("calculateWater", () => {
     });
   });
 
+  it("warnt bei Differenzzähler ohne Wohnungs-Zuordnung", () => {
+    // Ohne Wohnung landet der Differenzverbrauch in keiner Aggregation und
+    // wird über den Hauptzähler still auf alle Wohnungen mitverteilt.
+    const result = calculateWater({
+      units: [unitEg, unitOg],
+      waterMeters: [
+        physicalBundle("main", "main", null, "Haupt", [
+          reading("2025-01-01", 0),
+          reading("2025-12-31", 200),
+        ]),
+        physicalBundle("og", "unit", "unit-og", "OG", [
+          reading("2025-01-01", 0),
+          reading("2025-12-31", 100),
+        ]),
+        virtualBundle("rest", null, "Rest (Differenz)", {
+          baseMeterId: "main",
+          subtractedMeterIds: ["og"],
+        }),
+      ],
+      periodStart: "2025-01-01",
+      periodEnd: "2025-12-31",
+    });
+    expect(result.warnings).toContainEqual({
+      code: "differenceConsumptionUnallocated",
+      params: { label: "Rest (Differenz)" },
+    });
+  });
+
   it("Wohnung ohne Zähler bekommt 0 (Differenzzähler fehlt)", () => {
     const result = calculateWater({
       units: [unitEg, unitOg],

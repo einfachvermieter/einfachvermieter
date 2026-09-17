@@ -829,6 +829,22 @@ export class StatementsService {
       targetUnitId,
     });
 
+    // Gerechnet wird mit der Konfiguration vom Beginn der Periode. Beginnt
+    // mittendrin eine neue Version, weicht das Ergebnis von der Realität ab.
+    const heatingChangeDates = await this.heatingService.changeDatesWithin(
+      buildingId,
+      statementPeriod,
+    );
+    if (heatingChangeDates.length > 0) {
+      heatingDetail.warnings = heatingDetail.warnings ?? [];
+      heatingDetail.warnings.push(
+        ...heatingChangeDates.map((date) => ({
+          code: "heatingConfigChangedInPeriod",
+          params: { date },
+        })),
+      );
+    }
+
     if (heatingDetail.mode === "internal") {
       await this.attachEnergyComparison({
         heatingDetail,

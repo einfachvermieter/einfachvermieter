@@ -193,6 +193,26 @@ export class HeatingService {
   }
 
   /**
+   * Stichtage, zu denen innerhalb des Zeitraums eine neue Version der
+   * Heizkosten-Konfiguration beginnt, aufsteigend.
+   */
+  async changeDatesWithin(
+    buildingId: string,
+    period: { start: string; end: string },
+  ): Promise<string[]> {
+    const rows = await this.em.find(
+      HeatingSettingSchema,
+      {
+        buildingId,
+        validFrom: { $gt: period.start, $lte: period.end },
+      },
+      { fields: ["validFrom"], orderBy: { validFrom: "asc" } },
+    );
+
+    return rows.map((row) => row.validFrom);
+  }
+
+  /**
    * Liefert eine Version per ID, ohne buildingId-Constraint.
    */
   async getByIdGlobal(id: string): Promise<HeatingSettings> {

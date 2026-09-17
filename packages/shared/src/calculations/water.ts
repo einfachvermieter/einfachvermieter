@@ -80,16 +80,17 @@ const allocatableUnitId = (
       throw new Error(`Unit meter ${meter.id} has no unitId`);
     }
 
-    // Ein Allgemeinzähler ohne Unit-Zuordnung wird keiner Wohnung gutge-
-    // schrieben, sein Verbrauch steckt aber im Hauptzähler-Total und wird
-    // dadurch bei `per_consumption_m3` lautlos anteilig auf alle Mieter
-    // mitverteilt (kein Vorwegabzug).
-    if (meter.role === "common") {
-      warnings.push({
-        code: "commonConsumptionUnallocated",
-        params: { label: meter.label },
-      });
-    }
+    // Allgemein- und Differenzzähler ohne Wohnungszuordnung werden keiner
+    // Wohnung gutgeschrieben, ihr Verbrauch steckt aber im Hauptzähler-Total
+    // und wird dadurch bei `per_consumption_m3` lautlos anteilig auf alle
+    // Mieter mitverteilt (kein Vorwegabzug).
+    warnings.push({
+      code:
+        meter.role === "common"
+          ? "commonConsumptionUnallocated"
+          : "differenceConsumptionUnallocated",
+      params: { label: meter.label },
+    });
 
     return null;
   }
