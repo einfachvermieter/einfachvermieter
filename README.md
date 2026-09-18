@@ -6,6 +6,10 @@ Betriebskosten verwalten und daraus Nebenkostenabrechnungen als PDF erstellen.
 Website: <https://einfachvermieter.de> | Anleitung:
 <https://einfachvermieter.de/anleitung>
 
+> **Beta:** Bitte prüfen Sie jede Abrechnung nach, bevor Sie sie verschicken.
+> Was Ihnen dabei auffällt, melden Sie bitte unter [Fehler
+> melden](#fehler-melden).
+
 ## Funktionsumfang
 
 - Gebäude, Wohnungen und Mieter verwalten
@@ -31,45 +35,54 @@ Website: <https://einfachvermieter.de> | Anleitung:
 
 ## Installation
 
+Beide Varianten haben denselben Funktionsumfang. Die Datenbank legt die App
+beim Start selbst an und bringt sie auf den aktuellen Stand, der erste Aufruf
+führt durch den Einrichtungs-Assistenten.
+
 ### Docker
 
-(`einfachvermieter/einfachvermieter` auf Docker
-Hub): in der `docker-compose.yml` den `build:`-Block durch
-`image: einfachvermieter/einfachvermieter:latest` ersetzen, dann
-`docker compose up -d`.
+```bash
+docker run -d --name einfachvermieter --restart unless-stopped \
+  -p 7273:7273 -e TZ=Europe/Berlin \
+  -v "/lokal/auf/host/data:/data" \
+  einfachvermieter/einfachvermieter:latest
+```
 
-Danach im Browser `http://<host>:7273` öffnen. Weitere Konfiguration
-(z. B. Reverse-Proxy) siehe [docs/deployment.md](docs/deployment.md).
+Danach <http://localhost:7273> im Browser öffnen. Alle Daten liegen im
+gemounteten Ordner `data`, eine eigene Datenbank ist nicht nötig.
 
-**Desktop-App**: Windows über den Microsoft Store, macOS als Download auf
-<https://einfachvermieter.de>.
+Die Fassung als `docker-compose.yml`, alle Umgebungsvariablen, Betrieb hinter
+einem Reverse-Proxy, Sicherung und Aktualisieren stehen in
+[docs/deployment.md](docs/deployment.md).
 
-Die Datenbank wird beim Start angelegt und migriert; der erste Aufruf führt
-durch den Einrichtungs-Assistenten.
+### Desktop-App
 
-## Entwicklung
+Windows und macOS als Download auf <https://einfachvermieter.de/download>.
 
-Monorepo (Turborepo + npm workspaces): `apps/api` NestJS 11 + MikroORM 7
-(SQLite/libsql, PostgreSQL oder MariaDB), `apps/web` React 19 + Vite +
-TanStack + Tailwind v4 + shadcn, `apps/desktop` Electron-Wrapper,
-`packages/{db,shared,pdf,i18n}` Entities/Migrationen, Berechnungen (unit-getestet), React-PDF.
+## Fehler melden
 
-Setup, Skripte und Tests stehen in [docs/development.md](docs/development.md),
-die Regeln für Beiträge in [CONTRIBUTING.md](CONTRIBUTING.md).
+Fehlerberichte und Fragen zur Fachlichkeit gehören in die
+[Issues](https://github.com/einfachvermieter/einfachvermieter/issues).
+Hilfreich sind die Version, das Betriebssystem und der Weg, auf dem der Fehler
+auftritt.
+
+Sicherheitslücken bitte nicht als Issue melden, sondern wie in
+[SECURITY.md](SECURITY.md) beschrieben. Wer selbst etwas beitragen möchte,
+findet die Regeln in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Hintergrund
 
-2022 haben wir ein Haus in der Familie übernommen und saniert, ein Teil davon
-ist vermietet. Einmal im Jahr steht seitdem eine Nebenkostenabrechnung an,
-inklusive HeizkostenV, CO2-Kostenaufteilung, etc.
+2022 haben wir ein Haus in der Familie übernommen und saniert. Ein Teil davon
+ist vermietet, und seitdem steht einmal im Jahr die Nebenkostenabrechnung an,
+mit Heizkostenverordnung und CO2-Kostenaufteilung.
 
-Eine Excel-Tabelle war mir zu unflexibel und die Softwares am Markt nicht das,
-was ich mir vorgestellt hatte oder zu teuer. Also habe ich mich als langjähriger Softwareentwickler
-selbst an die Sache gemacht.
+Eine Excel-Tabelle war mir dafür zu unflexibel, und die Programme am Markt
+haben mir nicht gepasst oder waren mir zu teuer. Also habe ich als
+langjähriger Softwareentwickler selbst eines geschrieben.
 
-Auch wenn die Software primär den Bedarf in unserem eigenen Haus abdeckt, habe
-ich inzwischen, auch dank der Unterstützung von KI, etliche Fälle und Varianten
-der Vermietung abgedeckt, die über unser privates Haus hinausgehen.
+Die App deckt in erster Linie den Bedarf in unserem eigenen Haus ab.
+Inzwischen sind, auch mit Unterstützung von KI, etliche Fälle und Varianten
+der Vermietung dazugekommen, die darüber hinausgehen.
 
 ## Lizenz
 

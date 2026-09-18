@@ -1,12 +1,12 @@
 # Installation mit Docker
 
-`einfachvermieter/einfachvermieter` ist ein Docker-Image. Der Container
-ist standardmäßig per HTTP auf Port 7273 erreichbar. Eine externe
-Datenbank ist nicht erforderlich, aber möglich (MySQL/MariaDB/PostgreSQL).
+Das Image `einfachvermieter/einfachvermieter` bringt alles mit, was die App
+braucht. Der Container ist per HTTP auf Port 7273 erreichbar. Eine externe
+Datenbank ist möglich (MySQL/MariaDB/PostgreSQL), aber nicht nötig.
 
-## Installation
+## Den Container starten
 
-### docker-compose.yaml
+### docker-compose.yml
 
 ```yaml
 services:
@@ -53,6 +53,19 @@ wichtigsten Einstellungen ab.
 | `DB_DRIVER`, `DATABASE_URL` | `postgres` oder `mysql` statt SQLite. Ohne `DB_DRIVER` entscheidet das Schema der URL |
 | `PASSWORD_RESET` | Passwort eines Kontos zurücksetzen: Code eintragen, neu starten, in der App zurücksetzen, Variable wieder entfernen. Solange sie gesetzt ist, ist die App gesperrt |
 
+## Aktualisieren
+
+1. Sicherung anlegen (siehe [Backup](#backup)). Beim Start übernimmt die neue Version
+   ausstehende Schema-Änderungen; ohne Sicherung gibt es keinen Weg zurück.
+2. Neues Image holen und den Container neu starten:
+
+   ```bash
+   docker compose pull
+   docker compose up -d
+   ```
+
+Ein Wechsel auf eine **ältere** Version wird nicht unterstützt.
+
 ## Backup
 
 ### Dateien
@@ -66,9 +79,9 @@ auf dem Host).
 
 ### Datenbank
 
-Die interne SQLite-Datenbank liegt ebenfalls unter `/data`. Für ein
-Backup sollte der Container gestoppt sein. Sichern Sie
-`einfachvermieter.db`, `einfachvermieter.db-wal` und
+Die interne SQLite-Datenbank liegt ebenfalls unter `/data`. Stoppen Sie den
+Container, bevor Sie sie kopieren, sonst erwischen Sie sie mitten im
+Schreiben. Sichern Sie `einfachvermieter.db`, `einfachvermieter.db-wal` und
 `einfachvermieter.db-shm`, oder nutzen Sie vorab den SQLite-Befehl
 `.backup`.
 
