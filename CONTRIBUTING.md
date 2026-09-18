@@ -48,8 +48,8 @@ identisch rechnen. Änderungen dort brauchen einen Test.
 - **Geld** immer als Cent (Integer), **Datum** als ISO `YYYY-MM-DD`.
 - **Datenbank:** Schema nur über die MikroORM-EntitySchemas in
   `packages/db/src/entities/`. Schema-Änderungen in allen Seed-Profilen
-  nachziehen. Bis zum ersten Release keine neuen Migrationsdateien, sondern
-  die initiale Migration je Dialekt anpassen.
+  nachziehen. Veröffentlichte Migrationen bleiben unangetastet,
+  jede Änderung bekommt eine neue Migration je Dialekt.
 - **Frontend:** shadcn-Komponenten ohne eigene `className`, Varianten
   nutzen. Fehlt eine Komponente, im PR oder Issue ansprechen statt sie
   selbst nachzubauen. Eine Komponente pro Datei, Datei nach dem Export
