@@ -46,6 +46,15 @@ const appPlatform =
   __APP_PLATFORM__ ||
   (process.platform === "darwin" ? "macos-download" : "win-store");
 
+/**
+ * Produktversion, beim Bündeln eingebrannt. Nicht `app.getVersion()`: Im
+ * Windows-Paket steht dort die MSIX-Paketversion, die von der Produktversion
+ * abweicht (siehe `scripts/dist-win.mjs`).
+ */
+declare const __APP_VERSION__: string;
+
+const appVersion = __APP_VERSION__;
+
 // Vor jedem `getPath("userData")` und vor dem Single-Instance-Lock setzen:
 // beide hängen am App-Namen (Entwicklung liefe sonst unter dem Paketnamen).
 app.setName("EinfachVermieter");
@@ -82,7 +91,7 @@ const buildReport = (errorDetail?: string): string => {
     t("report.createdAt", {
       value: new Date().toLocaleString("de-DE"),
     }),
-    t("report.version", { value: app.getVersion() }),
+    t("report.version", { value: appVersion }),
     t("report.platform", { value: appPlatform }),
     t("report.system", {
       os: process.platform,
@@ -184,13 +193,12 @@ const backupOnVersionChange = (): void => {
   const lastVersion = existsSync(versionFile)
     ? readFileSync(versionFile, "utf8").trim()
     : null;
-  const version = app.getVersion();
 
-  if (lastVersion !== version && existsSync(dbPath())) {
+  if (lastVersion !== appVersion && existsSync(dbPath())) {
     const backupsDir = join(dataDir(), "backups");
     mkdirSync(backupsDir, { recursive: true });
     const date = new Date().toISOString().slice(0, 10);
-    const target = join(backupsDir, `${version}-${date}.db`);
+    const target = join(backupsDir, `${appVersion}-${date}.db`);
     copyFileSync(dbPath(), target);
 
     if (existsSync(`${dbPath()}-wal`)) {
@@ -198,7 +206,7 @@ const backupOnVersionChange = (): void => {
     }
   }
 
-  writeFileSync(versionFile, version);
+  writeFileSync(versionFile, appVersion);
 };
 
 /**
@@ -461,7 +469,7 @@ body { display: flex; flex-direction: column; align-items: center;
 <div class="brand">${logoDark}<span class="name">${t("common.appName.EinfachVermieter")}</span></div>
 <div class="card"><div class="title">${t("startup.connecting")}</div><div class="spinner"></div>
 <div class="hint" id="hint">${t("startup.firstRunHint")}</div></div>
-<div class="version">${t("ui.updates.version", { version: app.getVersion() })}</div>
+<div class="version">${t("ui.updates.version", { version: appVersion })}</div>
 <script>
 // Nach der Installation liest Windows beim ersten Zugriff alle Paketdateien,
 // das dauert. Ab fuenf Sekunden sagen wir warum.
