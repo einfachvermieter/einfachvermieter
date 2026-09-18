@@ -1,5 +1,7 @@
 import "./load-env.js";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { join } from "node:path";
+import { dataDir } from "@einfachvermieter/db";
 import { MikroORM } from "@mikro-orm/core";
 import { NestFactory } from "@nestjs/core";
 import cookieParser from "cookie-parser";
@@ -12,13 +14,14 @@ import { currentAppVersion } from "./updates/app-version.js";
 import { checkDatabaseVersion } from "./updates/database-version-guard.js";
 
 /**
- * Startmeldung im ASCII-Rahmen
+ * Meldung im ASCII-Rahmen
  */
-const printStartupBanner = (lines: string[]): void => {
+const framed = (lines: string[]): string => {
   const width = Math.max(...lines.map((line) => line.length));
   const border = `+${"-".repeat(width + 2)}+`;
-  const framed = lines.map((line) => `| ${line.padEnd(width)} |`);
-  process.stdout.write(`${[border, ...framed, border].join("\n")}\n`);
+  const body = lines.map((line) => `| ${line.padEnd(width)} |`);
+
+  return [border, ...body, border].join("\n");
 };
 
 const bootstrap = async (): Promise<void> => {
@@ -116,13 +119,24 @@ const bootstrap = async (): Promise<void> => {
   const host = process.env.HOST || "0.0.0.0";
   await app.listen(port, host);
 
-  printStartupBanner([
-    `EinfachVermieter ${currentAppVersion}`,
-    `http://${host}:${port}`,
-  ]);
+  process.stdout.write(
+    `${framed([
+      `EinfachVermieter ${currentAppVersion}`,
+      `http://${host}:${port}`,
+    ])}\n`,
+  );
 };
 
-bootstrap().catch((err) => {
+bootstrap().catch((err: unknown) => {
   console.error(err);
+
+  // Hinweis am Ende der Stdout, wenn die App sich nicht starten lässt.
+  process.stderr.write(
+    `${framed([
+      "EinfachVermieter konnte nicht starten.",
+      "Die Fehlermeldung finden Sie vorstehend und im",
+      `Protokoll: ${join(dataDir(), "api.log")}`,
+    ])}\n`,
+  );
   process.exit(1);
 });
