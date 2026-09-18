@@ -172,6 +172,12 @@ const findFreePort = (): Promise<number> =>
  * `backups/`. Ersatz für den Volume-Snapshot, den es im Docker-Betrieb gäbe:
  * die anschließende Migration (`migrator.up()` im API-Boot) läuft damit nie
  * ohne Rückfallebene.
+ *
+ * Die Datenbank läuft im WAL-Modus. Endete der letzte Lauf hart (Absturz,
+ * Sofort-Beenden), steht der zuletzt erfasste Stand noch in der `-wal`-Datei
+ * daneben; sie gehört deshalb mit in die Sicherung. Zum Zurücksichern beide
+ * Dateien zusammen zurückkopieren. Zu diesem Zeitpunkt läuft die API noch
+ * nicht, es schreibt also niemand dazwischen.
  */
 const backupOnVersionChange = (): void => {
   const versionFile = join(app.getPath("userData"), "last-run-version");
@@ -184,7 +190,12 @@ const backupOnVersionChange = (): void => {
     const backupsDir = join(dataDir(), "backups");
     mkdirSync(backupsDir, { recursive: true });
     const date = new Date().toISOString().slice(0, 10);
-    copyFileSync(dbPath(), join(backupsDir, `${version}-${date}.db`));
+    const target = join(backupsDir, `${version}-${date}.db`);
+    copyFileSync(dbPath(), target);
+
+    if (existsSync(`${dbPath()}-wal`)) {
+      copyFileSync(`${dbPath()}-wal`, `${target}-wal`);
+    }
   }
 
   writeFileSync(versionFile, version);

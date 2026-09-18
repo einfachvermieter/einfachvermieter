@@ -1,6 +1,7 @@
 import { createOrmOptions } from "@einfachvermieter/db";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
 import { Module } from "@nestjs/common";
+import { SqliteCheckpointService } from "./sqlite-checkpoint.service.js";
 
 /**
  * Bindet MikroORM in NestJS ein. Der Dialekt (libsql/Postgres/MariaDB)
@@ -10,5 +11,6 @@ import { Module } from "@nestjs/common";
   imports: [
     MikroOrmModule.forRootAsync({ useFactory: () => createOrmOptions() }),
   ],
+  providers: [SqliteCheckpointService],
 })
 export class DatabaseModule {}

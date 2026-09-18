@@ -106,6 +106,10 @@ const bootstrap = async (): Promise<void> => {
     app.enableCors({ origin: webOrigin, credentials: true });
   }
 
+  // Beim Beenden die Datenbank sauber schließen, damit SQLite
+  // das WAL in die DB übernimmt.
+  app.enableShutdownHooks();
+
   // HOST erlaubt der Desktop-App, die API strikt an 127.0.0.1 zu binden;
   // ohne Angabe wie bisher alle Interfaces (Container-Betrieb).
   const port = Number(process.env.PORT ?? 7273);
