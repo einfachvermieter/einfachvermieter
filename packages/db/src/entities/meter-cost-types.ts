@@ -1,4 +1,5 @@
 import { EntitySchema, type Opt } from "@mikro-orm/core";
+import { currentTimestamp } from "./_defaults.js";
 import { fk } from "./_relations.js";
 import { CostTypeSchema } from "./costs.js";
 import { MeterSchema } from "./meters.js";
@@ -25,7 +26,7 @@ export const MeterCostTypeAssignmentSchema =
       createdAt: {
         type: "string",
         fieldName: "created_at",
-        defaultRaw: "current_timestamp",
+        defaultRaw: currentTimestamp,
       },
     },
   });

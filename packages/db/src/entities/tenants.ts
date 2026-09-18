@@ -1,4 +1,5 @@
 import { EntitySchema, type Opt } from "@mikro-orm/core";
+import { currentTimestamp } from "./_defaults.js";
 import { fk } from "./_relations.js";
 import { UnitSchema } from "./properties.js";
 
@@ -31,12 +32,12 @@ export const ResidentSchema = new EntitySchema<Resident>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
 });
@@ -71,12 +72,12 @@ export const TenantSchema = new EntitySchema<Tenant>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [{ name: "tenants_unit_id", properties: ["unitId"] }],
@@ -114,12 +115,12 @@ export const TenantResidentSchema = new EntitySchema<TenantResident>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   uniques: [
@@ -170,12 +171,12 @@ export const TenantRentSchema = new EntitySchema<TenantRent>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [{ name: "tenant_rents_tenant_id", properties: ["tenantId"] }],
@@ -223,12 +224,12 @@ export const TenantBankAccountSchema = new EntitySchema<TenantBankAccount>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [
@@ -266,12 +267,12 @@ export const TenantAddressSchema = new EntitySchema<TenantAddress>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [{ name: "tenant_addresses_tenant_id", properties: ["tenantId"] }],
@@ -310,12 +311,12 @@ export const UserSchema = new EntitySchema<User>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   uniques: [{ name: "users_email_unique", properties: ["email"] }],
@@ -379,12 +380,12 @@ export const PaymentSchema = new EntitySchema<Payment>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [{ name: "payments_tenant_id", properties: ["tenantId"] }],

@@ -4,42 +4,11 @@ import { type Options, UnderscoreNamingStrategy } from "@mikro-orm/core";
 import { Migrator } from "@mikro-orm/migrations";
 import { entitySchemas } from "../entities/index.js";
 import { resolveDbPath } from "../paths.js";
+import { type Dialect, detectDialect } from "./dialect.js";
 
-export type Dialect = "libsql" | "postgresql" | "mariadb";
+export { type Dialect, detectDialect };
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-
-/**
- * Aktiver Dialekt. Explizit über `DB_DRIVER`, sonst aus dem Schema der
- * `DATABASE_URL` abgeleitet. Ohne Angabe: eingebettetes SQLite (libsql) -
- * der Zero-Config-Default für Container-mit-DB und Electron.
- */
-export const detectDialect = (): Dialect => {
-  const explicit = process.env.DB_DRIVER?.toLowerCase() ?? "";
-
-  if (["postgresql", "postgres", "pg"].includes(explicit)) {
-    return "postgresql";
-  }
-
-  if (["mariadb", "mysql"].includes(explicit)) {
-    return "mariadb";
-  }
-
-  if (["sqlite", "libsql"].includes(explicit)) {
-    return "libsql";
-  }
-
-  const url = process.env.DATABASE_URL ?? "";
-  if (/^postgres(ql)?:\/\//iu.test(url)) {
-    return "postgresql";
-  }
-
-  if (/^(mysql|mariadb):\/\//iu.test(url)) {
-    return "mariadb";
-  }
-
-  return "libsql";
-};
 
 const commonOptions = (dialect: Dialect) => ({
   entities: entitySchemas,

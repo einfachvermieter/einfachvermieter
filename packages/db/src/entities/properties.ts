@@ -1,4 +1,5 @@
 import { EntitySchema, type Opt } from "@mikro-orm/core";
+import { currentTimestamp } from "./_defaults.js";
 import { fk } from "./_relations.js";
 
 export type Building = {
@@ -27,12 +28,12 @@ export const BuildingSchema = new EntitySchema<Building>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   uniques: [{ name: "buildings_name_unique", properties: ["name"] }],
@@ -75,12 +76,12 @@ export const UnitSchema = new EntitySchema<Unit>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   uniques: [

@@ -1,4 +1,5 @@
 import { EntitySchema, type Opt } from "@mikro-orm/core";
+import { currentTimestamp } from "./_defaults.js";
 
 export const APP_SETTINGS_ID = "default";
 
@@ -135,12 +136,12 @@ export const AppSettingsSchema = new EntitySchema<AppSettings>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
 });

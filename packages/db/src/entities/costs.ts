@@ -1,4 +1,5 @@
 import { EntitySchema, type Opt } from "@mikro-orm/core";
+import { currentTimestamp } from "./_defaults.js";
 import { fk } from "./_relations.js";
 import { MeterSchema } from "./meters.js";
 import { BuildingSchema, UnitSchema } from "./properties.js";
@@ -81,12 +82,12 @@ export const CostTypeSchema = new EntitySchema<CostType>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [{ name: "cost_types_building_id", properties: ["buildingId"] }],
@@ -126,12 +127,12 @@ export const CostEntrySchema = new EntitySchema<CostEntry>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [{ name: "cost_entries_building_id", properties: ["buildingId"] }],
@@ -215,12 +216,12 @@ export const CostEntryItemSchema = new EntitySchema<CostEntryItem>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [
@@ -388,12 +389,12 @@ export const HeatingSettingSchema = new EntitySchema<HeatingSetting>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   uniques: [
@@ -451,12 +452,12 @@ export const ExternalHeatingEntrySchema =
       createdAt: {
         type: "string",
         fieldName: "created_at",
-        defaultRaw: "current_timestamp",
+        defaultRaw: currentTimestamp,
       },
       updatedAt: {
         type: "string",
         fieldName: "updated_at",
-        defaultRaw: "current_timestamp",
+        defaultRaw: currentTimestamp,
       },
     },
     indexes: [
@@ -500,7 +501,7 @@ export const CostEntryAttachmentSchema = new EntitySchema<CostEntryAttachment>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [
@@ -545,12 +546,12 @@ export const ClimateFactorSchema = new EntitySchema<ClimateFactor>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   uniques: [

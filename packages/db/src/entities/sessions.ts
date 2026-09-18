@@ -1,4 +1,5 @@
 import { EntitySchema, type Opt } from "@mikro-orm/core";
+import { currentTimestamp } from "./_defaults.js";
 import { fk } from "./_relations.js";
 import { UserSchema } from "./tenants.js";
 
@@ -23,7 +24,7 @@ export const SessionSchema = new EntitySchema<Session>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [{ name: "sessions_user_id", properties: ["userId"] }],

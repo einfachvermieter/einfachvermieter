@@ -1,4 +1,5 @@
 import { EntitySchema, type Opt } from "@mikro-orm/core";
+import { currentTimestamp } from "./_defaults.js";
 import { fk } from "./_relations.js";
 import { BuildingSchema, UnitSchema } from "./properties.js";
 
@@ -123,12 +124,12 @@ export const MeterSchema = new EntitySchema<Meter>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   uniques: [{ name: "meters_serial_unique", properties: ["serialNumber"] }],
@@ -178,12 +179,12 @@ export const MeterReadingSchema = new EntitySchema<MeterReading>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   uniques: [
@@ -230,12 +231,12 @@ export const MeterGasFactorSchema = new EntitySchema<MeterGasFactor>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   uniques: [
@@ -275,12 +276,12 @@ export const MeterDifferenceComponentSchema =
       createdAt: {
         type: "string",
         fieldName: "created_at",
-        defaultRaw: "current_timestamp",
+        defaultRaw: currentTimestamp,
       },
       updatedAt: {
         type: "string",
         fieldName: "updated_at",
-        defaultRaw: "current_timestamp",
+        defaultRaw: currentTimestamp,
       },
     },
     uniques: [

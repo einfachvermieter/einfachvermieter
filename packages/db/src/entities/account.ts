@@ -1,4 +1,5 @@
 import { EntitySchema, type Opt } from "@mikro-orm/core";
+import { currentTimestamp } from "./_defaults.js";
 import { fk } from "./_relations.js";
 import { OperatingCostStatementSchema } from "./statements.js";
 import { TenantSchema } from "./tenants.js";
@@ -29,12 +30,12 @@ export const AccountFeeSchema = new EntitySchema<AccountFee>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
     updatedAt: {
       type: "string",
       fieldName: "updated_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [{ name: "account_fees_tenant_id", properties: ["tenantId"] }],
@@ -69,7 +70,7 @@ export const AccountSettlementSchema = new EntitySchema<AccountSettlement>({
     createdAt: {
       type: "string",
       fieldName: "created_at",
-      defaultRaw: "current_timestamp",
+      defaultRaw: currentTimestamp,
     },
   },
   indexes: [
