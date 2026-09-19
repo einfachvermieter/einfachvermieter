@@ -1,5 +1,5 @@
 import swc from "unplugin-swc";
-import { defineConfig } from "vitest/config";
+import { defaultExclude, defineConfig } from "vitest/config";
 
 /**
  * Vitest transformiert TS standardmäßig mit esbuild
@@ -17,6 +17,8 @@ export default defineConfig({
     }),
   ],
   test: {
+    // Seit Vitest 4 ist dist nicht mehr per Default ausgenommen
+    exclude: [...defaultExclude, "**/dist/**"],
     testTimeout: 120_000,
     hookTimeout: 60_000,
   },
