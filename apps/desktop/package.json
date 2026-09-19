@@ -3,7 +3,7 @@
   "version": "2026.1.0-beta.1",
   "private": true,
   "license": "FSL-1.1-MIT",
-  "description": "Software für private Vermieter: Mieter, Verträge und Zählerstände verwalten und daraus Nebenkostenabrechnungen als PDF erstellen",
+  "description": "Software für Wohnraumvermietung: Mieter, Verträge und Zählerstände verwalten und daraus Nebenkostenabrechnungen als PDF erstellen",
   "main": "dist/main.cjs",
   "scripts": {
     "build": "node scripts/bundle.mjs",

@@ -1,6 +1,6 @@
 # EinfachVermieter
 
-Software für private Vermieter: Immobilien, Mieter, Verträge, Zählerstände und
+Software für Wohnraumvermietung: Immobilien, Mieter, Verträge, Zählerstände und
 Betriebskosten verwalten und daraus Nebenkostenabrechnungen als PDF erstellen.
 
 Website: <https://einfachvermieter.de> | Anleitung:
