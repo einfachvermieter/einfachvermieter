@@ -1,0 +1,60 @@
+name: Fehler melden
+description: Etwas funktioniert nicht oder rechnet falsch
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sicherheitslücken bitte **nicht** hier melden, sondern wie in
+        [SECURITY.md](https://github.com/einfachvermieter/einfachvermieter/blob/main/SECURITY.md) beschrieben.
+
+  - type: textarea
+    id: beschreibung
+    attributes:
+      label: Was ist passiert?
+      description: Was haben Sie erwartet, und was kam stattdessen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: schritte
+    attributes:
+      label: Wie lässt sich das nachstellen?
+      description: Der Weg durch die App bis zu der Stelle, an der es schiefgeht.
+      placeholder: |
+        1. Abrechnung anlegen für …
+        2. Kostenart … hinzufügen
+        3. Vorschau öffnen
+    validations:
+      required: true
+
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Wie betreiben Sie EinfachVermieter?
+      options:
+        - Docker
+        - Desktop-App unter Windows
+        - Desktop-App unter macOS
+        - Selbst gebaut
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Steht in den Einstellungen unter „Über“.
+      placeholder: 2026.1.0-beta.1
+    validations:
+      required: true
+
+  - type: textarea
+    id: fehlerbericht
+    attributes:
+      label: Fehlerbericht
+      description: >
+        Einstellungen, „Über“, „Fehlerbericht herunterladen” lädt eine
+        Textdatei mit Version, Systemangaben und den Protokollen des Servers.
+        Ziehen Sie die Datei hier hinein. Der Bericht enthält die Protokolle
+        im Klartext, bitte entfernen Sie falls notwendig vertrauliche Daten vorab.
