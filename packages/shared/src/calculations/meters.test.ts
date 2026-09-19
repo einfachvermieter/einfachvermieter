@@ -272,6 +272,61 @@ describe("readingNonMonotonic-Warnung", () => {
     ).toEqual([]);
   });
 
+  it("meldet einen Rücklauf nach dem Periodenende nicht", () => {
+    const warnings: CalcWarning[] = [];
+    // Heizkostenverteiler, der zum Jahreswechsel wieder bei 0 beginnt. Für
+    // die Abrechnung 2025 ist der Stand vom 01.01.2026 ohne Wirkung, der
+    // Endstand steht als echte Ablesung fest.
+    const readings = [
+      reading("2025-01-01", 0),
+      reading("2025-12-31", 667),
+      reading("2026-01-01", 0),
+    ];
+    consumptionBetween(readings, "2025-01-01", "2025-12-31", { warnings });
+    expect(
+      warnings.filter((warning) => warning.code === "readingNonMonotonic"),
+    ).toEqual([]);
+  });
+
+  it("meldet denselben Rücklauf in der Folgeperiode, weil er dort den Anfangsstand setzt", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      reading("2025-12-31", 667),
+      reading("2026-01-01", 0),
+      reading("2026-12-31", 500),
+    ];
+    consumptionBetween(readings, "2026-01-01", "2026-12-31", { warnings });
+    expect(
+      warnings.filter((warning) => warning.code === "readingNonMonotonic"),
+    ).toHaveLength(1);
+  });
+
+  it("meldet einen Rücklauf über die Periodengrenze, weil der Endstand interpoliert wird", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      reading("2025-01-01", 0),
+      reading("2025-12-15", 667),
+      reading("2026-01-15", 0),
+    ];
+    consumptionBetween(readings, "2025-01-01", "2025-12-31", { warnings });
+    expect(
+      warnings.filter((warning) => warning.code === "readingNonMonotonic"),
+    ).toHaveLength(1);
+  });
+
+  it("meldet einen Rücklauf vor der Periode nicht", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      reading("2024-06-30", 500),
+      reading("2024-12-31", 100),
+      reading("2025-12-31", 300),
+    ];
+    consumptionBetween(readings, "2025-01-01", "2025-12-31", { warnings });
+    expect(
+      warnings.filter((warning) => warning.code === "readingNonMonotonic"),
+    ).toEqual([]);
+  });
+
   it("steigende Stände lösen keine Warnung aus", () => {
     const warnings: CalcWarning[] = [];
     const readings = [

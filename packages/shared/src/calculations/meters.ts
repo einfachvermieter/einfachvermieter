@@ -196,9 +196,14 @@ export const interpolateReading = (
  * Meldet einen rückläufigen Stand zwischen chronologisch benachbarten
  * Ablesungen eines kumulativen Zählers (Zählertausch ohne Erfassung des
  * Endstands, Ablesefehler, vertauschte Werte).
+ * 
+ * Gewarnt wird nicht, wenn der rückläufiger Zählersprung außerhalb der
+ * gegegeben Periode liegt.
  */
 const warnNonMonotonic = (
   readings: ReadingPoint[],
+  periodStart: string,
+  periodEnd: string,
   options?: InterpolateOptions,
 ): void => {
   if (!options?.warnings) {
@@ -213,6 +218,10 @@ const warnNonMonotonic = (
     const before = cumulative[i - 1];
     const after = cumulative[i];
     if (!before || !after || after.value >= before.value) {
+      continue;
+    }
+
+    if (after.date < periodStart || before.date >= periodEnd) {
       continue;
     }
 
@@ -280,7 +289,7 @@ export const consumptionBetween = (
   periodEnd: string,
   options?: InterpolateOptions,
 ): number => {
-  warnNonMonotonic(readings, options);
+  warnNonMonotonic(readings, periodStart, periodEnd, options);
 
   const startValue = interpolateReading(readings, periodStart, options);
   const endValue = interpolateReading(readings, periodEnd, options);
