@@ -224,10 +224,12 @@ describe("readingNonMonotonic-Warnung", () => {
       code: "readingNonMonotonic",
       params: {
         fromDate: "2025-06-30",
-        fromValue: "95",
         toDate: "2025-12-31",
-        toValue: "90",
         label: "Küche",
+      },
+      detail: {
+        fromValue: "95",
+        toValue: "90",
       },
     });
   });

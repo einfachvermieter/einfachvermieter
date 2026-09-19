@@ -1,3 +1,4 @@
+import { formatWarningParams } from "../format.js";
 import type { CalcWarning, DiagnosticParams } from "../types/index.js";
 
 export type { CalcWarning, DiagnosticParams };
@@ -40,6 +41,15 @@ export const hasBlockingWarning = (result: {
     ...(result.waterDetail?.warnings ?? []),
   ].some((warning) => BLOCKING_WARNING_CODES.has(warning.code));
 
+/**
+ * Ein betroffener Zähler einer Warngruppe, mit den Werten, die nur ihn
+ * betreffen.
+ */
+export type CalcWarningLabel = {
+  label: string;
+  detail?: DiagnosticParams;
+};
+
 export type CalcWarningGroup = {
   code: string;
   /**
@@ -47,10 +57,10 @@ export type CalcWarningGroup = {
    */
   params?: DiagnosticParams;
   /**
-   * Labels der betroffenen Zähler in Reihenfolge des Auftretens.
-   * Leer, wenn die Warnung kein Label trägt.
+   * Betroffene Zähler in Reihenfolge des Auftretens. Leer, wenn die
+   * Warnung kein Label trägt.
    */
-  labels: string[];
+  labels: CalcWarningLabel[];
 };
 
 /**
@@ -78,12 +88,36 @@ export const groupCalcWarnings = (
       groups.set(key, group);
     }
     if (typeof label === "string") {
-      group.labels.push(label);
+      group.labels.push({
+        label,
+        ...(warning.detail ? { detail: warning.detail } : {}),
+      });
     }
   }
 
   return [...groups.values()];
 };
+
+/**
+ * Übersetzungsfunktion der aufrufenden Anwendung (API oder PDF).
+ */
+type TranslateWarning = (key: string, params: DiagnosticParams) => string;
+
+/**
+ * Baut die Betreff-Liste einer Warngruppe
+ */
+export const formatWarningLabels = (
+  group: CalcWarningGroup,
+  translate: TranslateWarning,
+): string[] =>
+  group.labels.map(({ label, detail }) =>
+    detail
+      ? translate(`warnings.detail.${group.code}`, {
+          label,
+          ...formatWarningParams(detail),
+        })
+      : label,
+  );
 
 export class CalculationError extends Error {
   readonly code: string;

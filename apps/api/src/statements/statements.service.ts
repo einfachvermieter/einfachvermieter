@@ -38,6 +38,7 @@ import {
   daysInYear,
   type EnergyComparisonPeriodInput,
   type ExternalHeatingEntry,
+  formatWarningLabels,
   formatWarningParams,
   groupCalcWarnings,
   type HeatingDetail,
@@ -736,7 +737,9 @@ export class StatementsService {
     if (group.labels.length > 0) {
       message = i18n.t("warnings.affected", {
         message,
-        labels: group.labels.join(", "),
+        labels: formatWarningLabels(group, (key, labelParams) =>
+          i18n.t(key, labelParams),
+        ).join(", "),
       });
     }
 

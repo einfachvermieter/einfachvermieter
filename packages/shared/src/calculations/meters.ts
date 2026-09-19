@@ -218,9 +218,7 @@ const warnNonMonotonic = (
 
     const params = {
       fromDate: before.date,
-      fromValue: formatNumberLoose(before.value),
       toDate: after.date,
-      toValue: formatNumberLoose(after.value),
       ...(options.label ? { label: options.label } : {}),
     };
 
@@ -233,7 +231,14 @@ const warnNonMonotonic = (
     );
 
     if (!duplicate) {
-      options.warnings.push({ code: "readingNonMonotonic", params });
+      options.warnings.push({
+        code: "readingNonMonotonic",
+        params,
+        detail: {
+          fromValue: formatNumberLoose(before.value),
+          toValue: formatNumberLoose(after.value),
+        },
+      });
     }
   }
 };

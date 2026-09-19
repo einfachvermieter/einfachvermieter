@@ -1,5 +1,6 @@
 import {
   type CalcWarningGroup,
+  formatWarningLabels,
   formatWarningParams,
 } from "@einfachvermieter/shared";
 import { t } from "./i18n.js";
@@ -17,7 +18,9 @@ export const formatCalcWarning = (group: CalcWarningGroup): string => {
   if (group.labels.length > 0) {
     return t("warnings.affected", {
       message,
-      labels: group.labels.join(", "),
+      labels: formatWarningLabels(group, (key, labelParams) =>
+        t(key, labelParams),
+      ).join(", "),
     });
   }
   return message;

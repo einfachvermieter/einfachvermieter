@@ -195,16 +195,28 @@
 }
 
 /*
- * Waagerechter Bildlauf-Hinweis an Tabellen: ein weicher Schatten an der
+ * Bildlauf-Hinweis an scrollbaren Bereichen: ein weicher Schatten an der
  * Kante, solange in diese Richtung noch Inhalt steht. Reines CSS - die
  * "local"-Ebenen wandern mit dem Inhalt und decken den Schatten am Ende ab.
- * Die Deckfarbe ist die Card-Fläche; Tabellen stehen in dieser Anwendung
- * immer in einer Card.
+ * Die Deckfarbe ist die Fläche, auf der der Bereich steht: standardmäßig die
+ * Card, im Dialog die Popover-Fläche.
  */
 .scroll-shadow-x {
   background:
-    linear-gradient(to right, var(--card) 8px, transparent 16px) 0 0 / 16px 100% no-repeat local,
-    linear-gradient(to left, var(--card) 8px, transparent 16px) 100% 0 / 16px 100% no-repeat local,
+    linear-gradient(to right, var(--scroll-shadow-surface, var(--card)) 8px, transparent 16px) 0 0 / 16px 100% no-repeat local,
+    linear-gradient(to left, var(--scroll-shadow-surface, var(--card)) 8px, transparent 16px) 100% 0 / 16px 100% no-repeat local,
     linear-gradient(to right, var(--border), transparent) 0 0 / 8px 100% no-repeat scroll,
     linear-gradient(to left, var(--border), transparent) 100% 0 / 8px 100% no-repeat scroll;
+}
+
+.scroll-shadow-y {
+  background:
+    linear-gradient(to bottom, var(--scroll-shadow-surface, var(--card)) 8px, transparent 16px) 0 0 / 100% 16px no-repeat local,
+    linear-gradient(to top, var(--scroll-shadow-surface, var(--card)) 8px, transparent 16px) 0 100% / 100% 16px no-repeat local,
+    linear-gradient(to bottom, var(--border), transparent) 0 0 / 100% 8px no-repeat scroll,
+    linear-gradient(to top, var(--border), transparent) 0 100% / 100% 8px no-repeat scroll;
+}
+
+[data-slot="dialog-content"] {
+  --scroll-shadow-surface: var(--popover);
 }

@@ -289,10 +289,13 @@
       "heating": "Heizkosten",
       "water": "Wasser"
     },
+    "detail": {
+      "readingNonMonotonic": "{label} ({fromValue} auf {toValue})"
+    },
     "readingMissingBefore": "Kein Zählerstand vor {date}, daher ist der Verbrauch davor unbekannt und die Abrechnung evtl. unvollständig.",
     "readingMissingAfter": "Kein Zählerstand nach {date}, daher ist der Verbrauch danach unbekannt und die Abrechnung evtl. unvollständig.",
     "readingEstimated": "Der Zählerstand vom {date} ist geschätzt, der ausgewiesene Verbrauch beruht daher teilweise auf Schätzwerten.",
-    "readingNonMonotonic": "Zählerstand rückläufig: Am {toDate} wurde {toValue} erfasst, niedriger als am {fromDate} mit {fromValue}. Bitte prüfen Sie, ob ein Zählertausch oder ein Ablesefehler vorliegt.",
+    "readingNonMonotonic": "Zählerstand rückläufig: Am {toDate} wurde ein niedrigerer Stand erfasst als am {fromDate}. Bitte prüfen Sie, ob ein Zählertausch oder ein Ablesefehler vorliegt.",
     "consumptionNegative": "Der Verbrauch ist negativ: Der Stand am Ende der Periode liegt unter dem Stand am Anfang. Der Verbrauch wurde auf 0 gesetzt, die Kosten tragen dadurch die übrigen Wohnungen mit. Bitte prüfen Sie die Zählerstände auf Ablesefehler oder einen Zählertausch.",
     "differenceMeterNegative": "Der Differenzzähler ergibt einen negativen Verbrauch: Die Summe der Subtraktionszähler übersteigt den Basiszähler. Der Verbrauch wurde auf 0 m³ gesetzt. Bitte prüfen Sie die Quellzähler und deren Zählerstände.",
     "commonConsumptionUnallocated": "Der Allgemeinzähler ist keiner Wohnung zugeordnet, sein Verbrauch wird deshalb nicht gesondert ausgewiesen, sondern anteilig auf alle Wohnungen mitverteilt. Bitte ordnen Sie ihn einer Wohnung zu oder prüfen Sie, ob ein Vorwegabzug gewünscht ist.",

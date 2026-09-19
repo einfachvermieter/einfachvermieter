@@ -8,6 +8,7 @@ export type DiagnosticParams = Record<string, string | number>;
 export type CalcWarning = {
   code: string;
   params?: DiagnosticParams;
+  detail?: DiagnosticParams;
 };
 
 export type UnitInfo = {

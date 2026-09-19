@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 import { Button } from "../../../../components/ui/Button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -120,7 +121,7 @@ export const StatementFinalizeDialog = ({
           <DialogDescription>{subtitle}</DialogDescription>
         </DialogHeader>
 
-        <div>
+        <DialogBody>
           {warnings.length === 0 ? (
             <CheckRow kind="ok">
               {t("ui.statements.detail.finalizeDialog.noIssues")}
@@ -194,7 +195,7 @@ export const StatementFinalizeDialog = ({
           <CheckRow kind="info">
             {t("ui.statements.detail.info.hintText")}
           </CheckRow>
-        </div>
+        </DialogBody>
 
         <div
           className={cn(
