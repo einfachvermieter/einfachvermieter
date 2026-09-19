@@ -43,6 +43,13 @@ RUN npm_config_ignore_scripts=false npm rebuild libsql argon2
 # Stage 3: Runtime
 FROM node:24.11.0-alpine AS runtime
 
+LABEL org.opencontainers.image.title="EinfachVermieter" \
+      org.opencontainers.image.description="Software für Wohnraumvermietung" \
+      org.opencontainers.image.url="https://einfachvermieter.de" \
+      org.opencontainers.image.source="https://github.com/einfachvermieter/einfachvermieter" \
+      org.opencontainers.image.licenses="FSL-1.1-MIT" \
+      org.opencontainers.image.vendor="Markus Baumer"
+
 RUN apk add --no-cache libc6-compat sqlite su-exec
 
 WORKDIR /app
@@ -71,6 +78,11 @@ ENV PORT=7273
 
 EXPOSE 7273
 VOLUME ["/data"]
+
+# Docker soll den Unterschied zwischen "laeuft" und "antwortet" kennen: ohne
+# das meldet ein Container, dessen Start abgebrochen ist, weiter "up".
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD ["node", "-e", "fetch('http://127.0.0.1:' + (process.env.PORT || 7273) + '/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
 
 # Setzt Rechte auf /data und startet als User node.
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
