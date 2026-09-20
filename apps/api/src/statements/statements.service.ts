@@ -101,14 +101,23 @@ type StatementRow = OperatingCostStatement;
  * der Abschluss einen neuen Mietzeitraum an, und nur dann nennt das
  * Anschreiben die neue Vorauszahlung.
  */
-const needsRentRotation = (
+const getRentRotation = (
   adjustment: StatementResult["advanceAdjustment"],
-): boolean =>
-  adjustment !== undefined &&
-  adjustment.adjustedMonthlyAdvanceCents !== null &&
-  adjustment.adjustedAdvanceValidFrom !== null &&
-  adjustment.adjustedMonthlyAdvanceCents !==
-    adjustment.currentMonthlyAdvanceCents;
+): { advanceCents: number; validFrom: string } | undefined => {
+  if (
+    adjustment === undefined ||
+    adjustment.adjustedMonthlyAdvanceCents === null ||
+    adjustment.adjustedAdvanceValidFrom === null ||
+    adjustment.adjustedMonthlyAdvanceCents ===
+      adjustment.currentMonthlyAdvanceCents
+  ) {
+    return;
+  }
+  return {
+    advanceCents: adjustment.adjustedMonthlyAdvanceCents,
+    validFrom: adjustment.adjustedAdvanceValidFrom,
+  };
+};
 
 export type StatementSort = "tenant" | "period" | "status" | "balance";
 
@@ -2237,13 +2246,12 @@ export class StatementsService {
       );
     }
 
-    const adjustment = result.advanceAdjustment;
-    const rotatesRent = needsRentRotation(adjustment);
+    const rentRotation = getRentRotation(result.advanceAdjustment);
 
-    if (rotatesRent) {
+    if (rentRotation) {
       this.assertAdvanceValidFromNotRetroactive(
         statement,
-        adjustment.adjustedAdvanceValidFrom as string,
+        rentRotation.validFrom,
       );
     }
 
@@ -2275,12 +2283,12 @@ export class StatementsService {
         row.supersedesStatementId,
       );
 
-      if (rotatesRent) {
+      if (rentRotation) {
         await this.rotateTenantRents(
           em,
           statement.tenantId,
-          adjustment.adjustedMonthlyAdvanceCents as number,
-          adjustment.adjustedAdvanceValidFrom as string,
+          rentRotation.advanceCents,
+          rentRotation.validFrom,
         );
       }
       const seqRows = await em.find(
