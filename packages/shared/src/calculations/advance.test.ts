@@ -1,10 +1,80 @@
 import { describe, expect, it } from "vitest";
 import {
+  advanceValidFromMonthOptions,
   inferTariffAdjustmentBpsFromInvoices,
+  isAdvanceValidFromRetroactive,
   STATEMENT_HEATING_COST_TYPE_ID,
   suggestNextMonthlyAdvanceCents,
   type TariffInferenceItem,
 } from "./advance.js";
+
+describe("advanceValidFromMonthOptions", () => {
+  const isoOf = (documentDate: string, today: string) =>
+    advanceValidFromMonthOptions(documentDate, today).map(
+      (option) => option.iso,
+    );
+
+  it("deckt bei einer heute ausgestellten Abrechnung vier Monate ab", () => {
+    expect(isoOf("2026-09-20", "2026-09-20")).toEqual([
+      "2026-09-01",
+      "2026-10-01",
+      "2026-11-01",
+      "2026-12-01",
+    ]);
+  });
+
+  it("spannt bei einer rückdatierten Abrechnung vom Brief bis über heute", () => {
+    expect(isoOf("2026-05-15", "2026-09-20")).toEqual([
+      "2026-05-01",
+      "2026-06-01",
+      "2026-07-01",
+      "2026-08-01",
+      "2026-09-01",
+      "2026-10-01",
+      "2026-11-01",
+      "2026-12-01",
+    ]);
+  });
+
+  it("spannt bei einer vordatierten Abrechnung von heute bis über den Brief", () => {
+    expect(isoOf("2026-12-01", "2026-09-20")).toEqual([
+      "2026-09-01",
+      "2026-10-01",
+      "2026-11-01",
+      "2026-12-01",
+      "2027-01-01",
+      "2027-02-01",
+      "2027-03-01",
+    ]);
+  });
+
+  it("beschriftet die Optionen mit dem vollen Datum, wie es im Brief steht", () => {
+    expect(advanceValidFromMonthOptions("2026-09-20", "2026-09-20")[0]).toEqual(
+      { iso: "2026-09-01", label: "01.09.2026" },
+    );
+  });
+});
+
+describe("isAdvanceValidFromRetroactive", () => {
+  it("lässt einen Stichtag ab dem Dokumentdatum zu", () => {
+    expect(isAdvanceValidFromRetroactive("2026-10-01", "2026-09-19")).toBe(
+      false,
+    );
+    expect(isAdvanceValidFromRetroactive("2026-09-19", "2026-09-19")).toBe(
+      false,
+    );
+  });
+
+  it("weist einen Stichtag vor dem Dokumentdatum zurück", () => {
+    expect(isAdvanceValidFromRetroactive("2026-06-01", "2026-09-19")).toBe(
+      true,
+    );
+    // Auch derselbe Monat zählt, wenn der Erste vor dem Brief liegt.
+    expect(isAdvanceValidFromRetroactive("2026-09-01", "2026-09-19")).toBe(
+      true,
+    );
+  });
+});
 
 describe("suggestNextMonthlyAdvanceCents", () => {
   it("lässt eine volle Schaltjahres-Periode unverändert", () => {

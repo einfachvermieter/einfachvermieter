@@ -1,6 +1,8 @@
 import {
   type AdvanceAdjustmentDetail,
   type CostLineResult,
+  formatDate,
+  isAdvanceValidFromRetroactive,
   parseEurToCents,
   STATEMENT_HEATING_COST_TYPE_ID,
   suggestAdvanceValidFromDate,
@@ -34,7 +36,10 @@ export type TariffEntry = {
  * Betrag und Stichtag sind nur relevant, wenn überhaupt eine Anpassung
  * gespeichert wird; der Betrag nur bei freier Eingabe.
  */
-export const buildAdvanceFormSchema = (periodEnd: string) =>
+export const buildAdvanceFormSchema = (
+  periodEnd: string,
+  documentDate: string,
+) =>
   z
     .object({
       mode: z.enum(["keep", "suggested", "custom"]),
@@ -88,6 +93,17 @@ export const buildAdvanceFormSchema = (periodEnd: string) =>
             "ui.statements.advanceAdjustment.validation.validFromAfterPeriodEnd",
           ),
         });
+      } else if (
+        isAdvanceValidFromRetroactive(values.validFrom, documentDate)
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["validFrom"],
+          message: t(
+            "ui.statements.advanceAdjustment.validation.validFromBeforeDocumentDate",
+            { documentDate: formatDate(documentDate) },
+          ),
+        });
       }
     });
 
@@ -138,12 +154,19 @@ export const buildTariffEntries = (lines: CostLineResult[]): TariffEntry[] => {
  * Default-Stichtag der Anpassung: bereits gesetzter Wert, sonst der
  * vorgeschlagene Stichtag (falls in den Optionen), ersatzweise die erste
  * Option.
+ *
+ * Ein gespeicherter Stichtag kann durch Zeitablauf aus den Optionen
+ * gefallen sein, etwa bei einem lange liegen gebliebenen Entwurf oder bei
+ * vorbelegten Daten aus einem Seed. Er wird dann verworfen.
  */
 export const resolveDefaultValidFrom = (
   adjustedValidFrom: string | null,
   monthOptions: { iso: string }[],
 ): string => {
-  if (adjustedValidFrom) {
+  if (
+    adjustedValidFrom &&
+    monthOptions.some((option) => option.iso === adjustedValidFrom)
+  ) {
     return adjustedValidFrom;
   }
   const suggested = suggestAdvanceValidFromDate(todayIso());

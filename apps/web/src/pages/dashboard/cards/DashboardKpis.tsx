@@ -2,8 +2,8 @@ import { formatDate, formatEur } from "@einfachvermieter/shared";
 import type { ComponentProps } from "react";
 import { MiniKpiRow } from "@/components/common/MiniKpiRow";
 import { t } from "@/lib/i18n";
+import { monthLabel } from "@/lib/monthLabel";
 import type { DashboardResult } from "@/lib/stats";
-import { monthLabel } from "../monthLabel";
 
 /**
  * Die drei Kennzahlen der Übersicht: Stand der Abrechnungen samt Frist,

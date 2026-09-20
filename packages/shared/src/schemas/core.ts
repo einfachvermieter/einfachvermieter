@@ -247,6 +247,18 @@ export type OperatingCostStatementCreateDto = z.infer<
 >;
 
 /**
+ * Patch-Schema für das Ausstellungsdatum einer Draft-Abrechnung. Es steht
+ * im Brief und ist zugleich die Untergrenze für den Stichtag einer
+ * Vorauszahlungs-Anpassung.
+ */
+export const operatingCostStatementDocumentDateSchema = z
+  .object({ documentDate: isoDate() })
+  .strict();
+export type OperatingCostStatementDocumentDateDto = z.infer<
+  typeof operatingCostStatementDocumentDateSchema
+>;
+
+/**
  * Patch-Schema für die optionale Anpassung der monatlichen NK-Vorauszahlung
  * an einer Draft-Abrechnung. Beide Felder werden zusammen gesetzt oder
  * zusammen gelöscht. Halbzustände (Betrag ohne Datum oder umgekehrt)

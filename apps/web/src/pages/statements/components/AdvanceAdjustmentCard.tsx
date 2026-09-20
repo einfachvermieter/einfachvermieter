@@ -22,12 +22,14 @@ export const AdvanceAdjustmentCard = ({
   detail,
   lines,
   periodEnd,
+  documentDate,
 }: {
   statementId: string;
   isDraft: boolean;
   detail: AdvanceAdjustmentDetail | undefined;
   lines: CostLineResult[];
   periodEnd: string;
+  documentDate: string;
 }) => {
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -122,6 +124,7 @@ export const AdvanceAdjustmentCard = ({
           detail={detail}
           lines={lines}
           periodEnd={periodEnd}
+          documentDate={documentDate}
           onClose={() => setSheetOpen(false)}
         />
       ) : null}

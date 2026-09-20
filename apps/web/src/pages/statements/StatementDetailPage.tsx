@@ -9,6 +9,7 @@ import {
 } from "@einfachvermieter/shared";
 import {
   RiArrowDownSLine,
+  RiCalendarEventLine,
   RiCloseCircleLine,
   RiDeleteBinLine,
   RiDownloadLine,
@@ -68,6 +69,7 @@ import { contractPartyNames, tenantQueryOptions } from "../../lib/tenants";
 import { toastApiError } from "../../lib/toastApiError";
 import { unitsQueryOptions } from "../../lib/units";
 import { AdvanceAdjustmentCard } from "./components/AdvanceAdjustmentCard";
+import { DocumentDateSheet } from "./components/DocumentDateSheet";
 import { BillingInfoCard } from "./components/detail/BillingInfoCard";
 import { ClimateFactorsCard } from "./components/detail/ClimateFactorsCard";
 import { HeatingCard } from "./components/detail/HeatingCard";
@@ -206,6 +208,7 @@ const StatementTabs = ({
   statementId,
   isDraft,
   periodEnd,
+  documentDate,
   pdfSrc,
   pdfDownloadSrc,
   pdfCacheBust,
@@ -219,6 +222,7 @@ const StatementTabs = ({
   statementId: string;
   isDraft: boolean;
   periodEnd: string;
+  documentDate: string;
   pdfSrc: string;
   pdfDownloadSrc: string;
   pdfCacheBust: string;
@@ -286,6 +290,7 @@ const StatementTabs = ({
             detail={result.advanceAdjustment}
             lines={result.lines}
             periodEnd={periodEnd}
+            documentDate={documentDate}
           />
           <OverviewCard
             result={result}
@@ -471,6 +476,7 @@ export const StatementDetailPage = () => {
     onError: toastApiError(t("common.deleteFailed")),
   });
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [documentDateOpen, setDocumentDateOpen] = useState(false);
 
   if (statementQuery.isError) {
     return (
@@ -593,6 +599,13 @@ export const StatementDetailPage = () => {
   subItems.push(
     <span>{formatPeriod(statement.periodStart, statement.periodEnd)}</span>,
   );
+  subItems.push(
+    <span>
+      {t("ui.statements.documentDate.subItem", {
+        date: formatDate(statement.documentDate ?? todayIso()),
+      })}
+    </span>,
+  );
 
   /**
    * Primäraktion + Chevron-Menü für seltene Aktionen, je nach Status:
@@ -607,6 +620,15 @@ export const StatementDetailPage = () => {
         <RiLockLine data-icon="inline-start" />
         {t("ui.statements.detail.finalizeStatement")}
       </Button>
+    );
+    menuItems.push(
+      <DropdownMenuItem
+        key="document-date"
+        onSelect={() => setDocumentDateOpen(true)}
+      >
+        <RiCalendarEventLine />
+        {t("ui.statements.documentDate.action")}
+      </DropdownMenuItem>,
     );
     menuItems.push(
       <DropdownMenuItem
@@ -743,6 +765,7 @@ export const StatementDetailPage = () => {
             statementId={statement.id}
             isDraft={isDraft}
             periodEnd={statement.periodEnd}
+            documentDate={statement.documentDate ?? todayIso()}
             pdfSrc={pdfSrc}
             pdfDownloadSrc={pdfDownloadSrc}
             pdfCacheBust={pdfCacheBust}
@@ -764,6 +787,7 @@ export const StatementDetailPage = () => {
           deadlineWarning={deadlineMissedWithArrears}
           climateFactorQuestionOpen={climateFactorQuestionOpen}
           advanceDetail={result?.advanceAdjustment}
+          documentDate={statement.documentDate ?? todayIso()}
           balanceCents={result?.balanceCents ?? 0}
           tenantName={tenantName}
           isPending={finalize.isPending}
@@ -827,6 +851,15 @@ export const StatementDetailPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {documentDateOpen ? (
+        <DocumentDateSheet
+          statementId={statement.id}
+          documentDate={statement.documentDate ?? todayIso()}
+          advanceValidFrom={statement.adjustedAdvanceValidFrom}
+          onClose={() => setDocumentDateOpen(false)}
+        />
+      ) : null}
 
       <DestructiveConfirmDialog
         open={deleteOpen}

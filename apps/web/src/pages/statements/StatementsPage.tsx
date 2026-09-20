@@ -132,16 +132,9 @@ export const StatementsPage = () => {
             // deshalb besonders gekennzeichnet
             if (status === "draft") {
               return (
-                <Tooltip>
-                  <TooltipTrigger asChild={true}>
-                    <span className="text-muted-foreground italic">
-                      {t("ui.statements.balanceDraftPending")}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {t("ui.statements.balanceDraftHint")}
-                  </TooltipContent>
-                </Tooltip>
+                <span className="text-muted-foreground italic">
+                  {t("ui.statements.balanceDraftPending")}
+                </span>
               );
             }
             return (

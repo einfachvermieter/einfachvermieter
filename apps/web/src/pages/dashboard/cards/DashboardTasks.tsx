@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
+import { monthLabel } from "@/lib/monthLabel";
 import type { DashboardResult } from "@/lib/stats";
-import { monthLabel } from "../monthLabel";
 
 const DECEMBER = 12;
 const MAX_TASK_ITEMS = 5;

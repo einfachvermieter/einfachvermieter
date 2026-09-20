@@ -3,9 +3,11 @@ import {
   type OperatingCostStatementAdvanceAdjustmentDto,
   type OperatingCostStatementCancelDto,
   type OperatingCostStatementCreateDto,
+  type OperatingCostStatementDocumentDateDto,
   operatingCostStatementAdvanceAdjustmentSchema,
   operatingCostStatementCancelSchema,
   operatingCostStatementCreateSchema,
+  operatingCostStatementDocumentDateSchema,
 } from "@einfachvermieter/shared";
 import {
   Body,
@@ -173,6 +175,20 @@ export class StatementsController {
     dto: OperatingCostStatementAdvanceAdjustmentDto,
   ) {
     return this.statementsService.setAdvanceAdjustment(id, dto);
+  }
+
+  /**
+   * Ändert das Ausstellungsdatum einer Draft-Abrechnung. Es steht im Brief
+   * und begrenzt den Stichtag einer Vorauszahlungs-Anpassung nach unten.
+   */
+  @Put(":id/document-date")
+  @Roles("admin")
+  setDocumentDate(
+    @Param("id") id: string,
+    @Body(new ZodValidationPipe(operatingCostStatementDocumentDateSchema))
+    dto: OperatingCostStatementDocumentDateDto,
+  ) {
+    return this.statementsService.setDocumentDate(id, dto);
   }
 
   /**

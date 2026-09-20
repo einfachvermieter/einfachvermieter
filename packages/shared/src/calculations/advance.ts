@@ -3,6 +3,7 @@
  * (Gültig-ab) der Anpassung.
  */
 
+import { formatDate } from "../format.js";
 import type { Period } from "../types/index.js";
 import { addDaysIso, daysBetween, daysInYear, intersect } from "./period.js";
 
@@ -507,16 +508,43 @@ export const suggestAdvanceValidFromDate = (
 };
 
 /**
- * Die drei Monatsoptionen für den Gültig-ab-Dropdown: aktueller, nächster
- * und übernächster Monat. Jeder Eintrag liefert die ISO-Form (YYYY-MM-01)
- * und ein "MM.JJJJ"-Label.
+ * Ein NK-Anpassung vor dem Dokumentdatum der Abrechnung ist unzulässig.
+ *
+ * Das Anschreiben kündigt die neue Vorauszahlung an; ein Stichtag davor
+ * wäre eine Ankündigung für die Vergangenheit. Zudem passt die Änderung
+ * auch die Nebenkosten in der Miete an.
+ *
+ * Geprüft wird gegen das Dokumentdatum und nicht gegen den heutigen Tag,
+ * damit eine Abrechnung auch Wochen später noch finalisierbar bleibt.
  */
-export const nextMonthOptions = (
-  today: string,
-): Array<{ iso: string; label: string }> =>
-  [0, 1, 2].map((offset) => {
-    const iso = firstOfMonthIso(today, offset);
-    const label = `${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
+export const isAdvanceValidFromRetroactive = (
+  validFrom: string,
+  documentDate: string,
+): boolean => validFrom < documentDate;
 
-    return { iso, label };
-  });
+/**
+ * Auswahlmonate für den Gültig-ab-Stichtag.
+ *
+ * Die Spanne reicht vom Monat des früheren der beiden Werte
+ * (Ausstellungsdatum, heute) bis drei Monate nach dem späteren.
+ *
+ * Welche davon zulässig sind, entscheidet der Aufrufer: Der Stichtag muss
+ * nach dem Abrechnungsende und ab dem Ausstellungsdatum liegen.
+ */
+export const advanceValidFromMonthOptions = (
+  documentDate: string,
+  today: string,
+): Array<{ iso: string; label: string }> => {
+  const earlier = documentDate < today ? documentDate : today;
+  const later = documentDate < today ? today : documentDate;
+  const last = firstOfMonthIso(later, 3);
+
+  const options: Array<{ iso: string; label: string }> = [];
+  for (let offset = 0; ; offset += 1) {
+    const iso = firstOfMonthIso(earlier, offset);
+    options.push({ iso, label: formatDate(iso) });
+    if (iso >= last) {
+      return options;
+    }
+  }
+};

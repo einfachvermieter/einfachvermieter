@@ -1,9 +1,10 @@
 import {
   type AdvanceAdjustmentDetail,
+  advanceValidFromMonthOptions,
   type CostLineResult,
   centsToEurInput,
   formatEur,
-  nextMonthOptions,
+  isAdvanceValidFromRetroactive,
   parseEurToCents,
   STATEMENT_HEATING_COST_TYPE_ID,
   todayIso,
@@ -43,12 +44,14 @@ export const AdvanceAdjustmentSheet = ({
   detail,
   lines,
   periodEnd,
+  documentDate,
   onClose,
 }: {
   statementId: string;
   detail: AdvanceAdjustmentDetail | undefined;
   lines: CostLineResult[];
   periodEnd: string;
+  documentDate: string;
   onClose: () => void;
 }) => {
   const currentCents = detail?.currentMonthlyAdvanceCents ?? 0;
@@ -65,10 +68,15 @@ export const AdvanceAdjustmentSheet = ({
     [detail, lines],
   );
 
-  const monthOptions = useMemo(() => {
-    const today = todayIso();
-    return nextMonthOptions(today).filter((option) => option.iso > periodEnd);
-  }, [periodEnd]);
+  const monthOptions = useMemo(
+    () =>
+      advanceValidFromMonthOptions(documentDate, todayIso()).filter(
+        (option) =>
+          option.iso > periodEnd &&
+          !isAdvanceValidFromRetroactive(option.iso, documentDate),
+      ),
+    [periodEnd, documentDate],
+  );
 
   let defaultMode: AdvanceMode = "keep";
   if (adjustedCents !== null && adjustedValidFrom !== null) {
@@ -77,7 +85,7 @@ export const AdvanceAdjustmentSheet = ({
   }
 
   const form = useForm<AdvanceFormValues>({
-    resolver: zodResolver(buildAdvanceFormSchema(periodEnd)),
+    resolver: zodResolver(buildAdvanceFormSchema(periodEnd, documentDate)),
     reValidateMode: "onSubmit",
     defaultValues: {
       mode: defaultMode,

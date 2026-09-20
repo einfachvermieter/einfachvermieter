@@ -8,6 +8,7 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { firstOfMonthIso, todayIso } from "@einfachvermieter/shared";
 import { MikroORM, RequestContext } from "@mikro-orm/core";
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
@@ -23,7 +24,7 @@ let dataDir: string;
 let authCookie = "";
 
 type ApiCallOptions = {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   /**
    * Erwarteter HTTP-Status. Abweichung schlägt mit Response-Body fehl
@@ -643,6 +644,190 @@ describe("Happy Path", () => {
     expect(preview.heatingDetail.hotWaterDetail).toBeTruthy();
     expect(preview.totalCostsCents).toBeGreaterThan(0);
   }, 120_000);
+});
+
+describe("Stichtag der Vorauszahlung vor dem Dokumentdatum", () => {
+  /**
+   * Legt Gebäude, Wohnung, Mietvertrag und Wasser-Hauptzähler an und gibt
+   * die Ids für eine abrechenbare Periode 2025 zurück.
+   */
+  const createBillableTenant = async (suffix: string) => {
+    const building = await api("/buildings", {
+      method: "POST",
+      body: {
+        name: `Stichtag-Haus ${suffix}`,
+        addressStreet: "Stichtagweg 1",
+        addressPostalCode: "45129",
+        addressCity: "Essen",
+      },
+      expect: 201,
+    });
+
+    const unit = await api("/units", {
+      method: "POST",
+      body: { buildingId: building.id, name: "EG", areaSqm: 70 },
+      expect: 201,
+    });
+
+    const aggregate = await api("/tenants", {
+      method: "POST",
+      body: {
+        unitId: unit.id,
+        kind: "private",
+        startDate: "2025-01-01",
+        endDate: null,
+        depositCents: 0,
+        residents: [
+          {
+            resident: { firstName: "Rita", lastName: "Stichtag" },
+            isContractParty: true,
+          },
+        ],
+        rents: [
+          {
+            startDate: null,
+            endDate: null,
+            monthlyBaseRentCents: 50_000,
+            monthlyAdvanceCents: 10_000,
+          },
+        ],
+      },
+      expect: 201,
+    });
+
+    const waterMain = await api("/meters", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        type: "water_cold",
+        role: "main",
+        label: "Hauptwasserzähler",
+        measurementUnit: "m3",
+        validFrom: "2025-01-01",
+      },
+      expect: 201,
+    });
+    for (const [date, value] of [
+      ["2025-01-01", 0],
+      ["2025-12-31", 150],
+    ] as const) {
+      await api("/meters/readings", {
+        method: "POST",
+        body: { meterId: waterMain.id, readingDate: date, value },
+        expect: 201,
+      });
+    }
+
+    const statement = await api("/statements", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        tenantId: aggregate.tenant.id,
+        periodStart: "2025-01-01",
+        periodEnd: "2025-12-31",
+      },
+      expect: 201,
+    });
+
+    return { statement, tenantId: aggregate.tenant.id as string };
+  };
+
+  it("weist einen rückwirkenden Stichtag schon beim Speichern zurück", async () => {
+    const { statement } = await createBillableTenant("speichern");
+
+    // Nach dem Periodenende, aber vor dem heutigen Tag: Ohne gesetztes
+    // Dokumentdatum gilt heute, der Stichtag wäre also rückwirkend.
+    const rejected = await api(
+      `/statements/${statement.id}/advance-adjustment`,
+      {
+        method: "PUT",
+        body: {
+          adjustedMonthlyAdvanceCents: 12_000,
+          adjustedAdvanceValidFrom: "2026-01-01",
+          tariffAdjustmentBps: null,
+        },
+        expect: 400,
+      },
+    );
+    expect(rejected.message).toContain("Ausstellungsdatum");
+  });
+
+  it("lässt das Ausstellungsdatum ändern, aber nicht am Stichtag vorbei", async () => {
+    const { statement } = await createBillableTenant("ausstellungsdatum");
+
+    const validFrom = firstOfMonthIso(todayIso(), 1);
+    await api(`/statements/${statement.id}/advance-adjustment`, {
+      method: "PUT",
+      body: {
+        adjustedMonthlyAdvanceCents: 12_000,
+        adjustedAdvanceValidFrom: validFrom,
+        tariffAdjustmentBps: null,
+      },
+      expect: 200,
+    });
+
+    // Zurückdatieren ist erlaubt, der Stichtag bleibt danach zulässig.
+    const updated = await api(`/statements/${statement.id}/document-date`, {
+      method: "PUT",
+      body: { documentDate: "2026-01-20" },
+      expect: 200,
+    });
+    expect(updated.documentDate).toBe("2026-01-20");
+
+    // Hinter den Stichtag schieben würde ihn rückwirkend machen.
+    const rejected = await api(`/statements/${statement.id}/document-date`, {
+      method: "PUT",
+      body: { documentDate: firstOfMonthIso(todayIso(), 6) },
+      expect: 400,
+    });
+    expect(rejected.message).toContain("Vorauszahlung");
+
+    const unchanged = await api(`/statements/${statement.id}`, { expect: 200 });
+    expect(unchanged.documentDate).toBe("2026-01-20");
+  });
+
+  it("bricht die Finalisierung ab, statt Mietzeiträume rückwirkend zu ändern", async () => {
+    const { statement, tenantId } = await createBillableTenant("finalisieren");
+
+    const validFrom = firstOfMonthIso(todayIso(), 1);
+    await api(`/statements/${statement.id}/advance-adjustment`, {
+      method: "PUT",
+      body: {
+        adjustedMonthlyAdvanceCents: 12_000,
+        adjustedAdvanceValidFrom: validFrom,
+        tariffAdjustmentBps: null,
+      },
+      expect: 200,
+    });
+
+    // Am Formular und an der API vorbei, wie es Seed-Daten, ein Import oder
+    // ein liegen gebliebener Entwurf erzeugen: Der Stichtag rutscht in die
+    // Vergangenheit, nachdem er gültig gespeichert wurde.
+    const orm = app.get(MikroORM);
+    await RequestContext.create(orm.em, async () => {
+      await orm.em
+        .getConnection()
+        .execute(
+          "update operating_cost_statements set adjusted_advance_valid_from = ? where id = ?",
+          ["2026-01-01", statement.id],
+        );
+    });
+
+    const response = await fetch(
+      `${baseUrl}/api/statements/${statement.id}/finalize`,
+      { method: "POST", headers: { cookie: authCookie } },
+    );
+    expect(response.status).toBe(400);
+    expect(await response.text()).toContain("Ausstellungsdatum");
+
+    // Entscheidend: Der Mietzeitraum darf davon unberührt bleiben.
+    const aggregate = await api(`/tenants/${tenantId}`, { expect: 200 });
+    expect(aggregate.rents).toHaveLength(1);
+    expect(aggregate.rents[0].monthlyAdvanceCents).toBe(10_000);
+
+    const unchanged = await api(`/statements/${statement.id}`, { expect: 200 });
+    expect(unchanged.status).toBe("draft");
+  }, 60_000);
 });
 
 // Läuft nach dem Happy Path (ändert das Admin-Passwort und verwirft dabei

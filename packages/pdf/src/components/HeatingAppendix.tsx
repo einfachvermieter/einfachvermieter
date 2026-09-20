@@ -209,7 +209,7 @@ const EnergyAndCo2Table = ({
               <Text>
                 {renderSuperscripts(
                   t("statements.pdf.heating.co2.areaBasisValue", {
-                    value: formatNumber(co2.livingAreaSqm, 0),
+                    value: formatNumber(co2.livingAreaSqm, 2),
                   }),
                 )}
               </Text>

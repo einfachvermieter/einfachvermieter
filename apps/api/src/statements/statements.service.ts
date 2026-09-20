@@ -38,6 +38,7 @@ import {
   daysInYear,
   type EnergyComparisonPeriodInput,
   type ExternalHeatingEntry,
+  formatDate,
   formatWarningLabels,
   formatWarningParams,
   groupCalcWarnings,
@@ -47,10 +48,12 @@ import {
   hotWaterCorrectionFactor,
   inferTariffAdjustmentBpsFromInvoices,
   intersect,
+  isAdvanceValidFromRetroactive,
   type MeterInfo,
   type OperatingCostStatementAdvanceAdjustmentDto,
   type OperatingCostStatementCancelDto,
   type OperatingCostStatementCreateDto,
+  type OperatingCostStatementDocumentDateDto,
   type PaymentSummary,
   type Period,
   prorationFactor,
@@ -91,6 +94,21 @@ import { TenantsService } from "../tenants/tenants.service.js";
 import { ClimateFactorService } from "./climate-factor.service.js";
 
 type StatementRow = OperatingCostStatement;
+
+/**
+ * Eine festgelegte Anpassung wirkt nur, wenn Betrag und Stichtag gesetzt
+ * sind und der Betrag vom vertraglich vereinbarten abweicht. Nur dann legt
+ * der Abschluss einen neuen Mietzeitraum an, und nur dann nennt das
+ * Anschreiben die neue Vorauszahlung.
+ */
+const needsRentRotation = (
+  adjustment: StatementResult["advanceAdjustment"],
+): boolean =>
+  adjustment !== undefined &&
+  adjustment.adjustedMonthlyAdvanceCents !== null &&
+  adjustment.adjustedAdvanceValidFrom !== null &&
+  adjustment.adjustedMonthlyAdvanceCents !==
+    adjustment.currentMonthlyAdvanceCents;
 
 export type StatementSort = "tenant" | "period" | "status" | "balance";
 
@@ -2059,6 +2077,46 @@ export class StatementsService {
   }
 
   /**
+   * Ändert das Ausstellungsdatum einer Draft-Abrechnung.
+   *
+   * Ist bereits eine Vorauszahlungs-Anpassung festgelegt, darf das neue
+   * Datum ihren Stichtag nicht rückwirkend machen.
+   */
+  async setDocumentDate(
+    id: string,
+    dto: OperatingCostStatementDocumentDateDto,
+  ) {
+    const statement = await this.get(id);
+    if (statement.status !== "draft") {
+      throw new BadRequestException(
+        getI18n().t("errors.statementAlreadyFinalized"),
+      );
+    }
+
+    const validFrom = statement.adjustedAdvanceValidFrom;
+    if (
+      validFrom !== null &&
+      isAdvanceValidFromRetroactive(validFrom, dto.documentDate)
+    ) {
+      throw new BadRequestException(
+        getI18n().t("errors.statementDocumentDateAfterAdvanceValidFrom", {
+          validFrom: formatDate(validFrom),
+          documentDate: formatDate(dto.documentDate),
+        }),
+      );
+    }
+
+    this.em.assign(statement, {
+      documentDate: dto.documentDate,
+      updatedAt: new Date().toISOString(),
+    });
+
+    await this.em.flush();
+
+    return statement;
+  }
+
+  /**
    * Setzt oder entfernt die optionale Anpassung der monatlichen NK-
    * Vorauszahlung an einer Draft-Abrechnung
    */
@@ -2085,6 +2143,19 @@ export class StatementsService {
       );
     }
 
+    const documentDate = statement.documentDate ?? todayIso();
+    if (
+      dto.adjustedAdvanceValidFrom !== null &&
+      isAdvanceValidFromRetroactive(dto.adjustedAdvanceValidFrom, documentDate)
+    ) {
+      throw new BadRequestException(
+        getI18n().t("errors.statementAdjustmentValidFromBeforeDocumentDate", {
+          validFrom: formatDate(dto.adjustedAdvanceValidFrom),
+          documentDate: formatDate(documentDate),
+        }),
+      );
+    }
+
     this.em.assign(statement, {
       adjustedMonthlyAdvanceCents: dto.adjustedMonthlyAdvanceCents,
       adjustedAdvanceValidFrom: dto.adjustedAdvanceValidFrom,
@@ -2095,6 +2166,34 @@ export class StatementsService {
     await this.em.flush();
 
     return statement;
+  }
+
+  /**
+   * Letzte Schranke vor den Seiteneffekten des Abschlusses.
+   *
+   * Der Stichtag kann beim Speichern gültig gewesen sein und es jetzt nicht
+   * mehr sein: Ohne gesetztes Dokumentdatum gilt der Tag des Abschlusses,
+   * und der rückt mit jedem Tag weiter. Ein lange liegen gebliebener
+   * Entwurf trägt dann einen Stichtag, der inzwischen in der Vergangenheit
+   * liegt. Ohne diese Prüfung legt `rotateTenantRents` einen Mietzeitraum
+   * in der Vergangenheit an und das Soll bereits vergangener Monate ändert
+   * sich nachträglich.
+   */
+  private assertAdvanceValidFromNotRetroactive(
+    statement: StatementRow,
+    validFrom: string,
+  ) {
+    const documentDate = statement.documentDate ?? todayIso();
+    if (!isAdvanceValidFromRetroactive(validFrom, documentDate)) {
+      return;
+    }
+
+    throw new BadRequestException(
+      getI18n().t("errors.statementFinalizeAdvanceValidFromRetroactive", {
+        validFrom: formatDate(validFrom),
+        documentDate: formatDate(documentDate),
+      }),
+    );
   }
 
   /**
@@ -2139,12 +2238,14 @@ export class StatementsService {
     }
 
     const adjustment = result.advanceAdjustment;
-    const needsRentRotation =
-      adjustment !== undefined &&
-      adjustment.adjustedMonthlyAdvanceCents !== null &&
-      adjustment.adjustedAdvanceValidFrom !== null &&
-      adjustment.adjustedMonthlyAdvanceCents !==
-        adjustment.currentMonthlyAdvanceCents;
+    const rotatesRent = needsRentRotation(adjustment);
+
+    if (rotatesRent) {
+      this.assertAdvanceValidFromNotRetroactive(
+        statement,
+        adjustment.adjustedAdvanceValidFrom as string,
+      );
+    }
 
     const periodYear = Number(statement.periodStart.slice(0, 4));
 
@@ -2174,7 +2275,7 @@ export class StatementsService {
         row.supersedesStatementId,
       );
 
-      if (needsRentRotation) {
+      if (rotatesRent) {
         await this.rotateTenantRents(
           em,
           statement.tenantId,

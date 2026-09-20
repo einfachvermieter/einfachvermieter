@@ -2,9 +2,9 @@ import { formatEur } from "@einfachvermieter/shared";
 import { RiBarChartLine } from "@remixicon/react";
 import { SectionCard } from "@/components/common/SectionCard";
 import { t } from "@/lib/i18n";
+import { monthLabelShort } from "@/lib/monthLabel";
 import type { DashboardResult } from "@/lib/stats";
 import { cn } from "@/lib/utils";
-import { monthLabelShort } from "../monthLabel";
 
 /**
  * Mieteingänge der letzten Monate als Balken

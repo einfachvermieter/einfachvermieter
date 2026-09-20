@@ -1,5 +1,11 @@
 import type { AdvanceAdjustmentDetail } from "@einfachvermieter/shared";
-import { formatDate, formatEur } from "@einfachvermieter/shared";
+import {
+  enumerateMonths,
+  formatDate,
+  formatEur,
+  isAdvanceValidFromRetroactive,
+  todayIso,
+} from "@einfachvermieter/shared";
 import {
   RiCheckboxCircleFill,
   RiErrorWarningFill,
@@ -18,6 +24,7 @@ import {
   DialogTitle,
 } from "../../../../components/ui/Dialog";
 import { t } from "../../../../lib/i18n";
+import { monthWithYearLabel } from "../../../../lib/monthLabel";
 import { cn } from "../../../../lib/utils";
 
 const CHECK_ICONS = {
@@ -78,6 +85,7 @@ export const StatementFinalizeDialog = ({
   deadlineWarning,
   climateFactorQuestionOpen,
   advanceDetail,
+  documentDate,
   balanceCents,
   tenantName,
   isPending,
@@ -92,6 +100,7 @@ export const StatementFinalizeDialog = ({
   deadlineWarning: boolean;
   climateFactorQuestionOpen: boolean;
   advanceDetail: AdvanceAdjustmentDetail | undefined;
+  documentDate: string;
   balanceCents: number;
   tenantName: string;
   isPending: boolean;
@@ -110,6 +119,28 @@ export const StatementFinalizeDialog = ({
     advanceDetail !== undefined &&
     advanceDetail.suggestedMonthlyAdvanceWithTariffsCents !==
       advanceDetail.currentMonthlyAdvanceCents;
+
+  // Ein lange liegen gebliebener Entwurf trägt womöglich einen Stichtag, der
+  // inzwischen in der Vergangenheit liegt. Finalisieren würde daraus einen
+  // Mietzeitraum in der Vergangenheit machen.
+  const advanceRetroactive =
+    hasAdjustment &&
+    isAdvanceValidFromRetroactive(
+      advanceDetail.adjustedAdvanceValidFrom as string,
+      documentDate,
+    );
+  const finalizeBlocked = blocked || advanceRetroactive;
+
+  // Zulässig, aber folgenreich: Deckt das Ausstellungsdatum einen Stichtag in
+  // der Vergangenheit, entstehen beim Abschluss Mietzeiträume für Monate, die
+  // schon gezahlt sind. Das muss der Vermieter bestätigen.
+  const pastMonths =
+    hasAdjustment && !advanceRetroactive
+      ? enumerateMonths(
+          advanceDetail.adjustedAdvanceValidFrom as string,
+          todayIso(),
+        )
+      : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -146,6 +177,47 @@ export const StatementFinalizeDialog = ({
           {blocked ? (
             <CheckRow kind="warn">
               {t("ui.statements.detail.finalizeDialog.blocked")}
+            </CheckRow>
+          ) : null}
+          {pastMonths.length > 0 ? (
+            <CheckRow kind="warn">
+              {t("ui.statements.detail.finalizeDialog.advanceValidFromPast", {
+                validFrom: formatDate(
+                  advanceDetail?.adjustedAdvanceValidFrom as string,
+                ),
+                count: pastMonths.length,
+                from: monthWithYearLabel(pastMonths[0] as string),
+                to: monthWithYearLabel(pastMonths.at(-1) as string),
+              })}
+            </CheckRow>
+          ) : null}
+          {advanceRetroactive ? (
+            <CheckRow
+              kind="warn"
+              sub={
+                <span className="flex flex-wrap items-center gap-x-1.5">
+                  {t(
+                    "ui.statements.detail.finalizeDialog.advanceValidFromRetroactiveBlocked",
+                  )}
+                  <Button
+                    variant="addLink"
+                    size="text"
+                    onClick={onAdjustAdvance}
+                  >
+                    {t("ui.statements.detail.finalizeDialog.adjustNow")}
+                  </Button>
+                </span>
+              }
+            >
+              {t(
+                "ui.statements.detail.finalizeDialog.advanceValidFromRetroactive",
+                {
+                  validFrom: formatDate(
+                    advanceDetail?.adjustedAdvanceValidFrom as string,
+                  ),
+                  documentDate: formatDate(documentDate),
+                },
+              )}
             </CheckRow>
           ) : null}
           {advanceDetail ? (
@@ -187,7 +259,7 @@ export const StatementFinalizeDialog = ({
                   })}
             </CheckRow>
           ) : null}
-          {blocked ? null : (
+          {finalizeBlocked ? null : (
             <CheckRow kind="info">
               {t("ui.statements.detail.finalizeDialog.reviewHint")}
             </CheckRow>
@@ -220,7 +292,7 @@ export const StatementFinalizeDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("ui.common.action.cancel")}
           </Button>
-          <Button disabled={isPending || blocked} onClick={onConfirm}>
+          <Button disabled={isPending || finalizeBlocked} onClick={onConfirm}>
             <RiLockLine data-icon="inline-start" />
             {t("ui.statements.detail.finalizeDialog.confirm")}
           </Button>

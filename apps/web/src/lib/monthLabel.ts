@@ -1,6 +1,6 @@
 import { monthKeyOf } from "@einfachvermieter/i18n";
 import { todayIso } from "@einfachvermieter/shared";
-import { t } from "@/lib/i18n";
+import { t } from "./i18n";
 
 /**
  * Monat (YYYY-MM) als Name, mit Jahr nur bei abweichendem Jahr:
@@ -16,7 +16,7 @@ export const monthLabel = (month: string): string => {
 
   return year === todayIso().slice(0, 4)
     ? name
-    : t("ui.dashboard.monthYear", { month: name, year });
+    : t("common.monthYear", { month: name, year });
 };
 
 /**
@@ -24,3 +24,14 @@ export const monthLabel = (month: string): string => {
  */
 export const monthLabelShort = (month: string): string =>
   t(`common.monthsShort.${monthKeyOf(Number(month.slice(5, 7)))}`);
+
+/**
+ * Monat (YYYY-MM) mit Jahr: "Juni 2026"
+ */
+export const monthWithYearLabel = (month: string): string =>
+  month.length < 7
+    ? ""
+    : t("common.monthYear", {
+        month: t(`common.months.${monthKeyOf(Number(month.slice(5, 7)))}`),
+        year: month.slice(0, 4),
+      });

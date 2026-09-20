@@ -85,6 +85,7 @@
     "no": "Nein",
     "none": "—",
     "unknown": "?",
+    "monthYear": "{month} {year}",
     "months": {
       "jan": "Januar",
       "feb": "Februar",
@@ -217,8 +218,11 @@
     "statementFinalizeCalculationIncomplete": "Berechnungsergebnis ist unvollständig, Finalisierung abgebrochen: {message}",
     "tenantNotBillable": "Mietvertrag „{tenantId}“ ist im Zeitraum {periodStart} – {periodEnd} nicht abrechnungsberechtigt (Vertragszeitraum überlappt nicht).",
     "tenantHasNoRent": "Mietvertrag „{tenantId}“ hat keinen Mietsatz, daher ist eine Anpassung der Vorauszahlung nicht möglich.",
-    "statementAdjustmentValidFromBeforePeriodEnd": "Stichtag „{validFrom}“ liegt nicht nach dem Abrechnungsende „{periodEnd}“. Die Anpassung muss für einen späteren Zeitpunkt gelten.",
-    "statementAdjustmentNoMatchingRent": "Es gibt keinen Mietsatz, der den Stichtag „{validFrom}“ abdeckt. Bitte Mietvertrag prüfen.",
+    "statementAdjustmentValidFromBeforePeriodEnd": "Die neue Vorauszahlung soll ab {validFrom} gelten, das liegt nicht nach dem Abrechnungsende ({periodEnd}). Sie kann erst nach dem Abrechnungszeitraum greifen.",
+    "statementAdjustmentValidFromBeforeDocumentDate": "Die neue Vorauszahlung soll ab {validFrom} gelten, das liegt vor dem Ausstellungsdatum der Abrechnung ({documentDate}). Rückwirkend lässt sie sich nicht ankündigen. Bitte wählen Sie ein späteres Datum.",
+    "statementFinalizeAdvanceValidFromRetroactive": "Die neue Vorauszahlung soll ab {validFrom} gelten, das Ausstellungsdatum der Abrechnung ist aber der {documentDate}. Beim Finalisieren würde damit ein Mietzeitraum in der Vergangenheit entstehen und das Soll bereits vergangener Monate sich ändern. Bitte wählen Sie ein Datum ab dem Ausstellungsdatum.",
+    "statementDocumentDateAfterAdvanceValidFrom": "Das Ausstellungsdatum {documentDate} liegt nach dem {validFrom}, ab dem die neue Vorauszahlung gelten soll. Ändern Sie zuerst dieses Datum.",
+    "statementAdjustmentNoMatchingRent": "Zum {validFrom} gibt es keinen Mietsatz, der die neue Vorauszahlung aufnehmen könnte. Bitte Mietvertrag prüfen.",
     "tenantHasPayments": "Mietvertrag hat Zahlungen und kann nicht gelöscht werden",
     "tenantHasStatements": "Mietvertrag hat Abrechnungen und kann nicht gelöscht werden",
     "meterVirtualReadonly": "Differenzzähler sind virtuell. Stände werden aus anderen Zählern berechnet und dürfen nicht direkt erfasst werden.",
@@ -1613,8 +1617,8 @@
       "balanceArrears": "{amount} Nachzahlung",
       "duplicateDraftTitle": "Entwurf existiert bereits",
       "duplicateDraftDescription": "Für diesen Mieter gibt es schon einen Entwurf, dessen Zeitraum sich mit dem gewählten überschneidet. Bitte prüfen Sie, ob Sie den vorhandenen Entwurf öffnen wollen, statt einen zweiten anzulegen.",
-      "balanceDraftPending": "wird berechnet",
-      "balanceDraftHint": "Der Saldo wird beim Öffnen der Abrechnung live berechnet.",
+      "balanceDraftPending": "erst nach dem Finalisieren",
+      "balanceDraftHint": "Der Saldo eines Entwurfs steht erst mit dem Finalisieren fest. Öffnen Sie die Abrechnung, um den aktuellen Stand zu sehen.",
       "fields": {
         "documentDate": "Ausstellungsdatum",
         "documentDateHint": "Datum, das auf der Abrechnung erscheint. Standard ist heute, für vor- oder nachdatierte Dokumente anpassbar.",
@@ -1627,6 +1631,16 @@
         "documentDateRequired": "Bitte ein Ausstellungsdatum angeben.",
         "periodMax12Months": "Der Abrechnungszeitraum darf höchstens 12 Monate umfassen.",
         "adjustmentBothOrNone": "Betrag und Gültig-ab-Datum müssen beide gesetzt oder beide leer sein."
+      },
+      "documentDate": {
+        "action": "Ausstellungsdatum ändern",
+        "title": "Ausstellungsdatum",
+        "description": "Das Datum, das im Brief steht. Eine neue Vorauszahlung kann frühestens ab diesem Tag gelten.",
+        "subItem": "Ausgestellt {date}",
+        "validation": {
+          "required": "Bitte ein Ausstellungsdatum angeben.",
+          "afterAdvanceValidFrom": "Das Ausstellungsdatum liegt nach dem Tag, ab dem die neue Vorauszahlung gelten soll. Ändern Sie zuerst dieses Datum."
+        }
       },
       "advanceAdjustment": {
         "title": "Künftige Vorauszahlung",
@@ -1656,8 +1670,9 @@
           "amountRequired": "Bitte einen Betrag angeben.",
           "amountFormat": "Bitte einen Geldbetrag eintragen (z. B. 250 oder 250,00).",
           "amountPositive": "Der Betrag muss größer als 0 sein.",
-          "validFromRequired": "Bitte einen Stichtag wählen.",
-          "validFromAfterPeriodEnd": "Der Stichtag muss nach dem Ende des Abrechnungszeitraums liegen."
+          "validFromRequired": "Bitte wählen, ab wann die neue Vorauszahlung gilt.",
+          "validFromAfterPeriodEnd": "Die neue Vorauszahlung kann erst nach dem Ende des Abrechnungszeitraums gelten.",
+          "validFromBeforeDocumentDate": "Die neue Vorauszahlung kann frühestens ab dem Ausstellungsdatum der Abrechnung ({documentDate}) gelten."
         },
         "choice": {
           "keepTitle": "Beibehalten",
@@ -1794,6 +1809,9 @@
           "resultRefund": "Ergebnis: {tenant} erhält {amount} zurück.",
           "resultArrears": "Ergebnis: {tenant} muss {amount} nachzahlen.",
           "blocked": "Solange ein Zähler einen negativen Verbrauch ausweist, lässt sich die Abrechnung nicht finalisieren.",
+          "advanceValidFromRetroactive": "Die neue Vorauszahlung soll ab {validFrom} gelten, das liegt vor dem Ausstellungsdatum der Abrechnung ({documentDate}). Damit würde sich das Soll bereits vergangener Monate ändern.",
+          "advanceValidFromPast": "Die neue Vorauszahlung gilt ab {validFrom} und damit rückwirkend. Beim Finalisieren ändert sich das Soll {count, plural, one {für {from}} other {für {from} bis {to}}} nachträglich. Bereits gebuchte Zahlungen dieser Monate erscheinen danach als Über- oder Unterzahlung.",
+          "advanceValidFromRetroactiveBlocked": "Finalisieren ist erst möglich, wenn Sie ein späteres Datum wählen.",
           "reviewHint": "Prüfen Sie die Abrechnung auf Richtigkeit. Die App ersetzt keine rechtliche oder steuerliche Beratung.",
           "confirm": "Jetzt finalisieren"
         },
@@ -2236,8 +2254,7 @@
         "barTitle": "{month}: {received} von {target}",
         "ofTarget": "von {amount}"
       },
-      "createStatement": "Abrechnung erstellen",
-      "monthYear": "{month} {year}"
+      "createStatement": "Abrechnung erstellen"
     },
     "settings": {
       "eyebrow": "Einstellungen",
@@ -2565,7 +2582,7 @@
         "comparisonValueUnits": "{value} Einheiten/m²",
         "comparisonValuePoints": "{value} Bewertungspunkte/m²",
         "comparisonNote": "Als Durchschnittsnutzer derselben Nutzerkategorie dient der Durchschnitt aller Wohnungen dieses Gebäudes im selben Abrechnungszeitraum.",
-        "comparisonExtrapolatedNote": "Ihr Nutzungszeitraum ist kürzer als der Abrechnungszeitraum. Ihr Verbrauch ist deshalb über die Gradtagszahlen auf den vollen Abrechnungszeitraum hochgerechnet.",
+        "comparisonExtrapolatedNote": "Ihr Nutzungszeitraum ist kürzer als der Abrechnungszeitraum. Für den Vergleich wird Ihr Verbrauch deshalb über die Gradtagszahlen auf den vollen Abrechnungszeitraum hochgerechnet. Der Gebäudedurchschnitt enthält denselben hochgerechneten Wert.",
         "comparisonPrevTitle": "Vergleich mit dem vorhergehenden Abrechnungszeitraum",
         "comparisonPrevCurrentLabel": "Dieser Zeitraum ({start} bis {end})",
         "comparisonPrevPreviousLabel": "Vorheriger Zeitraum ({start} bis {end})",
@@ -2722,7 +2739,7 @@
         "perMeterKTotal": "KGesamt",
         "perMeterWeighted": "Verbrauchs-\neinheiten",
         "perMeterEmpty": "Keine Verbrauchsmessungen vorhanden.",
-        "perMeterDerivedNote": "Rechnerisch ermittelt: Zum Stichtag lag keine eigene Ablesung vor, der Stand wurde aus den umliegenden Ablesungen berechnet.",
+        "perMeterDerivedNote": "Rechnerisch ermittelt: Zum Ablesedatum lag keine eigene Ablesung vor, der Stand wurde aus den umliegenden Ablesungen berechnet.",
         "valuationPointsNote": "Bewertungspunkte = Verbrauchseinheiten ÷ 1.000. Die Skalierung erleichtert das Lesen großer Verbrauchssummen und beeinflusst die Kostenverteilung nicht."
       },
       "water": {
