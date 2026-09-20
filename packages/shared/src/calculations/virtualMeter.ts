@@ -71,6 +71,7 @@ export const computeMeterConsumption = (
         label: options.label
           ? `${options.label} (${bundle.meter.label})`
           : bundle.meter.label,
+        resetDay: bundle.meter.resetDay,
       }
     : undefined;
 

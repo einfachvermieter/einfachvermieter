@@ -130,6 +130,37 @@ export const gasFactorCreateSchema = z.object({
 });
 export type GasFactorCreateDto = z.infer<typeof gasFactorCreateSchema>;
 
+/**
+ * Stichtag als `MM-TT`. Nur Monatsletzte, da gängige Praxis
+ */
+export const RESET_DAY_REGEX = /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/u;
+
+/**
+ * Auswahl für das Stichtags-Feld: je Monat der letzte Tag, beginnend mit
+ * Dezember als häufigstem Fall.
+ */
+export const RESET_DAY_OPTIONS = [
+  "12-31",
+  "01-31",
+  "02-28",
+  "03-31",
+  "04-30",
+  "05-31",
+  "06-30",
+  "07-31",
+  "08-31",
+  "09-30",
+  "10-31",
+  "11-30",
+] as const;
+
+export const DEFAULT_RESET_DAY = "12-31";
+
+/**
+ * Formularwert für "kein Stichtag"
+ */
+export const RESET_DAY_NONE = "none";
+
 const meterBaseShape = {
   buildingId: z.guid(),
   unitId: z.guid().nullable().optional(),
@@ -194,6 +225,15 @@ const meterBaseShape = {
    */
   validFrom: isoDate(),
   validUntil: isoDate().nullable().optional(),
+  /**
+   * Stichtag `MM-TT`, an dem das Gerät die Zählung neu beginnt. Nur für
+   * `type = "heat_cost_allocator"` befüllt; `null` = zählt durch.
+   */
+  resetDay: z
+    .string()
+    .regex(RESET_DAY_REGEX, messageKey("ui.meters.validation.resetDayInvalid"))
+    .nullable()
+    .optional(),
   /**
    * Gas-Umrechnungsfaktor-Perioden. Nur für `type = "gas"` befüllt; für
    * andere Typen leer/undefined.
@@ -373,6 +413,10 @@ export type MeterFormValues = {
   isRemoteReadable: boolean;
   validFrom: string;
   validUntil: string;
+  /**
+   * Stichtag `MM-TT` oder `RESET_DAY_NONE`.
+   */
+  resetDay: string;
   costAllocationMode: CostAllocationMode;
   costTypeIds: string[];
   /**
@@ -420,6 +464,7 @@ export const meterFormSchema = z
       .min(1, messageKey("ui.meters.validation.validFromRequired"))
       .pipe(isoDate()),
     validUntil: z.string(),
+    resetDay: z.string(),
     costAllocationMode: z.enum(costAllocationModes),
     costTypeIds: z.array(z.guid()),
     baseMeterId: z.string(),
@@ -473,6 +518,14 @@ export const meterFormSchema = z
     message: messageKey("ui.meters.validation.kTotalPositive"),
     path: ["kTotal"],
   })
+  .refine(
+    (data) =>
+      data.resetDay === RESET_DAY_NONE || RESET_DAY_REGEX.test(data.resetDay),
+    {
+      message: messageKey("ui.meters.validation.resetDayInvalid"),
+      path: ["resetDay"],
+    },
+  )
   .refine(
     (data) => data.validUntil === "" || ISO_DATE_REGEX.test(data.validUntil),
     {
@@ -632,6 +685,8 @@ export const meterFormToDto = (
       : false,
     validFrom: values.validFrom,
     validUntil: meterValidUntil,
+    resetDay:
+      isHkv && values.resetDay !== RESET_DAY_NONE ? values.resetDay : null,
     costAllocationMode,
     costTypeIds: costAllocationMode === "cost_types" ? values.costTypeIds : [],
     differenceConfig,

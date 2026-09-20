@@ -1,4 +1,9 @@
-import { formatDate, formatNumber } from "@einfachvermieter/shared";
+import {
+  addDaysIso,
+  formatDate,
+  formatNumber,
+  lastResetBetween,
+} from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Fragment, type ReactNode } from "react";
@@ -29,7 +34,10 @@ const SKELETON_KEYS = ["last", "consumption"];
  * Ablesung, nicht das Kalenderjahr; Basiswert ist der jüngste Stand am oder
  * vor dem Jahresbeginn ("<=" nimmt eine Ablesung exakt zum 01.01. mit).
  */
-const summarizeReadings = (readings: Reading[] | undefined) => {
+const summarizeReadings = (
+  readings: Reading[] | undefined,
+  resetDay: string | null,
+) => {
   const sorted = [...(readings ?? [])].sort((a, b) =>
     b.readingDate.localeCompare(a.readingDate),
   );
@@ -40,11 +48,30 @@ const summarizeReadings = (readings: Reading[] | undefined) => {
   const baseline =
     sorted.find((entry) => entry.readingDate <= `${year}-01-01`) ?? null;
 
+  // Hat das Gerät zwischen Basis- und letztem Stand die Zählung neu
+  // begonnen, zählt nur der Abschnitt danach: Das Gerät stand am Tag nach
+  // dem Stichtag auf 0, der letzte Stand ist damit selbst der Verbrauch.
+  const reset =
+    latest && baseline
+      ? lastResetBetween(resetDay, baseline.readingDate, latest.readingDate)
+      : null;
+  const periodStart = reset
+    ? addDaysIso(reset, 1)
+    : (baseline?.readingDate ?? null);
+  const consumptionSincePeriodStart = (): number | null => {
+    if (!latest || !baseline) {
+      return null;
+    }
+
+    return reset ? latest.value : latest.value - baseline.value;
+  };
+  const consumption = consumptionSincePeriodStart();
+
   return {
     latest,
     year,
-    baseline,
-    consumption: latest && baseline ? latest.value - baseline.value : null,
+    periodStart,
+    consumption,
   };
 };
 
@@ -80,7 +107,10 @@ export const MeterDetailLayout = ({
     ? units?.find((entry) => entry.id === meter.unitId)
     : undefined;
 
-  const { latest, year, baseline, consumption } = summarizeReadings(readings);
+  const { latest, year, periodStart, consumption } = summarizeReadings(
+    readings,
+    meter?.resetDay ?? null,
+  );
 
   const dash = t("ui.common.emptyValue");
   const unitLabel = meter ? measurementUnitLabel(meter.measurementUnit) : "";
@@ -171,9 +201,9 @@ export const MeterDetailLayout = ({
                       </span>
                     ),
                   hint:
-                    latest && baseline
+                    latest && periodStart
                       ? t("ui.common.periodLabel", {
-                          start: formatDate(baseline.readingDate),
+                          start: formatDate(periodStart),
                           end: formatDate(latest.readingDate),
                         })
                       : undefined,

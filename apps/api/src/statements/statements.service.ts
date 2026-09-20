@@ -1206,6 +1206,7 @@ export class StatementsService {
         kTotal: m.kTotal,
         validFrom: m.validFrom,
         validUntil: m.validUntil,
+        resetDay: m.resetDay,
       } as MeterInfo,
       readings: readingsByMeter.get(m.id) ?? [],
       differenceConfig:

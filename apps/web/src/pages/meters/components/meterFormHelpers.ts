@@ -1,6 +1,8 @@
 import {
+  DEFAULT_RESET_DAY,
   type MeterFormValues,
   type MeterType,
+  RESET_DAY_NONE,
   UNIT_NONE,
 } from "@einfachvermieter/shared";
 import type { Meter } from "../../../lib/meters";
@@ -27,6 +29,8 @@ export const emptyMeterFormValues = (
   isRemoteReadable: false,
   validFrom: today,
   validUntil: "",
+  resetDay:
+    initialType === "heat_cost_allocator" ? DEFAULT_RESET_DAY : RESET_DAY_NONE,
   costAllocationMode: "cost_types",
   costTypeIds: [],
   baseMeterId: "",
@@ -63,6 +67,7 @@ export const meterToFormValues = (meter: Meter): MeterFormValues => ({
   isRemoteReadable: meter.isRemoteReadable,
   validFrom: meter.validFrom,
   validUntil: meter.validUntil ?? "",
+  resetDay: meter.resetDay ?? RESET_DAY_NONE,
   costAllocationMode: meter.costAllocationMode,
   costTypeIds: meter.costTypeIds,
   baseMeterId: meter.differenceConfig?.baseMeterId ?? "",

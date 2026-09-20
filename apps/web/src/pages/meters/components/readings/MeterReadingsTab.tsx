@@ -1,4 +1,4 @@
-import { formatDate } from "@einfachvermieter/shared";
+import { formatDate, hasResetBetween } from "@einfachvermieter/shared";
 import { RiListOrdered2, RiPencilLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -39,6 +39,7 @@ const ReadingRow = ({
   reading,
   settled,
   previous,
+  resetDay,
   valueDecimals,
   showConsumption,
   showEstimated,
@@ -49,6 +50,7 @@ const ReadingRow = ({
   reading: Reading;
   settled: boolean;
   previous: Reading | undefined;
+  resetDay: string | null;
   valueDecimals: number;
   showConsumption: boolean;
   showEstimated: boolean;
@@ -62,7 +64,17 @@ const ReadingRow = ({
       maximumFractionDigits: valueDecimals,
       signDisplay: withSign ? "exceptZero" : "auto",
     });
-  const delta = previous ? reading.value - previous.value : null;
+
+  /**
+   * Verbrauch seit dem vorigen Stand. Hat das Gerät dazwischen die Zählung
+   * neu begonnen, gibt es keinen Bezug zum vorigen Stand; die Zeile bleibt
+   * dann leer wie die erste Ablesung eines Zählers.
+   */
+  const delta =
+    previous &&
+    !hasResetBetween(resetDay, previous.readingDate, reading.readingDate)
+      ? reading.value - previous.value
+      : null;
 
   return (
     <TableRow className={deletion.rowClassName(reading)}>
@@ -136,12 +148,14 @@ export const MeterReadingsTab = ({
   buildingId,
   measurementUnit,
   role,
+  resetDay,
   onEditReading,
 }: {
   meterId: string;
   buildingId: string;
   measurementUnit: MeasurementUnit;
   role: MeterRole;
+  resetDay: string | null;
   onEditReading: (reading: Reading) => void;
 }) => {
   const isVirtual = role === "virtual_difference";
@@ -256,6 +270,7 @@ export const MeterReadingsTab = ({
                   reading={reading}
                   settled={isSettled(reading.readingDate)}
                   previous={sorted[index + 1]}
+                  resetDay={resetDay}
                   valueDecimals={valueDecimals}
                   showConsumption={showConsumption}
                   showEstimated={showEstimated}

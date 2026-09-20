@@ -1,5 +1,10 @@
-import type { MeterFormValues } from "@einfachvermieter/shared";
+import {
+  type MeterFormValues,
+  RESET_DAY_NONE,
+  RESET_DAY_OPTIONS,
+} from "@einfachvermieter/shared";
 import type { UseFormReturn } from "react-hook-form";
+import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Card, CardContent } from "@/components/ui/Card";
 import { FieldGroup } from "@/components/ui/Field";
@@ -16,6 +21,14 @@ export const HkvFields = ({
    */
   variant?: "card" | "sheet";
 }) => {
+  const resetDayOptions = [
+    { value: RESET_DAY_NONE, label: t("ui.meters.fields.resetDayNone") },
+    ...RESET_DAY_OPTIONS.map((day) => ({
+      value: day,
+      label: t(`ui.meters.resetDayOptions.${day}`),
+    })),
+  ];
+
   const fields = (
     <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <TextInput
@@ -59,6 +72,13 @@ export const HkvFields = ({
         label={t("ui.meters.fields.radiatorDimensions")}
         placeholder={t("ui.meters.fields.radiatorDimensionsPlaceholder")}
         optional={true}
+      />
+      <SelectInput
+        control={form.control}
+        name="resetDay"
+        label={t("ui.meters.fields.resetDay")}
+        description={t("ui.meters.fields.resetDayDescription")}
+        options={resetDayOptions}
       />
     </FieldGroup>
   );

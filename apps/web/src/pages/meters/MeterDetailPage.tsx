@@ -307,6 +307,13 @@ const MeterCards = ({
               value:
                 meter.kTotal === null ? dash : formatNumber(meter.kTotal, 3),
             },
+            {
+              label: t("ui.meters.fields.resetDay"),
+              value:
+                meter.resetDay === null
+                  ? dash
+                  : t(`ui.meters.resetDayOptions.${meter.resetDay}`),
+            },
           ]}
           onEdit={() => onOpenSheet({ kind: "hkv" })}
         />

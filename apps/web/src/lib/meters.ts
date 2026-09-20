@@ -50,6 +50,7 @@ export type Meter = {
   radiatorDimensions: string | null;
   validFrom: string;
   validUntil: string | null;
+  resetDay: string | null;
   isActive: boolean;
   isRemoteReadable: boolean;
   costAllocationMode: CostAllocationMode;

@@ -53,6 +53,7 @@ export const MeterReadingsPage = () => {
             buildingId={meter.buildingId}
             measurementUnit={meter.measurementUnit}
             role={meter.role}
+            resetDay={meter.resetDay}
             onEditReading={setSheet}
           />
         ) : (
@@ -64,6 +65,7 @@ export const MeterReadingsPage = () => {
         <ReadingSheet
           meterId={meterId}
           buildingId={meter.buildingId}
+          resetDay={meter.resetDay}
           reading={sheet === "new" ? null : sheet}
           onClose={() => setSheet(null)}
         />

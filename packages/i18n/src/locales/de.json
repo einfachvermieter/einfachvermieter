@@ -603,6 +603,9 @@
         "radiatorTypePlaceholder": "z. B. Plattenheizkörper Typ 22",
         "radiatorDimensions": "Maße Heizkörper",
         "radiatorDimensionsPlaceholder": "z. B. 600 × 1000 × 100 mm",
+        "resetDay": "Stichtag",
+        "resetDayDescription": "Termin, an dem das Gerät die Zählung neu beginnt. Heizkostenverteiler zählen danach wieder ab 0 (Stichtag ist im Gerät konfiguriert).",
+        "resetDayNone": "Kein Stichtag, Zähler zählt durch",
         "costTypes": "Verwendet für Kostenarten",
         "costTypesDescription": "Kostenarten, für die dieser Zähler als Verbrauchsquelle dient. Der Umlageschlüssel der Kostenart steht jeweils darunter.",
         "costTypesEmpty": "Keine verbrauchsbasierten Kostenarten mit Einheit {unit} für dieses Gebäude angelegt",
@@ -656,6 +659,20 @@
         "differenceMeterHelp": "Ein Differenzzähler misst nicht selbst, sondern rechnet: Basiszähler minus die ausgewählten Zähler. So erfassen Sie eine Wohnung ohne eigenen Zähler als Rest.\n\nDer Basiszähler muss die abgezogenen Zähler wirklich mitmessen, und zu jedem Ablesetermin müssen alle Stände vorliegen. Fehlt ein Stand, fällt der Rest zu groß aus und der Mieter zahlt zu viel.",
         "validUntil": "Nur ausfüllen, wenn der Zähler nicht mehr gültig ist (z. B. ausgebaut oder ersetzt). Abrechnungen berücksichtigen den Zähler nur bei Überschneidung mit dem Gültigkeitszeitraum."
       },
+      "resetDayOptions": {
+        "12-31": "31. Dezember",
+        "01-31": "31. Januar",
+        "02-28": "28. Februar",
+        "03-31": "31. März",
+        "04-30": "30. April",
+        "05-31": "31. Mai",
+        "06-30": "30. Juni",
+        "07-31": "31. Juli",
+        "08-31": "31. August",
+        "09-30": "30. September",
+        "10-31": "31. Oktober",
+        "11-30": "30. November"
+      },
       "validation": {
         "buildingRequired": "Gebäude erforderlich",
         "unitRequired": "Wohnung erforderlich",
@@ -667,6 +684,7 @@
         "validFromRequired": "Gültig ab erforderlich",
         "validUntilInvalid": "Gültig bis im Format YYYY-MM-DD",
         "validUntilBeforeValidFrom": "Gültig bis darf nicht vor Gültig ab liegen",
+        "resetDayInvalid": "Stichtag im Format MM-TT, z. B. 12-31",
         "gasFactorsOnlyForGas": "Umrechnungsfaktoren sind nur für Gaszähler zulässig",
         "gasFactorValidFromRequired": "Gültig ab erforderlich",
         "gasFactorValidUntilBeforeFrom": "Gültig bis darf nicht vor Gültig ab liegen",

@@ -1,5 +1,6 @@
 import {
   buildMeterLabel,
+  DEFAULT_RESET_DAY,
   isDifferenceCapableType,
   isRemoteReadableRelevantType,
   isUnitScopedRole,
@@ -8,6 +9,7 @@ import {
   measurementUnitFor,
   meterRoles,
   meterTypes,
+  RESET_DAY_NONE,
   roleRequiresUnit,
   UNIT_NONE,
 } from "@einfachvermieter/shared";
@@ -107,13 +109,16 @@ export const MeterBaseFields = ({
       form.setValue("gasFactors", []);
     }
 
-    if (newType !== "heat_cost_allocator") {
+    if (newType === "heat_cost_allocator") {
+      form.setValue("resetDay", DEFAULT_RESET_DAY);
+    } else {
       form.setValue("radiator", "");
       form.setValue("kTotal", "");
       form.setValue("radiatorManufacturer", "");
       form.setValue("radiatorModel", "");
       form.setValue("radiatorType", "");
       form.setValue("radiatorDimensions", "");
+      form.setValue("resetDay", RESET_DAY_NONE);
     }
 
     form.setValue("baseMeterId", "");

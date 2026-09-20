@@ -65,6 +65,11 @@ export type MeterInfo = {
    */
   validFrom: string;
   validUntil: string | null;
+  /**
+   * Stichtag `MM-TT`, an dem das Gerät die Zählung neu beginnt
+   * (Heizkostenverteiler). `null` = der Zähler zählt durch.
+   */
+  resetDay?: string | null;
 };
 
 export type ReadingPoint = {

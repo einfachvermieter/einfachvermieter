@@ -920,6 +920,7 @@ const measureUnitConsumption = (params: {
       warnings,
       label: meter.label,
       relevantPeriod: { start: tenantStart, end: tenantEnd },
+      resetDay: meter.resetDay,
       intervalWeight: consumptionIntervalWeight,
     });
 

@@ -1,5 +1,6 @@
 import {
   formatDate,
+  hasResetBetween,
   meterReadBySources,
   todayIso,
 } from "@einfachvermieter/shared";
@@ -40,11 +41,17 @@ const calendarStart = new Date(today.getFullYear() - 20, 0, 1);
 export const ReadingSheet = ({
   meterId,
   buildingId,
+  resetDay,
   reading,
   onClose,
 }: {
   meterId: string;
   buildingId: string;
+
+  /**
+   * Stichtag des Zählers; Hier ist ein niedriger neuer Wert kein Problem.
+   */
+  resetDay: string | null;
   reading: Reading | null;
   onClose: () => void;
 }) => {
@@ -97,11 +104,18 @@ export const ReadingSheet = ({
     .filter((entry) => entry.readingDate < watchedDate)
     .at(-1);
   const after = ascending.find((entry) => entry.readingDate > watchedDate);
+  const droppedSincePrevious =
+    before !== undefined &&
+    parsedValue < before.value &&
+    !hasResetBetween(resetDay, before.readingDate, watchedDate);
+  const exceedsFollowing =
+    after !== undefined &&
+    parsedValue > after.value &&
+    !hasResetBetween(resetDay, watchedDate, after.readingDate);
   const showNonMonotonicWarning =
     watchedDate !== "" &&
     !Number.isNaN(parsedValue) &&
-    ((before !== undefined && parsedValue < before.value) ||
-      (after !== undefined && parsedValue > after.value));
+    (droppedSincePrevious || exceedsFollowing);
 
   const saveReading = useCrudMutation({
     mutationFn: (dto: ReadingSubmitValues) =>

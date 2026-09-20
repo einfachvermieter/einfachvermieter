@@ -55,6 +55,7 @@ export type Meter = {
   radiatorDimensions: string | null;
   validFrom: string;
   validUntil: string | null;
+  resetDay: string | null;
   isActive: Opt<boolean>;
   /**
    * Gerät ist fernablesbar (§ 5 Abs. 2 HeizkostenV). Steuert nur den
@@ -115,6 +116,7 @@ export const MeterSchema = new EntitySchema<Meter>({
     },
     validFrom: { type: "string", fieldName: "valid_from" },
     validUntil: { type: "string", fieldName: "valid_until", nullable: true },
+    resetDay: { type: "string", fieldName: "reset_day", nullable: true },
     isActive: { type: "boolean", fieldName: "is_active", default: true },
     isRemoteReadable: {
       type: "boolean",

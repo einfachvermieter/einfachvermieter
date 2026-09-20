@@ -1,12 +1,16 @@
 import { formatNumberLoose } from "../format.js";
 import type { ReadingPoint } from "../types/index.js";
 import { CalculationError, type CalcWarning } from "./diagnostics.js";
-import { daysBetween } from "./period.js";
+import { addDaysIso, daysBetween } from "./period.js";
 
 export type InterpolateOptions = {
   warnings?: CalcWarning[];
   label?: string;
   relevantPeriod?: { start: string; end: string };
+  /**
+   * Stichtag des Zählers als `MM-TT`
+   */
+  resetDay?: string | null;
   /**
    * Gewichtung/Heizung nutzt Gradtage
    */
@@ -193,10 +197,59 @@ export const interpolateReading = (
 };
 
 /**
+ * Stichtage, die in `[fromDate, toDate]` liegen. Der Stichtag selbst
+ * gehört noch zur ablaufenden Zählung: Der Stand an diesem Tag ist der
+ * Jahreswert, der Neubeginn zeigt sich erst am Tag danach. Deshalb zählt
+ * der Anfang mit und das Ende nicht.
+ */
+export const resetDatesBetween = (
+  resetDay: string | null | undefined,
+  fromDate: string,
+  toDate: string,
+): string[] => {
+  if (!resetDay) {
+    return [];
+  }
+
+  const dates: string[] = [];
+  const firstYear = Number(fromDate.slice(0, 4));
+  const lastYear = Number(toDate.slice(0, 4));
+
+  for (let year = firstYear; year <= lastYear; year++) {
+    const resetDate = `${year}-${resetDay}`;
+    if (fromDate <= resetDate && resetDate < toDate) {
+      dates.push(resetDate);
+    }
+  }
+
+  return dates;
+};
+
+/**
+ * True, wenn zwischen zwei Daten ein Stichtag liegt, das Gerät die Zählung
+ * dazwischen also neu begonnen hat.
+ */
+export const hasResetBetween = (
+  resetDay: string | null | undefined,
+  fromDate: string,
+  toDate: string,
+): boolean => resetDatesBetween(resetDay, fromDate, toDate).length > 0;
+
+/**
+ * Der letzte Stichtag zwischen zwei Daten, sonst `null`.
+ */
+export const lastResetBetween = (
+  resetDay: string | null | undefined,
+  fromDate: string,
+  toDate: string,
+): string | null =>
+  resetDatesBetween(resetDay, fromDate, toDate).at(-1) ?? null;
+
+/**
  * Meldet einen rückläufigen Stand zwischen chronologisch benachbarten
  * Ablesungen eines kumulativen Zählers (Zählertausch ohne Erfassung des
  * Endstands, Ablesefehler, vertauschte Werte).
- * 
+ *
  * Gewarnt wird nicht, wenn der rückläufiger Zählersprung außerhalb der
  * gegegeben Periode liegt.
  */
@@ -222,6 +275,10 @@ const warnNonMonotonic = (
     }
 
     if (after.date < periodStart || before.date >= periodEnd) {
+      continue;
+    }
+
+    if (hasResetBetween(options.resetDay, before.date, after.date)) {
       continue;
     }
 
@@ -277,22 +334,17 @@ const warnNegativeConsumption = (options?: InterpolateOptions): void => {
 };
 
 /**
- * Verbrauch zwischen zwei Stichtagen für einen kumulativen Zähler.
- *
- * Wichtig: Angrenzende Mietperioden nutzen die tatsächlichen
- * Übergabestände (Auszug A = Einzug B, meist derselbe Stand am selben
- * Tag). Ein Zwischenraum ist Leerstandsverbrauch zulasten des Vermieters.
+ * Verbrauch eines Abschnitts ohne Neubeginn der Zählung: Endstand minus
+ * Anfangsstand, auf 0 begrenzt.
  */
-export const consumptionBetween = (
+const consumptionOfSegment = (
   readings: ReadingPoint[],
-  periodStart: string,
-  periodEnd: string,
+  segmentStart: string,
+  segmentEnd: string,
   options?: InterpolateOptions,
 ): number => {
-  warnNonMonotonic(readings, periodStart, periodEnd, options);
-
-  const startValue = interpolateReading(readings, periodStart, options);
-  const endValue = interpolateReading(readings, periodEnd, options);
+  const startValue = interpolateReading(readings, segmentStart, options);
+  const endValue = interpolateReading(readings, segmentEnd, options);
   const consumption = endValue - startValue;
 
   // Ein rückwärts laufender Zähler, ein Zahlendreher beim Ablesen oder ein
@@ -307,4 +359,77 @@ export const consumptionBetween = (
   }
 
   return consumption;
+};
+
+/**
+ * Die Ablesungen eines Abschnitts: alles zwischen dem vorigen und dem
+ * abschließenden Stichtag. Beginnt der Abschnitt nach einem Stichtag, stand
+ * das Gerät an seinem ersten Tag auf 0; fehlt dafür eine Ablesung, ergänzt
+ * der Abschnitt sie, damit der Verbrauch ab dem Neubeginn zählt.
+ */
+const segmentReadings = (
+  readings: ReadingPoint[],
+  segmentStart: string,
+  previousReset: string | null,
+  reset: string | null,
+): ReadingPoint[] => {
+  const within = readings.filter(
+    (reading) =>
+      (previousReset === null || reading.date > previousReset) &&
+      (reset === null || reading.date <= reset),
+  );
+
+  if (previousReset === null || within.some((r) => r.date === segmentStart)) {
+    return within;
+  }
+
+  return [
+    { date: segmentStart, value: 0, isCumulative: true, isEstimated: false },
+    ...within,
+  ];
+};
+
+/**
+ * Verbrauch zwischen zwei Stichtagen für einen kumulativen Zähler.
+ *
+ * Wichtig: Angrenzende Mietperioden nutzen die tatsächlichen
+ * Übergabestände (Auszug A = Einzug B, meist derselbe Stand am selben
+ * Tag). Ein Zwischenraum ist Leerstandsverbrauch zulasten des Vermieters.
+ *
+ * Beginnt das Gerät innerhalb der Periode neu zu zählen (Stichtag eines
+ * Heizkostenverteilers), zerfällt sie in Abschnitte.
+ */
+export const consumptionBetween = (
+  readings: ReadingPoint[],
+  periodStart: string,
+  periodEnd: string,
+  options?: InterpolateOptions,
+): number => {
+  warnNonMonotonic(readings, periodStart, periodEnd, options);
+
+  const resets = resetDatesBetween(options?.resetDay, periodStart, periodEnd);
+
+  if (resets.length === 0) {
+    return consumptionOfSegment(readings, periodStart, periodEnd, options);
+  }
+
+  let total = 0;
+  let segmentStart = periodStart;
+  let previousReset: string | null = null;
+
+  for (const reset of [...resets, null]) {
+    const segmentEnd = reset ?? periodEnd;
+
+    total += consumptionOfSegment(
+      segmentReadings(readings, segmentStart, previousReset, reset),
+      segmentStart,
+      segmentEnd,
+      options,
+    );
+
+    previousReset = reset;
+    segmentStart = reset === null ? segmentStart : addDaysIso(reset, 1);
+  }
+
+  return total;
 };

@@ -314,6 +314,56 @@ describe("readingNonMonotonic-Warnung", () => {
     ).toHaveLength(1);
   });
 
+  it("meldet den Neubeginn am Stichtag nicht", () => {
+    const warnings: CalcWarning[] = [];
+    // Heizkostenverteiler mit Stichtag 31.12.: Der Januarwert ist der Stand
+    // seit dem Neubeginn, nicht der Rest eines durchlaufenden Zählwerks.
+    const readings = [
+      reading("2025-12-31", 667),
+      reading("2026-01-15", 12),
+      reading("2026-12-31", 500),
+    ];
+    consumptionBetween(readings, "2026-01-01", "2026-12-31", {
+      warnings,
+      resetDay: "12-31",
+    });
+    expect(
+      warnings.filter((warning) => warning.code === "readingNonMonotonic"),
+    ).toEqual([]);
+  });
+
+  it("meldet einen Rücklauf, der nicht über den Stichtag läuft, auch mit Stichtag", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      reading("2026-01-15", 120),
+      reading("2026-03-20", 80),
+      reading("2026-12-31", 500),
+    ];
+    consumptionBetween(readings, "2026-01-01", "2026-12-31", {
+      warnings,
+      resetDay: "12-31",
+    });
+    expect(
+      warnings.filter((warning) => warning.code === "readingNonMonotonic"),
+    ).toHaveLength(1);
+  });
+
+  it("meldet einen Rücklauf auf den Stichtag, weil der Stand dort der Jahreswert ist", () => {
+    const warnings: CalcWarning[] = [];
+    const readings = [
+      reading("2026-01-15", 12),
+      reading("2026-06-30", 400),
+      reading("2026-12-31", 380),
+    ];
+    consumptionBetween(readings, "2026-01-01", "2026-12-31", {
+      warnings,
+      resetDay: "12-31",
+    });
+    expect(
+      warnings.filter((warning) => warning.code === "readingNonMonotonic"),
+    ).toHaveLength(1);
+  });
+
   it("meldet einen Rücklauf vor der Periode nicht", () => {
     const warnings: CalcWarning[] = [];
     const readings = [
@@ -338,6 +388,90 @@ describe("readingNonMonotonic-Warnung", () => {
     expect(
       warnings.filter((warning) => warning.code === "readingNonMonotonic"),
     ).toEqual([]);
+  });
+});
+
+describe("Verbrauch über einen Neubeginn der Zählung", () => {
+  it("addiert die Abschnitte vor und nach dem Stichtag", () => {
+    // Mietzeitraum 01.03.2025 bis 28.02.2026, Stichtag 31.12.
+    // Abschnitt 1: 667 - 200 = 467, Abschnitt 2: 90 - 0 = 90.
+    const readings = [
+      reading("2025-03-01", 200),
+      reading("2025-12-31", 667),
+      reading("2026-01-01", 0),
+      reading("2026-02-28", 90),
+    ];
+
+    expect(
+      consumptionBetween(readings, "2025-03-01", "2026-02-28", {
+        warnings: [],
+        resetDay: "12-31",
+      }),
+    ).toBeCloseTo(557);
+  });
+
+  it("verschluckt ohne Stichtag alles vor dem Neubeginn", () => {
+    const readings = [
+      reading("2025-03-01", 200),
+      reading("2025-12-31", 667),
+      reading("2026-01-01", 0),
+      reading("2026-02-28", 90),
+    ];
+
+    // Ohne Stichtag bleibt es bei Endstand minus Anfangsstand, der negative
+    // Wert wird auf 0 begrenzt.
+    expect(
+      consumptionBetween(readings, "2025-03-01", "2026-02-28", {
+        warnings: [],
+      }),
+    ).toBe(0);
+  });
+
+  it("nimmt den Neubeginn auch ohne Ablesung am ersten Tag danach an", () => {
+    const readings = [
+      reading("2025-03-01", 200),
+      reading("2025-12-31", 667),
+      reading("2026-02-28", 90),
+    ];
+
+    expect(
+      consumptionBetween(readings, "2025-03-01", "2026-02-28", {
+        warnings: [],
+        resetDay: "12-31",
+      }),
+    ).toBeCloseTo(557);
+  });
+
+  it("lässt eine Periode, die am Stichtag endet, ungeteilt", () => {
+    const readings = [
+      reading("2025-01-01", 0),
+      reading("2025-12-31", 667),
+      reading("2026-01-01", 0),
+    ];
+
+    expect(
+      consumptionBetween(readings, "2025-01-01", "2025-12-31", {
+        warnings: [],
+        resetDay: "12-31",
+      }),
+    ).toBeCloseTo(667);
+  });
+
+  it("zählt über zwei Stichtage hinweg alle Abschnitte", () => {
+    const readings = [
+      reading("2025-03-01", 200),
+      reading("2025-12-31", 600),
+      reading("2026-12-31", 500),
+      reading("2027-02-28", 80),
+    ];
+
+    // 400 + 500 + 80
+    expect(
+      consumptionBetween(readings, "2025-03-01", "2027-02-28", {
+        warnings: [],
+        resetDay: "12-31",
+      }),
+    ).toBeCloseTo(980);
   });
 });
 
