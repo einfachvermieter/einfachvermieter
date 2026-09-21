@@ -108,7 +108,7 @@ const bootstrapAdmin = async (): Promise<void> => {
           senderAddressStreet: "",
           senderAddressPostalCode: "",
           senderAddressCity: "",
-          logoMode: "none",
+          logoMode: "app",
         }),
       );
     }

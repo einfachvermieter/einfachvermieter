@@ -125,7 +125,7 @@ export class SetupService {
           senderAddressStreet: "",
           senderAddressPostalCode: "",
           senderAddressCity: "",
-          logoMode: "none",
+          logoMode: "app",
           lastAppVersion: currentAppVersion,
         });
 
