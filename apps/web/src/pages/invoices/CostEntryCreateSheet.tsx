@@ -179,7 +179,6 @@ export const CostEntryCreateSheet = ({
             </Field>
           ) : (
             <Alert variant="info">
-              <RiBardFill aria-hidden={true} />
               <AlertTitle>
                 {t("ui.invoices.aiExtract.notConfiguredTitle")}
               </AlertTitle>
