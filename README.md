@@ -1,5 +1,7 @@
 # EinfachVermieter
 
+![EinfachVermieter: Dashboard und Vorschau einer PDF-Nebenkostenabrechnung](docs/readme-screenshot.png)
+
 Software für Wohnraumvermietung: Immobilien, Mieter, Verträge, Zählerstände und
 Betriebskosten verwalten und daraus Nebenkostenabrechnungen als PDF erstellen.
 
