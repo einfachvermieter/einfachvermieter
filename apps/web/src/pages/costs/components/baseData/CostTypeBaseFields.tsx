@@ -39,8 +39,10 @@ const LABOR_CATEGORY_OPTIONS = [
 
 export const CostTypeBaseFields = ({
   form,
+  mode,
 }: {
   form: UseFormReturn<CostTypeFormValues>;
+  mode: "create" | "edit";
 }) => {
   const selectedCategory = form.watch("category");
   const isHeating = selectedCategory === "heating";
@@ -76,8 +78,14 @@ export const CostTypeBaseFields = ({
 
   // Heizkosten laufen über die HeizkostenV, der Umlageschlüssel entfällt dort.
   // Er bleibt aber im Formular stehen, damit ein Wechsel zurück ihn behält.
+  // Beim Anlegen nur warnen, wenn der Schlüssel bewusst gewählt wurde, nicht
+  // beim unberührten Vorschlag.
+  const allocationKeyChosen =
+    mode === "edit" || form.formState.dirtyFields.defaultAllocationKey === true;
   const droppedAllocationKey =
-    isHeating && watchedAllocationKey !== ALLOCATION_KEY_NONE
+    isHeating &&
+    allocationKeyChosen &&
+    watchedAllocationKey !== ALLOCATION_KEY_NONE
       ? watchedAllocationKey
       : null;
 

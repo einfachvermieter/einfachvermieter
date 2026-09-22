@@ -48,7 +48,7 @@ export const CostTypeSheet = ({
       onSubmit={(values) => onSubmit(costTypeFormToDto(values))}
       onClose={onClose}
     >
-      <CostTypeBaseFields form={form} />
+      <CostTypeBaseFields form={form} mode={mode} />
     </FormSheet>
   );
 };

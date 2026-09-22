@@ -4,7 +4,6 @@ import { api } from "../../lib/api";
 import type { CostType } from "../../lib/costs";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import {
-  ALLOCATION_KEY_NONE,
   type CostTypeSubmitValues,
   LABOR_CATEGORY_NONE,
 } from "./components/baseData/costTypeForm.schema";
@@ -30,7 +29,8 @@ export const CostTypeCreateSheet = ({ onClose }: { onClose: () => void }) => {
         buildingId: buildingId ?? "",
         name: "",
         category: "operating",
-        defaultAllocationKey: ALLOCATION_KEY_NONE,
+        // Gesetzlicher Regelfall nach § 556a Abs. 1 BGB, wenn nichts vereinbart ist
+        defaultAllocationKey: "per_living_area",
         laborCostCategory: LABOR_CATEGORY_NONE,
         co2Tracked: false,
         isMeteringServiceCost: false,
