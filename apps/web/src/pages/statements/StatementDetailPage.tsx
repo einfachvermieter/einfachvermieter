@@ -5,6 +5,7 @@ import {
   hasBlockingWarning,
   hasHeatingBreakdown,
   isoDatePlusOneYear,
+  isSenderAddressComplete,
   todayIso,
 } from "@einfachvermieter/shared";
 import {
@@ -59,6 +60,7 @@ import { climateFactorsQueryOptions } from "../../lib/climateFactors";
 import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
+import { senderSettingsQueryOptions } from "../../lib/senderSettings";
 import {
   type StatementDetail,
   type StatementTab,
@@ -395,6 +397,7 @@ export const StatementDetailPage = () => {
     enabled: Boolean(statement?.tenantId),
   });
   const { data: units } = useQuery(unitsQueryOptions);
+  const { data: senderSettings } = useQuery(senderSettingsQueryOptions);
 
   const {
     data: preview,
@@ -558,6 +561,9 @@ export const StatementDetailPage = () => {
     result.balanceCents > 0 &&
     todayIso() > isoDatePlusOneYear(statement.periodEnd);
 
+  const senderIncomplete =
+    senderSettings !== undefined && !isSenderAddressComplete(senderSettings);
+
   // Solange die DWD-Abruf-Frage unbeantwortet ist und deshalb Klimafaktoren
   // fehlen, bliebe der Vorperiodenvergleich im Anhang unbereinigt.
   // Ein negativer Verbrauch wurde auf null begrenzt; die Abrechnung ist so
@@ -615,8 +621,12 @@ export const StatementDetailPage = () => {
   let primaryAction: ReactNode;
   const menuItems: ReactNode[] = [];
   if (isDraft) {
+    // Ohne Berechnungsergebnis (Fehler oder noch am Rechnen) nicht finalisierbar
     primaryAction = (
-      <Button onClick={() => setConfirmFinalizeOpen(true)}>
+      <Button
+        onClick={() => setConfirmFinalizeOpen(true)}
+        disabled={result === undefined}
+      >
         <RiLockLine data-icon="inline-start" />
         {t("ui.statements.detail.finalizeStatement")}
       </Button>
@@ -720,7 +730,11 @@ export const StatementDetailPage = () => {
         }
         action={
           <>
-            <Button variant="outline" onClick={() => handleTabChange("pdf")}>
+            <Button
+              variant="outline"
+              onClick={() => handleTabChange("pdf")}
+              disabled={result === undefined}
+            >
               <RiFilePdf2Line data-icon="inline-start" />
               {t("ui.statements.detail.tabs.pdf")}
             </Button>
@@ -792,6 +806,7 @@ export const StatementDetailPage = () => {
           tenantName={tenantName}
           isPending={finalize.isPending}
           blocked={finalizeBlocked}
+          senderIncomplete={senderIncomplete}
           onConfirm={() => {
             setConfirmFinalizeOpen(false);
             finalize.mutate();

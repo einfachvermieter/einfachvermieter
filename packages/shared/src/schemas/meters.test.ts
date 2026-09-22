@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { type MeterFormValues, meterFormToDto } from "./meters.js";
+import {
+  type MeterFormValues,
+  meterFormToDto,
+  RESET_DAY_NONE,
+} from "./meters.js";
 
 const translate = (key: string) => key;
 
@@ -19,6 +23,7 @@ const baseValues: MeterFormValues = {
   radiatorType: "",
   radiatorDimensions: "",
   isRemoteReadable: false,
+  resetDay: RESET_DAY_NONE,
   validFrom: "2026-01-01",
   validUntil: "",
   costAllocationMode: "cost_types",

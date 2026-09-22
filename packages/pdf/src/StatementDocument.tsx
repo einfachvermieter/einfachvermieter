@@ -3,6 +3,7 @@ import {
   formatEur,
   formatIban,
   formatNumber,
+  formatSenderLine,
   groupCalcWarnings,
   hasHeatingBreakdown,
   isTenantWarning,
@@ -106,12 +107,22 @@ export type StatementDocumentProps = {
  * Zeile fürs Adressfenster über dem Empfänger
  */
 const senderAddressLine = (meta: StatementDocumentProps["meta"]): string =>
-  t("statements.pdf.senderLine", {
+  formatSenderLine(t, {
     name: meta.senderName,
     street: meta.senderAddressStreet,
     postalCode: meta.senderAddressPostalCode,
     city: meta.senderAddressCity,
   });
+
+/**
+ * Orts- und Datumszeile; ohne Ort nur das Datum
+ */
+const placeDateLine = (meta: StatementDocumentProps["meta"]): string => {
+  const date = formatDate(meta.documentDate);
+  const place = meta.senderAddressCity.trim();
+
+  return place ? t("statements.pdf.placeDate", { place, date }) : date;
+};
 
 /**
  * Verarbeitet `**bold**`-Markierungen in einem i18n-Text und rendert die
@@ -234,10 +245,7 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
 
         <View style={styles.letterContent}>
           <View style={styles.documentMeta}>
-            <Text>
-              {meta.senderAddressCity}
-              {t("ui.common.separators.comma")} {formatDate(meta.documentDate)}
-            </Text>
+            <Text>{placeDateLine(meta)}</Text>
           </View>
 
           <View style={styles.subject}>

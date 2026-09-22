@@ -130,6 +130,21 @@ describe("Happy Path", () => {
     expect(setCookie).toContain("EVAuth=");
     authCookie = setCookie.split(";")[0] ?? "";
 
+    // Ohne Absender-Anschrift lässt sich nicht finalisieren
+    await api("/settings/sender", {
+      method: "PATCH",
+      body: {
+        senderName: "E2E Vermietung",
+        senderAddressStreet: "Absenderweg 1",
+        senderAddressPostalCode: "45127",
+        senderAddressCity: "Essen",
+        logoMode: "none",
+        logoAlignment: "center",
+        logoScalePercent: 100,
+      },
+      expect: 200,
+    });
+
     // ── Stammdaten ──────────────────────────────────────────────────────
     const building = await api("/buildings", {
       method: "POST",
@@ -718,6 +733,34 @@ describe("Stichtag der Vorauszahlung vor dem Dokumentdatum", () => {
       });
     }
 
+    const costType = await api("/costs/types", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        name: "Grundsteuer",
+        category: "operating",
+        defaultAllocationKey: "per_living_area",
+        laborCostCategory: null,
+      },
+      expect: 201,
+    });
+    await api("/costs", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        invoiceDate: "2025-02-15",
+        items: [
+          {
+            costTypeId: costType.id,
+            amountCents: 12_000,
+            periodStart: "2025-01-01",
+            periodEnd: "2025-12-31",
+          },
+        ],
+      },
+      expect: 201,
+    });
+
     const statement = await api("/statements", {
       method: "POST",
       body: {
@@ -832,6 +875,104 @@ describe("Stichtag der Vorauszahlung vor dem Dokumentdatum", () => {
 
 // Läuft nach dem Happy Path (ändert das Admin-Passwort und verwirft dabei
 // alle Sessions, deshalb als letztes).
+describe("Abrechnung ohne Datengrundlage", () => {
+  it("verlangt Rechnungen und rechnet ohne Zähler und Heizung nur die Betriebskosten", async () => {
+    const building = await api("/buildings", {
+      method: "POST",
+      body: {
+        name: "Basis-Haus",
+        addressStreet: "Basisweg 1",
+        addressPostalCode: "45128",
+        addressCity: "Essen",
+      },
+      expect: 201,
+    });
+    const unit = await api("/units", {
+      method: "POST",
+      body: { buildingId: building.id, name: "EG", areaSqm: 60 },
+      expect: 201,
+    });
+    const aggregate = await api("/tenants", {
+      method: "POST",
+      body: {
+        unitId: unit.id,
+        kind: "private",
+        startDate: "2025-01-01",
+        endDate: null,
+        depositCents: 0,
+        residents: [
+          {
+            resident: { firstName: "Marita", lastName: "Muster" },
+            isContractParty: true,
+          },
+        ],
+        rents: [
+          {
+            startDate: null,
+            endDate: null,
+            monthlyBaseRentCents: 50_000,
+            monthlyAdvanceCents: 10_000,
+          },
+        ],
+      },
+      expect: 201,
+    });
+    const statementBody = {
+      buildingId: building.id,
+      tenantId: aggregate.tenant.id,
+      periodStart: "2025-01-01",
+      periodEnd: "2025-12-31",
+    };
+
+    await api("/statements", {
+      method: "POST",
+      body: statementBody,
+      expect: 400,
+    });
+
+    const costType = await api("/costs/types", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        name: "Grundsteuer",
+        category: "operating",
+        defaultAllocationKey: "per_living_area",
+        laborCostCategory: null,
+      },
+      expect: 201,
+    });
+    await api("/costs", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        invoiceDate: "2025-02-15",
+        items: [
+          {
+            costTypeId: costType.id,
+            amountCents: 12_000,
+            periodStart: "2025-01-01",
+            periodEnd: "2025-12-31",
+          },
+        ],
+      },
+      expect: 201,
+    });
+
+    await api("/statements", {
+      method: "POST",
+      body: statementBody,
+      expect: 201,
+    });
+    const preview = await api(
+      `/statements/preview/calculate?buildingId=${building.id}&tenantId=${aggregate.tenant.id}&from=2025-01-01&to=2025-12-31`,
+      { expect: 200 },
+    );
+    expect(preview.totalCostsCents).toBe(12_000);
+    expect(preview.heatingDetail).toBeUndefined();
+    expect(preview.waterDetail).toBeUndefined();
+  });
+});
+
 describe("Passwortwechsel invalidiert bestehende Sessions", () => {
   const cookieOf = (response: globalThis.Response) =>
     (response.headers.get("set-cookie") ?? "").split(";")[0] ?? "";

@@ -12,6 +12,7 @@ import {
   RiInformationFill,
   RiLockLine,
 } from "@remixicon/react";
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Button } from "../../../../components/ui/Button";
 import {
@@ -74,8 +75,8 @@ const CheckRow = ({
 
 /**
  * Bestätigungsdialog fürs Finalisieren: bündelt alle Hinweise (Berechnungs-
- * Warnungen, Frist, Klimafaktor-Frage, künftige Vorauszahlung) als
- * Checkliste und zeigt das Ergebnis.
+ * Warnungen, Frist, Klimafaktor-Frage, Absenderdaten, künftige Vorauszahlung)
+ * als Checkliste und zeigt das Ergebnis.
  */
 export const StatementFinalizeDialog = ({
   open,
@@ -90,6 +91,7 @@ export const StatementFinalizeDialog = ({
   tenantName,
   isPending,
   blocked,
+  senderIncomplete,
   onConfirm,
   onAdjustAdvance,
 }: {
@@ -105,6 +107,7 @@ export const StatementFinalizeDialog = ({
   tenantName: string;
   isPending: boolean;
   blocked: boolean;
+  senderIncomplete: boolean;
   onConfirm: () => void;
   onAdjustAdvance: () => void;
 }) => {
@@ -129,7 +132,7 @@ export const StatementFinalizeDialog = ({
       advanceDetail.adjustedAdvanceValidFrom as string,
       documentDate,
     );
-  const finalizeBlocked = blocked || advanceRetroactive;
+  const finalizeBlocked = blocked || advanceRetroactive || senderIncomplete;
 
   // Zulässig, aber folgenreich: Deckt das Ausstellungsdatum einen Stichtag in
   // der Vergangenheit, entstehen beim Abschluss Mietzeiträume für Monate, die
@@ -177,6 +180,20 @@ export const StatementFinalizeDialog = ({
           {blocked ? (
             <CheckRow kind="warn">
               {t("ui.statements.detail.finalizeDialog.blocked")}
+            </CheckRow>
+          ) : null}
+          {senderIncomplete ? (
+            <CheckRow
+              kind="warn"
+              sub={
+                <Button variant="addLink" size="text" asChild={true}>
+                  <Link to="/einstellungen/absender">
+                    {t("ui.statements.detail.finalizeDialog.senderAction")}
+                  </Link>
+                </Button>
+              }
+            >
+              {t("ui.statements.detail.finalizeDialog.senderIncomplete")}
             </CheckRow>
           ) : null}
           {pastMonths.length > 0 ? (

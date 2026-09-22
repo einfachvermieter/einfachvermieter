@@ -14,6 +14,7 @@ import {
   STATEMENT_HOT_WATER_COST_TYPE_ID,
 } from "./advance.js";
 import { aggregateCostsForPeriod, allocateCost } from "./allocation.js";
+import { CalculationError } from "./diagnostics.js";
 import { calculateWater, type WaterMeterBundle } from "./water.js";
 
 export type StatementCalculationInput = {
@@ -49,8 +50,9 @@ export type StatementCalculationInput = {
    * Interner Modus: via calculateHeating() aus Wärmemengenzähler-Daten.
    * Externer Modus: via calculateExternalHeating() aus manuell erfassten
    * Endbeträgen pro Wohnung.
+   * Fehlt es, rechnet der Vermieter keine Heizung ab: kein Heizkostenteil.
    */
-  heatingDetail: HeatingDetail;
+  heatingDetail?: HeatingDetail;
   totalAdvancesCents: number;
 };
 
@@ -216,7 +218,7 @@ const buildOperatingLines = (
   ctx: {
     units: UnitInfo[];
     targetUnitId: string;
-    waterDetail: WaterDetail;
+    waterDetail: WaterDetail | undefined;
     tenantPeriod: Period;
     translate: TranslateFn;
   },
@@ -268,7 +270,8 @@ const buildOperatingLines = (
  * Orchestriert die komplette Nebenkostenabrechnung für einen Tenant.
  *
  * Ablauf:
- * 1. Wasserverbrauch berechnen (nötig für per_consumption_m3)
+ * 1. Wasserverbrauch berechnen (nötig für per_consumption_m3), entfällt ohne
+ *    Wasserzähler und ohne Verbrauchsumlage
  * 2. Heizkosten-Zeile aus vorab berechnetem HeatingDetail bauen
  * 3. Alle übrigen Kostenarten pro Tenant umlegen
  * 4. Verbrauchsumlagen ohne gemessenen Verbrauch anwarnen
@@ -296,19 +299,30 @@ export const calculateStatement = (
   // Mieter-Zeitraum. Der Rest-Verbrauch der Ziel-Wohnung fällt als
   // Vermieteranteil an (Mieterwechsel/Leerstand) - sonst würde die
   // Verbrauchs-Quote der Mietzeit auf die Jahres-Kosten angewendet.
-  const waterDetail: WaterDetail = calculateWater({
-    units,
-    waterMeters,
-    periodStart: period.start,
-    periodEnd: period.end,
-    targetUnitId,
-    tenantPeriodStart: tenantPeriod?.start,
-    tenantPeriodEnd: tenantPeriod?.end,
-  });
+  const needsWater =
+    waterMeters.length > 0 ||
+    costTypes.some(
+      (costType) =>
+        costType.allocationKey === "per_consumption_m3" &&
+        costType.costs.length > 0,
+    );
+  const waterDetail = needsWater
+    ? calculateWater({
+        units,
+        waterMeters,
+        periodStart: period.start,
+        periodEnd: period.end,
+        targetUnitId,
+        tenantPeriodStart: tenantPeriod?.start,
+        tenantPeriodEnd: tenantPeriod?.end,
+      })
+    : undefined;
 
   // 2. Kostenzeilen: Heizkosten (aus HeatingDetail) + umgelegte Betriebskosten.
   const lines: CostLineResult[] = [
-    ...buildHeatingLines(heatingDetail, targetUnitId, translate),
+    ...(heatingDetail
+      ? buildHeatingLines(heatingDetail, targetUnitId, translate)
+      : []),
     ...buildOperatingLines(costTypes, period, {
       units,
       targetUnitId,
@@ -326,7 +340,11 @@ export const calculateStatement = (
       line.allocationKey === "per_consumption_m3" && line.totalBase <= 0,
   );
 
-  if (unmeasuredLines.length > 0) {
+  if (lines.length === 0) {
+    throw new CalculationError("noCosts");
+  }
+
+  if (waterDetail && unmeasuredLines.length > 0) {
     waterDetail.warnings = [
       ...(waterDetail.warnings ?? []),
       ...unmeasuredLines.map((line) => ({

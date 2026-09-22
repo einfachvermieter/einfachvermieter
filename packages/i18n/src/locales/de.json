@@ -215,6 +215,8 @@
     "statementNotCorrectable": "Zu dieser Abrechnung kann keine Korrektur erstellt werden (sie muss finalisiert oder storniert sein)",
     "statementPeriodOverlapsFinalized": "Für diesen Mieter existiert bereits eine finalisierte Abrechnung für den Zeitraum {periodStart} – {periodEnd}. Eine erneute Abrechnung dieser Periode ist nur als Korrektur der bestehenden möglich.",
     "statementFinalizeNegativeConsumption": "Mindestens ein Zähler weist einen negativen Verbrauch aus. Bitte korrigieren Sie die Zählerstände, danach lässt sich die Abrechnung finalisieren.",
+    "statementFinalizeSenderIncomplete": "Die Absenderdaten sind unvollständig. Bitte tragen Sie Name, Straße, PLZ und Ort in den Einstellungen unter „Absender“ ein, danach lässt sich die Abrechnung finalisieren.",
+    "statementNoCostsInPeriod": "Für diesen Zeitraum sind keine Rechnungen erfasst. Bitte erfassen Sie zuerst die Rechnungen des Abrechnungszeitraums.",
     "statementFinalizeCalculationIncomplete": "Berechnungsergebnis ist unvollständig, Finalisierung abgebrochen: {message}",
     "tenantNotBillable": "Mietvertrag „{tenantId}“ ist im Zeitraum {periodStart} – {periodEnd} nicht abrechnungsberechtigt (Vertragszeitraum überlappt nicht).",
     "tenantHasNoRent": "Mietvertrag „{tenantId}“ hat keinen Mietsatz, daher ist eine Anpassung der Vorauszahlung nicht möglich.",
@@ -268,6 +270,8 @@
     },
     "calc": {
       "allocationKwhNotImplemented": "Der Verteilerschlüssel „nach Verbrauch (kWh)“ für die Kostenart „{costTypeName}“ wird noch nicht unterstützt. Bitte wählen Sie einen anderen Schlüssel.",
+      "noCosts": "Für diesen Zeitraum sind keine Kosten erfasst. Bitte erfassen Sie zuerst die Rechnungen des Abrechnungszeitraums.",
+      "heatingNoConfig": "Es sind Heizkosten erfasst, aber für das Gebäude ist keine Heizkostenabrechnung eingerichtet. Bitte richten Sie sie unter „Heizkosten“ ein.",
       "waterNoMainMeter": "Für die Wasserabrechnung ist kein Hauptzähler hinterlegt. Bitte legen Sie mindestens einen Hauptwasserzähler an.",
       "readingNoneAvailable": "Für mindestens einen Zähler sind keine Zählerstände erfasst, daher kann der Verbrauch zum {date} nicht ermittelt werden. Bitte erfassen Sie Zählerstände.",
       "differenceMeterCyclic": "Die Differenzzähler-Konfiguration ist zyklisch ({chain}). Bitte prüfen Sie die Zuordnung von Basis- und Subtraktionszählern.",
@@ -769,14 +773,33 @@
         "title": "Keine Mietverträge vorhanden",
         "action": "Zu den Mietern"
       },
+      "invoices": {
+        "title": "Keine Rechnungen vorhanden",
+        "action": "Zu den Rechnungen"
+      },
       "descriptions": {
-        "units": "Legen Sie zuerst ein Gebäude an. Wohnungen gehören immer zu einem Gebäude.",
-        "meters": "Legen Sie zuerst eine Wohnung an, bevor Sie Zähler erfassen.",
-        "tenants": "Legen Sie zuerst eine Wohnung an, bevor Sie Mietverträge erfassen.",
-        "costTypes": "Legen Sie zuerst ein Gebäude an. Kostenarten gehören zu einem Gebäude.",
-        "invoices": "Legen Sie zuerst eine Kostenart an, bevor Sie Rechnungen erfassen.",
-        "heating": "Legen Sie zuerst eine Wohnung an, bevor Sie die Heizkosten einrichten.",
-        "statements": "Legen Sie zuerst einen Mietvertrag an, bevor Sie abrechnen."
+        "units": {
+          "building": "Legen Sie zuerst ein Gebäude an. Wohnungen gehören immer zu einem Gebäude."
+        },
+        "meters": {
+          "units": "Legen Sie zuerst eine Wohnung an, bevor Sie Zähler erfassen."
+        },
+        "tenants": {
+          "units": "Legen Sie zuerst eine Wohnung an, bevor Sie Mietverträge erfassen."
+        },
+        "costTypes": {
+          "building": "Legen Sie zuerst ein Gebäude an. Kostenarten gehören zu einem Gebäude."
+        },
+        "invoices": {
+          "costTypes": "Legen Sie zuerst eine Kostenart an, bevor Sie Rechnungen erfassen."
+        },
+        "heating": {
+          "units": "Legen Sie zuerst eine Wohnung an, bevor Sie die Heizkosten einrichten."
+        },
+        "statements": {
+          "tenants": "Legen Sie zuerst einen Mietvertrag an, bevor Sie abrechnen.",
+          "invoices": "Erfassen Sie zuerst die Rechnungen des Abrechnungsjahres, bevor Sie eine Nebenkostenabrechnung erstellen."
+        }
       }
     },
     "units": {
@@ -1809,6 +1832,8 @@
           "resultRefund": "Ergebnis: {tenant} erhält {amount} zurück.",
           "resultArrears": "Ergebnis: {tenant} muss {amount} nachzahlen.",
           "blocked": "Solange ein Zähler einen negativen Verbrauch ausweist, lässt sich die Abrechnung nicht finalisieren.",
+          "senderIncomplete": "Die Absenderdaten sind unvollständig. Ohne Name, Straße, PLZ und Ort lässt sich die Abrechnung nicht finalisieren.",
+          "senderAction": "Absenderdaten ergänzen",
           "advanceValidFromRetroactive": "Die neue Vorauszahlung soll ab {validFrom} gelten, das liegt vor dem Ausstellungsdatum der Abrechnung ({documentDate}). Damit würde sich das Soll bereits vergangener Monate ändern.",
           "advanceValidFromPast": "Die neue Vorauszahlung gilt ab {validFrom} und damit rückwirkend. Beim Finalisieren ändert sich das Soll {count, plural, one {für {from}} other {für {from} bis {to}}} nachträglich. Bereits gebuchte Zahlungen dieser Monate erscheinen danach als Über- oder Unterzahlung.",
           "advanceValidFromRetroactiveBlocked": "Finalisieren ist erst möglich, wenn Sie ein späteres Datum wählen.",
@@ -2641,7 +2666,8 @@
         "correction": "Korrektur"
       },
       "pagination": "Seite {page} von {total}",
-      "senderLine": "{name} – {street} – {postalCode} {city}",
+      "senderLocality": "{postalCode} {city}",
+      "placeDate": "{place}, {date}",
       "senderContact": {
         "phone": "Tel. {value}",
         "fax": "Fax {value}"

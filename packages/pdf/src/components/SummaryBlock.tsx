@@ -23,9 +23,13 @@ export const SummaryBlock = ({
   totalAdvancesCents,
   balanceCents,
 }: Props) => {
-  const heatingCents = lines
-    .filter((l) => l.allocationKey === "heating_ordinance")
-    .reduce((sum, l) => sum + l.tenantAmountCents, 0);
+  const heatingLines = lines.filter(
+    (l) => l.allocationKey === "heating_ordinance",
+  );
+  const heatingCents = heatingLines.reduce(
+    (sum, l) => sum + l.tenantAmountCents,
+    0,
+  );
   const operatingCents = lines
     .filter((l) => l.allocationKey !== "heating_ordinance")
     .reduce((sum, l) => sum + l.tenantAmountCents, 0);
@@ -52,10 +56,15 @@ export const SummaryBlock = ({
       label: t("statements.pdf.summary.operatingCosts"),
       value: formatEur(operatingCents),
     },
-    {
-      label: t("statements.pdf.summary.heatingCosts"),
-      value: formatEur(heatingCents),
-    },
+    // Ohne Heizkostenabrechnung keine Heizkosten-Zeile mit 0,00 €
+    ...(heatingLines.length > 0
+      ? [
+          {
+            label: t("statements.pdf.summary.heatingCosts"),
+            value: formatEur(heatingCents),
+          },
+        ]
+      : []),
     {
       label: t("statements.pdf.summary.totalCosts"),
       value: formatEur(totalCents),

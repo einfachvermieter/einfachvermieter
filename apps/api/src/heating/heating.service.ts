@@ -156,6 +156,13 @@ export class HeatingService {
   }
 
   /**
+   * Ohne Heizkosten-Konfiguration rechnet der Vermieter keine Heizung ab.
+   */
+  async hasAnyForBuilding(buildingId: string): Promise<boolean> {
+    return (await this.em.count(HeatingSettingSchema, { buildingId })) > 0;
+  }
+
+  /**
    * Liefert die zu einem Stichtag gültige Version. Existiert noch keine
    * Version, wird der Default geliefert. Existieren Versionen, aber keine
    * deckt das Datum ab, wird bewusst ein Fehler geworfen.

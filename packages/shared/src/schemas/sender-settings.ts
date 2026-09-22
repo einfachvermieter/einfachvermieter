@@ -1,4 +1,4 @@
-import { messageKey } from "@einfachvermieter/i18n";
+import { messageKey, type TranslateFn } from "@einfachvermieter/i18n";
 import { isValidIBAN } from "ibantools-germany";
 import { z } from "zod";
 
@@ -103,3 +103,43 @@ export type SenderSettingsDto = SenderSettingsUpdateDto & {
   hasLogo: boolean;
   logoMimeType: string | null;
 };
+
+/**
+ * Absender-Anschrift vollständig: Name, Straße, PLZ und Ort formen die
+ * Absenderzeile im Adressfenster, der Ort zusätzlich die Datumszeile.
+ * Ohne sie lässt sich eine Abrechnung nicht finalisieren.
+ */
+export const isSenderAddressComplete = (
+  settings: Pick<
+    SenderSettingsUpdateDto,
+    | "senderName"
+    | "senderAddressStreet"
+    | "senderAddressPostalCode"
+    | "senderAddressCity"
+  >,
+): boolean =>
+  [
+    settings.senderName,
+    settings.senderAddressStreet,
+    settings.senderAddressPostalCode,
+    settings.senderAddressCity,
+  ].every((value) => value.trim().length > 0);
+
+/**
+ * Absenderzeile im Adressfenster über dem Empfänger
+ */
+export const formatSenderLine = (
+  translate: TranslateFn,
+  sender: { name: string; street: string; postalCode: string; city: string },
+): string =>
+  [
+    sender.name,
+    sender.street,
+    translate("statements.pdf.senderLocality", {
+      postalCode: sender.postalCode.trim(),
+      city: sender.city.trim(),
+    }),
+  ]
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+    .join(translate("ui.common.separators.dash"));

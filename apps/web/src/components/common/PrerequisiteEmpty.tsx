@@ -4,6 +4,7 @@ import {
   type GatedDomain,
   NEEDS_META,
   PREREQUISITES,
+  usePrerequisite,
 } from "../../lib/prerequisites";
 import { Button } from "../ui/Button";
 import {
@@ -17,10 +18,11 @@ import {
 
 /**
  * Großer Leer-Hinweis in Listen, deren Anlage-Voraussetzung fürs aktive
- * Gebäude fehlt. Verlinkt auf die Liste der zuerst benötigten Entität.
+ * Gebäude fehlt. Verlinkt auf die Liste der ersten fehlenden Entität.
  */
 export const PrerequisiteEmpty = ({ domain }: { domain: GatedDomain }) => {
-  const { needs } = PREREQUISITES[domain];
+  const { missing } = usePrerequisite(domain);
+  const needs = missing ?? PREREQUISITES[domain][0];
   const { linkTo, icon: Icon } = NEEDS_META[needs];
 
   return (
@@ -31,7 +33,7 @@ export const PrerequisiteEmpty = ({ domain }: { domain: GatedDomain }) => {
         </EmptyMedia>
         <EmptyTitle>{t(`ui.prerequisites.${needs}.title`)}</EmptyTitle>
         <EmptyDescription>
-          {t(`ui.prerequisites.descriptions.${domain}`)}
+          {t(`ui.prerequisites.descriptions.${domain}.${needs}`)}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>

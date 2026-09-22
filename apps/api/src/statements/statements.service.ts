@@ -49,6 +49,7 @@ import {
   inferTariffAdjustmentBpsFromInvoices,
   intersect,
   isAdvanceValidFromRetroactive,
+  isSenderAddressComplete,
   type MeterInfo,
   type OperatingCostStatementAdvanceAdjustmentDto,
   type OperatingCostStatementCancelDto,
@@ -90,6 +91,7 @@ import { ExternalHeatingEntriesService } from "../heating/external-heating-entri
 import { HeatingService } from "../heating/heating.service.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
+import { SettingsService } from "../settings/settings.service.js";
 import { TenantsService } from "../tenants/tenants.service.js";
 import { ClimateFactorService } from "./climate-factor.service.js";
 
@@ -484,6 +486,7 @@ export class StatementsService {
     private readonly externalHeatingEntriesService: ExternalHeatingEntriesService,
     private readonly accountsService: AccountsService,
     private readonly climateFactorService: ClimateFactorService,
+    private readonly settingsService: SettingsService,
   ) {}
 
   /**
@@ -704,6 +707,43 @@ export class StatementsService {
   }
 
   /**
+   * Ohne Kosten im Zeitraum gibt es nichts abzurechnen. Zählt Rechnungs-
+   * positionen des Gebäudes und Endbeträge einer externen Heizkostenabrechnung.
+   */
+  private async assertCostsInPeriod(
+    buildingId: string,
+    periodStart: string,
+    periodEnd: string,
+  ): Promise<void> {
+    const costTypes = await this.em.find(CostTypeSchema, { buildingId });
+    const itemCount =
+      costTypes.length > 0
+        ? await this.em.count(CostEntryItemSchema, {
+            costTypeId: { $in: costTypes.map((costType) => costType.id) },
+            periodStart: { $lte: periodEnd },
+            periodEnd: { $gte: periodStart },
+          })
+        : 0;
+
+    if (itemCount > 0) {
+      return;
+    }
+
+    const externalEntries =
+      await this.externalHeatingEntriesService.listForBuildingAndPeriod(
+        buildingId,
+        periodStart,
+        periodEnd,
+      );
+
+    if (externalEntries.length === 0) {
+      throw new BadRequestException(
+        getI18n().t("errors.statementNoCostsInPeriod"),
+      );
+    }
+  }
+
+  /**
    * Erstellt eine neue Abrechnung im Status "draft"
    */
   async create(dto: OperatingCostStatementCreateDto) {
@@ -712,6 +752,11 @@ export class StatementsService {
     await this.assertNoOverlappingFinalized(
       this.em,
       dto.tenantId,
+      dto.periodStart,
+      dto.periodEnd,
+    );
+    await this.assertCostsInPeriod(
+      dto.buildingId,
       dto.periodStart,
       dto.periodEnd,
     );
@@ -841,7 +886,7 @@ export class StatementsService {
       periodStart,
     );
 
-    const heatingDetail = await this.buildHeatingDetail({
+    const heatingDetail = await this.buildConfiguredHeatingDetail({
       buildingId,
       heatingSettings,
       units,
@@ -859,23 +904,7 @@ export class StatementsService {
       targetUnitId,
     });
 
-    // Gerechnet wird mit der Konfiguration vom Beginn der Periode. Beginnt
-    // mittendrin eine neue Version, weicht das Ergebnis von der Realität ab.
-    const heatingChangeDates = await this.heatingService.changeDatesWithin(
-      buildingId,
-      statementPeriod,
-    );
-    if (heatingChangeDates.length > 0) {
-      heatingDetail.warnings = heatingDetail.warnings ?? [];
-      heatingDetail.warnings.push(
-        ...heatingChangeDates.map((date) => ({
-          code: "heatingConfigChangedInPeriod",
-          params: { date },
-        })),
-      );
-    }
-
-    if (heatingDetail.mode === "internal") {
+    if (heatingDetail?.mode === "internal") {
       await this.attachEnergyComparison({
         heatingDetail,
         buildingId,
@@ -955,6 +984,45 @@ export class StatementsService {
       advanceAdjustment,
       ...(taxableLaborCosts ? { taxableLaborCosts } : {}),
     };
+  }
+
+  /**
+   * Heizkosten-Detail nur, wenn für das Gebäude eine Konfiguration angelegt
+   * ist; ohne sie rechnet der Vermieter keine Heizung ab. Heizkosten-
+   * Rechnungen im Zeitraum bedeuten dann, dass die Konfiguration fehlt.
+   */
+  private async buildConfiguredHeatingDetail(
+    input: Parameters<StatementsService["buildHeatingDetail"]>[0],
+  ): Promise<HeatingDetail | undefined> {
+    const { buildingId, heatingCostEntries, statementPeriod } = input;
+    if (!(await this.heatingService.hasAnyForBuilding(buildingId))) {
+      if (heatingCostEntries.length > 0) {
+        throw this.toCalcHttpError(new CalculationError("heatingNoConfig"));
+      }
+
+      return;
+    }
+
+    const heatingDetail = await this.buildHeatingDetail(input);
+
+    // Gerechnet wird mit der Konfiguration vom Beginn der Periode. Beginnt
+    // mittendrin eine neue Version, weicht das Ergebnis von der Realität ab.
+    const heatingChangeDates = await this.heatingService.changeDatesWithin(
+      buildingId,
+      statementPeriod,
+    );
+
+    if (heatingChangeDates.length > 0) {
+      heatingDetail.warnings = heatingDetail.warnings ?? [];
+      heatingDetail.warnings.push(
+        ...heatingChangeDates.map((date) => ({
+          code: "heatingConfigChangedInPeriod",
+          params: { date },
+        })),
+      );
+    }
+
+    return heatingDetail;
   }
 
   /**
@@ -2206,6 +2274,19 @@ export class StatementsService {
   }
 
   /**
+   * Absender-Anschrift muss für finalisierte Abrechnung vorhanden sein.
+   */
+  private async assertSenderAddressComplete(): Promise<void> {
+    if (
+      !isSenderAddressComplete(await this.settingsService.getSenderSettings())
+    ) {
+      throw new BadRequestException(
+        getI18n().t("errors.statementFinalizeSenderIncomplete"),
+      );
+    }
+  }
+
+  /**
    * Finalisiert eine Draft-Abrechnung: Berechnung wird als Snapshot
    * persistiert. Ab hier unveränderbar.
    */
@@ -2225,6 +2306,8 @@ export class StatementsService {
     if (!finalizingUser) {
       throw new BadRequestException(getI18n().t("errors.sessionUserMissing"));
     }
+
+    await this.assertSenderAddressComplete();
 
     const result = await this.calculateForStatement(statement);
 

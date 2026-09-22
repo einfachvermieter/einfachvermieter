@@ -1,3 +1,4 @@
+import { formatSenderLine } from "@einfachvermieter/shared";
 import type { ReactNode } from "react";
 import { t } from "@/lib/i18n";
 
@@ -88,12 +89,7 @@ export const SenderLetterPreview = ({
 
     <div className="absolute text-3xs" style={ADDRESS_FIELD}>
       <p className="mb-2 truncate text-4xs text-schiefer-500">
-        {t("statements.pdf.senderLine", {
-          name: values.name,
-          street: values.street,
-          postalCode: values.postalCode,
-          city: values.city,
-        })}
+        {formatSenderLine(t, values)}
       </p>
       <p>{t("ui.settings.sender.preview.recipientName")}</p>
       <p>{t("ui.settings.sender.preview.recipientStreet")}</p>

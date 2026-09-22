@@ -1,6 +1,7 @@
 import {
   calculateStatement,
   type HeatingDetail,
+  type StatementCalculationInput,
   statementResultSchema,
   type WaterMeterBundle,
 } from "@einfachvermieter/shared";
@@ -114,6 +115,23 @@ const heatingDetail: HeatingDetail = {
   },
 };
 
+const grundsteuer: StatementCalculationInput["costTypes"][number] = {
+  id: "ct-grundsteuer",
+  name: "Grundsteuer",
+  allocationKey: "per_living_area",
+  costs: [
+    {
+      id: "c-1",
+      costTypeId: "ct-grundsteuer",
+      allocationKey: "per_living_area",
+      name: "Grundsteuer",
+      amountCents: 30_000,
+      periodStart: period.start,
+      periodEnd: period.end,
+    },
+  ],
+};
+
 /**
  * Über die echte Berechnungsschicht erzeugtes Ergebnis, damit die Fixture
  * bei Schema-Änderungen automatisch mitzieht.
@@ -133,24 +151,7 @@ const result = calculateStatement({
   ],
   targetTenantId: "t-1",
   targetUnitId: "u-eg",
-  costTypes: [
-    {
-      id: "ct-grundsteuer",
-      name: "Grundsteuer",
-      allocationKey: "per_living_area",
-      costs: [
-        {
-          id: "c-1",
-          costTypeId: "ct-grundsteuer",
-          allocationKey: "per_living_area",
-          name: "Grundsteuer",
-          amountCents: 30_000,
-          periodStart: period.start,
-          periodEnd: period.end,
-        },
-      ],
-    },
-  ],
+  costTypes: [grundsteuer],
   waterMeters: [
     waterMeter("HW", "main", null, 100, 180),
     waterMeter("WZ-EG", "unit", "u-eg", 10, 90),
@@ -191,6 +192,44 @@ describe("StatementDocument", () => {
       ) as unknown as ReactElement<DocumentProps>,
     );
 
+    expect(buffer.subarray(0, 5).toString()).toBe("%PDF-");
+  });
+
+  it("rendert ohne Heizung, ohne Wasser und mit lückenhaftem Absender", async () => {
+    const basicResult = statementResultSchema.parse(
+      calculateStatement({
+        period,
+        units: [
+          {
+            id: "u-eg",
+            name: "EG",
+            areaSqm: 80,
+            occupantCount: 2,
+            personDays: 730,
+            occupiedDays: 365,
+            periodDays: 365,
+          },
+        ],
+        targetTenantId: "t-1",
+        targetUnitId: "u-eg",
+        costTypes: [grundsteuer],
+        waterMeters: [],
+        totalAdvancesCents: 0,
+        translate: t,
+      }),
+    );
+
+    const buffer = await renderToBuffer(
+      (
+        <StatementDocument
+          result={basicResult}
+          meta={{ ...meta, senderAddressStreet: "", senderAddressCity: "" }}
+        />
+      ) as unknown as ReactElement<DocumentProps>,
+    );
+
+    expect(basicResult.heatingDetail).toBeUndefined();
+    expect(basicResult.waterDetail).toBeUndefined();
     expect(buffer.subarray(0, 5).toString()).toBe("%PDF-");
   });
 });
