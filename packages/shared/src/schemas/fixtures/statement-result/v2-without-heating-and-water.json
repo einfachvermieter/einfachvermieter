@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "tenantId": "30ef05f6-3dde-4590-a805-fa70b8452897",
+  "unitId": "21b989a9-9ff2-43bf-9171-90ea02bcbc65",
+  "period": {
+    "start": "2026-01-01",
+    "end": "2026-12-31"
+  },
+  "tenantPeriod": {
+    "start": "2026-01-01",
+    "end": "2026-12-31"
+  },
+  "lines": [
+    {
+      "costTypeName": "Grundsteuer",
+      "allocationKey": "per_living_area",
+      "totalAmountCents": 10000,
+      "totalBase": 43800,
+      "tenantBase": 43800,
+      "shareBps": 10000,
+      "tenantAmountCents": 10000,
+      "baseUnit": "m²·Tage",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "tenantBaseExplain": "120 m² × 365 Tage",
+      "totalBaseExplain": "120 m² × 365 Tage",
+      "bemessungTotal": 120,
+      "bemessungTenant": 120,
+      "bemessungUnit": "m²",
+      "daysTotal": 365,
+      "daysTenant": 365,
+      "costTypeId": "3fd8fffa-c782-4dcd-a765-3cecac752f93"
+    }
+  ],
+  "totalCostsCents": 10000,
+  "totalAdvancesCents": 0,
+  "balanceCents": 10000,
+  "warnings": [],
+  "payments": [],
+  "advanceAdjustment": {
+    "currentMonthlyAdvanceCents": 15000,
+    "currentMonthlyBaseRentCents": 50000,
+    "suggestedMonthlyAdvanceCents": 800,
+    "suggestedMonthlyAdvanceWithTariffsCents": 800,
+    "tenantBilledDays": 365,
+    "daysInBaseYear": 365,
+    "adjustedMonthlyAdvanceCents": null,
+    "adjustedAdvanceValidFrom": null,
+    "tariffAdjustmentBps": null,
+    "autoTariffAdjustmentBps": null
+  }
+}
