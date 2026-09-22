@@ -23,6 +23,7 @@ while (!existsSync("dist/main.js")) {
 }
 
 run("node", [
+  "--enable-source-maps",
   "--watch-path=dist",
   "--watch-path=../../packages/i18n/dist",
   "--watch-path=../../packages/pdf/dist",

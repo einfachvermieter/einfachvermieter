@@ -86,4 +86,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 
 # Setzt Rechte auf /data und startet als User node.
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-CMD ["node", "apps/api/dist/main.js"]
+CMD ["node", "--enable-source-maps", "apps/api/dist/main.js"]

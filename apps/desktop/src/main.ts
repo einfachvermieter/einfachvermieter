@@ -222,6 +222,8 @@ const startApi = async (): Promise<{ port: number; token: string }> => {
 
   apiProcess = utilityProcess.fork(apiEntry, [], {
     serviceName: "einfachvermieter-api",
+    // Stacktraces im Fehlerbericht zeigen so Quelldatei und Zeile
+    execArgv: ["--enable-source-maps"],
     // `pipe` statt `inherit`: ohne Konsole (Start über Startmenü, Dock oder
     // Explorer) waere die Ausgabe der API sonst verloren, und genau die
     // braucht man bei einem Fehlerbericht.
