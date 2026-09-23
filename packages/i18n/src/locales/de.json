@@ -2272,7 +2272,19 @@
         "less": "Weniger anzeigen",
         "setupNoUnits": "keine Wohnungen",
         "setupNoTenant": "kein Mieter",
-        "setupUnitLabel": "{building} · {unit}"
+        "setupUnitLabel": "{building} · {unit}",
+        "senderTitle": "Absenderdaten vervollständigen",
+        "senderBody": "Ohne Anschrift lässt sich keine Abrechnung finalisieren. Ohne Bankverbindung nennt das Schreiben bei einer Nachzahlung kein Konto.",
+        "senderGaps": {
+          "address": {
+            "label": "Anschrift",
+            "value": "unvollständig"
+          },
+          "bank": {
+            "label": "Bankverbindung",
+            "value": "fehlt"
+          }
+        }
       },
       "intake": {
         "title": "Mieteingänge der letzten Monate",

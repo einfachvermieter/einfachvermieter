@@ -1,5 +1,10 @@
-import { formatDate, formatEur } from "@einfachvermieter/shared";
+import {
+  formatDate,
+  formatEur,
+  isSenderAddressComplete,
+} from "@einfachvermieter/shared";
 import { RiTimeLine } from "@remixicon/react";
+import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import { DomainLink } from "@/components/common/DomainLink";
 import { EmptyNote } from "@/components/common/EmptyNote";
@@ -9,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
 import { monthLabel } from "@/lib/monthLabel";
+import { senderSettingsQueryOptions } from "@/lib/senderSettings";
 import type { DashboardResult } from "@/lib/stats";
 
 const DECEMBER = 12;
@@ -89,6 +95,7 @@ export const DashboardTasks = ({
   month: number;
   showWhenEmpty: boolean;
 }) => {
+  const { data: sender } = useQuery(senderSettingsQueryOptions);
   const tasks: Task[] = [];
   const openStatements = data.statementsTotal - data.statementsDone;
 
@@ -226,6 +233,37 @@ export const DashboardTasks = ({
       tone: "neutral",
       title: t("ui.dashboard.tasks.setupTitle", { count: setupItems.length }),
       items: setupItems,
+    });
+  }
+
+  // Ohne Anschrift lässt sich nicht finalisieren; ohne IBAN nennt das
+  // Schreiben bei einer Nachzahlung kein Konto.
+  const senderGaps = sender
+    ? [
+        ...(isSenderAddressComplete(sender) ? [] : ["address" as const]),
+        ...(sender.senderBankIban ? [] : ["bank" as const]),
+      ]
+    : [];
+
+  if (senderGaps.length > 0) {
+    tasks.push({
+      key: "sender",
+      when: t("ui.dashboard.tasks.setupWhen"),
+      tone: "neutral",
+      title: t("ui.dashboard.tasks.senderTitle"),
+      items: senderGaps.map((gap) => ({
+        key: gap,
+        label: (
+          <DomainLink
+            to="/einstellungen/absender"
+            icon={domainVisuals.configuration.icon}
+          >
+            {t(`ui.dashboard.tasks.senderGaps.${gap}.label`)}
+          </DomainLink>
+        ),
+        value: t(`ui.dashboard.tasks.senderGaps.${gap}.value`),
+      })),
+      note: t("ui.dashboard.tasks.senderBody"),
     });
   }
 
