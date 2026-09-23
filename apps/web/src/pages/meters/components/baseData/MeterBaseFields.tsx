@@ -31,6 +31,34 @@ const today = new Date();
 const calendarStart = new Date(today.getFullYear() - 20, 0, 1);
 const calendarEnd = new Date(today.getFullYear() + 5, 11, 1);
 
+/**
+ * Typwechsel verwirft die typgebundenen Angaben (Brennwerte, HKV-Felder)
+ * und die Quellen des Differenzzählers.
+ */
+const resetTypeBoundFields = (
+  form: UseFormReturn<MeterFormValues>,
+  newType: string,
+) => {
+  if (newType !== "gas") {
+    form.setValue("gasFactors", []);
+  }
+
+  if (newType === "heat_cost_allocator") {
+    form.setValue("resetDay", DEFAULT_RESET_DAY);
+  } else {
+    form.setValue("radiator", "");
+    form.setValue("kTotal", "");
+    form.setValue("radiatorManufacturer", "");
+    form.setValue("radiatorModel", "");
+    form.setValue("radiatorType", "");
+    form.setValue("radiatorDimensions", "");
+    form.setValue("resetDay", RESET_DAY_NONE);
+  }
+
+  form.setValue("baseMeterId", "");
+  form.setValue("subtractedMeterIds", []);
+};
+
 export const MeterBaseFields = ({
   form,
   units,
@@ -100,31 +128,6 @@ export const MeterBaseFields = ({
     }
   }, [selectedRole, isVirtual, form]);
 
-  /**
-   * Typwechsel verwirft die typgebundenen Angaben (Brennwerte, HKV-Felder)
-   * und die Quellen des Differenzzählers.
-   */
-  const onTypeChange = (newType: string) => {
-    if (newType !== "gas") {
-      form.setValue("gasFactors", []);
-    }
-
-    if (newType === "heat_cost_allocator") {
-      form.setValue("resetDay", DEFAULT_RESET_DAY);
-    } else {
-      form.setValue("radiator", "");
-      form.setValue("kTotal", "");
-      form.setValue("radiatorManufacturer", "");
-      form.setValue("radiatorModel", "");
-      form.setValue("radiatorType", "");
-      form.setValue("radiatorDimensions", "");
-      form.setValue("resetDay", RESET_DAY_NONE);
-    }
-
-    form.setValue("baseMeterId", "");
-    form.setValue("subtractedMeterIds", []);
-  };
-
   const fields = (
     <FieldGroup className="gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -140,7 +143,7 @@ export const MeterBaseFields = ({
           control={form.control}
           name="type"
           label={t("ui.meters.fields.type")}
-          onValueChange={onTypeChange}
+          onValueChange={(newType) => resetTypeBoundFields(form, newType)}
           options={meterTypes.map((type) => ({
             value: type,
             label: `${t(`meters.types.${type}`)} (${measurementUnitLabel(measurementUnitFor(type))})`,

@@ -12,11 +12,6 @@ import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "../../components/ui/Tooltip";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
