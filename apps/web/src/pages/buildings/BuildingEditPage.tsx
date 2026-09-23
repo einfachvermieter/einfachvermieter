@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../components/ui/DropdownMenu";
+import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { type Building, buildingQueryOptions } from "../../lib/buildings";
 import { domainVisuals } from "../../lib/domainVisuals";
@@ -39,6 +40,9 @@ export const BuildingEditPage = () => {
   // steht der neue Stand sofort in der Ansicht.
   const buildingQuery = useQuery(buildingQueryOptions(buildingId));
   const building = buildingQuery.data;
+
+  // Beim Direkteinstieg das angezeigte Gebäude aktiv setzen
+  useAdoptBuilding(building?.id);
 
   const { data: units } = useQuery({
     ...unitsOverviewQueryOptions({ page: 0, pageSize: 1000, buildingId }),
