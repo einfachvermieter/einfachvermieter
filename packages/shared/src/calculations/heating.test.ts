@@ -1254,7 +1254,7 @@ describe("calculateHeating - Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV)", (
   });
 
   it("ohne Boiler-WMZ und ohne Warmwasserverbrauch greift die 32-kWh-Pauschalformel", () => {
-    // Q_WW = 32 kWh/(m² x a) x 200 m² x (365/365 Tage) = 6.400 kWh.
+    // Q_WW = 32 kWh/(qm x a) x 200 qm x (365/365 Tage) = 6.400 kWh.
     const result = calculateHeating({
       ...baseInput(),
       hotWater: {
@@ -1431,5 +1431,117 @@ describe("calculateHeating - Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV)", (
     expect(result.warnings?.some((w) => w.code === "hotWaterShareCapped")).toBe(
       true,
     );
+  });
+});
+
+describe("calculateHeating - Warmwasser-Grundkosten nach Wohnfläche und zeitanteilig", () => {
+  const boilerHotWater = (
+    unitHotWaterM3: Array<{ unitId: string; m3: number }>,
+  ) => ({
+    totalHeatEnergyKwh: 10_000,
+    boilerHeatKwh: 2000,
+    hotWaterVolumeM3: null,
+    supplyTemperatureCelsius: 60,
+    unitHotWaterM3,
+  });
+
+  const input = (units: UnitInfo[]) => ({
+    totalHeatingCostsCents: 100_000,
+    config: { consumptionShareBps: 7000 },
+    units,
+    consumptionMethod: "heat_meter" as const,
+    consumptionMeters: [
+      {
+        meter: heatMeter("wmz-eg", "unit-eg"),
+        readings: [reading("2025-01-01", 0), reading("2025-12-31", 100)],
+      },
+      {
+        meter: heatMeter("wmz-og", "unit-og"),
+        readings: [reading("2025-01-01", 0), reading("2025-12-31", 300)],
+      },
+    ],
+    periodStart: "2025-01-01",
+    periodEnd: "2025-12-31",
+  });
+
+  it("verteilt Heizungs-Grundkosten nach Heizfläche, Warmwasser-Grundkosten nach Wohnfläche", () => {
+    // EG: 80 qm Wohnfläche, aber nur 40 qm Heizfläche; OG 120 qm.
+    const result = calculateHeating({
+      ...input([{ ...unitEg, heatingAreaSqm: 40 }, unitOg]),
+      hotWater: boilerHotWater([
+        { unitId: "unit-eg", m3: 25 },
+        { unitId: "unit-og", m3: 75 },
+      ]),
+    });
+
+    // Heizungs-Grundkosten 24.000 nach Heizfläche 40 / 160.
+    expect(
+      result.perUnit.find((u) => u.unitId === "unit-eg")?.basicCostCents,
+    ).toBe(6000);
+    // Warmwasser-Grundkosten 6.000 nach Wohnfläche 80 / 200.
+    const hwEg = result.hotWaterDetail?.perUnit.find(
+      (u) => u.unitId === "unit-eg",
+    );
+    expect(hwEg?.basicCostCents).toBe(2400);
+    expect(hwEg?.areaSqm).toBe(80);
+    expect(result.hotWaterDetail?.basicAreaBasis).toBe("living_area");
+  });
+
+  it("teilt Warmwasser-Grundkosten auch bei Gradtag-Abrechnung nach Tagen", () => {
+    // EG nur 181 Tage vermietet, in denen 700 ‰ der Gradtage liegen.
+    const result = calculateHeating({
+      ...input([
+        {
+          ...unitEg,
+          occupiedDays: 181,
+          occupiedDegreeDayPromille: 700,
+          periodDegreeDayPromille: 1000,
+        },
+        {
+          ...unitOg,
+          occupiedDegreeDayPromille: 1000,
+          periodDegreeDayPromille: 1000,
+        },
+      ]),
+      prorationMethod: "degree_days",
+      hotWater: boilerHotWater([
+        { unitId: "unit-eg", m3: 25 },
+        { unitId: "unit-og", m3: 75 },
+      ]),
+    });
+
+    // Heizung: 24.000 nach qm x Gradtage: EG 80 x 700 von 200 x 1.000.
+    expect(
+      result.perUnit.find((u) => u.unitId === "unit-eg")?.basicCostCents,
+    ).toBe(6720);
+    // Warmwasser: 6.000 nach qm x Tage: EG 80 x 181, OG 120 x 365,
+    // Vermieter 200 x 365 minus beides.
+    const hw = result.hotWaterDetail;
+    expect(
+      hw?.perUnit.find((u) => u.unitId === "unit-eg")?.basicCostCents,
+    ).toBe(1190);
+    expect(
+      hw?.perUnit.find((u) => u.unitId === "unit-og")?.basicCostCents,
+    ).toBe(3600);
+    expect(hw?.landlordBasicCostCents).toBe(1210);
+  });
+
+  it("nutzt dieselben Gewichte für den Flächen-Fallback des Warmwasser-Verbrauchsanteils", () => {
+    const result = calculateHeating({
+      ...input([{ ...unitEg, heatingAreaSqm: 40 }, unitOg]),
+      hotWater: boilerHotWater([]),
+    });
+
+    const hw = result.hotWaterDetail;
+    expect(hw?.consumptionDistributionMethod).toBe("heating_area");
+    // Verbrauchsanteil 14.000 nach Wohnfläche 80 / 200.
+    expect(
+      hw?.perUnit.find((u) => u.unitId === "unit-eg")?.consumptionCostCents,
+    ).toBe(5600);
+    const hwSum =
+      (hw?.perUnit ?? []).reduce((acc, u) => acc + u.totalCents, 0) +
+      (hw?.landlordBasicCostCents ?? 0) +
+      (hw?.landlordConsumptionCostCents ?? 0);
+    expect(hwSum).toBe(hw?.hotWaterPotCents);
   });
 });

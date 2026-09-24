@@ -246,6 +246,8 @@ export const heatingDetailSchema = z.object({
       consumptionShareBps: z.number().int().min(0).max(10_000),
       consumptionPortionCents: z.number().int(),
       basicPortionCents: z.number().int(),
+      // Fehlt in älteren Snapshots (dort Heizfläche in perUnit.areaSqm).
+      basicAreaBasis: z.literal("living_area").optional(),
       consumptionDistributionMethod: z.enum(["consumption", "heating_area"]),
       perUnit: z.array(
         z.object({

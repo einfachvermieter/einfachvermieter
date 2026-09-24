@@ -628,6 +628,11 @@ export type HeatingDetail = {
     consumptionPortionCents: number;
     basicPortionCents: number;
     /**
+     * Flächenmaßstab der Warmwasser-Grundkosten und von `perUnit.areaSqm`.
+     * Fehlt in älteren Snapshots, dort steht in `areaSqm` die Heizfläche.
+     */
+    basicAreaBasis?: "living_area";
+    /**
      * Verteilschlüssel des WW-Verbrauchsanteils.
      * - "consumption":  nach `water_hot`-Zählern.
      * - "heating_area": Fallback nach Wohnfläche.

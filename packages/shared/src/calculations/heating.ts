@@ -671,7 +671,6 @@ type HotWaterDistributionInput = {
   landlordM3: number;
   areaWeightsWithLandlord: number[];
   totalAreaDays: number;
-  heatingAreaFor: (unit: UnitInfo) => number;
   warnings: CalcWarning[];
 };
 
@@ -679,7 +678,7 @@ type HotWaterDistributionInput = {
  * Verteilt den abgespaltenen Warmwasser-Topf auf die Wohnungen: eigener
  * Grund-/Verbrauchs-Split (gleicher %-Schlüssel wie die Heizung). Der
  * Verbrauchsanteil läuft nach Warmwasserzählern (`water_hot`), der
- * Grundanteil nach Flächentagen inkl. Vermieter-Leerstand.
+ * Grundanteil nach Wohnfläche x Tagen inkl. Vermieter-Leerstand.
  */
 const distributeHotWater = (
   input: HotWaterDistributionInput,
@@ -700,7 +699,6 @@ const distributeHotWater = (
     landlordM3,
     areaWeightsWithLandlord,
     totalAreaDays,
-    heatingAreaFor,
     warnings,
   } = input;
   const consumptionFactor = bpsToFactor(consumptionShareBps);
@@ -750,7 +748,7 @@ const distributeHotWater = (
       unitName: unit.name,
       hotWaterM3: unitHotWaterM3.get(unit.id) ?? 0,
       consumptionCostCents,
-      areaSqm: heatingAreaFor(unit),
+      areaSqm: baseCostAreaFor("hot_water", unit),
       basicCostCents,
       totalCents: consumptionCostCents + basicCostCents,
     };
@@ -769,8 +767,44 @@ const distributeHotWater = (
 /**
  * Heizfläche (Fallback Wohnfläche) einer Wohnung
  */
-const heatingAreaFor = (unit: UnitInfo): number =>
-  unit.heatingAreaSqm ?? unit.areaSqm;
+const heatingAreaFor = (
+  unit: Pick<UnitInfo, "areaSqm" | "heatingAreaSqm">,
+): number => unit.heatingAreaSqm ?? unit.areaSqm;
+
+/**
+ * Fläche einer Wohnung im Grundkostenmaßstab des Bereichs. Heizung nach
+ * § 7 Abs. 1 Satz 5 HeizkostenV (auch die beheizte Fläche zulässig),
+ * Warmwasser nach § 8 Abs. 1 nur nach Wohn- oder Nutzfläche.
+ */
+export const baseCostAreaFor = (
+  scope: "heating" | "hot_water",
+  unit: Pick<UnitInfo, "areaSqm" | "heatingAreaSqm">,
+): number => (scope === "heating" ? heatingAreaFor(unit) : unit.areaSqm);
+
+/**
+ * Grundkosten-Gewichte des Warmwassers je Wohnung = Wohnfläche x belegte
+ * Tage. Anders als bei der Heizung immer zeitanteilig nach Tagen,
+ * auch bei Gradtag-Abrechnung. Leerstand fällt als Differenz auf den Vermieter.
+ */
+const computeHotWaterAreaWeights = (
+  units: UnitInfo[],
+): { areaWeightsWithLandlord: number[]; totalAreaDays: number } => {
+  const areaDayWeights = units.map(
+    (unit) => baseCostAreaFor("hot_water", unit) * unit.occupiedDays,
+  );
+  const totalAreaDays =
+    units.reduce((acc, unit) => acc + baseCostAreaFor("hot_water", unit), 0) *
+    (units[0]?.periodDays ?? 0);
+  const sumAreaDayWeights = areaDayWeights.reduce((a, b) => a + b, 0);
+
+  return {
+    areaWeightsWithLandlord: [
+      ...areaDayWeights,
+      Math.max(0, totalAreaDays - sumAreaDayWeights),
+    ],
+    totalAreaDays,
+  };
+};
 
 /**
  * CO2KostAufG: Vermieter-CO2-Anteil ermitteln, der vor der Grund-/Verbrauchs-
@@ -1005,7 +1039,7 @@ const computeAreaWeights = (
   );
 
   const totalHeatingAreaSqm = units.reduce(
-    (acc, u) => acc + heatingAreaFor(u),
+    (acc, u) => acc + baseCostAreaFor("heating", u),
     0,
   );
 
@@ -1021,7 +1055,7 @@ const computeAreaWeights = (
     useDegreeDays ? (unit.occupiedDegreeDayPromille ?? 0) : unit.occupiedDays;
 
   const areaDayWeights = units.map(
-    (unit) => heatingAreaFor(unit) * unitTimeWeight(unit),
+    (unit) => baseCostAreaFor("heating", unit) * unitTimeWeight(unit),
   );
 
   const totalAreaDays = totalHeatingAreaSqm * periodTimeWeight;
@@ -1108,33 +1142,27 @@ const computeConsumptionShares = (params: {
 
 /**
  * Verteilt den Warmwasser-Topf (§ 9 Abs. 2) mit eigenem Grund-/Verbrauchs-
- * Split über dieselben Flächengewichte wie die Heizungs-Grundkosten.
+ * Split und eigenen Flächengewichten (Wohnfläche, zeitanteilig).
  */
 const buildHotWaterDetail = (params: {
   hotWaterSplit: ReturnType<typeof computeHotWaterSplit>;
   config: HeatingConfig;
   units: UnitInfo[];
   hotWater: HotWaterInput | undefined;
-  areaWeightsWithLandlord: number[];
-  totalAreaDays: number;
   warnings: CalcWarning[];
 }): HeatingDetail["hotWaterDetail"] => {
-  const {
-    hotWaterSplit,
-    config,
-    units,
-    hotWater,
-    areaWeightsWithLandlord,
-    totalAreaDays,
-    warnings,
-  } = params;
+  const { hotWaterSplit, config, units, hotWater, warnings } = params;
   if (!hotWaterSplit) {
     return;
   }
 
+  const { areaWeightsWithLandlord, totalAreaDays } =
+    computeHotWaterAreaWeights(units);
+
   return {
     ...hotWaterSplit,
     consumptionShareBps: config.consumptionShareBps,
+    basicAreaBasis: "living_area",
     ...distributeHotWater({
       potCents: hotWaterSplit.hotWaterPotCents,
       consumptionShareBps: config.consumptionShareBps,
@@ -1148,7 +1176,6 @@ const buildHotWaterDetail = (params: {
       landlordM3: hotWater?.landlordM3 ?? 0,
       areaWeightsWithLandlord,
       totalAreaDays,
-      heatingAreaFor,
       warnings,
     }),
   };
@@ -1269,8 +1296,6 @@ export const calculateHeating = (
     config,
     units,
     hotWater: input.hotWater,
-    areaWeightsWithLandlord,
-    totalAreaDays,
     warnings,
   });
 
