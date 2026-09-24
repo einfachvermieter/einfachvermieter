@@ -33,6 +33,7 @@ export const costTypeAllocationKeys = [
   "per_person",
   "per_unit",
   "per_consumption_m3",
+  "per_consumption_kwh",
   "fixed",
 ] as const;
 

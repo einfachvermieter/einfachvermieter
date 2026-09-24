@@ -251,6 +251,11 @@ export type StatementResult = {
   waterDetail?: WaterDetail;
   heatingDetail?: HeatingDetail;
   /**
+   * Hinweise beim Ablesen der Zähler für die kWh-Umlage (z.B. geschätzter
+   * Stand, fehlende Ablesung)
+   */
+  kwhWarnings?: CalcWarning[];
+  /**
    * Belegungs-Anhang (Personen-/Wohnungs-/Flächentage). Gesetzt bei Leerstand
    * oder wenn eine Personenumlage die Personentage-Gewichte erklären muss.
    */

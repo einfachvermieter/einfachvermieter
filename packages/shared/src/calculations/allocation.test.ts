@@ -313,14 +313,39 @@ describe("allocateCost per_consumption_m3", () => {
 });
 
 describe("allocateCost per_consumption_kwh", () => {
-  it("ist noch nicht implementiert und wirft", () => {
+  it("verteilt nach kWh inklusive Vermieteranteil", () => {
+    const result = allocateCost(
+      "Wärmepumpenstrom",
+      "per_consumption_kwh",
+      10_000,
+      {
+        units,
+        translate,
+        targetUnitId: "unit-eg",
+        kwhConsumption: {
+          perUnit: new Map([
+            ["unit-eg", 300],
+            ["unit-og", 600],
+          ]),
+          landlord: 100,
+        },
+      },
+    );
+
+    expect(result.totalBase).toBe(1000);
+    expect(result.tenantAmountCents).toBe(3000);
+    expect(result.landlordAmountCents).toBe(1000);
+    expect(result.bemessungUnit).toBe("kWh");
+  });
+
+  it("wirft ohne kwhConsumption", () => {
     expect(() =>
-      allocateCost("Allgemeinstrom", "per_consumption_kwh", 10_000, {
+      allocateCost("Wärmepumpenstrom", "per_consumption_kwh", 10_000, {
         units,
         translate,
         targetUnitId: "unit-eg",
       }),
-    ).toThrow(/allocationKwhNotImplemented/u);
+    ).toThrow(/kwhConsumption/u);
   });
 });
 

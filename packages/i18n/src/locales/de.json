@@ -269,7 +269,8 @@
       "upstreamErrorDetail": "Der KI-Dienst hat einen Fehler gemeldet ({step}, Status {status}): {detail}"
     },
     "calc": {
-      "allocationKwhNotImplemented": "Der Verteilerschlüssel „nach Verbrauch (kWh)“ für die Kostenart „{costTypeName}“ wird noch nicht unterstützt. Bitte wählen Sie einen anderen Schlüssel.",
+      "allocationKwhNoMeters": "Die Kostenart „{costTypeName}“ wird nach Verbrauch (kWh) verteilt, aber ihr ist kein Zähler zugeordnet. Bitte ordnen Sie beim Zähler unter „Verwendet für Kostenarten“ die passenden Zähler zu.",
+      "allocationKwhNoConsumption": "Für die Kostenart „{costTypeName}“ wurde kein Verbrauch gemessen (Summe 0 kWh). Bitte prüfen Sie die Zählerstände der zugeordneten Zähler.",
       "noCosts": "Für diesen Zeitraum sind keine Kosten erfasst. Bitte erfassen Sie zuerst die Rechnungen des Abrechnungszeitraums.",
       "heatingNoConfig": "Es sind Heizkosten erfasst, aber für das Gebäude ist keine Heizkostenabrechnung eingerichtet. Bitte richten Sie sie unter „Heizkosten“ ein.",
       "waterNoMainMeter": "Für die Wasserabrechnung ist kein Hauptzähler hinterlegt. Bitte legen Sie mindestens einen Hauptwasserzähler an.",
@@ -295,7 +296,8 @@
     "affected": "{message} Betrifft: {labels}",
     "category": {
       "heating": "Heizkosten",
-      "water": "Wasser"
+      "water": "Wasser",
+      "kwh": "Verbrauch (kWh)"
     },
     "detail": {
       "readingNonMonotonic": "{label} ({fromValue} auf {toValue})"
@@ -2544,6 +2546,7 @@
       "personDays": "Personentage",
       "unitDays": "Wohnungstage",
       "consumptionM3": "m³",
+      "consumptionKwh": "kWh",
       "flatRate": "Pauschale"
     },
     "heatingLines": {

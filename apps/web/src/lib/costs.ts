@@ -136,7 +136,7 @@ export const allocationKeyGroups: readonly AllocationKeyGroup[] = [
   },
   {
     labelKey: "costs.allocationGroups.byConsumption",
-    keys: ["per_consumption_m3"],
+    keys: ["per_consumption_m3", "per_consumption_kwh"],
   },
   {
     labelKey: "costs.allocationGroups.other",

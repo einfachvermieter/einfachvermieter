@@ -53,8 +53,8 @@ import { CostTypeSheet } from "./sheets/CostTypeSheet";
 const routeApi = getRouteApi("/kostenarten/$costTypeId");
 
 const toFormValues = (costType: CostType): CostTypeFormValues => {
-  // Verteilerschlüssel, die das Formular nicht abbildet (z. B. das noch nicht
-  // implementierte `per_consumption_kwh`), fallen auf "kein Schlüssel" zurück.
+  // Verteilerschlüssel, die das Formular nicht abbildet, fallen auf "kein
+  // Schlüssel" zurück.
   const allocationKey = costTypeAllocationKeySchema.safeParse(
     costType.defaultAllocationKey ?? ALLOCATION_KEY_NONE,
   );

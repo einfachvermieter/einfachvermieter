@@ -35,10 +35,12 @@ const BLOCKING_WARNING_CODES = new Set(["consumptionNegative"]);
 export const hasBlockingWarning = (result: {
   heatingDetail?: { warnings?: CalcWarning[] } | null;
   waterDetail?: { warnings?: CalcWarning[] } | null;
+  kwhWarnings?: CalcWarning[];
 }): boolean =>
   [
     ...(result.heatingDetail?.warnings ?? []),
     ...(result.waterDetail?.warnings ?? []),
+    ...(result.kwhWarnings ?? []),
   ].some((warning) => BLOCKING_WARNING_CODES.has(warning.code));
 
 /**

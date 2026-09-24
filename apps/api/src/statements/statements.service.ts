@@ -5,6 +5,7 @@ import {
   type CostType,
   CostTypeSchema,
   type Meter,
+  MeterCostTypeAssignmentSchema,
   MeterDifferenceComponentSchema,
   MeterReadingSchema,
   MeterSchema,
@@ -798,7 +799,7 @@ export class StatementsService {
    * hinter der Nachricht.
    */
   private formatWarningGroup(
-    source: "heating" | "water",
+    source: "heating" | "water" | "kwh",
     group: CalcWarningGroup,
   ): string {
     const i18n = getI18n();
@@ -876,6 +877,7 @@ export class StatementsService {
       waterMeters,
       heatMeters,
       heatCostAllocators,
+      kwhMeters,
     } = await this.loadMeterBundles(buildingId, statementPeriod);
 
     const { operatingCostTypes, heatingCostEntries, laborItems } =
@@ -934,6 +936,7 @@ export class StatementsService {
         targetUnitId,
         costTypes: operatingCostTypes,
         waterMeters,
+        kwhMeters,
         heatingDetail,
         totalAdvancesCents,
         translate: createTranslate(getI18n()),
@@ -948,6 +951,9 @@ export class StatementsService {
       ),
       ...groupCalcWarnings(result.waterDetail?.warnings ?? []).map((group) =>
         this.formatWarningGroup("water", group),
+      ),
+      ...groupCalcWarnings(result.kwhWarnings ?? []).map((group) =>
+        this.formatWarningGroup("kwh", group),
       ),
     ];
 
@@ -1217,6 +1223,7 @@ export class StatementsService {
     waterMeters: MeterBundle[];
     heatMeters: MeterBundle[];
     heatCostAllocators: MeterBundle[];
+    kwhMeters: MeterBundle[];
   }> {
     const metersRaw = await this.em.find(MeterSchema, {
       buildingId,
@@ -1325,12 +1332,19 @@ export class StatementsService {
       .filter((m) => m.type === "heat_cost_allocator" && m.role === "unit")
       .map(toMeterBundle);
 
+    // Für die kWh-Umlage: welche davon zählen, bestimmt die Zuordnung an der
+    // Kostenart. Die übrigen dienen Differenzzählern als Quellen.
+    const kwhMeters = metersRaw
+      .filter((m) => m.measurementUnit === "kwh")
+      .map(toMeterBundle);
+
     return {
       metersRaw,
       readingsByMeter,
       waterMeters,
       heatMeters,
       heatCostAllocators,
+      kwhMeters,
     };
   }
 
@@ -1642,6 +1656,12 @@ export class StatementsService {
           })
         : [];
     const itemsByCostType = new Map<string, typeof allItems>();
+    const meterAssignments =
+      costTypeIds.length > 0
+        ? await this.em.find(MeterCostTypeAssignmentSchema, {
+            costTypeId: { $in: costTypeIds },
+          })
+        : [];
 
     for (const item of allItems) {
       const list = itemsByCostType.get(item.costTypeId) ?? [];
@@ -1685,6 +1705,9 @@ export class StatementsService {
         id: costTypeRaw.id,
         name: costTypeRaw.name,
         allocationKey,
+        meterIds: meterAssignments
+          .filter((assignment) => assignment.costTypeId === costTypeRaw.id)
+          .map((assignment) => assignment.meterId),
         costs: costsRaw.map((cost) => ({
           id: cost.id,
           costTypeId: cost.costTypeId,

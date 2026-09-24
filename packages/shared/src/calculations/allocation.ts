@@ -7,7 +7,6 @@ import type {
   UnitInfo,
   WaterDetail,
 } from "../types/index.js";
-import { CalculationError } from "./diagnostics.js";
 import { distributeCents } from "./money.js";
 import { prorationFactor } from "./period.js";
 
@@ -49,10 +48,24 @@ const formatPersonProduct = (
   translate: TranslateFn,
 ): string => translate("costs.baseExplain.personTimesDays", { count, days });
 
+/**
+ * Gemessener Verbrauch je Wohnung für eine Verbrauchsumlage. `landlord` ist
+ * der Verbrauch der Ziel-Wohnung außerhalb der Mietzeit (Vor-/Nachmieter,
+ * Leerstand), der als Kostenanteil auf den Vermieter fällt.
+ */
+export type MeasuredConsumption = {
+  perUnit: Map<string, number>;
+  landlord: number;
+};
+
 type AllocationContext = {
   units: UnitInfo[];
   targetUnitId: string;
   waterDetail?: WaterDetail;
+  /**
+   * kWh-Verbrauch der Zähler, die der Kostenart zugeordnet sind
+   */
+  kwhConsumption?: MeasuredConsumption;
   translate: TranslateFn;
 };
 
@@ -63,6 +76,7 @@ type ResolvedAllocation = {
   targetUnitId: string;
   targetUnit: UnitInfo;
   waterDetail?: WaterDetail;
+  kwhConsumption?: MeasuredConsumption;
   translate: TranslateFn;
 };
 
@@ -297,72 +311,106 @@ const allocatePerUnit = ({
 };
 
 /**
- * per_consumption_m3: Verteilung nach gemessenem Wasserverbrauch. Der
- * Verbrauch der Ziel-Wohnung außerhalb der Mietzeit
- * (`landlordConsumptionM3`, Vor-/Nachmieter oder Leerstand) fällt als
- * Kostenanteil auf den Vermieter und wird über das Statement des anderen
- * Mieters wieder eingesammelt.
+ * Verteilung nach gemessenem Verbrauch (m³ oder kWh). Der Verbrauch der
+ * Ziel-Wohnung außerhalb der Mietzeit fällt als Kostenanteil auf den
+ * Vermieter und wird über das Statement des anderen Mieters wieder
+ * eingesammelt.
  */
-const allocatePerConsumptionM3 = ({
-  costTypeName,
-  totalAmountCents,
-  units,
-  targetUnitId,
-  waterDetail,
-  translate,
-}: ResolvedAllocation): AllocatedLine => {
+const allocateByMeasuredConsumption = (
+  { costTypeName, totalAmountCents, units, targetUnitId }: ResolvedAllocation,
+  measured: MeasuredConsumption,
+  labels: {
+    allocationKey: "per_consumption_m3" | "per_consumption_kwh";
+    baseUnit: string;
+    bemessungUnit: string;
+  },
+): AllocatedLine => {
+  const weights = units.map((u) => measured.perUnit.get(u.id) ?? 0);
+  // Bemessungsgrundlage ist die tatsächliche Gewichtssumme (nicht das
+  // Hauptzähler-Total), ansonsten weicht der gedruckte Dreisatz von der
+  // tatsächlichen Geldverteilung ab, sobald ein Differenzzähler fehlt.
+  const totalBase =
+    weights.reduce((sum, weight) => sum + weight, 0) + measured.landlord;
+  const shares = distributeCents(totalAmountCents, [
+    ...weights,
+    measured.landlord,
+  ]);
+  const idx = units.findIndex((u) => u.id === targetUnitId);
+  const tenantBase = measured.perUnit.get(targetUnitId) ?? 0;
+  const tenantAmountCents = shares[idx] ?? 0;
+  const landlordAmountCents = shares.at(-1) ?? 0;
+  const shareBps =
+    totalBase > 0 ? Math.round((tenantBase / totalBase) * 10_000) : 0;
+  const landlordShareBps =
+    totalBase > 0 ? Math.round((measured.landlord / totalBase) * 10_000) : 0;
+
+  return {
+    costTypeName,
+    allocationKey: labels.allocationKey,
+    totalAmountCents,
+    totalBase,
+    tenantBase,
+    shareBps,
+    tenantAmountCents,
+    baseUnit: labels.baseUnit,
+    landlordAmountCents,
+    landlordShareBps,
+    bemessungTotal: totalBase,
+    bemessungTenant: tenantBase,
+    bemessungUnit: labels.bemessungUnit,
+    daysTotal: null,
+    daysTenant: null,
+  };
+};
+
+/**
+ * per_consumption_m3: Verteilung nach gemessenem Wasserverbrauch
+ */
+const allocatePerConsumptionM3 = (
+  resolved: ResolvedAllocation,
+): AllocatedLine => {
+  const { waterDetail, costTypeName, translate } = resolved;
   if (!waterDetail) {
     throw new Error(
       `per_consumption_m3 for "${costTypeName}" requires waterDetail in context`,
     );
   }
 
-  const landlordConsumptionM3 = waterDetail.landlordConsumptionM3 ?? 0;
-  const weights = units.map((u) => {
-    const entry = waterDetail.perUnit.find((p) => p.unitId === u.id);
-    return entry?.consumptionM3 ?? 0;
-  });
-  // Bemessungsgrundlage ist die tatsächliche Gewichtssumme (nicht das
-  // Hauptzähler-Total aus waterDetail.totalConsumptionM3), ansonsten weicht der
-  // gedruckte Dreisatz von der tatsächlichen Geldverteilung ab, sobald ein
-  // Differenzzähler fehlt.
-  const totalBase =
-    weights.reduce((sum, weight) => sum + weight, 0) + landlordConsumptionM3;
-  const shares = distributeCents(totalAmountCents, [
-    ...weights,
-    landlordConsumptionM3,
-  ]);
-  const idx = units.findIndex((u) => u.id === targetUnitId);
-  const tenantEntry = waterDetail.perUnit.find(
-    (p) => p.unitId === targetUnitId,
+  return allocateByMeasuredConsumption(
+    resolved,
+    {
+      perUnit: new Map(
+        waterDetail.perUnit.map((entry) => [entry.unitId, entry.consumptionM3]),
+      ),
+      landlord: waterDetail.landlordConsumptionM3 ?? 0,
+    },
+    {
+      allocationKey: "per_consumption_m3",
+      baseUnit: translate("costs.baseUnits.consumptionM3"),
+      bemessungUnit: "m³",
+    },
   );
-  const tenantBase = tenantEntry?.consumptionM3 ?? 0;
-  const tenantAmountCents = shares[idx] ?? 0;
-  const landlordAmountCents = shares.at(-1) ?? 0;
-  const shareBps =
-    totalBase > 0 ? Math.round((tenantBase / totalBase) * 10_000) : 0;
-  const landlordShareBps =
-    totalBase > 0
-      ? Math.round((landlordConsumptionM3 / totalBase) * 10_000)
-      : 0;
+};
 
-  return {
-    costTypeName,
-    allocationKey: "per_consumption_m3",
-    totalAmountCents,
-    totalBase,
-    tenantBase,
-    shareBps,
-    tenantAmountCents,
-    baseUnit: translate("costs.baseUnits.consumptionM3"),
-    landlordAmountCents,
-    landlordShareBps,
-    bemessungTotal: totalBase,
-    bemessungTenant: tenantBase,
-    bemessungUnit: "m³",
-    daysTotal: null,
-    daysTenant: null,
-  };
+/**
+ * per_consumption_kwh: Verteilung nach dem kWh-Verbrauch der Zähler, die der
+ * Kostenart zugeordnet sind (z. B. Wärmepumpenstrom mit Wohnungszählern)
+ */
+const allocatePerConsumptionKwh = (
+  resolved: ResolvedAllocation,
+): AllocatedLine => {
+  const { kwhConsumption, costTypeName, translate } = resolved;
+  if (!kwhConsumption) {
+    throw new Error(
+      `per_consumption_kwh for "${costTypeName}" requires kwhConsumption in context`,
+    );
+  }
+
+  return allocateByMeasuredConsumption(resolved, kwhConsumption, {
+    allocationKey: "per_consumption_kwh",
+    baseUnit: translate("costs.baseUnits.consumptionKwh"),
+    bemessungUnit: "kWh",
+  });
 };
 
 /**
@@ -400,7 +448,7 @@ export const allocateCost = (
   totalAmountCents: number,
   ctx: AllocationContext,
 ): AllocatedLine => {
-  const { units, targetUnitId, waterDetail, translate } = ctx;
+  const { units, targetUnitId, waterDetail, kwhConsumption, translate } = ctx;
 
   const targetUnit = units.find((u) => u.id === targetUnitId);
   if (!targetUnit) {
@@ -414,6 +462,7 @@ export const allocateCost = (
     targetUnitId,
     targetUnit,
     waterDetail,
+    kwhConsumption,
     translate,
   };
 
@@ -433,14 +482,8 @@ export const allocateCost = (
     case "per_consumption_m3":
       return allocatePerConsumptionM3(resolved);
 
-    case "per_consumption_kwh": {
-      // @todo: Sub-Zähler-basierte kWh-Verteilung (z. B. Allgemeinstrom mit
-      // Wohnungs-Sub-Zählern). Verbrauchsquelle (analog zu waterDetail) ist
-      // noch nicht eingebaut.
-      throw new CalculationError("allocationKwhNotImplemented", {
-        costTypeName,
-      });
-    }
+    case "per_consumption_kwh":
+      return allocatePerConsumptionKwh(resolved);
 
     case "fixed":
       return allocateFixed(resolved);

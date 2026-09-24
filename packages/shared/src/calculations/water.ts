@@ -111,8 +111,9 @@ const allocatableUnitId = (
  * Leerstand) fällt als auf den Vermieter, damit die Summe über alle
  * Statements einer Wohnung die Jahres-Kosten nicht übersteigt
  * (Mieterwechsel-Fall). Andere Wohnungen: volle Statement-Periode.
+ * Unabhängig vom Medium: dient auch der kWh-Umlage.
  */
-const aggregateUnitConsumption = (params: {
+export const aggregateUnitConsumption = (params: {
   units: UnitInfo[];
   waterMeters: WaterMeterBundle[];
   bundles: Map<string, WaterMeterBundle>;

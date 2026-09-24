@@ -11,8 +11,7 @@ export const LABOR_CATEGORY_NONE = "__none__";
 
 /**
  * Im Formular wählbare Verteilerschlüssel. Bewusst ohne `heating_ordinance`
- * (verbrauchsabhängige Heizkosten laufen nicht über die Kostenart) und ohne
- * `per_consumption_kwh` (noch nicht implementiert).
+ * (verbrauchsabhängige Heizkosten laufen nicht über die Kostenart).
  */
 export const costTypeAllocationKeySchema = z.enum([
   ALLOCATION_KEY_NONE,
@@ -21,6 +20,7 @@ export const costTypeAllocationKeySchema = z.enum([
   "per_person",
   "per_unit",
   "per_consumption_m3",
+  "per_consumption_kwh",
   "fixed",
 ]);
 

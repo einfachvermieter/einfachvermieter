@@ -13,9 +13,18 @@ import {
   STATEMENT_HEATING_COST_TYPE_ID,
   STATEMENT_HOT_WATER_COST_TYPE_ID,
 } from "./advance.js";
-import { aggregateCostsForPeriod, allocateCost } from "./allocation.js";
-import { CalculationError } from "./diagnostics.js";
-import { calculateWater, type WaterMeterBundle } from "./water.js";
+import {
+  aggregateCostsForPeriod,
+  allocateCost,
+  type MeasuredConsumption,
+} from "./allocation.js";
+import { CalculationError, type CalcWarning } from "./diagnostics.js";
+import type { MeterBundle } from "./virtualMeter.js";
+import {
+  aggregateUnitConsumption,
+  calculateWater,
+  type WaterMeterBundle,
+} from "./water.js";
 
 export type StatementCalculationInput = {
   /**
@@ -38,8 +47,10 @@ export type StatementCalculationInput = {
     name: string;
     allocationKey: CostEntry["allocationKey"];
     costs: CostEntry[];
+    meterIds?: string[];
   }>;
   waterMeters: WaterMeterBundle[];
+  kwhMeters?: MeterBundle[];
   /**
    * Übersetzt Anzeige-Strings, die im Snapshot landen (Umlagebasis-
    * Einheiten und Bemessungs-Erklärungen).
@@ -208,6 +219,57 @@ const buildHeatingLines = (
 };
 
 /**
+ * kWh-Verbrauch je Wohnung aus den Zählern, die der Kostenart zugeordnet sind
+ */
+const measureKwhConsumption = (
+  costType: StatementCalculationInput["costTypes"][number],
+  period: Period,
+  ctx: {
+    units: UnitInfo[];
+    targetUnitId: string;
+    tenantPeriod: Period;
+    kwhMeters: MeterBundle[];
+    warnings: CalcWarning[];
+  },
+): MeasuredConsumption => {
+  const assignedIds = new Set(costType.meterIds ?? []);
+  const assigned = ctx.kwhMeters.filter((bundle) =>
+    assignedIds.has(bundle.meter.id),
+  );
+
+  if (assigned.length === 0) {
+    throw new CalculationError("allocationKwhNoMeters", {
+      costTypeName: costType.name,
+    });
+  }
+
+  const { unitConsumption, landlordConsumptionM3 } = aggregateUnitConsumption({
+    units: ctx.units,
+    waterMeters: assigned,
+    bundles: new Map(
+      ctx.kwhMeters.map((bundle) => [bundle.meter.id, bundle] as const),
+    ),
+    periodStart: period.start,
+    periodEnd: period.end,
+    targetUnitId: ctx.targetUnitId,
+    tenantStart: ctx.tenantPeriod.start,
+    tenantEnd: ctx.tenantPeriod.end,
+    warnings: ctx.warnings,
+  });
+
+  const total =
+    [...unitConsumption.values()].reduce((sum, value) => sum + value, 0) +
+    landlordConsumptionM3;
+  if (total <= 0) {
+    throw new CalculationError("allocationKwhNoConsumption", {
+      costTypeName: costType.name,
+    });
+  }
+
+  return { perUnit: unitConsumption, landlord: landlordConsumptionM3 };
+};
+
+/**
  * Legt alle Betriebskostenarten pro Tenant um. Heizkostenpositionen fließen
  * separat über `buildHeatingLines`. "fixed"-Positionen
  * zählen nur für ihre Ziel-Wohnung (kein Duplizieren auf jeden Mieter).
@@ -220,6 +282,8 @@ const buildOperatingLines = (
     targetUnitId: string;
     waterDetail: WaterDetail | undefined;
     tenantPeriod: Period;
+    kwhMeters: MeterBundle[];
+    kwhWarnings: CalcWarning[];
     translate: TranslateFn;
   },
 ): CostLineResult[] => {
@@ -256,6 +320,16 @@ const buildOperatingLines = (
         units: ctx.units,
         targetUnitId: ctx.targetUnitId,
         waterDetail: ctx.waterDetail,
+        kwhConsumption:
+          costType.allocationKey === "per_consumption_kwh"
+            ? measureKwhConsumption(costType, period, {
+                units: ctx.units,
+                targetUnitId: ctx.targetUnitId,
+                tenantPeriod: ctx.tenantPeriod,
+                kwhMeters: ctx.kwhMeters,
+                warnings: ctx.kwhWarnings,
+              })
+            : undefined,
         translate: ctx.translate,
       },
     );
@@ -288,6 +362,7 @@ export const calculateStatement = (
     targetUnitId,
     costTypes,
     waterMeters,
+    kwhMeters = [],
     heatingDetail,
     totalAdvancesCents,
     translate,
@@ -318,6 +393,8 @@ export const calculateStatement = (
       })
     : undefined;
 
+  const kwhWarnings: CalcWarning[] = [];
+
   // 2. Kostenzeilen: Heizkosten (aus HeatingDetail) + umgelegte Betriebskosten.
   const lines: CostLineResult[] = [
     ...(heatingDetail
@@ -328,6 +405,8 @@ export const calculateStatement = (
       targetUnitId,
       waterDetail,
       tenantPeriod: consumptionPeriod,
+      kwhMeters,
+      kwhWarnings,
       translate,
     }),
   ];
@@ -373,5 +452,6 @@ export const calculateStatement = (
     balanceCents,
     waterDetail,
     heatingDetail,
+    ...(kwhWarnings.length > 0 ? { kwhWarnings } : {}),
   };
 };

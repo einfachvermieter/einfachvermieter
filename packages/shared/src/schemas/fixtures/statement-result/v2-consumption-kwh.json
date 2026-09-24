@@ -1,0 +1,323 @@
+{
+  "version": 2,
+  "tenantId": "dc12342f-353a-474b-8c4b-f45cfdbca847",
+  "unitId": "eb918c6d-611e-4875-bd4d-cef313f4b110",
+  "period": {
+    "start": "2025-01-01",
+    "end": "2025-12-31"
+  },
+  "tenantPeriod": {
+    "start": "2025-01-01",
+    "end": "2025-12-31"
+  },
+  "lines": [
+    {
+      "costTypeId": "__heating__",
+      "costTypeName": "Heizkosten",
+      "allocationKey": "heating_ordinance",
+      "totalAmountCents": 300500,
+      "totalBase": 100,
+      "tenantBase": 47,
+      "shareBps": 4725,
+      "tenantAmountCents": 142000,
+      "baseUnit": "71.65 % Verbrauch / 28.35 % Fläche",
+      "bemessungTotal": null,
+      "bemessungTenant": null,
+      "bemessungUnit": null,
+      "daysTotal": null,
+      "daysTenant": null,
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "notes": "Berechnung gemäß Heizkostenverordnung, Details im Anhang"
+    },
+    {
+      "costTypeName": "Frischwasser",
+      "allocationKey": "per_consumption_m3",
+      "totalAmountCents": 29250,
+      "totalBase": 130,
+      "tenantBase": 62,
+      "shareBps": 4769,
+      "tenantAmountCents": 13950,
+      "baseUnit": "m³",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "bemessungTotal": 130,
+      "bemessungTenant": 62,
+      "bemessungUnit": "m³",
+      "daysTotal": null,
+      "daysTenant": null,
+      "costTypeId": "7c744c8e-a33d-4b79-985b-93c954218f1d"
+    },
+    {
+      "costTypeName": "Schmutzwasser",
+      "allocationKey": "per_consumption_m3",
+      "totalAmountCents": 35750,
+      "totalBase": 130,
+      "tenantBase": 62,
+      "shareBps": 4769,
+      "tenantAmountCents": 17050,
+      "baseUnit": "m³",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "bemessungTotal": 130,
+      "bemessungTenant": 62,
+      "bemessungUnit": "m³",
+      "daysTotal": null,
+      "daysTenant": null,
+      "costTypeId": "17e7b1c4-a87b-47a5-862d-62e7ac1000f1"
+    },
+    {
+      "costTypeName": "Grundsteuer",
+      "allocationKey": "per_living_area",
+      "totalAmountCents": 58000,
+      "totalBase": 58400,
+      "tenantBase": 29200,
+      "shareBps": 5000,
+      "tenantAmountCents": 29000,
+      "baseUnit": "m²·Tage",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "tenantBaseExplain": "80 m² × 365 Tage",
+      "totalBaseExplain": "160 m² × 365 Tage",
+      "bemessungTotal": 160,
+      "bemessungTenant": 80,
+      "bemessungUnit": "m²",
+      "daysTotal": 365,
+      "daysTenant": 365,
+      "costTypeId": "eee88c95-9ad0-4d0d-a15b-76a3c9e3d046"
+    },
+    {
+      "costTypeName": "Gebäudeversicherung",
+      "allocationKey": "per_living_area",
+      "totalAmountCents": 64000,
+      "totalBase": 58400,
+      "tenantBase": 29200,
+      "shareBps": 5000,
+      "tenantAmountCents": 32000,
+      "baseUnit": "m²·Tage",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "tenantBaseExplain": "80 m² × 365 Tage",
+      "totalBaseExplain": "160 m² × 365 Tage",
+      "bemessungTotal": 160,
+      "bemessungTenant": 80,
+      "bemessungUnit": "m²",
+      "daysTotal": 365,
+      "daysTenant": 365,
+      "costTypeId": "bae30b1d-5e16-499e-9861-f4e02fc2fa97"
+    },
+    {
+      "costTypeName": "Gartenpflege",
+      "allocationKey": "per_living_area",
+      "totalAmountCents": 21600,
+      "totalBase": 58400,
+      "tenantBase": 29200,
+      "shareBps": 5000,
+      "tenantAmountCents": 10800,
+      "baseUnit": "m²·Tage",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "tenantBaseExplain": "80 m² × 365 Tage",
+      "totalBaseExplain": "160 m² × 365 Tage",
+      "bemessungTotal": 160,
+      "bemessungTenant": 80,
+      "bemessungUnit": "m²",
+      "daysTotal": 365,
+      "daysTenant": 365,
+      "costTypeId": "b7f4bc7e-e6de-4b1e-a186-7dcedd4a62ed"
+    },
+    {
+      "costTypeName": "Wärmepumpenstrom",
+      "allocationKey": "per_consumption_kwh",
+      "totalAmountCents": 100000,
+      "totalBase": 4000,
+      "tenantBase": 3000,
+      "shareBps": 7500,
+      "tenantAmountCents": 75000,
+      "baseUnit": "kWh",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "bemessungTotal": 4000,
+      "bemessungTenant": 3000,
+      "bemessungUnit": "kWh",
+      "daysTotal": null,
+      "daysTenant": null,
+      "costTypeId": "268f3c70-d667-416b-9eb1-6acf2c474880"
+    }
+  ],
+  "totalCostsCents": 319800,
+  "totalAdvancesCents": 336000,
+  "balanceCents": -16200,
+  "waterDetail": {
+    "totalConsumptionM3": 130,
+    "perUnit": [
+      {
+        "unitId": "eb918c6d-611e-4875-bd4d-cef313f4b110",
+        "unitName": "EG",
+        "consumptionM3": 62,
+        "sharePct": 47.69230769230769,
+        "isDifferential": false,
+        "meterContributions": [
+          {
+            "label": "Kaltwasser EG",
+            "consumptionM3": 62
+          }
+        ]
+      },
+      {
+        "unitId": "61081ea2-872e-4d9e-886a-46244a47c3b8",
+        "unitName": "OG",
+        "consumptionM3": 68,
+        "sharePct": 52.307692307692314,
+        "isDifferential": false,
+        "meterContributions": [
+          {
+            "label": "Kaltwasser OG",
+            "consumptionM3": 68
+          }
+        ]
+      }
+    ],
+    "landlordConsumptionM3": 0
+  },
+  "heatingDetail": {
+    "mode": "external",
+    "billingInfoOmitted": false,
+    "totalHeatingCostsCents": 300500,
+    "consumptionShareBps": 7165,
+    "consumptionPortionCents": 215300,
+    "basicPortionCents": 85200,
+    "perUnit": [
+      {
+        "unitId": "eb918c6d-611e-4875-bd4d-cef313f4b110",
+        "unitName": "EG",
+        "consumptionKwh": 0,
+        "consumptionCostCents": 99400,
+        "areaSqm": 78,
+        "basicCostCents": 42600,
+        "totalCents": 142000
+      },
+      {
+        "unitId": "61081ea2-872e-4d9e-886a-46244a47c3b8",
+        "unitName": "OG",
+        "consumptionKwh": 0,
+        "consumptionCostCents": 115900,
+        "areaSqm": 78,
+        "basicCostCents": 42600,
+        "totalCents": 158500
+      }
+    ],
+    "heatingAreaDiffersFromLivingArea": true
+  },
+  "warnings": [],
+  "payments": [
+    {
+      "id": "1e3b8a03-7ea0-4112-8443-b258e8412fcd",
+      "forMonth": "2025-01",
+      "date": "2025-01-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "a9d1b537-f3d5-45cc-a43a-7401c740a2ea",
+      "forMonth": "2025-02",
+      "date": "2025-02-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "b961fe0d-4008-4f72-9371-76e2eccffc98",
+      "forMonth": "2025-03",
+      "date": "2025-03-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "4461d328-1dbd-46ea-8d0b-8be5d6ba2677",
+      "forMonth": "2025-04",
+      "date": "2025-04-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "06c41ae5-b718-497f-93ec-0c8fcf7ef1b6",
+      "forMonth": "2025-05",
+      "date": "2025-05-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "855ab3a3-1fa0-4fca-b1f7-d9729158e8fe",
+      "forMonth": "2025-06",
+      "date": "2025-06-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "99684fa9-90f1-4db9-8ef8-aae4b1f77bf9",
+      "forMonth": "2025-07",
+      "date": "2025-07-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "a9e8079e-2c47-4c5f-8780-5df6d5aabd30",
+      "forMonth": "2025-08",
+      "date": "2025-08-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "0dc9f546-06c9-4d1d-b909-33ad7634f151",
+      "forMonth": "2025-09",
+      "date": "2025-09-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "9f3a3705-bba8-4deb-8193-b9f49ff97a7a",
+      "forMonth": "2025-10",
+      "date": "2025-10-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "6a564a15-c231-4e1f-a703-eb7bf209a094",
+      "forMonth": "2025-11",
+      "date": "2025-11-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    },
+    {
+      "id": "f4cdf379-109c-44f9-850f-7ed20d840f05",
+      "forMonth": "2025-12",
+      "date": "2025-12-03",
+      "baseRentCents": 99000,
+      "advanceCents": 28000,
+      "reference": null
+    }
+  ],
+  "advanceAdjustment": {
+    "currentMonthlyAdvanceCents": 28000,
+    "currentMonthlyBaseRentCents": 99000,
+    "suggestedMonthlyAdvanceCents": 26700,
+    "suggestedMonthlyAdvanceWithTariffsCents": 26700,
+    "tenantBilledDays": 365,
+    "daysInBaseYear": 365,
+    "adjustedMonthlyAdvanceCents": null,
+    "adjustedAdvanceValidFrom": null,
+    "tariffAdjustmentBps": null,
+    "autoTariffAdjustmentBps": null
+  }
+}
