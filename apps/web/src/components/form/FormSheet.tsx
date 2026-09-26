@@ -40,6 +40,7 @@ export const FormSheet = <T extends FieldValues>({
   errorTitle,
   onSubmit,
   onClose,
+  footerStart,
   children,
 }: {
   form: UseFormReturn<T>;
@@ -50,6 +51,10 @@ export const FormSheet = <T extends FieldValues>({
   errorTitle?: string;
   onSubmit: (values: T) => Promise<void>;
   onClose: () => void;
+  /**
+   * Zusätzliche Aktion links im Footer, z. B. Löschen
+   */
+  footerStart?: ReactNode;
   children: ReactNode;
 }) => {
   const [rootError, setRootError] = useState<string | null>(null);
@@ -173,6 +178,9 @@ export const FormSheet = <T extends FieldValues>({
                 overflow.bottom && "before:opacity-100",
               )}
             >
+              {footerStart ? (
+                <div className="mr-auto">{footerStart}</div>
+              ) : null}
               <Button
                 type="button"
                 variant="secondary"

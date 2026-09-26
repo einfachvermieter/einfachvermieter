@@ -8,9 +8,12 @@ import { TenantsModule } from "../tenants/tenants.module.js";
 import { UnitsModule } from "../units/units.module.js";
 import { ClimateFactorService } from "./climate-factor.service.js";
 import { ClimateFactorsController } from "./climate-factors.controller.js";
+import { ConsumptionSubstitutionsController } from "./consumption-substitutions.controller.js";
+import { ConsumptionSubstitutionsService } from "./consumption-substitutions.service.js";
 import { PdfService } from "./pdf.service.js";
 import { StatementsController } from "./statements.controller.js";
 import { StatementsService } from "./statements.service.js";
+import { SubstitutionContextService } from "./substitution-context.service.js";
 
 @Module({
   imports: [
@@ -22,8 +25,18 @@ import { StatementsService } from "./statements.service.js";
     SettingsModule,
     StorageModule,
   ],
-  controllers: [StatementsController, ClimateFactorsController],
-  providers: [StatementsService, PdfService, ClimateFactorService],
+  controllers: [
+    StatementsController,
+    ClimateFactorsController,
+    ConsumptionSubstitutionsController,
+  ],
+  providers: [
+    StatementsService,
+    PdfService,
+    ClimateFactorService,
+    SubstitutionContextService,
+    ConsumptionSubstitutionsService,
+  ],
   exports: [StatementsService],
 })
 export class StatementsModule {}

@@ -195,7 +195,12 @@ export type HeatingLabelDescriptor = {
 };
 
 export type HeatingColumnFootnote = {
-  key: "heatingArea" | "valuationPoints" | "totalShare" | "areaFallback";
+  key:
+    | "heatingArea"
+    | "valuationPoints"
+    | "totalShare"
+    | "areaFallback"
+    | "substituted";
   column: "heatingArea" | "consumption" | "total";
   /**
    * 1..N in Spalten-Reihenfolge; liefert den hochgestellten Marker sowohl am
@@ -247,14 +252,27 @@ export const heatingColumnFootnotes = (
       },
     });
   }
+  const areaDistributed =
+    (detail.consumptionDistributionMethod ?? "consumption") === "heating_area";
   if (
-    (detail.consumptionDistributionMethod ?? "consumption") === "heating_area"
+    !areaDistributed &&
+    detail.perUnit.some((u) => u.consumptionIsSubstituted)
   ) {
+    notes.push({
+      key: "substituted",
+      column: "consumption",
+      label: { key: "statements.pdf.heating.substitutedConsumptionNote" },
+    });
+  }
+  if (areaDistributed) {
     notes.push({
       key: "areaFallback",
       column: "total",
       label: {
-        key: "statements.pdf.heating.consumptionDistributionHeatingArea",
+        key:
+          detail.areaDistributionReason === "substitution_limit_exceeded"
+            ? "statements.pdf.heating.substitutionLimitHeatingArea"
+            : "statements.pdf.heating.consumptionDistributionHeatingArea",
       },
     });
   }
@@ -285,7 +303,18 @@ export const hotWaterColumnFootnotes = (
     notes.push({
       key: "areaFallback",
       column: "total",
-      label: { key: "statements.pdf.heating.hotWater.consumptionFallbackArea" },
+      label: {
+        key:
+          hotWater.areaDistributionReason === "substitution_limit_exceeded"
+            ? "statements.pdf.heating.hotWater.substitutionLimitArea"
+            : "statements.pdf.heating.hotWater.consumptionFallbackArea",
+      },
+    });
+  } else if (hotWater.perUnit.some((u) => u.hotWaterIsSubstituted)) {
+    notes.push({
+      key: "substituted",
+      column: "total",
+      label: { key: "statements.pdf.heating.hotWater.substitutedNote" },
     });
   }
   return notes.map((note, idx) => ({ ...note, index: idx + 1 }));
@@ -744,8 +773,14 @@ export type EnergyComparisonDisplay = {
 export const energyComparisonDisplay = (
   comparison: EnergyComparison,
 ): EnergyComparisonDisplay => {
+  const substituteNotes: HeatingLabelDescriptor[] =
+    comparison.current.containsSubstitute ||
+    comparison.previous?.containsSubstitute
+      ? [{ key: "statements.pdf.billingInfo.comparisonPrevSubstituteNote" }]
+      : [];
+
   if (!comparison.previous) {
-    return { bars: [], previousMissing: true, notes: [] };
+    return { bars: [], previousMissing: true, notes: substituteNotes };
   }
 
   const currentValue = comparison.current.normalizedConsumption;
@@ -879,6 +914,8 @@ export const energyComparisonDisplay = (
     });
   }
 
+  notes.push(...substituteNotes);
+
   return {
     bars: [
       bar(
@@ -929,3 +966,16 @@ export const co2TierLabel = (
     },
   };
 };
+
+/**
+ * Satz an Stelle des Vorperiodenvergleichs, wenn er entfällt, weil die
+ * Heizkosten nach § 9a Abs. 2 HeizkostenV vollständig nach Fläche verteilt
+ * wurden (kein eigener Verbrauch der Wohnung)
+ */
+export const energyComparisonOmittedNote = (
+  detail: HeatingDetail,
+): HeatingLabelDescriptor | null =>
+  !detail.energyComparison &&
+  detail.areaDistributionReason === "substitution_limit_exceeded"
+    ? { key: "statements.pdf.billingInfo.comparisonPrevSubstitutionLimit" }
+    : null;

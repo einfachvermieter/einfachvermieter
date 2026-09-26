@@ -11,5 +11,6 @@ export * from "./money.js";
 export * from "./period.js";
 export * from "./rents.js";
 export * from "./statement.js";
+export * from "./substitution.js";
 export * from "./virtualMeter.js";
 export * from "./water.js";

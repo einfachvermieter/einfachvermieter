@@ -52,6 +52,7 @@ import {
   isAdvanceValidFromRetroactive,
   isSenderAddressComplete,
   type MeterInfo,
+  measureHotWaterUnits,
   type OperatingCostStatementAdvanceAdjustmentDto,
   type OperatingCostStatementCancelDto,
   type OperatingCostStatementCreateDto,
@@ -95,6 +96,10 @@ import { notFoundMessage } from "../i18n/notFound.js";
 import { SettingsService } from "../settings/settings.service.js";
 import { TenantsService } from "../tenants/tenants.service.js";
 import { ClimateFactorService } from "./climate-factor.service.js";
+import {
+  SubstitutionContextService,
+  toMeterInfo,
+} from "./substitution-context.service.js";
 
 type StatementRow = OperatingCostStatement;
 
@@ -163,6 +168,88 @@ type HeatingPotEntry = CostEntry & {
   containedTaxKinds: ContainedTaxKind[] | null;
   isMeteringServiceCost: boolean;
 };
+
+/**
+ * Heizkosten je Kostenart (absteigend) und die Summe der als Erfassungs-/
+ * Abrechnungsentgelt gekennzeichneten Positionen (§ 6a Abs. 3 Nr. 1c
+ * HeizkostenV), jeweils periodenanteilig
+ */
+const heatingCostBreakdown = (
+  heatingCostEntries: HeatingPotEntry[],
+  perItemAttributedCents: number[],
+): {
+  costBreakdown: Array<{ label: string; amountCents: number }>;
+  meteringServiceCostCents: number;
+} => {
+  const breakdownMap = new Map<string, number>();
+  let meteringServiceCostCents = 0;
+
+  heatingCostEntries.forEach((entry, idx) => {
+    const attributedCents = perItemAttributedCents[idx] ?? 0;
+    if (attributedCents === 0) {
+      return;
+    }
+    if (entry.isMeteringServiceCost) {
+      meteringServiceCostCents += attributedCents;
+    }
+    breakdownMap.set(
+      entry.name,
+      (breakdownMap.get(entry.name) ?? 0) + attributedCents,
+    );
+  });
+
+  return {
+    costBreakdown: [...breakdownMap.entries()]
+      .map(([label, amountCents]) => ({ label, amountCents }))
+      .sort((a, b) => b.amountCents - a.amountCents),
+    meteringServiceCostCents,
+  };
+};
+
+/**
+ * § 6a Abs. 3 HeizkostenV verlangt bei Fernwärme THG-Emissionen und
+ * Primärenergiefaktor des Netzes. Ohne die Werte fehlt der Anhang.
+ */
+const attachDistrictHeatInfo = (
+  heatingDetail: HeatingDetail,
+  heatingSettings: {
+    fuelType: string;
+    districtHeatEmissionsKgPerYear: number | null;
+    districtHeatPrimaryEnergyFactor: number | null;
+  },
+): void => {
+  if (heatingSettings.fuelType !== "district_heat") {
+    return;
+  }
+
+  heatingDetail.districtHeatInfo = {
+    emissionsKgPerYear: heatingSettings.districtHeatEmissionsKgPerYear,
+    primaryEnergyFactor: heatingSettings.districtHeatPrimaryEnergyFactor,
+  };
+  if (
+    heatingSettings.districtHeatEmissionsKgPerYear === null ||
+    heatingSettings.districtHeatPrimaryEnergyFactor === null
+  ) {
+    heatingDetail.warnings = heatingDetail.warnings ?? [];
+    heatingDetail.warnings.push({ code: "districtHeatInfoMissing" });
+  }
+};
+
+/**
+ * Ob der Verbrauch der Ziel-Wohnung einen Ersatzverbrauch oder einen
+ * Ausgleich nach § 9a HeizkostenV enthält (Kennzeichnung im § 6a-Vergleich)
+ */
+const containsSubstituteFor = (
+  detail: HeatingDetail,
+  targetUnitId: string,
+): boolean =>
+  detail.perUnit.some(
+    (row) => row.unitId === targetUnitId && row.consumptionIsSubstituted,
+  ) ||
+  (detail.hotWaterDetail?.perUnit ?? []).some(
+    (row) => row.unitId === targetUnitId && row.hotWaterIsSubstituted,
+  ) ||
+  (detail.compensations ?? []).some((entry) => entry.unitId === targetUnitId);
 
 /**
  * Zähler samt Ablesungen und (bei Differenzzählern) Komponenten-Konfiguration
@@ -488,6 +575,7 @@ export class StatementsService {
     private readonly accountsService: AccountsService,
     private readonly climateFactorService: ClimateFactorService,
     private readonly settingsService: SettingsService,
+    private readonly substitutionContextService: SubstitutionContextService,
   ) {}
 
   /**
@@ -1065,6 +1153,10 @@ export class StatementsService {
         tenantPeriod: input.effectivePeriod,
         climateFactor: currentFactor?.factor,
         climateFactorIsManual: currentFactor?.isManual,
+        containsSubstitute: containsSubstituteFor(
+          heatingDetail,
+          input.targetUnitId,
+        ),
       },
       await this.loadPreviousComparisonPeriod(
         tenantId,
@@ -1121,6 +1213,10 @@ export class StatementsService {
       tenantPeriod: snapshot.tenantPeriod,
       climateFactor: factor?.factor,
       climateFactorIsManual: factor?.isManual,
+      containsSubstitute: containsSubstituteFor(
+        snapshot.heatingDetail,
+        snapshot.unitId,
+      ),
     };
   }
 
@@ -1297,19 +1393,7 @@ export class StatementsService {
     }
 
     const toMeterBundle = (m: (typeof metersRaw)[number]): MeterBundle => ({
-      meter: {
-        id: m.id,
-        type: m.type,
-        role: m.role,
-        unitId: m.unitId,
-        label: m.label,
-        serialNumber: m.serialNumber,
-        measurementUnit: m.measurementUnit,
-        kTotal: m.kTotal,
-        validFrom: m.validFrom,
-        validUntil: m.validUntil,
-        resetDay: m.resetDay,
-      } as MeterInfo,
+      meter: toMeterInfo(m),
       readings: readingsByMeter.get(m.id) ?? [],
       differenceConfig:
         m.role === "virtual_difference"
@@ -1794,26 +1878,21 @@ export class StatementsService {
 
     // Ziel-Wohnung: Zähler = Mietzeit-Delta, der Rest der vollen Periode
     // (Vor-/Nachmieter, Leerstand) fällt als `landlordM3` auf den Vermieter.
-    // Q_WW/Gesamtvolumen bleiben Voll-Perioden-Werte (Jahres-Topf-Split).
-    let landlordM3 = 0;
-    const unitHotWaterM3 = unitsRaw.map((u) => {
-      const isTarget = u.id === targetUnitId;
-      let fullM3 = 0;
-      let m3 = 0;
-      for (const m of metersRaw) {
-        if (m.type !== "water_hot" || m.role !== "unit" || m.unitId !== u.id) {
-          continue;
-        }
-        const meterFullM3 = deltaOverPeriod(m.id, m.label);
-        fullM3 += meterFullM3;
-        m3 += isTarget
-          ? deltaBetween(m.id, effectivePeriod, m.label)
-          : meterFullM3;
-      }
-      if (isTarget) {
-        landlordM3 += Math.max(0, fullM3 - m3);
-      }
-      return { unitId: u.id, m3 };
+    // Q_WW/Gesamtvolumen bleiben Voll-Perioden-Werte (Jahres-Topf-Split) und
+    // beruhen nur auf gemessenen Werten (§ 9 Abs. 2 HeizkostenV).
+    const unitMeters = metersRaw
+      .filter((m) => m.type === "water_hot" && m.role === "unit")
+      .map((m) => ({
+        meter: toMeterInfo(m),
+        readings: readingsByMeter.get(m.id) ?? [],
+      }));
+    const { unitHotWaterM3, landlordM3 } = measureHotWaterUnits({
+      unitMeters,
+      units: unitsRaw,
+      targetUnitId,
+      period: statementPeriod,
+      tenantPeriod: effectivePeriod,
+      warnings,
     });
 
     const totalHotWaterM3 =
@@ -1829,6 +1908,7 @@ export class StatementsService {
         heatingSettings.hotWaterSupplyTemperatureCelsius,
       unitHotWaterM3,
       landlordM3,
+      unitMeters,
     };
   }
 
@@ -1928,30 +2008,10 @@ export class StatementsService {
     );
 
     const totalHeatingCostsCents = heatingAggregation.totalCents;
-    const breakdownMap = new Map<string, number>();
-
-    // § 6a Abs. 3 Nr. 1c HeizkostenV: Summe der als Erfassungs-/
-    // Abrechnungsentgelt gekennzeichneten Positionen, periodenanteilig.
-    let meteringServiceCostCents = 0;
-
-    heatingCostEntries.forEach((entry, idx) => {
-      const attributedCents =
-        heatingAggregation.perItemAttributedCents[idx] ?? 0;
-      if (attributedCents === 0) {
-        return;
-      }
-      if (entry.isMeteringServiceCost) {
-        meteringServiceCostCents += attributedCents;
-      }
-      breakdownMap.set(
-        entry.name,
-        (breakdownMap.get(entry.name) ?? 0) + attributedCents,
-      );
-    });
-
-    const costBreakdown = [...breakdownMap.entries()]
-      .map(([label, amountCents]) => ({ label, amountCents }))
-      .sort((a, b) => b.amountCents - a.amountCents);
+    const { costBreakdown, meteringServiceCostCents } = heatingCostBreakdown(
+      heatingCostEntries,
+      heatingAggregation.perItemAttributedCents,
+    );
     const { consumptionMethod } = heatingSettings;
     const consumptionMeters =
       consumptionMethod === "heat_cost_allocator"
@@ -2006,6 +2066,13 @@ export class StatementsService {
       warnings: hotWaterWarnings,
     });
 
+    const { warnings: substitutionWarnings, ...substitutionInputs } =
+      await this.substitutionContextService.buildContext(
+        buildingId,
+        statementPeriod,
+        consumptionMethod,
+      );
+
     try {
       heatingDetail = calculateHeating({
         totalHeatingCostsCents,
@@ -2029,6 +2096,13 @@ export class StatementsService {
           livingAreaSqm: unitsRaw.reduce((acc, u) => acc + u.areaSqm, 0),
           periodDays: statementPeriodDays,
         },
+        ...substitutionInputs,
+        fullOccupiedDaysByUnit: new Map(
+          unitsRaw.map((u) => [
+            u.id,
+            occupancyDaysByUnitFull.get(u.id)?.occupiedDays ?? 0,
+          ]),
+        ),
       });
       heatingDetail.costBreakdown = costBreakdown;
       applyBillingInfoCosts(
@@ -2040,23 +2114,8 @@ export class StatementsService {
       if (!heatingDetail.warnings) {
         heatingDetail.warnings = [];
       }
-      heatingDetail.warnings.push(...hotWaterWarnings);
-
-      if (heatingSettings.fuelType === "district_heat") {
-        heatingDetail.districtHeatInfo = {
-          emissionsKgPerYear: heatingSettings.districtHeatEmissionsKgPerYear,
-          primaryEnergyFactor: heatingSettings.districtHeatPrimaryEnergyFactor,
-        };
-
-        // § 6a Abs. 3 HeizkostenV verlangt bei Fernwärme THG-Emissionen und
-        // Primärenergiefaktor des Netzes. Ohne die Werte fehlt der Anhang.
-        if (
-          heatingSettings.districtHeatEmissionsKgPerYear === null ||
-          heatingSettings.districtHeatPrimaryEnergyFactor === null
-        ) {
-          heatingDetail.warnings.push({ code: "districtHeatInfoMissing" });
-        }
-      }
+      heatingDetail.warnings.push(...hotWaterWarnings, ...substitutionWarnings);
+      attachDistrictHeatInfo(heatingDetail, heatingSettings);
     } catch (err) {
       throw this.toCalcHttpError(err);
     }
@@ -2334,12 +2393,12 @@ export class StatementsService {
 
     const result = await this.calculateForStatement(statement);
 
-    // Ein auf null begrenzter negativer Verbrauch verschiebt Kosten auf die
-    // übrigen Wohnungen. Das darf nicht unbemerkt in eine unveränderbare
-    // Abrechnung wandern.
+    // Blockierende Warnungen (z. B. ein auf null begrenzter negativer
+    // Verbrauch oder eine offene Messdatenlücke) dürfen nicht in eine
+    // unveränderbare Abrechnung wandern.
     if (hasBlockingWarning(result)) {
       throw new BadRequestException(
-        getI18n().t("errors.statementFinalizeNegativeConsumption"),
+        getI18n().t("errors.statementFinalizeBlocked"),
       );
     }
 

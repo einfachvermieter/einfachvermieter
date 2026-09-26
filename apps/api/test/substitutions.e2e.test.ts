@@ -1,0 +1,421 @@
+/**
+ * Erfassungsausfall nach § 9a HeizkostenV über die echte HTTP-API gegen eine
+ * Wegwerf-SQLite: offene Lücke blockiert das Finalisieren, Validierung und
+ * Sperre der Erfassungsausfälle, Ausgleich im Folgejahr aus dem Snapshot.
+ */
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { MikroORM, RequestContext } from "@mikro-orm/core";
+import type { INestApplication } from "@nestjs/common";
+import { Test } from "@nestjs/testing";
+import cookieParser from "cookie-parser";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+const ADMIN_EMAIL = "e2e.substitution@einfachvermieter.invalid";
+const ADMIN_PASSWORD = "e2e-test-passwort-123";
+
+let app: INestApplication;
+let baseUrl: string;
+let dataDir: string;
+let authCookie = "";
+
+const api = async (
+  path: string,
+  options: { method?: string; body?: unknown; expect: number },
+  // biome-ignore lint/suspicious/noExplicitAny: E2E-Helper
+): Promise<any> => {
+  const method = options.method ?? "GET";
+  const response = await fetch(`${baseUrl}/api${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(authCookie ? { cookie: authCookie } : {}),
+    },
+    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+  });
+
+  const text = await response.text();
+  if (response.status !== options.expect) {
+    throw new Error(
+      `${method} ${path} -> ${response.status} (erwartet ${options.expect}): ${text.slice(0, 500)}`,
+    );
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+beforeAll(async () => {
+  dataDir = mkdtempSync(join(tmpdir(), "ev-e2e-substitution-"));
+  process.env.DATA_DIR = dataDir;
+  process.env.DATABASE_URL = "";
+  process.env.DB_DRIVER = "";
+  process.env.UPLOADS_DIR = join(dataDir, "uploads");
+  process.env.MISTRAL_API_KEY = "";
+
+  const { AppModule } = await import("../src/app.module.js");
+  const { AuthService } = await import("../src/auth/auth.service.js");
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule],
+  }).compile();
+
+  app = moduleRef.createNestApplication();
+  app.use(cookieParser());
+  app.setGlobalPrefix("api");
+  await app.init();
+
+  const orm = app.get(MikroORM);
+  await orm.schema.create();
+  const authService = app.get(AuthService);
+  await RequestContext.create(orm.em, () =>
+    authService.createUser({
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
+      role: "admin",
+    }),
+  );
+
+  await app.listen(0);
+  baseUrl = (await app.getUrl()).replace("[::1]", "127.0.0.1");
+
+  const login = await fetch(`${baseUrl}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+  });
+  authCookie = (login.headers.get("set-cookie") ?? "").split(";")[0] ?? "";
+
+  await api("/settings/sender", {
+    method: "PATCH",
+    body: {
+      senderName: "E2E Vermietung",
+      senderAddressStreet: "Absenderweg 1",
+      senderAddressPostalCode: "45127",
+      senderAddressCity: "Essen",
+      logoMode: "none",
+      logoAlignment: "center",
+      logoScalePercent: 100,
+    },
+    expect: 200,
+  });
+}, 60_000);
+
+afterAll(async () => {
+  await app?.close();
+  if (dataDir) {
+    rmSync(dataDir, { recursive: true, force: true });
+  }
+});
+
+describe("Erfassungsausfall nach § 9a HeizkostenV", () => {
+  it("blockiert Lücken, sperrt nach dem Finalisieren und gleicht im Folgejahr aus", async () => {
+    const building = await api("/buildings", {
+      method: "POST",
+      body: {
+        name: "Ausfall-Haus",
+        addressStreet: "Zählerweg 9",
+        addressPostalCode: "45128",
+        addressCity: "Essen",
+      },
+      expect: 201,
+    });
+    const makeUnit = (name: string, areaSqm: number) =>
+      api("/units", {
+        method: "POST",
+        body: { buildingId: building.id, name, areaSqm },
+        expect: 201,
+      });
+    const unitA = await makeUnit("A", 20);
+    const unitB = await makeUnit("B", 80);
+    const unitC = await makeUnit("C", 100);
+
+    const tenant = await api("/tenants", {
+      method: "POST",
+      body: {
+        unitId: unitA.id,
+        kind: "private",
+        startDate: "2025-01-01",
+        endDate: null,
+        depositCents: 0,
+        residents: [
+          {
+            resident: { firstName: "Anna", lastName: "Ausfall" },
+            isContractParty: true,
+          },
+        ],
+        rents: [
+          {
+            startDate: null,
+            endDate: null,
+            monthlyBaseRentCents: 50_000,
+            monthlyAdvanceCents: 5000,
+          },
+        ],
+      },
+      expect: 201,
+    });
+    const tenantId: string = tenant.tenant.id;
+
+    const makeMeter = (
+      label: string,
+      unitId: string | null,
+      type: string,
+      role: string,
+    ) =>
+      api("/meters", {
+        method: "POST",
+        body: {
+          buildingId: building.id,
+          unitId,
+          type,
+          role,
+          label,
+          measurementUnit: type === "water_cold" ? "m3" : "kwh",
+          ...(type === "heat_meter"
+            ? { costAllocationMode: "heating_cost_bill" }
+            : {}),
+          validFrom: "2025-01-01",
+        },
+        expect: 201,
+      });
+    const wmzA = await makeMeter("WMZ A", unitA.id, "heat_meter", "unit");
+    const wmzB = await makeMeter("WMZ B", unitB.id, "heat_meter", "unit");
+    const wmzC = await makeMeter("WMZ C", unitC.id, "heat_meter", "unit");
+    const waterMain = await makeMeter(
+      "Hauptwasserzähler",
+      null,
+      "water_cold",
+      "main",
+    );
+
+    const addReading = (meterId: string, readingDate: string, value: number) =>
+      api("/meters/readings", {
+        method: "POST",
+        body: { meterId, readingDate, value },
+        expect: 201,
+      });
+    await addReading(wmzA.id, "2025-01-01", 10_000);
+    await addReading(wmzA.id, "2025-12-31", 16_000);
+    for (const [meterId, base] of [
+      [wmzB.id, 0],
+      [wmzC.id, 0],
+      [waterMain.id, 0],
+    ] as const) {
+      await addReading(meterId, "2025-01-01", base);
+      await addReading(meterId, "2025-12-31", base + 5000);
+      await addReading(meterId, "2026-01-01", base + 5000);
+      await addReading(meterId, "2026-12-31", base + 10_000);
+    }
+
+    const heatingCostType = await api("/costs/types", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        name: "Heizung",
+        category: "heating",
+        defaultAllocationKey: null,
+        laborCostCategory: null,
+      },
+      expect: 201,
+    });
+    for (const year of ["2025", "2026", "2027"]) {
+      await api("/costs", {
+        method: "POST",
+        body: {
+          buildingId: building.id,
+          invoiceDate: `${year}-03-01`,
+          vendor: "Stadtwerke",
+          items: [
+            {
+              costTypeId: heatingCostType.id,
+              amountCents: 100_000,
+              periodStart: `${year}-01-01`,
+              periodEnd: `${year}-12-31`,
+            },
+          ],
+        },
+        expect: 201,
+      });
+    }
+    await api(`/buildings/${building.id}/heating`, {
+      method: "POST",
+      body: {
+        mode: "internal",
+        validFrom: "2025-01-01",
+        validTo: null,
+        baseSharePercent: 30,
+        consumptionSharePercent: 70,
+        baseMethod: "area",
+        consumptionMethod: "heat_meter",
+        prorationMethod: "linear",
+        heatingType: "central_without_hot_water",
+        fuelType: "gas",
+        hotWaterMeterId: null,
+        hotWaterSupplyTemperatureCelsius: 60,
+        totalHeatEnergyKwh: null,
+        co2CostShareEnabled: false,
+      },
+      expect: 201,
+    });
+
+    // ── 2026: Endstand von WMZ A fehlt ──────────────────────────────────
+    const statement2026 = await api("/statements", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        tenantId,
+        periodStart: "2026-01-01",
+        periodEnd: "2026-12-31",
+      },
+      expect: 201,
+    });
+    const gapPreview = await api(
+      `/statements/preview/calculate?buildingId=${building.id}&tenantId=${tenantId}&from=2026-01-01&to=2026-12-31`,
+      { expect: 200 },
+    );
+    const gapCodes = gapPreview.heatingDetail.warnings.map(
+      (warning: { code: string }) => warning.code,
+    );
+    expect(gapCodes).toContain("consumptionGap");
+    await api(`/statements/${statement2026.id}/finalize`, {
+      method: "POST",
+      expect: 400,
+    });
+
+    const base = {
+      unitId: unitA.id,
+      periodStart: "2026-01-01",
+      periodEnd: "2026-12-31",
+      scope: "heating",
+      reason: "reading_not_possible",
+      reasonNote: null,
+      affectedMeterIds: [wmzA.id],
+      meterKeptCounting: true,
+      affectedAreaSqm: null,
+      method: "same_rooms_comparable_period",
+      basisSource: "meter_readings",
+      referencePeriodStart: "2025-01-01",
+      referencePeriodEnd: "2025-12-31",
+      referenceMeterIds: null,
+      comparisonUnitIds: null,
+      manualAffectedConsumption: null,
+      manualTotalConsumption: null,
+      manualComparisonConsumption: null,
+      manualComparisonAreaSqm: null,
+      basisNote: null,
+    };
+    const path = `/buildings/${building.id}/consumption-substitutions`;
+
+    // Validierung
+    await api(path, {
+      method: "POST",
+      body: { ...base, affectedMeterIds: [wmzB.id] },
+      expect: 400,
+    });
+    await api(path, {
+      method: "POST",
+      body: { ...base, meterKeptCounting: null },
+      expect: 400,
+    });
+    await api(path, {
+      method: "POST",
+      body: { ...base, referencePeriodStart: "2025-02-01" },
+      expect: 400,
+    });
+
+    const options = await api(
+      `${path}/options?unitId=${unitA.id}&scope=heating&periodStart=2026-01-01&periodEnd=2026-12-31&meterIds=${wmzA.id}`,
+      { expect: 200 },
+    );
+    expect(options.referenceYears[0]).toMatchObject({
+      years: 1,
+      isUsable: true,
+    });
+    expect(options.meters).toEqual([
+      expect.objectContaining({
+        id: wmzA.id,
+        isContinuous: true,
+        hasGap: true,
+      }),
+    ]);
+
+    const preview = await api(`${path}/preview`, {
+      method: "POST",
+      body: { existingId: null, substitution: base },
+      expect: 201,
+    });
+    expect(preview.resolved.substituteConsumption).toBe(6000);
+
+    const created = await api(path, {
+      method: "POST",
+      body: base,
+      expect: 201,
+    });
+    await api(path, { method: "POST", body: base, expect: 409 });
+
+    const finalized = await api(`/statements/${statement2026.id}/finalize`, {
+      method: "POST",
+      expect: 201,
+    });
+    const [snapshotSubstitution] =
+      finalized.snapshotData.heatingDetail.substitutions;
+    expect(snapshotSubstitution.perMeter[0]).toMatchObject({
+      periodStartValue: 16_000,
+      substituteConsumption: 6000,
+    });
+    expect(snapshotSubstitution.appliedToDistribution).toBe(true);
+    const tenantNotices = finalized.snapshotData.heatingDetail.warnings.map(
+      (warning: { code: string }) => warning.code,
+    );
+    expect(tenantNotices).toContain("substitutionHeatingSameRooms");
+
+    const pdf = await fetch(
+      `${baseUrl}/api/statements/${statement2026.id}/pdf`,
+      {
+        headers: { cookie: authCookie },
+      },
+    );
+    expect(pdf.status).toBe(200);
+    expect((await pdf.arrayBuffer()).byteLength).toBeGreaterThan(1000);
+
+    // Gesperrt nach dem Finalisieren
+    await api(`/consumption-substitutions/${created.id}`, {
+      method: "PATCH",
+      body: { ...base, reasonNote: "geändert" },
+      expect: 400,
+    });
+    await api(`/consumption-substitutions/${created.id}`, {
+      method: "DELETE",
+      expect: 400,
+    });
+
+    // ── 2027: echter Stand, Ausgleich ab 22.000 ─────────────────────────
+    await addReading(wmzA.id, "2027-12-31", 27_000);
+    for (const meterId of [wmzB.id, wmzC.id, waterMain.id]) {
+      await addReading(meterId, "2027-01-01", 10_000);
+      await addReading(meterId, "2027-12-31", 15_000);
+    }
+    const preview2027 = await api(
+      `/statements/preview/calculate?buildingId=${building.id}&tenantId=${tenantId}&from=2027-01-01&to=2027-12-31`,
+      { expect: 200 },
+    );
+    const detail2027 = preview2027.heatingDetail;
+    expect(detail2027.compensations[0]).toMatchObject({
+      compensationValue: 22_000,
+      resultingConsumption: 5000,
+      source: { fromSnapshotOfStatementId: statement2026.id },
+    });
+    expect(
+      detail2027.perUnit.find(
+        (row: { unitId: string }) => row.unitId === unitA.id,
+      ).consumptionKwh,
+    ).toBe(5000);
+    expect(
+      detail2027.warnings.map((warning: { code: string }) => warning.code),
+    ).toContain("substitutionCompensationHeating");
+  }, 120_000);
+});

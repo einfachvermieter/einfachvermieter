@@ -3,6 +3,7 @@ import {
   billingInfoCostRows,
   billingInfoRows,
   energyComparisonDisplay,
+  energyComparisonOmittedNote,
   type HeatingDetail,
   type Period,
 } from "@einfachvermieter/shared";
@@ -46,6 +47,7 @@ export const BillingInfoAppendix = ({
   const prevComparison = detail.energyComparison
     ? energyComparisonDisplay(detail.energyComparison)
     : null;
+  const prevComparisonOmitted = energyComparisonOmittedNote(detail);
 
   return (
     <View>
@@ -139,9 +141,16 @@ export const BillingInfoAppendix = ({
             {t("statements.pdf.billingInfo.comparisonPrevTitle")}
           </Text>
           {prevComparison.previousMissing ? (
-            <Text style={styles.footnote}>
-              {t("statements.pdf.billingInfo.comparisonPrevMissing")}
-            </Text>
+            <>
+              <Text style={styles.footnote}>
+                {t("statements.pdf.billingInfo.comparisonPrevMissing")}
+              </Text>
+              {prevComparison.notes.map((note) => (
+                <Text key={note.key} style={styles.footnote}>
+                  {t(note.key, note.params)}
+                </Text>
+              ))}
+            </>
           ) : (
             <>
               {prevComparison.bars.map((bar) => (
@@ -166,6 +175,17 @@ export const BillingInfoAppendix = ({
               ))}
             </>
           )}
+        </>
+      ) : null}
+
+      {prevComparisonOmitted ? (
+        <>
+          <Text style={styles.appendixSubheading}>
+            {t("statements.pdf.billingInfo.comparisonPrevTitle")}
+          </Text>
+          <Text style={styles.footnote}>
+            {t(prevComparisonOmitted.key, prevComparisonOmitted.params)}
+          </Text>
         </>
       ) : null}
 

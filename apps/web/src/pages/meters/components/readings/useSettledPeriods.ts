@@ -5,7 +5,7 @@ import { statementsQueryOptions } from "../../../../lib/statements";
 export type SettledPeriod = { start: string; end: string };
 
 /**
- * Zeiträume festgeschriebener Abrechnungen eines Gebäudes. Zählerstände darin
+ * Zeiträume finalisierter Abrechnungen eines Gebäudes. Zählerstände darin
  * sind bereits abgerechnet; eine Änderung wirkt nur über eine Korrektur.
  */
 export const useSettledPeriods = (buildingId: string): SettledPeriod[] => {

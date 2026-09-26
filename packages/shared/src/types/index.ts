@@ -1,3 +1,10 @@
+import type {
+  SubstitutionBasisSource,
+  SubstitutionMethod,
+  SubstitutionReason,
+  SubstitutionScope,
+} from "../schemas/consumption-substitutions.js";
+
 export type Period = {
   start: string; // YYYY-MM-DD inklusiv
   end: string; // YYYY-MM-DD inklusiv
@@ -77,6 +84,11 @@ export type ReadingPoint = {
   value: number;
   isCumulative: boolean;
   isEstimated: boolean;
+  /**
+   * Ausgleichsstand nach § 9a HeizkostenV: zur Laufzeit aus einem bereits
+   * abgerechneten Ersatzverbrauch der Vorperiode gebildet, keine Ablesung.
+   */
+  compensation?: true;
 };
 
 export type CostEntry = {
@@ -461,6 +473,10 @@ export type HeatingDetail = {
      * Mindestens einer der beiden Stichtagsstände wurde nicht direkt abgelesen.
      */
     consumptionIsDerived?: boolean;
+    /**
+     * Der Verbrauch ist ein Ersatzverbrauch nach § 9a HeizkostenV.
+     */
+    consumptionIsSubstituted?: boolean;
   }>;
   perUnit: Array<{
     unitId: string;
@@ -473,7 +489,33 @@ export type HeatingDetail = {
     areaSqm: number;
     basicCostCents: number;
     totalCents: number;
+    /**
+     * Der Verbrauch enthält einen Ersatzverbrauch nach § 9a HeizkostenV.
+     */
+    consumptionIsSubstituted?: boolean;
   }>;
+  /**
+   * Erfassungsausfälle nach § 9a HeizkostenV dieser Periode (Heizung und
+   * Warmwasser), wie sie in die Berechnung eingegangen sind.
+   */
+  substitutions?: SubstitutionSnapshot[];
+  /**
+   * Ausgleichsstände aus Ersatzverbräuchen früherer Perioden, die in diese
+   * Periode hineinwirken.
+   */
+  compensations?: CompensationSnapshot[];
+  /**
+   * Betroffene Fläche je Bereich für die 25-%-Grenze nach § 9a Abs. 2.
+   */
+  substitutionArea?: {
+    heating?: SubstitutionAreaSnapshot;
+    hotWater?: SubstitutionAreaSnapshot;
+  };
+  /**
+   * Grund, wenn der Verbrauchsanteil nach Fläche verteilt wurde: fehlende
+   * Messung (`fallback`) oder § 9a Abs. 2 (`substitution_limit_exceeded`).
+   */
+  areaDistributionReason?: AreaDistributionReason;
   /**
    * Grundkosten-Anteil durch Leerstand auf den Vermieter. 0 bei Vollbelegung. Nur intern.
    */
@@ -638,6 +680,10 @@ export type HeatingDetail = {
      * - "heating_area": Fallback nach Wohnfläche.
      */
     consumptionDistributionMethod: "consumption" | "heating_area";
+    /**
+     * Grund der Flächenverteilung des Verbrauchsanteils, siehe Heizung.
+     */
+    areaDistributionReason?: AreaDistributionReason;
     perUnit: Array<{
       unitId: string;
       unitName: string;
@@ -649,6 +695,10 @@ export type HeatingDetail = {
       areaSqm: number;
       basicCostCents: number;
       totalCents: number;
+      /**
+       * Der Warmwasserverbrauch enthält einen Ersatzverbrauch nach § 9a.
+       */
+      hotWaterIsSubstituted?: boolean;
     }>;
     /**
      * Grundkosten-Anteil durch Leerstand auf den Vermieter.
@@ -710,4 +760,92 @@ export type EnergyComparisonValue = {
    * Quellen-Angabe in der Fußnote.
    */
   climateFactorIsManual?: boolean;
+  /**
+   * Der Verbrauch enthält einen Ersatzverbrauch oder einen Ausgleich nach
+   * § 9a HeizkostenV.
+   */
+  containsSubstitute?: boolean;
+};
+
+export type AreaDistributionReason = "fallback" | "substitution_limit_exceeded";
+
+/**
+ * Betroffene und gesamte Grundkostenfläche eines Bereichs
+ */
+export type SubstitutionAreaSnapshot = {
+  affectedAreaSqm: number;
+  totalAreaSqm: number;
+  limitExceeded: boolean;
+};
+
+/**
+ * Ein Erfassungsausfall, wie er abgerechnet wurde. `perMeter` ist
+ * maßgeblich für den Ausgleich in späteren Perioden.
+ */
+export type SubstitutionSnapshot = {
+  substitutionId: string;
+  unitId: string;
+  unitName: string;
+  scope: SubstitutionScope;
+  reason: SubstitutionReason;
+  reasonNote?: string;
+  method: SubstitutionMethod;
+  basisSource: SubstitutionBasisSource;
+  meterKeptCounting?: boolean;
+  affectedAreaSqm: number;
+  basis: {
+    referencePeriod?: Period;
+    referenceAffectedConsumption?: number;
+    referenceTotalConsumption?: number;
+    referenceShare?: number;
+    comparisonUnitNames?: string[];
+    comparisonConsumption?: number;
+    comparisonAreaSqm?: number;
+    ratePerSqm?: number;
+    basisNote?: string;
+  };
+  perMeter: Array<{
+    meterId: string;
+    meterLabel: string;
+    /**
+     * Stand am Periodenanfang, mit dem gerechnet wurde. null bei Geräten
+     * mit Stichtag oder ohne verwertbaren Anfangsstand.
+     */
+    periodStartValue: number | null;
+    substituteConsumption: number;
+  }>;
+  substituteConsumption: number;
+  /**
+   * false, wenn § 9a Abs. 2 greift: dann wurde nach Fläche verteilt.
+   */
+  appliedToDistribution: boolean;
+};
+
+/**
+ * Ein Ausgleichsstand, mit dem diese Periode gerechnet wurde
+ */
+export type CompensationSnapshot = {
+  meterId: string;
+  meterLabel: string;
+  unitId: string;
+  scope: SubstitutionScope;
+  source: {
+    period: Period;
+    substitutionId: string;
+    method: SubstitutionMethod;
+    reason: SubstitutionReason;
+    /**
+     * Abrechnung, aus deren Snapshot der Ersatzverbrauch stammt. Fehlt, wenn
+     * die Ausfallperiode noch nicht finalisiert ist.
+     */
+    fromSnapshotOfStatementId?: string;
+  };
+  periodStartValue: number;
+  substituteConsumption: number;
+  compensationValue: number;
+  nextReading: { date: string; value: number } | null;
+  /**
+   * Nächster echter Stand minus Ausgleichsstand. null ohne nächsten Stand.
+   */
+  resultingConsumption: number | null;
 };

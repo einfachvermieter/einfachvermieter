@@ -4,6 +4,7 @@ export * from "./attachments.js";
 export * from "./auth.js";
 export * from "./buildings.js";
 export * from "./common.js";
+export * from "./consumption-substitutions.js";
 export * from "./core.js";
 export * from "./field-validation.js";
 export * from "./heating.js";

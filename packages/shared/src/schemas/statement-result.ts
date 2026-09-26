@@ -4,11 +4,81 @@ import {
   type StatementResult,
 } from "../types/index.js";
 import { allocationKeys, isoDate } from "./common.js";
+import {
+  substitutionBasisSources,
+  substitutionMethods,
+  substitutionReasons,
+  substitutionScopes,
+} from "./consumption-substitutions.js";
 import { containedTaxKinds } from "./core.js";
 
 const periodSchema = z.object({
   start: isoDate(),
   end: isoDate(),
+});
+
+const areaDistributionReasonSchema = z.enum([
+  "fallback",
+  "substitution_limit_exceeded",
+]);
+
+const substitutionAreaSchema = z.object({
+  affectedAreaSqm: z.number(),
+  totalAreaSqm: z.number(),
+  limitExceeded: z.boolean(),
+});
+
+const substitutionSnapshotSchema = z.object({
+  substitutionId: z.string().min(1),
+  unitId: z.string().min(1),
+  unitName: z.string(),
+  scope: z.enum(substitutionScopes),
+  reason: z.enum(substitutionReasons),
+  reasonNote: z.string().optional(),
+  method: z.enum(substitutionMethods),
+  basisSource: z.enum(substitutionBasisSources),
+  meterKeptCounting: z.boolean().optional(),
+  affectedAreaSqm: z.number(),
+  basis: z.object({
+    referencePeriod: periodSchema.optional(),
+    referenceAffectedConsumption: z.number().optional(),
+    referenceTotalConsumption: z.number().optional(),
+    referenceShare: z.number().optional(),
+    comparisonUnitNames: z.array(z.string()).optional(),
+    comparisonConsumption: z.number().optional(),
+    comparisonAreaSqm: z.number().optional(),
+    ratePerSqm: z.number().optional(),
+    basisNote: z.string().optional(),
+  }),
+  perMeter: z.array(
+    z.object({
+      meterId: z.string().min(1),
+      meterLabel: z.string(),
+      periodStartValue: z.number().nullable(),
+      substituteConsumption: z.number(),
+    }),
+  ),
+  substituteConsumption: z.number(),
+  appliedToDistribution: z.boolean(),
+});
+
+const compensationSnapshotSchema = z.object({
+  meterId: z.string().min(1),
+  meterLabel: z.string(),
+  unitId: z.string().min(1),
+  scope: z.enum(substitutionScopes),
+  source: z.object({
+    period: periodSchema,
+    substitutionId: z.string().min(1),
+    method: z.enum(substitutionMethods),
+    reason: z.enum(substitutionReasons),
+    fromSnapshotOfStatementId: z.string().optional(),
+  }),
+  periodStartValue: z.number(),
+  substituteConsumption: z.number(),
+  compensationValue: z.number(),
+  nextReading: z.object({ date: isoDate(), value: z.number() }).nullable(),
+  resultingConsumption: z.number().nullable(),
 });
 
 /**
@@ -120,6 +190,7 @@ export const heatingDetailSchema = z.object({
         // Nur gesetzt, wenn mindestens ein Stichtagsstand nicht direkt
         // abgelesen, sondern abgeleitet wurde.
         consumptionIsDerived: z.boolean().optional(),
+        consumptionIsSubstituted: z.boolean().optional(),
       }),
     )
     .optional(),
@@ -132,8 +203,18 @@ export const heatingDetailSchema = z.object({
       areaSqm: z.number(),
       basicCostCents: z.number().int(),
       totalCents: z.number().int(),
+      consumptionIsSubstituted: z.boolean().optional(),
     }),
   ),
+  substitutions: z.array(substitutionSnapshotSchema).optional(),
+  compensations: z.array(compensationSnapshotSchema).optional(),
+  substitutionArea: z
+    .object({
+      heating: substitutionAreaSchema.optional(),
+      hotWater: substitutionAreaSchema.optional(),
+    })
+    .optional(),
+  areaDistributionReason: areaDistributionReasonSchema.optional(),
   /**
    * Vermieteranteil (Leerstand/Mieterwechsel) an Grund- bzw.
    * Verbrauchskosten, letzte Position der Flächen-/Verbrauchs-
@@ -249,6 +330,7 @@ export const heatingDetailSchema = z.object({
       // Fehlt in älteren Snapshots (dort Heizfläche in perUnit.areaSqm).
       basicAreaBasis: z.literal("living_area").optional(),
       consumptionDistributionMethod: z.enum(["consumption", "heating_area"]),
+      areaDistributionReason: areaDistributionReasonSchema.optional(),
       perUnit: z.array(
         z.object({
           unitId: z.string(),
@@ -258,6 +340,7 @@ export const heatingDetailSchema = z.object({
           areaSqm: z.number(),
           basicCostCents: z.number().int(),
           totalCents: z.number().int(),
+          hotWaterIsSubstituted: z.boolean().optional(),
         }),
       ),
       landlordBasicCostCents: z.number().int(),
@@ -277,6 +360,7 @@ export const heatingDetailSchema = z.object({
         normalizedConsumption: z.number(),
         climateFactor: z.number().optional(),
         climateFactorIsManual: z.boolean().optional(),
+        containsSubstitute: z.boolean().optional(),
       }),
       previous: z
         .object({
@@ -284,6 +368,7 @@ export const heatingDetailSchema = z.object({
           normalizedConsumption: z.number(),
           climateFactor: z.number().optional(),
           climateFactorIsManual: z.boolean().optional(),
+          containsSubstitute: z.boolean().optional(),
         })
         .optional(),
     })

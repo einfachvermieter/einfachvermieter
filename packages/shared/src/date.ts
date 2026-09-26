@@ -96,3 +96,38 @@ export const enumerateMonths = (
 
   return result;
 };
+
+/**
+ * ISO-Datum um ganze Jahre verschoben. Der 29. Februar wird in einem
+ * Nicht-Schaltjahr zum 28. Februar.
+ */
+export const shiftIsoYears = (iso: string, years: number): string => {
+  const { year, month, day } = splitIsoDate(iso);
+  const targetYear = year + years;
+  const isLeap =
+    (targetYear % 4 === 0 && targetYear % 100 !== 0) || targetYear % 400 === 0;
+  const targetDay = month === 2 && day === 29 && !isLeap ? 28 : day;
+
+  return `${pad4(targetYear)}-${pad2(month)}-${pad2(targetDay)}`;
+};
+
+/**
+ * Anzahl ganzer Jahre, um die `reference` gegenüber `period` zurückliegt,
+ * wenn Anfang und Ende um genau dieselbe Zahl Jahre verschoben sind; sonst
+ * null.
+ */
+export const wholeYearsBefore = (
+  period: { start: string; end: string },
+  reference: { start: string; end: string },
+): number | null => {
+  const years =
+    splitIsoDate(period.start).year - splitIsoDate(reference.start).year;
+  if (years < 1) {
+    return null;
+  }
+
+  return shiftIsoYears(period.start, -years) === reference.start &&
+    shiftIsoYears(period.end, -years) === reference.end
+    ? years
+    : null;
+};

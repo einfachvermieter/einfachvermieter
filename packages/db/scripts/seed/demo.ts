@@ -557,13 +557,8 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       value: 103,
       readBy: "metering_service",
     },
-    {
-      id: nid(),
-      meterId: aHkvEgBad,
-      readingDate: "2025-12-31",
-      value: 198,
-      readBy: "metering_service",
-    },
+    // EG Bad: Stand zum 31.12.2025 fehlt (Messdienst kam nicht in die
+    // Wohnung), dafür ein Erfassungsausfall nach § 9a HeizkostenV unten.
     {
       id: nid(),
       meterId: aHkvOgWohn,
@@ -993,6 +988,34 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   ]);
 
   // Abrechnungen A (Entwurf) - werden in der UI live berechnet.
+  // § 9a HeizkostenV: Ersatzverbrauch für den HKV im EG-Bad aus dem
+  // Vorjahresanteil (Teilausfall, Raum 8 qm)
+  insert(schema.consumptionSubstitutions, {
+    id: nid(),
+    buildingId: aBuilding,
+    unitId: aUnitEg,
+    periodStart: "2025-01-01",
+    periodEnd: "2025-12-31",
+    scope: "heating",
+    reason: "reading_not_possible",
+    reasonNote: null,
+    affectedMeterIds: [aHkvEgBad],
+    meterKeptCounting: null,
+    affectedAreaSqm: 8,
+    method: "same_rooms_comparable_period",
+    basisSource: "meter_readings",
+    referencePeriodStart: "2024-01-01",
+    referencePeriodEnd: "2024-12-31",
+    referenceMeterIds: null,
+    comparisonUnitIds: null,
+    manualAffectedConsumption: null,
+    manualTotalConsumption: null,
+    manualComparisonConsumption: null,
+    manualComparisonAreaSqm: null,
+    basisNote: null,
+    decidedByUserId: null,
+  });
+
   insert(schema.operatingCostStatements, [
     {
       id: nid(),

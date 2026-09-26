@@ -186,6 +186,10 @@
     "heatingSettings": {
       "one": "Heizkosten-Konfiguration",
       "other": "Heizkosten-Konfigurationen"
+    },
+    "consumptionSubstitution": {
+      "one": "Erfassungsausfall",
+      "other": "Erfassungsausfälle"
     }
   },
   "startup": {
@@ -214,7 +218,6 @@
     "statementCancelHasPayments": "Auf diese Abrechnung sind bereits Zahlungen gebucht. Löschen Sie zuerst die Zahlungen oder erstellen Sie stattdessen eine Korrektur.",
     "statementNotCorrectable": "Zu dieser Abrechnung kann keine Korrektur erstellt werden (sie muss finalisiert oder storniert sein)",
     "statementPeriodOverlapsFinalized": "Für diesen Mieter existiert bereits eine finalisierte Abrechnung für den Zeitraum {periodStart} – {periodEnd}. Eine erneute Abrechnung dieser Periode ist nur als Korrektur der bestehenden möglich.",
-    "statementFinalizeNegativeConsumption": "Mindestens ein Zähler weist einen negativen Verbrauch aus. Bitte korrigieren Sie die Zählerstände, danach lässt sich die Abrechnung finalisieren.",
     "statementFinalizeSenderIncomplete": "Die Absenderdaten sind unvollständig. Bitte tragen Sie Name, Straße, PLZ und Ort in den Einstellungen unter „Absender“ ein, danach lässt sich die Abrechnung finalisieren.",
     "statementNoCostsInPeriod": "Für diesen Zeitraum sind keine Rechnungen erfasst. Bitte erfassen Sie zuerst die Rechnungen des Abrechnungszeitraums.",
     "statementFinalizeCalculationIncomplete": "Berechnungsergebnis ist unvollständig, Finalisierung abgebrochen: {message}",
@@ -289,6 +292,22 @@
       "retry": "Erneut versuchen",
       "reload": "Seite neu laden",
       "saveReport": "Fehlerbericht sichern"
+    },
+    "statementFinalizeBlocked": "Die Abrechnung lässt sich noch nicht finalisieren: Es gibt Hinweise, die zuerst gelöst werden müssen, z. B. fehlende Zählerstände, einen negativen Verbrauch oder einen offenen Erfassungsausfall. Die Hinweise stehen in der Übersicht der Abrechnung.",
+    "substitutionFinalizedImmutable": "Für diese Periode ist bereits eine Abrechnung des Gebäudes finalisiert. Erfassungsausfälle lassen sich deshalb nicht mehr ändern.",
+    "substitutionDuplicate": "Für diese Wohnung und diesen Bereich ist in der Periode schon ein Erfassungsausfall erfasst.",
+    "substitutionIdentityFixed": "Wohnung, Bereich und Periode eines Erfassungsausfalls lassen sich nicht ändern. Bitte löschen Sie ihn und legen Sie ihn neu an.",
+    "substitutionScopeInactive": "Dieser Bereich wird für die Periode nicht nach der Heizkostenverordnung in der App abgerechnet.",
+    "substitution": {
+      "meterMismatch": "Mindestens ein Zähler gehört nicht zur Wohnung oder passt nicht zum Bereich.",
+      "meterKeptCountingRequired": "Bitte geben Sie an, ob der Zähler weitergezählt hat.",
+      "meterKeptCountingNotApplicable": "Die Angabe, ob der Zähler weitergezählt hat, gilt nur für fortlaufende Zähler.",
+      "areaWholeUnit": "Alle Zähler der Wohnung sind betroffen, es gilt deshalb die Fläche der ganzen Wohnung.",
+      "areaPartial": "Bitte geben Sie die Fläche der betroffenen Räume an. Sie muss kleiner sein als die Fläche der Wohnung.",
+      "manualTotalRequired": "Bei Heizkostenverteilern braucht der Vergleichswert auch den Gesamtverbrauch des Gebäudes.",
+      "manualTotalNotApplicable": "Ein Gesamtverbrauch des Gebäudes wird nur bei Heizkostenverteilern gebraucht.",
+      "manualComparisonAllocator": "Werte von Heizkostenverteilern aus anderen Gebäuden sind nicht vergleichbar. Bitte wählen Sie Vergleichswohnungen aus diesem Gebäude.",
+      "comparisonUnitMismatch": "Mindestens eine Vergleichswohnung gehört nicht zum Gebäude."
     }
   },
   "warnings": {
@@ -328,7 +347,32 @@
     "hotWaterConsumptionFallbackArea": "Es ist kein Warmwasserverbrauch je Wohnung erfasst. Der Verbrauchsanteil der Warmwasserkosten wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
     "aiNoCostTypes": "Keine Kostenarten hinterlegt: Bitte zuerst Kostenarten anlegen, danach kann die KI eindeutig zuordnen.",
     "aiUnknownCostType": "Position {position}: Die KI hat eine unbekannte Kostenart vorgeschlagen. Bitte manuell wählen.",
-    "aiGrossMismatch": "Brutto-Validierung fehlgeschlagen: Die Summe der Positionen weicht um {diffCents} ct vom Brutto-Endbetrag ab. Bitte Beträge manuell prüfen."
+    "aiGrossMismatch": "Brutto-Validierung fehlgeschlagen: Die Summe der Positionen weicht um {diffCents} ct vom Brutto-Endbetrag ab. Bitte Beträge manuell prüfen.",
+    "consumptionGap": "In Wohnung {unit} fehlt der Zählerstand zum {date}, der Verbrauch ist deshalb nicht vollständig erfasst. Bitte tragen Sie die Ablesung nach oder erfassen Sie einen Erfassungsausfall nach § 9a HeizkostenV.",
+    "hotWaterVolumeIncomplete": "Die Warmwasser-Wärmemenge wird mit der Formel aus § 9 Abs. 2 HeizkostenV aus dem gemessenen Warmwasservolumen bestimmt. Für mindestens eine Wohnung liegt kein gemessener Warmwasserverbrauch vor, das Volumen ist deshalb unvollständig. Bitte korrigieren Sie die Zählerstände oder messen Sie die Wärmemenge mit einem Wärmezähler am Warmwasserbereiter.",
+    "substitutionCompensationNegative": "Der Ausgleichsstand aus dem Ersatzverbrauch der Vorperiode liegt über dem nächsten abgelesenen Stand vom {date}. Der Ersatzverbrauch war zu hoch angesetzt. Bitte klären Sie den Fall, bevor Sie die Abrechnung finalisieren.",
+    "substitutionReferenceIncomplete": "Erfassungsausfall in Wohnung {unit}: Der Vergleichszeitraum ist nicht ordnungsgemäß erfasst. Bitte wählen Sie einen anderen Zeitraum oder belegen Sie den Vergleichswert von Hand.",
+    "substitutionComparisonInvalid": "Erfassungsausfall in Wohnung {unit}: Die Vergleichswohnungen taugen nicht als Grundlage. Nötig sind mindestens zwei Wohnungen mit vollständig erfassten Werten und ohne eigenen Erfassungsausfall.",
+    "substitutionShareInvalid": "Erfassungsausfall in Wohnung {unit}: Die Vergleichsanteile aller Erfassungsausfälle ergeben zusammen 100 % oder mehr. Bitte prüfen Sie die Vergleichsgrundlagen.",
+    "substitutionBasisMissing": "Erfassungsausfall in Wohnung {unit}: Ein angegebener Zähler oder eine Wohnung passt nicht mehr zur Grundlage. Bitte prüfen Sie die Angaben.",
+    "substitutionMeterSetChanged": "Erfassungsausfall in Wohnung {unit}: Im Vergleichszeitraum waren andere Heizkostenverteiler erfasst als heute. Die Anteile können sich dadurch verschieben.",
+    "substitutionComparisonVacancy": "Erfassungsausfall in Wohnung {unit}: Eine Vergleichswohnung stand in der Periode zeitweise leer, ihr Verbrauch ist dadurch niedriger.",
+    "substitutionDataNowComplete": "Für Wohnung {unit} ist ein Erfassungsausfall erfasst, die Zählerstände sind inzwischen aber vollständig. Bitte prüfen Sie, ob der Erfassungsausfall noch nötig ist.",
+    "substitutionRecordDiffersFromSnapshot": "Der Erfassungsausfall der Vorperiode für Wohnung {unit} weicht von der finalisierten Abrechnung ab. Für den Ausgleich gilt der Wert aus der finalisierten Abrechnung.",
+    "substitutionHeatingSameRooms": "Ihr Heizverbrauch konnte nicht ordnungsgemäß erfasst werden. Er wurde nach § 9a HeizkostenV anhand des Verbrauchs derselben Räume in einem vergleichbaren Zeitraum ermittelt.",
+    "substitutionHeatingComparableRooms": "Ihr Heizverbrauch konnte nicht ordnungsgemäß erfasst werden. Er wurde nach § 9a HeizkostenV anhand des Verbrauchs vergleichbarer anderer Räume im selben Abrechnungszeitraum ermittelt.",
+    "substitutionHeatingBuildingAverage": "Ihr Heizverbrauch konnte nicht ordnungsgemäß erfasst werden. Er wurde nach § 9a HeizkostenV anhand des Durchschnittsverbrauchs des Gebäudes ermittelt.",
+    "substitutionHeatingGroupAverage": "Ihr Heizverbrauch konnte nicht ordnungsgemäß erfasst werden. Er wurde nach § 9a HeizkostenV anhand des Durchschnittsverbrauchs einer vergleichbaren Nutzergruppe ermittelt.",
+    "substitutionHotWaterSameRooms": "Ihr Warmwasserverbrauch konnte nicht ordnungsgemäß erfasst werden. Er wurde nach § 9a HeizkostenV anhand des Verbrauchs derselben Räume in einem vergleichbaren Zeitraum ermittelt.",
+    "substitutionHotWaterComparableRooms": "Ihr Warmwasserverbrauch konnte nicht ordnungsgemäß erfasst werden. Er wurde nach § 9a HeizkostenV anhand des Verbrauchs vergleichbarer anderer Räume im selben Abrechnungszeitraum ermittelt.",
+    "substitutionHotWaterBuildingAverage": "Ihr Warmwasserverbrauch konnte nicht ordnungsgemäß erfasst werden. Er wurde nach § 9a HeizkostenV anhand des Durchschnittsverbrauchs des Gebäudes ermittelt.",
+    "substitutionHotWaterGroupAverage": "Ihr Warmwasserverbrauch konnte nicht ordnungsgemäß erfasst werden. Er wurde nach § 9a HeizkostenV anhand des Durchschnittsverbrauchs einer vergleichbaren Nutzergruppe ermittelt.",
+    "substitutionOtherUnitsHeating": "Für einzelne andere Wohnungen wurde der Heizverbrauch nach § 9a HeizkostenV ersatzweise ermittelt.",
+    "substitutionOtherUnitsHotWater": "Für einzelne andere Wohnungen wurde der Warmwasserverbrauch nach § 9a HeizkostenV ersatzweise ermittelt.",
+    "substitutionAreaDistributionHeating": "Für mehr als 25 % der Fläche konnte der Heizverbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Heizkosten daher vollständig nach der Heizfläche verteilt.",
+    "substitutionAreaDistributionHotWater": "Für mehr als 25 % der Fläche konnte der Warmwasserverbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Warmwasserkosten daher vollständig nach der Wohnfläche verteilt.",
+    "substitutionCompensationHeating": "Der Heizverbrauch der Vorperiode wurde nach § 9a HeizkostenV ersatzweise ermittelt. Mit der aktuellen Ablesung wird die Abweichung zum tatsächlichen Verbrauch ausgeglichen.",
+    "substitutionCompensationHotWater": "Der Warmwasserverbrauch der Vorperiode wurde nach § 9a HeizkostenV ersatzweise ermittelt. Mit der aktuellen Ablesung wird die Abweichung zum tatsächlichen Verbrauch ausgeglichen."
   },
   "ui": {
     "updates": {
@@ -853,7 +897,7 @@
         "areaPlaceholder": "120,00",
         "heatingArea": "Heizfläche",
         "heatingAreaSqm": "Heizfläche (m², optional)",
-        "heatingAreaDescription": "Wird für die Heizkostenabrechnung verwendet. Ohne Angabe wird die Wohnfläche verwendet.",
+        "heatingAreaDescription": "Wird für die Verteilung der Heizkosten verwendet. Warmwasserkosten werden nach Wohnfläche verteilt. Ohne Angabe wird die Wohnfläche verwendet.",
         "heatingAreaPlaceholder": "Wohnfläche wird verwendet",
         "heatingAreaLargerWarning": "Die Heizfläche ist größer als die Wohnfläche. Das ist möglich (z. B. beheizter Keller), verzerrt aber die Heizkostenverteilung, wenn es ein Tippfehler ist. Bitte prüfen Sie den Wert."
       },
@@ -1833,7 +1877,7 @@
           "adjustNow": "Jetzt anpassen",
           "resultRefund": "Ergebnis: {tenant} erhält {amount} zurück.",
           "resultArrears": "Ergebnis: {tenant} muss {amount} nachzahlen.",
-          "blocked": "Solange ein Zähler einen negativen Verbrauch ausweist, lässt sich die Abrechnung nicht finalisieren.",
+          "blocked": "Solange einer der Hinweise oben offen ist, etwa eine Messdatenlücke, ein unvollständiges Warmwasservolumen oder ein negativer Verbrauch, lässt sich die Abrechnung nicht finalisieren.",
           "senderIncomplete": "Die Absenderdaten sind unvollständig. Ohne Name, Straße, PLZ und Ort lässt sich die Abrechnung nicht finalisieren.",
           "senderAction": "Absenderdaten ergänzen",
           "advanceValidFromRetroactive": "Die neue Vorauszahlung soll ab {validFrom} gelten, das liegt vor dem Ausstellungsdatum der Abrechnung ({documentDate}). Damit würde sich das Soll bereits vergangener Monate ändern.",
@@ -2182,12 +2226,12 @@
       "editTitle": "Zählerstand bearbeiten",
       "confirmDelete": "Zählerstand löschen?",
       "confirmDeleteMessage": "Soll der Zählerstand vom {date} wirklich gelöscht werden?",
-      "confirmDeleteSettledMessage": "Der Zählerstand vom {date} liegt in einem bereits festgeschriebenen Abrechnungszeitraum. Löschen Sie ihn nur, wenn Sie anschließend eine Korrekturabrechnung erstellen. Wirklich löschen?",
+      "confirmDeleteSettledMessage": "Der Zählerstand vom {date} liegt in einem bereits finalisierten Abrechnungszeitraum. Löschen Sie ihn nur, wenn Sie anschließend eine Korrekturabrechnung erstellen. Wirklich löschen?",
       "olderDateWarningTitle": "Datum liegt vor letzter Ablesung",
       "olderDateWarningDescription": "Das eingegebene Datum liegt vor der zuletzt erfassten Ablesung am {date}. Bitte prüfen Sie, ob das beabsichtigt ist.",
       "settledBadge": "abgerechnet",
       "settledWarningTitle": "Zeitraum ist bereits abgerechnet",
-      "settledWarningDescription": "Zu diesem Datum gibt es eine festgeschriebene Abrechnung. Die Abrechnung selbst ändert sich nicht mehr; eine Abweichung müssen Sie über eine Korrekturabrechnung ausgleichen.",
+      "settledWarningDescription": "Zu diesem Datum gibt es eine finalisierte Abrechnung. Die Abrechnung selbst ändert sich nicht mehr; eine Abweichung müssen Sie über eine Korrekturabrechnung ausgleichen.",
       "nonMonotonicWarningTitle": "Zählerstand ist rückläufig",
       "nonMonotonicWarningDescription": "Der Wert weicht von den benachbarten Ablesungen ab (z. B. niedriger als eine frühere oder höher als eine spätere Ablesung). Das ist bei einem fortlaufenden Zähler nur nach einem Zählertausch normal. Bitte prüfen Sie den Wert. Bei einem Zählertausch setzen Sie beim alten Zähler ein „Gültig bis“ und legen einen neuen Zähler an.",
       "fields": {
@@ -2486,6 +2530,145 @@
         },
         "saveSuccess": "Profil gespeichert"
       }
+    },
+    "substitutions": {
+      "validation": {
+        "periodRange": "Das Ende muss nach dem Beginn liegen.",
+        "reasonNoteRequired": "Bitte beschreiben Sie die Ursache.",
+        "notApplicable": "Diese Angabe passt nicht zum gewählten Verfahren.",
+        "basisNoteRequired": "Bitte geben Sie die Herkunft des Vergleichswerts an.",
+        "referencePeriodRequired": "Bitte wählen Sie einen Vergleichszeitraum.",
+        "referencePeriodShift": "Der Vergleichszeitraum muss um ganze Jahre vor der Abrechnungsperiode liegen.",
+        "required": "Bitte geben Sie einen Wert ein.",
+        "affectedBelowTotal": "Der Verbrauch der betroffenen Zähler muss kleiner sein als der Gesamtverbrauch.",
+        "comparisonIncludesOwnUnit": "Die betroffene Wohnung kann nicht ihre eigene Vergleichswohnung sein.",
+        "comparisonTooFew": "Bitte wählen Sie mindestens zwei Vergleichswohnungen."
+      },
+      "title": "Verbrauchserfassung",
+      "description": "Messdatenlücken und Erfassungsausfälle nach § 9a HeizkostenV. Die Angaben gelten für alle Abrechnungen dieses Hauses und dieser Periode.",
+      "emptyHint": "Die Messdaten sind vollständig. Einen Erfassungsausfall können Sie trotzdem erfassen, z. B. bei einem Gerät mit unplausiblem Stand.",
+      "add": "Erfassungsausfall erfassen",
+      "gapsTitle": "Offene Lücken",
+      "gapHeating": "Für Wohnung {unit} konnte kein vollständiger Heizverbrauch ermittelt werden. Der Zählerstand von {meter} zum {date} fehlt.",
+      "gapHotWater": "Für Wohnung {unit} konnte kein vollständiger Warmwasserverbrauch ermittelt werden. Der Zählerstand von {meter} zum {date} fehlt.",
+      "editReadings": "Zählerstände bearbeiten",
+      "listTitle": "Erfasste Ausfälle",
+      "columns": {
+        "unit": "Wohnung",
+        "scope": "Bereich",
+        "reason": "Ursache",
+        "method": "Verfahren",
+        "area": "Betroffene Fläche",
+        "consumption": "Ersatzverbrauch",
+        "status": "Status"
+      },
+      "status": {
+        "applied": "verwendet",
+        "notApplied": "nicht verwendet (§ 9a Abs. 2)",
+        "invalid": "Grundlage ungültig"
+      },
+      "scope": {
+        "heating": "Heizung",
+        "hot_water": "Warmwasser"
+      },
+      "reason": {
+        "device_failure": "Geräteausfall",
+        "reading_missed": "Ablesung unterblieben oder fehlerhaft",
+        "reading_not_possible": "Ablesung nicht möglich (z. B. kein Zutritt)",
+        "implausible_value": "Unplausibler Wert",
+        "other": "Sonstiges"
+      },
+      "method": {
+        "same_rooms_comparable_period": "Verbrauch derselben Räume in einem vergleichbaren Zeitraum",
+        "comparable_rooms": "Verbrauch vergleichbarer anderer Räume im selben Zeitraum",
+        "building_or_group_average": "Durchschnittsverbrauch des Gebäudes oder der Nutzergruppe"
+      },
+      "methodShort": {
+        "same_rooms_comparable_period": "Vergleichszeitraum",
+        "comparable_rooms": "Vergleichsräume",
+        "building_or_group_average": "Durchschnitt"
+      },
+      "methodUsable": "Mit den vorhandenen Daten rechenbar",
+      "methodNotUsable": "Mit den vorhandenen Daten nicht rechenbar",
+      "consumption": {
+        "kwh": "{value} kWh",
+        "hkv": "{value} Einheiten",
+        "m3": "{value} m³"
+      },
+      "compensationsTitle": "Ausgleich aus der Vorperiode",
+      "compensation": "{meter}: Der Verbrauch im Zeitraum {sourcePeriod} wurde nach § 9a mit {substitute} angesetzt. Der Verbrauch dieser Periode wird ab dem Stand {value} gerechnet.",
+      "compensationNegative": "{meter}: Der Ausgleichsstand {value} aus dem Zeitraum {sourcePeriod} (Anfangsstand {start}, Ersatzverbrauch {substitute}) liegt über dem abgelesenen Stand {reading} vom {date}, die Differenz beträgt {difference}. Die Abrechnung lässt sich erst nach fachlicher Klärung finalisieren.",
+      "areaHeating": "Heizung: betroffen {affected} von {total} ({percent} %)",
+      "areaHotWater": "Warmwasser: betroffen {affected} von {total} ({percent} %)",
+      "limitHeating": "Mehr als 25 % der Fläche sind betroffen. Nach § 9a Abs. 2 HeizkostenV werden die Heizkosten vollständig nach Fläche verteilt. Die Ersatzverbräuche werden dafür nicht verwendet.",
+      "limitHotWater": "Mehr als 25 % der Fläche sind betroffen. Nach § 9a Abs. 2 HeizkostenV werden die Warmwasserkosten vollständig nach Fläche verteilt. Die Ersatzverbräuche werden dafür nicht verwendet.",
+      "sheet": {
+        "titleNew": "Erfassungsausfall erfassen",
+        "titleEdit": "Erfassungsausfall bearbeiten",
+        "description": "Gilt für alle Abrechnungen dieses Hauses im Zeitraum {period}.",
+        "sectionCase": "Ausfall",
+        "sectionMethod": "Ersatzverfahren",
+        "delete": "Erfassungsausfall löschen",
+        "deleteDescription": "Der Erfassungsausfall für Wohnung {unit} wird gelöscht. Offene Lücken blockieren danach wieder das Finalisieren.",
+        "chooseUnitFirst": "Wählen Sie zuerst die Wohnung, dann stehen die Verfahren zur Auswahl."
+      },
+      "fields": {
+        "unit": "Wohnung",
+        "scope": "Bereich",
+        "reason": "Ursache",
+        "reasonNote": "Beschreibung der Ursache",
+        "meters": "Betroffene Zähler",
+        "metersEmpty": "Die Wohnung hat in diesem Bereich keinen Zähler. Ohne installiertes Gerät ist § 9a nicht anwendbar.",
+        "meterGap": "Stand fehlt",
+        "meterKeptCounting": "Der Zähler hat weitergezählt, nur die Ablesung fehlt",
+        "meterKeptCountingHelp": "Dann wird der Ersatzverbrauch mit der nächsten echten Ablesung ausgeglichen. Bei einem stehengebliebenen oder defekten Zähler bitte ausschalten.",
+        "area": "Fläche der betroffenen Räume (m²)",
+        "areaHint": "Fläche der Räume, deren Verbrauch nicht erfasst werden konnte",
+        "areaWholeUnit": "Betroffen ist die ganze Wohnung mit {area}.",
+        "method": "Verfahren nach § 9a Abs. 1 HeizkostenV",
+        "basisSource": "Datengrundlage",
+        "referenceYear": "Vergleichszeitraum",
+        "referenceYearHint": "Ob der Zeitraum vergleichbar ist (gleiche Nutzung, keine baulichen Änderungen, kein Leerstand), beurteilen Sie selbst.",
+        "referenceYearUnusable": "{period} (nicht vollständig erfasst)",
+        "useOtherReferenceMeters": "Im Vergleichszeitraum andere Zähler (nach Gerätetausch)",
+        "referenceMeters": "Zähler im Vergleichszeitraum",
+        "meterInactive": "ausgebaut",
+        "manualAffectedConsumption": "Verbrauch der betroffenen Zähler im Vergleichszeitraum",
+        "manualTotalConsumption": "Gesamtverbrauch des Gebäudes im Vergleichszeitraum",
+        "basisNote": "Herkunft und Begründung",
+        "comparisonUnits": "Vergleichswohnungen",
+        "comparisonUnitsHint": "Vergleichbar sind Räume mit ähnlicher Bausubstanz, Lage, Größe und Nutzung.",
+        "comparisonUnitUnusable": "ohne Zähler, unvollständig erfasst oder selbst ausgefallen",
+        "useGroup": "Nur eine Nutzergruppe statt des ganzen Gebäudes",
+        "groupUnits": "Nutzergruppe",
+        "manualComparisonConsumption": "Verbrauch der Vergleichsräume",
+        "manualComparisonAreaSqm": "Fläche der Vergleichsräume (m²)",
+        "referenceMetersEmpty": "Für diese Wohnung sind in diesem Bereich keine weiteren Zähler erfasst.",
+        "comparisonUnitsEmpty": "Im Gebäude gibt es keine weiteren Wohnungen."
+      },
+      "basisSource": {
+        "meter_readings": "Aus den Zählerständen",
+        "manual_reference": "Von Hand belegt"
+      },
+      "basisSourceDescription": {
+        "meter_readings": "Die App rechnet mit den erfassten Ablesungen.",
+        "manual_reference": "Z. B. aus der Abrechnung eines früheren Messdienstes."
+      },
+      "preview": {
+        "title": "Vorschau",
+        "pending": "Die Vorschau erscheint, sobald Verfahren und Grundlage vollständig sind.",
+        "share": "Anteil im Vergleichszeitraum: {share} %. Ersatzverbrauch: {value}.",
+        "absolute": "Verbrauch im Vergleichszeitraum: {reference}. Ersatzverbrauch: {value}.",
+        "rate": "Verbrauch je m² der Vergleichsgrundlage: {rate}. Ersatzverbrauch für {area}: {value}.",
+        "limitExceeded": "Mit diesem Ausfall sind mehr als 25 % der Fläche betroffen. Es gilt § 9a Abs. 2: Verteilung vollständig nach Fläche."
+      },
+      "reasonShort": {
+        "device_failure": "Geräteausfall",
+        "reading_missed": "Ablesung unterblieben",
+        "reading_not_possible": "Nicht ablesbar",
+        "implausible_value": "Unplausibel",
+        "other": "Sonstiges"
+      }
     }
   },
   "meters": {
@@ -2646,7 +2829,9 @@
         "contact2": "co2online gGmbH – www.co2online.de",
         "contact3": "Deutsche Energie-Agentur (dena) – www.dena.de",
         "disputeTitle": "Streitbeilegung",
-        "disputeText": "Der Vermieter ist zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle nach dem Verbraucherstreitbeilegungsgesetz nicht verpflichtet und nimmt daran nicht teil."
+        "disputeText": "Der Vermieter ist zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle nach dem Verbraucherstreitbeilegungsgesetz nicht verpflichtet und nimmt daran nicht teil.",
+        "comparisonPrevSubstituteNote": "Der Vergleich enthält einen Ersatzwert nach § 9a HeizkostenV.",
+        "comparisonPrevSubstitutionLimit": "Ein Vergleich entfällt: Die Heizkosten wurden nach § 9a Abs. 2 HeizkostenV vollständig nach Fläche verteilt, ein eigener Verbrauch Ihrer Wohnung liegt deshalb nicht vor."
       },
       "summary": {
         "operatingCosts": "Betriebskosten",
@@ -2763,7 +2948,9 @@
           "hotWaterHeatLabel": "davon für Warmwasser",
           "kwhValue": "{value} kWh",
           "correctionFactorLabel": "Korrekturfaktor nach § 9 Abs. 2 HeizkostenV",
-          "correctionFactorValue": "× {value}"
+          "correctionFactorValue": "× {value}",
+          "substitutionLimitArea": "Für mehr als 25 % der Fläche konnte der Warmwasserverbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Warmwasserkosten vollständig nach der Wohnfläche verteilt.",
+          "substitutedNote": "Der Warmwasserverbrauch enthält Ersatzwerte nach § 9a HeizkostenV."
         },
         "totalShareNote": "Insgesamt {percent} % der Heizkosten",
         "consumptionDistributionHeatingArea": "Verbrauchsanteil ersatzweise nach Heizfläche verteilt (keine bzw. Differenz von 0 bei den Verbrauchsmessern).",
@@ -2781,7 +2968,9 @@
         "perMeterWeighted": "Verbrauchs-\neinheiten",
         "perMeterEmpty": "Keine Verbrauchsmessungen vorhanden.",
         "perMeterDerivedNote": "Rechnerisch ermittelt: Zum Ablesedatum lag keine eigene Ablesung vor, der Stand wurde aus den umliegenden Ablesungen berechnet.",
-        "valuationPointsNote": "Bewertungspunkte = Verbrauchseinheiten ÷ 1.000. Die Skalierung erleichtert das Lesen großer Verbrauchssummen und beeinflusst die Kostenverteilung nicht."
+        "valuationPointsNote": "Bewertungspunkte = Verbrauchseinheiten ÷ 1.000. Die Skalierung erleichtert das Lesen großer Verbrauchssummen und beeinflusst die Kostenverteilung nicht.",
+        "substitutedConsumptionNote": "Enthält Ersatzwerte nach § 9a HeizkostenV.",
+        "substitutionLimitHeatingArea": "Für mehr als 25 % der Fläche konnte der Verbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Heizkosten vollständig nach der Heizfläche verteilt."
       },
       "water": {
         "title": "Wasserverbrauch im Detail",

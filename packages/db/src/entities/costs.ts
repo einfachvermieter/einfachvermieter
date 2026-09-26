@@ -3,6 +3,7 @@ import { currentTimestamp } from "./_defaults.js";
 import { fk } from "./_relations.js";
 import { MeterSchema } from "./meters.js";
 import { BuildingSchema, UnitSchema } from "./properties.js";
+import { UserSchema } from "./tenants.js";
 
 export type CostCategory = "operating" | "heating";
 export type AllocationKey =
@@ -466,6 +467,159 @@ export const ExternalHeatingEntrySchema =
         properties: ["buildingId"],
       },
       { name: "external_heating_entries_unit_id", properties: ["unitId"] },
+    ],
+  });
+
+export type SubstitutionScope = "heating" | "hot_water";
+export type SubstitutionReason =
+  | "device_failure"
+  | "reading_missed"
+  | "reading_not_possible"
+  | "implausible_value"
+  | "other";
+export type SubstitutionMethod =
+  | "same_rooms_comparable_period"
+  | "comparable_rooms"
+  | "building_or_group_average";
+export type SubstitutionBasisSource = "meter_readings" | "manual_reference";
+
+/**
+ * Erfassungsausfall nach § 9a HeizkostenV je Wohnung, Bereich und
+ * Abrechnungsperiode. Gilt gebäudeweit für alle Abrechnungen der Periode.
+ * Der Ersatzverbrauch selbst wird nicht gespeichert, sondern aus der
+ * Grundlage gerechnet und beim Finalisieren im Snapshot eingefroren.
+ */
+export type ConsumptionSubstitution = {
+  id: string;
+  buildingId: string;
+  unitId: string;
+  periodStart: string;
+  periodEnd: string;
+  scope: SubstitutionScope;
+  reason: SubstitutionReason;
+  reasonNote: string | null;
+  affectedMeterIds: string[];
+  /**
+   * Nur bei fortlaufenden Zählern: Der Zähler hat weitergezählt, nur die
+   * Ablesung fehlt. Steuert den Ausgleich in der Folgeperiode.
+   */
+  meterKeptCounting: boolean | null;
+  /**
+   * Fläche der betroffenen Räume; null = ganze Wohnung
+   */
+  affectedAreaSqm: number | null;
+  method: SubstitutionMethod;
+  basisSource: SubstitutionBasisSource;
+  referencePeriodStart: string | null;
+  referencePeriodEnd: string | null;
+  referenceMeterIds: string[] | null;
+  comparisonUnitIds: string[] | null;
+  manualAffectedConsumption: number | null;
+  manualTotalConsumption: number | null;
+  manualComparisonConsumption: number | null;
+  manualComparisonAreaSqm: number | null;
+  basisNote: string | null;
+  decidedByUserId: string | null;
+  createdAt: Opt<string>;
+  updatedAt: Opt<string>;
+};
+
+export const ConsumptionSubstitutionSchema =
+  new EntitySchema<ConsumptionSubstitution>({
+    name: "ConsumptionSubstitution",
+    tableName: "consumption_substitutions",
+    properties: {
+      id: {
+        type: "string",
+        primary: true,
+        onCreate: () => crypto.randomUUID(),
+      },
+      buildingId: fk(() => BuildingSchema, "building_id", "restrict"),
+      unitId: fk(() => UnitSchema, "unit_id", "restrict"),
+      periodStart: { type: "string", fieldName: "period_start" },
+      periodEnd: { type: "string", fieldName: "period_end" },
+      scope: { type: "string" },
+      reason: { type: "string" },
+      reasonNote: { type: "text", fieldName: "reason_note", nullable: true },
+      affectedMeterIds: { type: "json", fieldName: "affected_meter_ids" },
+      meterKeptCounting: {
+        type: "boolean",
+        fieldName: "meter_kept_counting",
+        nullable: true,
+      },
+      affectedAreaSqm: {
+        type: "double",
+        fieldName: "affected_area_sqm",
+        nullable: true,
+      },
+      method: { type: "string" },
+      basisSource: { type: "string", fieldName: "basis_source" },
+      referencePeriodStart: {
+        type: "string",
+        fieldName: "reference_period_start",
+        nullable: true,
+      },
+      referencePeriodEnd: {
+        type: "string",
+        fieldName: "reference_period_end",
+        nullable: true,
+      },
+      referenceMeterIds: {
+        type: "json",
+        fieldName: "reference_meter_ids",
+        nullable: true,
+      },
+      comparisonUnitIds: {
+        type: "json",
+        fieldName: "comparison_unit_ids",
+        nullable: true,
+      },
+      manualAffectedConsumption: {
+        type: "double",
+        fieldName: "manual_affected_consumption",
+        nullable: true,
+      },
+      manualTotalConsumption: {
+        type: "double",
+        fieldName: "manual_total_consumption",
+        nullable: true,
+      },
+      manualComparisonConsumption: {
+        type: "double",
+        fieldName: "manual_comparison_consumption",
+        nullable: true,
+      },
+      manualComparisonAreaSqm: {
+        type: "double",
+        fieldName: "manual_comparison_area_sqm",
+        nullable: true,
+      },
+      basisNote: { type: "text", fieldName: "basis_note", nullable: true },
+      decidedByUserId: fk(() => UserSchema, "decided_by_user_id", "set null", {
+        nullable: true,
+      }),
+      createdAt: {
+        type: "string",
+        fieldName: "created_at",
+        defaultRaw: currentTimestamp,
+      },
+      updatedAt: {
+        type: "string",
+        fieldName: "updated_at",
+        defaultRaw: currentTimestamp,
+      },
+    },
+    indexes: [
+      {
+        name: "consumption_substitutions_building_id",
+        properties: ["buildingId"],
+      },
+    ],
+    uniques: [
+      {
+        name: "consumption_substitutions_unit_scope_period",
+        properties: ["unitId", "scope", "periodStart", "periodEnd"],
+      },
     ],
   });
 

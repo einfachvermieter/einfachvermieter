@@ -1,6 +1,7 @@
 import { AccountFeeSchema, AccountSettlementSchema } from "./account.js";
 import {
   ClimateFactorSchema,
+  ConsumptionSubstitutionSchema,
   CostEntryAttachmentSchema,
   CostEntryItemSchema,
   CostEntrySchema,
@@ -54,6 +55,7 @@ export const entitySchemas = [
   ClimateFactorSchema,
   HeatingSettingSchema,
   ExternalHeatingEntrySchema,
+  ConsumptionSubstitutionSchema,
   CostEntryAttachmentSchema,
   ResidentSchema,
   TenantSchema,

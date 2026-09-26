@@ -6,7 +6,7 @@ export type { CalcWarning, DiagnosticParams };
 /**
  * Warncodes, die als Transparenz-Hinweis an den Mieter ins Abrechnungs-PDF
  * gehören (Kennzeichnung geschätzter Werte, Ersatzverfahren mit
- * Kürzungsrecht). Alle übrigen Codes sind Datenqualitäts-Hinweise an den
+ * Kürzungsrecht, Ersatzverbräuche nach § 9a HeizkostenV). Alle übrigen Codes sind Datenqualitäts-Hinweise an den
  * Vermieter und erscheinen nur in der Web-Oberfläche.
  */
 const TENANT_WARNING_CODES = new Set([
@@ -16,6 +16,20 @@ const TENANT_WARNING_CODES = new Set([
   "consumptionFallbackNoAllocators",
   "consumptionFallbackNoHeatMeters",
   "hotWaterConsumptionFallbackArea",
+  "substitutionHeatingSameRooms",
+  "substitutionHeatingComparableRooms",
+  "substitutionHeatingBuildingAverage",
+  "substitutionHeatingGroupAverage",
+  "substitutionHotWaterSameRooms",
+  "substitutionHotWaterComparableRooms",
+  "substitutionHotWaterBuildingAverage",
+  "substitutionHotWaterGroupAverage",
+  "substitutionOtherUnitsHeating",
+  "substitutionOtherUnitsHotWater",
+  "substitutionAreaDistributionHeating",
+  "substitutionAreaDistributionHotWater",
+  "substitutionCompensationHeating",
+  "substitutionCompensationHotWater",
 ]);
 
 /**
@@ -27,7 +41,16 @@ export const isTenantWarning = (warning: CalcWarning): boolean =>
 /**
  * Warncodes, die das Finalisieren verhindern
  */
-const BLOCKING_WARNING_CODES = new Set(["consumptionNegative"]);
+const BLOCKING_WARNING_CODES = new Set([
+  "consumptionNegative",
+  "consumptionGap",
+  "hotWaterVolumeIncomplete",
+  "substitutionCompensationNegative",
+  "substitutionReferenceIncomplete",
+  "substitutionComparisonInvalid",
+  "substitutionShareInvalid",
+  "substitutionBasisMissing",
+]);
 
 /**
  * Ob eine Berechnung Warnungen enthält, die das Finalisieren blockieren.

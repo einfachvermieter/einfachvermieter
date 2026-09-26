@@ -81,6 +81,7 @@ import { OverviewCard } from "./components/detail/OverviewCard";
 import { PaymentsCard } from "./components/detail/PaymentsCard";
 import { StatementFinalizeDialog } from "./components/detail/StatementFinalizeDialog";
 import { StatementPdfTab } from "./components/detail/StatementPdfTab";
+import { SubstitutionsCard } from "./components/detail/SubstitutionsCard";
 import { TaxableLaborCard } from "./components/detail/TaxableLaborCard";
 import { downloadStatementPdf } from "./components/detail/useStatementPdf";
 
@@ -208,6 +209,7 @@ const StatementTabs = ({
   activeTab,
   onTabChange,
   statementId,
+  buildingId,
   isDraft,
   periodEnd,
   documentDate,
@@ -222,6 +224,7 @@ const StatementTabs = ({
   activeTab: string;
   onTabChange: (value: string) => Promise<void>;
   statementId: string;
+  buildingId: string;
   isDraft: boolean;
   periodEnd: string;
   documentDate: string;
@@ -328,6 +331,14 @@ const StatementTabs = ({
       {heatingDetail && showHeatingTab ? (
         <TabsContent value="heizkosten">
           <div className="space-y-5">
+            {heatingDetail.mode === "internal" ? (
+              <SubstitutionsCard
+                buildingId={buildingId}
+                period={result.period}
+                isDraft={isDraft}
+                detail={heatingDetail}
+              />
+            ) : null}
             {showHeatingBreakdown ? (
               <HeatingCard
                 detail={heatingDetail}
@@ -777,6 +788,7 @@ export const StatementDetailPage = () => {
             activeTab={activeTab}
             onTabChange={handleTabChange}
             statementId={statement.id}
+            buildingId={statement.buildingId}
             isDraft={isDraft}
             periodEnd={statement.periodEnd}
             documentDate={statement.documentDate ?? todayIso()}

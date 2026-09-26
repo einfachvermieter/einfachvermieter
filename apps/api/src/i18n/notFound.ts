@@ -13,6 +13,7 @@ type EntityKey =
   | "costEntry"
   | "costEntryAttachment"
   | "externalHeatingEntry"
+  | "consumptionSubstitution"
   | "heatingSettings";
 
 /**

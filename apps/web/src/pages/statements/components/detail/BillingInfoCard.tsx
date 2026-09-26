@@ -3,6 +3,7 @@ import {
   billingInfoCostRows,
   billingInfoRows,
   energyComparisonDisplay,
+  energyComparisonOmittedNote,
   type HeatingDetail,
   type Period,
 } from "@einfachvermieter/shared";
@@ -37,6 +38,7 @@ export const BillingInfoCard = ({
   const prevComparison = detail.energyComparison
     ? energyComparisonDisplay(detail.energyComparison)
     : null;
+  const prevComparisonOmitted = energyComparisonOmittedNote(detail);
 
   return (
     <SectionCard
@@ -135,9 +137,12 @@ export const BillingInfoCard = ({
               {t("statements.pdf.billingInfo.comparisonPrevTitle")}
             </h3>
             {prevComparison.previousMissing ? (
-              <p className="text-muted-foreground">
-                {t("statements.pdf.billingInfo.comparisonPrevMissing")}
-              </p>
+              <div className="space-y-1 text-muted-foreground">
+                <p>{t("statements.pdf.billingInfo.comparisonPrevMissing")}</p>
+                {prevComparison.notes.map((note) => (
+                  <p key={note.key}>{t(note.key, note.params)}</p>
+                ))}
+              </div>
             ) : (
               <>
                 <div className="space-y-2">
@@ -165,6 +170,16 @@ export const BillingInfoCard = ({
                 </div>
               </>
             )}
+          </section>
+        ) : null}
+        {prevComparisonOmitted ? (
+          <section>
+            <h3 className="mb-2.5 font-semibold text-foreground">
+              {t("statements.pdf.billingInfo.comparisonPrevTitle")}
+            </h3>
+            <p className="text-muted-foreground">
+              {t(prevComparisonOmitted.key, prevComparisonOmitted.params)}
+            </p>
           </section>
         ) : null}
         <section>

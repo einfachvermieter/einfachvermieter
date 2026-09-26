@@ -367,7 +367,7 @@ const consumptionOfSegment = (
  * das Gerät an seinem ersten Tag auf 0; fehlt dafür eine Ablesung, ergänzt
  * der Abschnitt sie, damit der Verbrauch ab dem Neubeginn zählt.
  */
-const segmentReadings = (
+export const segmentReadings = (
   readings: ReadingPoint[],
   segmentStart: string,
   previousReset: string | null,
@@ -432,4 +432,87 @@ export const consumptionBetween = (
   }
 
   return total;
+};
+
+/**
+ * Einstufung eines Stichtagsstands für die Erkennung von Messdatenlücken.
+ * - `read`: echte Ablesung am Stichtag
+ * - `estimated`: Ablesung oder Stützstelle mit `isEstimated`
+ * - `interpolated`: zwischen zwei echten Ablesungen desselben Abschnitts
+ * - `substituted`: Ausgleichsstand aus einem § 9a-Ersatzverbrauch beteiligt
+ * - `missing`: auf einer Seite des Stichtags fehlt ein Stand
+ */
+export type BoundaryKind =
+  | "read"
+  | "estimated"
+  | "interpolated"
+  | "substituted"
+  | "missing";
+
+const kindOfPoints = (points: ReadingPoint[]): BoundaryKind => {
+  if (points.some((point) => point.compensation)) {
+    return "substituted";
+  }
+
+  if (points.some((point) => point.isEstimated)) {
+    return "estimated";
+  }
+
+  return points.length === 1 ? "read" : "interpolated";
+};
+
+/**
+ * Stuft einen Stichtag innerhalb der schon abschnittsweise gefilterten
+ * Ablesungen ein (siehe `segmentReadings`).
+ */
+const classifyWithinSegment = (
+  readings: ReadingPoint[],
+  date: string,
+): BoundaryKind => {
+  const exact = readings.find((reading) => reading.date === date);
+  if (exact) {
+    return kindOfPoints([exact]);
+  }
+
+  const sorted = [...readings].sort((a, b) => a.date.localeCompare(b.date));
+  const before = sorted.filter((reading) => reading.date < date).at(-1);
+  const after = sorted.find((reading) => reading.date > date);
+
+  if (!before || !after) {
+    return "missing";
+  }
+
+  return kindOfPoints([before, after]);
+};
+
+/**
+ * Stuft Anfang und Ende einer Periode so ein, wie `consumptionBetween` sie
+ * rechnet: Beginnt das Gerät innerhalb der Periode neu zu zählen, gilt für
+ * den Anfang der erste und für das Ende der letzte Abschnitt. Der Nullstand
+ * nach einem Stichtag zählt als echte Ablesung.
+ */
+export const classifyPeriodBoundaries = (
+  readings: ReadingPoint[],
+  periodStart: string,
+  periodEnd: string,
+  resetDay?: string | null,
+): { start: BoundaryKind; end: BoundaryKind } => {
+  const resets = resetDatesBetween(resetDay, periodStart, periodEnd);
+  const firstReset = resets[0] ?? null;
+  const lastReset = resets.at(-1) ?? null;
+
+  const firstSegment = segmentReadings(readings, periodStart, null, firstReset);
+  const lastSegmentStart =
+    lastReset === null ? periodStart : addDaysIso(lastReset, 1);
+  const lastSegment = segmentReadings(
+    readings,
+    lastSegmentStart,
+    lastReset,
+    null,
+  );
+
+  return {
+    start: classifyWithinSegment(firstSegment, periodStart),
+    end: classifyWithinSegment(lastSegment, periodEnd),
+  };
 };

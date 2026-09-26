@@ -6,6 +6,7 @@
 
 import type {
   EnergyComparison,
+  EnergyComparisonValue,
   HeatingDetail,
   Period,
 } from "../types/index.js";
@@ -36,6 +37,11 @@ export type EnergyComparisonPeriodInput = {
    * Der Faktor stammt aus manueller Erfassung statt vom DWD.
    */
   climateFactorIsManual?: boolean;
+  /**
+   * Der Verbrauch der Ziel-Wohnung enthält einen Ersatzverbrauch oder einen
+   * Ausgleich nach § 9a HeizkostenV.
+   */
+  containsSubstitute?: boolean;
 };
 
 type PeriodEnergy = {
@@ -152,36 +158,30 @@ export const buildEnergyComparison = (
     return includesHotWater ? heat + (energy.normalizedHotWaterKwh ?? 0) : heat;
   };
 
+  const comparisonValue = (
+    input: EnergyComparisonPeriodInput,
+    energy: PeriodEnergy,
+    factor: number | null,
+  ): EnergyComparisonValue => ({
+    period: input.tenantPeriod,
+    normalizedConsumption: totalOf(energy, factor),
+    ...(applyFactors && factor !== null
+      ? {
+          climateFactor: factor,
+          ...(input.climateFactorIsManual
+            ? { climateFactorIsManual: true }
+            : {}),
+        }
+      : {}),
+    ...(input.containsSubstitute ? { containsSubstitute: true } : {}),
+  });
+
   return {
     consumptionUnit: currentEnergy.unit,
     includesHotWater,
-    current: {
-      period: current.tenantPeriod,
-      normalizedConsumption: totalOf(currentEnergy, currentFactor),
-      ...(applyFactors && currentFactor !== null
-        ? {
-            climateFactor: currentFactor,
-            ...(current.climateFactorIsManual
-              ? { climateFactorIsManual: true }
-              : {}),
-          }
-        : {}),
-    },
+    current: comparisonValue(current, currentEnergy, currentFactor),
     ...(previousEnergy && previous
-      ? {
-          previous: {
-            period: previous.tenantPeriod,
-            normalizedConsumption: totalOf(previousEnergy, previousFactor),
-            ...(applyFactors && previousFactor !== null
-              ? {
-                  climateFactor: previousFactor,
-                  ...(previous.climateFactorIsManual
-                    ? { climateFactorIsManual: true }
-                    : {}),
-                }
-              : {}),
-          },
-        }
+      ? { previous: comparisonValue(previous, previousEnergy, previousFactor) }
       : {}),
   };
 };

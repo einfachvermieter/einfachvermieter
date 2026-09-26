@@ -28,3 +28,28 @@ export const assertDateRangeNotFinalized = async (
     );
   }
 };
+
+/**
+ * Sperre der gebäudeweiten Grundlagen einer Abrechnungsperiode (z.B.
+ * Erfassungsausfälle nach § 9a HeizkostenV): Ist für das Gebäude eine
+ * Abrechnung finalisiert, die den Zeitraum überschneidet, sind
+ * Änderungen gesperrt.
+ */
+export const assertBuildingPeriodNotFinalized = async (
+  em: EntityManager,
+  buildingId: string,
+  rangeStart: string,
+  rangeEnd: string,
+  messageKey: string,
+): Promise<void> => {
+  const finalized = await em.count(OperatingCostStatementSchema, {
+    buildingId,
+    status: "finalized",
+    periodStart: { $lte: rangeEnd },
+    periodEnd: { $gte: rangeStart },
+  });
+
+  if (finalized > 0) {
+    throw new BadRequestException(getI18n().t(messageKey));
+  }
+};

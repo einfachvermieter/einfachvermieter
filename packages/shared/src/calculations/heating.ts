@@ -4,6 +4,7 @@ import type {
   HeatingProrationMethod,
 } from "../schemas/heating.js";
 import type {
+  AreaDistributionReason,
   HeatingConfig,
   HeatingDetail,
   MeterInfo,
@@ -15,6 +16,17 @@ import { CalculationError, type CalcWarning } from "./diagnostics.js";
 import { consumptionBetween, isDerivedConsumption } from "./meters.js";
 import { bpsToFactor, distributeCents } from "./money.js";
 import { daysBetween, daysInYear, intersect } from "./period.js";
+import {
+  applyCompensations,
+  type CompensationInput,
+  compensationSnapshots,
+  evaluateSubstitutionScope,
+  type ReadingInvalidation,
+  type ScopeEvaluation,
+  type ScopeMeter,
+  type SubstitutedPeriodMeters,
+  type SubstitutionInput,
+} from "./substitution.js";
 
 /**
  * Monatliche Gradtagszahlen als Promille des Jahresbedarfs (Summe 1.000 ‰).
@@ -438,6 +450,36 @@ type HeatingCalculationInput = {
    * (`heatingType = central_with_hot_water`).
    */
   hotWater?: HotWaterInput;
+
+  /**
+   * Erfassungsausfälle nach § 9a HeizkostenV dieser Periode
+   */
+  substitutions?: SubstitutionInput[];
+
+  /**
+   * Ausgleichsstände aus Ersatzverbräuchen früherer Perioden
+   */
+  compensations?: CompensationInput[];
+
+  /**
+   * Ablesungen, die ein früherer Geräteausfall ohne Weiterzählen entwertet
+   */
+  readingInvalidations?: ReadingInvalidation[];
+
+  /**
+   * Zähler mit Ablesungen der Vergleichszeiträume für Verfahren a
+   */
+  referenceMeters?: { heating?: ScopeMeter[]; hotWater?: ScopeMeter[] };
+
+  /**
+   * Zähler, deren Verbrauch in früheren Perioden selbst ersetzt wurde
+   */
+  substitutedPeriods?: SubstitutedPeriodMeters[];
+
+  /**
+   * Belegte Tage je Wohnung über die volle Periode
+   */
+  fullOccupiedDaysByUnit?: Map<string, number>;
 };
 
 export type HotWaterInput = {
@@ -453,6 +495,14 @@ export type HotWaterInput = {
   hotWaterVolumeM3: number | null;
   supplyTemperatureCelsius: number;
   unitHotWaterM3: Array<{ unitId: string; m3: number }>;
+
+  /**
+   * Warmwasserzähler der Wohnungen mit Ablesungen. Gesetzt, rechnet die
+   * Heizkostenberechnung die Wohnungsverbräuche selbst (für Lückenerkennung
+   * und Ersatzverbräuche nach § 9a); `unitHotWaterM3` und `landlordM3`
+   * werden dann nicht verwendet.
+   */
+  unitMeters?: ScopeMeter[];
 
   /**
    * Warmwasserverbrauch der Ziel-Wohnung außerhalb der Mietzeit
@@ -672,6 +722,8 @@ type HotWaterDistributionInput = {
   areaWeightsWithLandlord: number[];
   totalAreaDays: number;
   warnings: CalcWarning[];
+  substitutionLimitExceeded?: boolean;
+  substitutedUnitIds?: Set<string>;
 };
 
 /**
@@ -687,6 +739,7 @@ const distributeHotWater = (
   | "consumptionPortionCents"
   | "basicPortionCents"
   | "consumptionDistributionMethod"
+  | "areaDistributionReason"
   | "perUnit"
   | "landlordBasicCostCents"
   | "landlordConsumptionCostCents"
@@ -700,6 +753,8 @@ const distributeHotWater = (
     areaWeightsWithLandlord,
     totalAreaDays,
     warnings,
+    substitutionLimitExceeded,
+    substitutedUnitIds,
   } = input;
   const consumptionFactor = bpsToFactor(consumptionShareBps);
   const consumptionPortionCents = Math.round(potCents * consumptionFactor);
@@ -715,12 +770,21 @@ const distributeHotWater = (
 
   let consumptionDistributionMethod: "consumption" | "heating_area" =
     "consumption";
+  let areaDistributionReason: AreaDistributionReason | undefined;
   let consumptionShares: number[];
 
-  if (totalWw > 0) {
+  if (substitutionLimitExceeded) {
+    consumptionDistributionMethod = "heating_area";
+    areaDistributionReason = "substitution_limit_exceeded";
+    consumptionShares =
+      totalAreaDays > 0
+        ? distributeCents(consumptionPortionCents, areaWeightsWithLandlord)
+        : [...units.map(() => 0), 0];
+  } else if (totalWw > 0) {
     consumptionShares = distributeCents(consumptionPortionCents, wwWeights);
   } else {
     consumptionDistributionMethod = "heating_area";
+    areaDistributionReason = "fallback";
     consumptionShares =
       totalAreaDays > 0
         ? distributeCents(consumptionPortionCents, areaWeightsWithLandlord)
@@ -751,6 +815,9 @@ const distributeHotWater = (
       areaSqm: baseCostAreaFor("hot_water", unit),
       basicCostCents,
       totalCents: consumptionCostCents + basicCostCents,
+      ...(substitutedUnitIds?.has(unit.id)
+        ? { hotWaterIsSubstituted: true }
+        : {}),
     };
   });
 
@@ -758,6 +825,7 @@ const distributeHotWater = (
     consumptionPortionCents,
     basicPortionCents,
     consumptionDistributionMethod,
+    ...(areaDistributionReason ? { areaDistributionReason } : {}),
     perUnit,
     landlordBasicCostCents,
     landlordConsumptionCostCents,
@@ -841,6 +909,147 @@ const computeCo2Deduction = (
 };
 
 /**
+ * Gemessener Verbrauch eines Zählers. Ziel-Wohnung: Mietzeit, der Rest der
+ * Periode (Vor-/Nachmieter, Leerstand) fällt auf den Vermieter. HKV werden
+ * mit `kTotal` gewichtet.
+ */
+const measuredMeterConsumption = (params: {
+  meter: MeterInfo;
+  readings: ReadingPoint[];
+  isTarget: boolean;
+  isZeroed: boolean;
+  period: Period;
+  tenantPeriod: Period;
+  consumptionMethod: "heat_meter" | "heat_cost_allocator";
+  intervalWeight?: (fromDate: string, toDate: string) => number;
+  warnings: CalcWarning[];
+  unitName: string | null;
+}): {
+  landlordConsumption: number;
+  row: NonNullable<HeatingDetail["perMeter"]>[number];
+} => {
+  const { meter, readings, isTarget, isZeroed, period, tenantPeriod } = params;
+  const meterPeriod = isTarget ? tenantPeriod : period;
+
+  // Aus Sicht des Ziel-Mieters sind Lücken in Zählerständen außerhalb seines
+  // Mietzeitraums irrelevant; `relevantPeriod` unterdrückt nur die Warnungen.
+  const measuredDelta = consumptionBetween(
+    readings,
+    meterPeriod.start,
+    meterPeriod.end,
+    {
+      warnings: isZeroed ? [] : params.warnings,
+      label: meter.label,
+      relevantPeriod: tenantPeriod,
+      resetDay: meter.resetDay,
+      intervalWeight: params.intervalWeight,
+    },
+  );
+  const delta = isZeroed ? 0 : measuredDelta;
+
+  let kTotal: number | null = null;
+  if (params.consumptionMethod === "heat_cost_allocator") {
+    if (meter.kTotal === null || meter.kTotal === undefined) {
+      throw new CalculationError("heatingAllocatorNoKTotal", {
+        label: meter.label,
+      });
+    }
+    ({ kTotal } = meter);
+  }
+  const weighted = kTotal === null ? delta : delta * kTotal;
+
+  const landlordConsumption =
+    isTarget && !isZeroed
+      ? residualTargetConsumption({
+          readings,
+          weighted,
+          kTotal,
+          periodStart: period.start,
+          periodEnd: period.end,
+          intervalWeight: params.intervalWeight,
+        })
+      : 0;
+
+  // Mindestens ein Stichtagsstand nicht direkt abgelesen -> der Verbrauch
+  // ist rechnerisch ermittelt und wird so ausgewiesen.
+  const consumptionIsDerived = isDerivedConsumption(
+    readings,
+    meterPeriod.start,
+    meterPeriod.end,
+  );
+
+  return {
+    landlordConsumption,
+    row: {
+      meterId: meter.id,
+      meterLabel: meter.label,
+      serialNumber: meter.serialNumber ?? null,
+      unitId: meter.unitId,
+      unitName: params.unitName,
+      consumptionRaw: delta,
+      kTotal,
+      consumptionWeighted: weighted,
+      ...(consumptionIsDerived ? { consumptionIsDerived } : {}),
+    },
+  };
+};
+
+/**
+ * Ersatzverbrauch eines Zählers statt Messung. Er gilt für die volle
+ * Periode; ohne Zwischenablesung wird er wie nach § 9b Abs. 3 nach
+ * Gradtagen bzw. Tagen auf Mieter und Vermieter aufgeteilt.
+ */
+const substitutedMeterConsumption = (params: {
+  meter: MeterInfo;
+  substitute: number;
+  tenantShare: number;
+  consumptionMethod: "heat_meter" | "heat_cost_allocator";
+  unitName: string | null;
+}): {
+  landlordConsumption: number;
+  row: NonNullable<HeatingDetail["perMeter"]>[number];
+} => {
+  const { meter, substitute, tenantShare } = params;
+  const weighted = substitute * tenantShare;
+  const kTotal =
+    params.consumptionMethod === "heat_cost_allocator"
+      ? (meter.kTotal ?? null)
+      : null;
+
+  return {
+    landlordConsumption: substitute - weighted,
+    row: {
+      meterId: meter.id,
+      meterLabel: meter.label,
+      serialNumber: meter.serialNumber ?? null,
+      unitId: meter.unitId,
+      unitName: params.unitName,
+      consumptionRaw: kTotal ? weighted / kTotal : weighted,
+      kTotal,
+      consumptionWeighted: weighted,
+      consumptionIsSubstituted: true,
+    },
+  };
+};
+
+/**
+ * Anteil eines Teilzeitraums an der Periode, nach Gradtagen oder Tagen
+ */
+const periodFraction = (
+  part: Period,
+  whole: Period,
+  intervalWeight?: (fromDate: string, toDate: string) => number,
+): number => {
+  const weight = (period: Period) =>
+    intervalWeight
+      ? intervalWeight(period.start, period.end)
+      : daysBetween(period.start, period.end);
+  const total = weight(whole);
+
+  return total > 0 ? weight(part) / total : 0;
+};
+
+/**
  * Voll-Perioden-Verbrauch eines Ziel-Wohnungs-Zählers abzüglich des bereits
  * dem Mieter zugerechneten Mietzeit-Anteils (gewichtet). Existieren nur
  * Ablesungen innerhalb der Mietzeit (Zähler ab Einzug/bis Auszug), clampt
@@ -888,6 +1097,8 @@ const measureUnitConsumption = (params: {
   periodEnd: string;
   prorationMethod: HeatingProrationMethod;
   warnings: CalcWarning[];
+  substituteByMeter?: Map<string, number>;
+  zeroMeterIds?: Set<string>;
 }): {
   unitConsumption: Map<string, number>;
   perMeter: NonNullable<HeatingDetail["perMeter"]>;
@@ -905,6 +1116,8 @@ const measureUnitConsumption = (params: {
     periodEnd,
     prorationMethod,
     warnings,
+    substituteByMeter,
+    zeroMeterIds,
   } = params;
 
   // § 9b HeizkostenV: Fehlt eine Zwischenablesung am Ein-/Auszugsdatum, wird der
@@ -945,69 +1158,45 @@ const measureUnitConsumption = (params: {
     const isTarget =
       targetUnitId !== undefined && meter.unitId === targetUnitId;
 
-    const meterStart = isTarget ? tenantStart : periodStart;
-    const meterEnd = isTarget ? tenantEnd : periodEnd;
+    const unitName = units.find((u) => u.id === meter.unitId)?.name ?? null;
+    const substitute = substituteByMeter?.get(meter.id);
+    const measured =
+      substitute === undefined
+        ? measuredMeterConsumption({
+            meter,
+            readings,
+            isTarget,
+            // Negativer Ausgleich: nur vorläufig mit 0, ohne die allgemeine
+            // Warnung zum negativen Verbrauch (die eigene blockiert schon).
+            isZeroed: zeroMeterIds?.has(meter.id) ?? false,
+            period: { start: periodStart, end: periodEnd },
+            tenantPeriod: { start: tenantStart, end: tenantEnd },
+            consumptionMethod,
+            intervalWeight: consumptionIntervalWeight,
+            warnings,
+            unitName,
+          })
+        : substitutedMeterConsumption({
+            meter,
+            substitute,
+            tenantShare: isTarget
+              ? periodFraction(
+                  { start: tenantStart, end: tenantEnd },
+                  { start: periodStart, end: periodEnd },
+                  consumptionIntervalWeight,
+                )
+              : 1,
+            consumptionMethod,
+            unitName,
+          });
 
-    // Aus Sicht des Ziel-Mieters sind Lücken in Zählerständen außerhalb seines
-    // Mietzeitraums irrelevant; `relevantPeriod` unterdrückt nur die Warnungen.
-    const delta = consumptionBetween(readings, meterStart, meterEnd, {
-      warnings,
-      label: meter.label,
-      relevantPeriod: { start: tenantStart, end: tenantEnd },
-      resetDay: meter.resetDay,
-      intervalWeight: consumptionIntervalWeight,
-    });
-
-    let weighted: number;
-    let kTotal: number | null = null;
-
-    if (consumptionMethod === "heat_cost_allocator") {
-      if (meter.kTotal === null || meter.kTotal === undefined) {
-        throw new CalculationError("heatingAllocatorNoKTotal", {
-          label: meter.label,
-        });
-      }
-
-      ({ kTotal } = meter);
-      weighted = delta * meter.kTotal;
-    } else {
-      weighted = delta;
-    }
-
-    if (isTarget) {
-      landlordConsumption += residualTargetConsumption({
-        readings,
-        weighted,
-        kTotal,
-        periodStart,
-        periodEnd,
-        intervalWeight: consumptionIntervalWeight,
-      });
-    }
-
-    const unitSum = unitConsumption.get(meter.unitId) ?? 0;
-    unitConsumption.set(meter.unitId, unitSum + weighted);
-    const unitForMeter = units.find((u) => u.id === meter.unitId);
-
-    // Mindestens ein Stichtagsstand nicht direkt abgelesen -> der Verbrauch
-    // ist rechnerisch ermittelt und wird so ausgewiesen.
-    const consumptionIsDerived = isDerivedConsumption(
-      readings,
-      meterStart,
-      meterEnd,
+    landlordConsumption += measured.landlordConsumption;
+    unitConsumption.set(
+      meter.unitId,
+      (unitConsumption.get(meter.unitId) ?? 0) +
+        measured.row.consumptionWeighted,
     );
-
-    perMeter.push({
-      meterId: meter.id,
-      meterLabel: meter.label,
-      serialNumber: meter.serialNumber ?? null,
-      unitId: meter.unitId,
-      unitName: unitForMeter?.name ?? null,
-      consumptionRaw: delta,
-      kTotal,
-      consumptionWeighted: weighted,
-      ...(consumptionIsDerived ? { consumptionIsDerived } : {}),
-    });
+    perMeter.push(measured.row);
   }
 
   const totalConsumption =
@@ -1083,8 +1272,10 @@ const computeConsumptionShares = (params: {
   consumptionMeters: HeatingCalculationInput["consumptionMeters"];
   consumptionMethod: "heat_meter" | "heat_cost_allocator";
   warnings: CalcWarning[];
+  substitutionLimitExceeded?: boolean;
 }): {
   consumptionDistributionMethod: "consumption" | "heating_area";
+  areaDistributionReason?: AreaDistributionReason;
   consumptionShares: number[];
 } => {
   const {
@@ -1098,7 +1289,19 @@ const computeConsumptionShares = (params: {
     consumptionMeters,
     consumptionMethod,
     warnings,
+    substitutionLimitExceeded,
   } = params;
+
+  if (substitutionLimitExceeded) {
+    return {
+      consumptionDistributionMethod: "heating_area",
+      areaDistributionReason: "substitution_limit_exceeded",
+      consumptionShares:
+        totalAreaDays > 0
+          ? distributeCents(consumptionPortionCents, areaWeightsWithLandlord)
+          : [...units.map(() => 0), 0],
+    };
+  }
 
   if (totalConsumption > 0) {
     const consumptionWeights = [
@@ -1137,7 +1340,11 @@ const computeConsumptionShares = (params: {
     warnings.push({ code });
   }
 
-  return { consumptionDistributionMethod: "heating_area", consumptionShares };
+  return {
+    consumptionDistributionMethod: "heating_area",
+    areaDistributionReason: "fallback",
+    consumptionShares,
+  };
 };
 
 /**
@@ -1150,8 +1357,20 @@ const buildHotWaterDetail = (params: {
   units: UnitInfo[];
   hotWater: HotWaterInput | undefined;
   warnings: CalcWarning[];
+  measured?: { unitHotWaterM3: Map<string, number>; landlordM3: number };
+  substitutionLimitExceeded?: boolean;
+  substitutedUnitIds?: Set<string>;
 }): HeatingDetail["hotWaterDetail"] => {
-  const { hotWaterSplit, config, units, hotWater, warnings } = params;
+  const {
+    hotWaterSplit,
+    config,
+    units,
+    hotWater,
+    warnings,
+    measured,
+    substitutionLimitExceeded,
+    substitutedUnitIds,
+  } = params;
   if (!hotWaterSplit) {
     return;
   }
@@ -1167,25 +1386,435 @@ const buildHotWaterDetail = (params: {
       potCents: hotWaterSplit.hotWaterPotCents,
       consumptionShareBps: config.consumptionShareBps,
       units,
-      unitHotWaterM3: new Map(
-        (hotWater?.unitHotWaterM3 ?? []).map((entry) => [
-          entry.unitId,
-          entry.m3,
-        ]),
-      ),
-      landlordM3: hotWater?.landlordM3 ?? 0,
+      unitHotWaterM3:
+        measured?.unitHotWaterM3 ??
+        new Map(
+          (hotWater?.unitHotWaterM3 ?? []).map((entry) => [
+            entry.unitId,
+            entry.m3,
+          ]),
+        ),
+      landlordM3: measured?.landlordM3 ?? hotWater?.landlordM3 ?? 0,
       areaWeightsWithLandlord,
       totalAreaDays,
       warnings,
+      substitutionLimitExceeded,
+      substitutedUnitIds,
     }),
   };
+};
+
+/**
+ * Topf-Aufteilung: CO2KostAufG-Vermieteranteil vorab abziehen, dann den
+ * Warmwasseranteil nach § 9 Abs. 2 abspalten (bei fehlender Q_gesamt/Q_WW
+ * bleibt `hotWaterSplit` undefined, mit Warnung) und den Heizungstopf in
+ * Verbrauchs- und Grundanteil teilen.
+ */
+const splitHeatingPot = (
+  input: HeatingCalculationInput,
+  warnings: CalcWarning[],
+) => {
+  const { units, periodStart, config } = input;
+  const yearDays = daysInYear(periodStart);
+  const { co2Detail, landlordCo2DeductionCents } = computeCo2Deduction(
+    input.co2,
+    yearDays,
+    warnings,
+  );
+  const distributablePotCents =
+    input.totalHeatingCostsCents - landlordCo2DeductionCents;
+
+  const hotWaterSplit = computeHotWaterSplit(
+    input.hotWater,
+    distributablePotCents,
+    units.reduce((acc, u) => acc + u.areaSqm, 0),
+    units[0]?.periodDays ?? 0,
+    yearDays,
+    warnings,
+  );
+  const heatingPotCents =
+    distributablePotCents - (hotWaterSplit?.hotWaterPotCents ?? 0);
+  const consumptionPortionCents = Math.round(
+    heatingPotCents * bpsToFactor(config.consumptionShareBps),
+  );
+
+  return {
+    co2Detail,
+    distributablePotCents,
+    hotWaterSplit,
+    heatingPotCents,
+    consumptionPortionCents,
+    basicPortionCents: heatingPotCents - consumptionPortionCents,
+  };
+};
+
+/**
+ * § 9a für die Heizung: Lücken, Ersatzverbräuche, 25%-Grenze und
+ * Ausgleichsstände
+ */
+const evaluateHeatingScope = (params: {
+  input: HeatingCalculationInput;
+  period: Period;
+  prorationMethod: HeatingProrationMethod;
+  warnings: CalcWarning[];
+}): {
+  heatingMeters: ScopeMeter[];
+  heatingEvaluation: ScopeEvaluation;
+  heatingCompensations: ReturnType<typeof compensationSnapshots>;
+  withCompensations: (bundle: ScopeMeter) => ScopeMeter;
+} => {
+  const { input, period, warnings } = params;
+  const compensations = input.compensations ?? [];
+  const withCompensations = (bundle: ScopeMeter): ScopeMeter => ({
+    meter: bundle.meter,
+    readings: applyCompensations(
+      bundle.meter.id,
+      bundle.readings,
+      compensations,
+      input.readingInvalidations ?? [],
+    ),
+  });
+  const heatingMeters = input.consumptionMeters.map(withCompensations);
+  const heatingEvaluation = evaluateSubstitutionScope({
+    scope: "heating",
+    period,
+    units: input.units,
+    baseAreaByUnit: new Map(
+      input.units.map((unit) => [unit.id, baseCostAreaFor("heating", unit)]),
+    ),
+    fullOccupiedDaysByUnit: input.fullOccupiedDaysByUnit,
+    meters: heatingMeters,
+    shareMethod: input.consumptionMethod === "heat_cost_allocator",
+    substitutions: input.substitutions ?? [],
+    referenceMeters: input.referenceMeters?.heating ?? [],
+    substitutedPeriods: input.substitutedPeriods ?? [],
+    intervalWeight:
+      params.prorationMethod === "degree_days"
+        ? (fromDate: string, toDate: string) =>
+            sumDegreeDays({ start: fromDate, end: toDate })
+        : undefined,
+  });
+  warnings.push(...heatingEvaluation.warnings);
+
+  return {
+    heatingMeters,
+    heatingEvaluation,
+    heatingCompensations: compensationSnapshots(
+      "heating",
+      heatingMeters,
+      compensations,
+      period,
+      warnings,
+    ),
+    withCompensations,
+  };
+};
+
+const hotWaterScopeResult = (evaluation: ScopeEvaluation) => ({
+  substitutionLimitExceeded: evaluation.limitExceeded,
+  substitutedUnitIds: substitutedUnitIds(evaluation),
+});
+
+type ScopeResult = {
+  evaluation: ScopeEvaluation;
+  compensations: NonNullable<HeatingDetail["compensations"]>;
+};
+
+/**
+ * Snapshot-Felder zu § 9a und die Hinweise fürs Mieterdokument
+ */
+const substitutionDetailFields = (params: {
+  heating: ScopeResult;
+  hotWater: ScopeResult | undefined;
+  substitutions: SubstitutionInput[];
+  targetUnitId: string | undefined;
+  warnings: CalcWarning[];
+}): Pick<
+  HeatingDetail,
+  "substitutions" | "compensations" | "substitutionArea"
+> => {
+  const { heating, hotWater } = params;
+  pushSubstitutionNotices({ scope: "heating", ...heating, ...params });
+  if (hotWater) {
+    pushSubstitutionNotices({ scope: "hot_water", ...hotWater, ...params });
+  }
+
+  const substitutions = [
+    ...toSubstitutionSnapshots(heating.evaluation),
+    ...(hotWater ? toSubstitutionSnapshots(hotWater.evaluation) : []),
+  ];
+  const compensations = [
+    ...heating.compensations,
+    ...(hotWater?.compensations ?? []),
+  ];
+  const substitutionArea = {
+    ...(heating.evaluation.resolved.length > 0
+      ? { heating: toAreaSnapshot(heating.evaluation) }
+      : {}),
+    ...(hotWater && hotWater.evaluation.resolved.length > 0
+      ? { hotWater: toAreaSnapshot(hotWater.evaluation) }
+      : {}),
+  };
+
+  return {
+    ...(substitutions.length > 0 ? { substitutions } : {}),
+    ...(compensations.length > 0 ? { compensations } : {}),
+    ...(Object.keys(substitutionArea).length > 0 ? { substitutionArea } : {}),
+  };
+};
+
+/**
+ * Wohnungen mit gültigem Ersatzverbrauch
+ */
+const substitutedUnitIds = (evaluation: ScopeEvaluation): Set<string> =>
+  new Set(
+    evaluation.resolved
+      .filter((entry) => entry.isValid)
+      .map((entry) => entry.unitId),
+  );
+
+const toSubstitutionSnapshots = (
+  evaluation: ScopeEvaluation,
+): NonNullable<HeatingDetail["substitutions"]> =>
+  evaluation.resolved.map(({ isValid, ...entry }) => ({
+    ...entry,
+    appliedToDistribution: isValid && !evaluation.limitExceeded,
+  }));
+
+const toAreaSnapshot = (evaluation: ScopeEvaluation) => ({
+  affectedAreaSqm: evaluation.affectedAreaSqm,
+  totalAreaSqm: evaluation.totalAreaSqm,
+  limitExceeded: evaluation.limitExceeded,
+});
+
+/**
+ * Warmwasser nach § 9a: nur, wenn die Wohnungszähler mit Ablesungen
+ * übergeben sind. Liefert die Wohnungsverbräuche einschließlich
+ * Ersatzverbrauch; meldet ein unvollständiges Volumen V, wenn Q_WW über die
+ * Formel mit V bestimmt wird (§ 9 Abs. 2 verlangt ein gemessenes V).
+ */
+const evaluateHotWaterScope = (params: {
+  input: HeatingCalculationInput;
+  hotWaterSplit: ReturnType<typeof computeHotWaterSplit>;
+  period: Period;
+  tenantPeriod: Period;
+  withCompensations: (bundle: ScopeMeter) => ScopeMeter;
+  compensations: CompensationInput[];
+  warnings: CalcWarning[];
+}):
+  | {
+      evaluation: ScopeEvaluation;
+      compensations: NonNullable<HeatingDetail["compensations"]>;
+      measured: { unitHotWaterM3: Map<string, number>; landlordM3: number };
+    }
+  | undefined => {
+  const { input, hotWaterSplit, period, tenantPeriod, warnings } = params;
+  const unitMeters = input.hotWater?.unitMeters;
+  if (!unitMeters || !hotWaterSplit) {
+    return;
+  }
+
+  const meters = unitMeters.map(params.withCompensations);
+  const evaluation = evaluateSubstitutionScope({
+    scope: "hot_water",
+    period,
+    units: input.units,
+    baseAreaByUnit: new Map(
+      input.units.map((unit) => [unit.id, baseCostAreaFor("hot_water", unit)]),
+    ),
+    fullOccupiedDaysByUnit: input.fullOccupiedDaysByUnit,
+    meters,
+    shareMethod: false,
+    substitutions: input.substitutions ?? [],
+    referenceMeters: input.referenceMeters?.hotWater ?? [],
+    substitutedPeriods: input.substitutedPeriods ?? [],
+  });
+  warnings.push(...evaluation.warnings);
+  const compensation = compensationSnapshots(
+    "hot_water",
+    meters,
+    params.compensations,
+    period,
+    warnings,
+  );
+
+  if (
+    hotWaterSplit.method === "estimated" &&
+    (evaluation.gaps.length > 0 ||
+      evaluation.resolved.length > 0 ||
+      compensation.snapshots.length > 0)
+  ) {
+    warnings.push({ code: "hotWaterVolumeIncomplete" });
+  }
+
+  const measured = measureHotWaterUnits({
+    unitMeters: meters,
+    units: input.units,
+    targetUnitId: input.targetUnitId,
+    period,
+    tenantPeriod,
+    warnings: [],
+    substituteByMeter: evaluation.substituteByMeter,
+    zeroMeterIds: compensation.negativeMeterIds,
+  });
+
+  return {
+    evaluation,
+    compensations: compensation.snapshots,
+    measured: {
+      unitHotWaterM3: new Map(
+        measured.unitHotWaterM3.map((entry) => [entry.unitId, entry.m3]),
+      ),
+      landlordM3: measured.landlordM3,
+    },
+  };
+};
+
+const scopeCodeSuffix = (scope: "heating" | "hot_water"): string =>
+  scope === "heating" ? "Heating" : "HotWater";
+
+/**
+ * Teil des Warncodes für das Verfahren; beim Durchschnitt unterscheidet
+ * die Nutzergruppe (ausgewählte Wohnungen) vom ganzen Gebäude
+ */
+const methodCodeSuffix = (
+  method: SubstitutionInput["method"],
+  hasComparisonUnits: boolean,
+): string => {
+  if (method === "same_rooms_comparable_period") {
+    return "SameRooms";
+  }
+
+  if (method === "comparable_rooms") {
+    return "ComparableRooms";
+  }
+
+  return hasComparisonUnits ? "GroupAverage" : "BuildingAverage";
+};
+
+/**
+ * Hinweise fürs Mieterdokument: Ersatzverbrauch der eigenen Wohnung (mit
+ * Verfahren), Ersatzverbräuche anderer Wohnungen (ohne Namen), § 9a Abs. 2
+ * und Ausgleich aus der Vorperiode
+ */
+const pushSubstitutionNotices = (params: {
+  scope: "heating" | "hot_water";
+  evaluation: ScopeEvaluation;
+  compensations: NonNullable<HeatingDetail["compensations"]>;
+  substitutions: SubstitutionInput[];
+  targetUnitId: string | undefined;
+  warnings: CalcWarning[];
+}): void => {
+  const { scope, evaluation, compensations, targetUnitId, warnings } = params;
+  const suffix = scopeCodeSuffix(scope);
+  const valid = evaluation.resolved.filter((entry) => entry.isValid);
+
+  if (evaluation.limitExceeded) {
+    warnings.push({ code: `substitutionAreaDistribution${suffix}` });
+  } else {
+    const own = valid.find((entry) => entry.unitId === targetUnitId);
+    if (own) {
+      const input = params.substitutions.find(
+        (entry) => entry.id === own.substitutionId,
+      );
+
+      const method = methodCodeSuffix(
+        own.method,
+        (input?.comparisonUnitIds ?? null) !== null,
+      );
+
+      warnings.push({ code: `substitution${suffix}${method}` });
+    }
+
+    if (valid.some((entry) => entry.unitId !== targetUnitId)) {
+      warnings.push({ code: `substitutionOtherUnits${suffix}` });
+    }
+  }
+
+  if (compensations.some((entry) => entry.unitId === targetUnitId)) {
+    warnings.push({ code: `substitutionCompensation${suffix}` });
+  }
+};
+
+/**
+ * Warmwasserverbrauch je Wohnung aus den Wohnungszählern (`water_hot`,
+ * Rolle `unit`). Ziel-Wohnung: Mietzeit, der Rest der Periode fällt als
+ * `landlordM3` auf den Vermieter. Ersatzverbräuche gelten für die volle
+ * Periode und werden zeitanteilig aufgeteilt.
+ */
+export const measureHotWaterUnits = (params: {
+  unitMeters: ScopeMeter[];
+  units: Array<{ id: string }>;
+  targetUnitId: string | undefined;
+  period: Period;
+  tenantPeriod: Period;
+  warnings: CalcWarning[];
+  substituteByMeter?: Map<string, number>;
+  zeroMeterIds?: Set<string>;
+}): {
+  unitHotWaterM3: Array<{ unitId: string; m3: number }>;
+  landlordM3: number;
+} => {
+  const { unitMeters, period, tenantPeriod, warnings } = params;
+  let landlordM3 = 0;
+
+  const unitHotWaterM3 = params.units.map((unit) => {
+    const isTarget = unit.id === params.targetUnitId;
+    let fullM3 = 0;
+    let m3 = 0;
+
+    for (const { meter, readings } of unitMeters) {
+      if (meter.unitId !== unit.id) {
+        continue;
+      }
+
+      const substitute = params.substituteByMeter?.get(meter.id);
+      const isZeroed = params.zeroMeterIds?.has(meter.id) ?? false;
+      let meterFullM3: number;
+      let meterTenantM3: number;
+
+      if (substitute !== undefined) {
+        meterFullM3 = substitute;
+        meterTenantM3 = substitute * periodFraction(tenantPeriod, period);
+      } else if (isZeroed || readings.length === 0) {
+        meterFullM3 = 0;
+        meterTenantM3 = 0;
+      } else {
+        const options = { warnings, label: meter.label };
+        meterFullM3 = consumptionBetween(
+          readings,
+          period.start,
+          period.end,
+          options,
+        );
+        meterTenantM3 = isTarget
+          ? consumptionBetween(
+              readings,
+              tenantPeriod.start,
+              tenantPeriod.end,
+              options,
+            )
+          : meterFullM3;
+      }
+
+      fullM3 += meterFullM3;
+      m3 += isTarget ? meterTenantM3 : meterFullM3;
+    }
+
+    if (isTarget) {
+      landlordM3 += Math.max(0, fullM3 - m3);
+    }
+
+    return { unitId: unit.id, m3 };
+  });
+
+  return { unitHotWaterM3, landlordM3 };
 };
 
 export const calculateHeating = (
   input: HeatingCalculationInput,
 ): HeatingDetail => {
   const {
-    totalHeatingCostsCents,
     config,
     units,
     consumptionMeters,
@@ -1201,40 +1830,28 @@ export const calculateHeating = (
   const tenantEnd = tenantPeriodEnd ?? periodEnd;
   const warnings: CalcWarning[] = [];
 
-  // CO2KostAufG-Vermieteranteil vorab abziehen; verteilt wird der Netto-Topf.
-  const yearDays = daysInYear(periodStart);
-  const { co2Detail, landlordCo2DeductionCents } = computeCo2Deduction(
-    input.co2,
-    yearDays,
-    warnings,
-  );
-
-  const distributablePotCents =
-    totalHeatingCostsCents - landlordCo2DeductionCents;
-
-  // Warmwasser-Abspaltung (§ 9 Abs. 2): WW-Anteil aus dem Netto-Topf ziehen.
-  // Bei fehlender Q_gesamt/Q_WW bleibt hotWaterSplit undefined (Warnung).
-  const hotWaterSplit = computeHotWaterSplit(
-    input.hotWater,
+  const {
+    co2Detail,
     distributablePotCents,
-    units.reduce((acc, u) => acc + u.areaSqm, 0),
-    units[0]?.periodDays ?? 0,
-    yearDays,
-    warnings,
-  );
+    hotWaterSplit,
+    heatingPotCents,
+    consumptionPortionCents,
+    basicPortionCents,
+  } = splitHeatingPot(input, warnings);
 
-  const hotWaterPotCents = hotWaterSplit?.hotWaterPotCents ?? 0;
-  const heatingPotCents = distributablePotCents - hotWaterPotCents;
-
-  const consumptionFactor = bpsToFactor(config.consumptionShareBps);
-  const consumptionPortionCents = Math.round(
-    heatingPotCents * consumptionFactor,
-  );
-  const basicPortionCents = heatingPotCents - consumptionPortionCents;
+  // § 9a HeizkostenV: Ausgleichsstände einfügen, Lücken erkennen,
+  // Ersatzverbräuche und 25-%-Grenze je Bereich ermitteln.
+  const period = { start: periodStart, end: periodEnd };
+  const {
+    heatingMeters,
+    heatingEvaluation,
+    heatingCompensations,
+    withCompensations,
+  } = evaluateHeatingScope({ input, period, prorationMethod, warnings });
 
   const { unitConsumption, perMeter, totalConsumption, landlordConsumption } =
     measureUnitConsumption({
-      consumptionMeters,
+      consumptionMeters: heatingMeters,
       units,
       consumptionMethod,
       targetUnitId,
@@ -1244,6 +1861,8 @@ export const calculateHeating = (
       periodEnd,
       prorationMethod,
       warnings,
+      substituteByMeter: heatingEvaluation.substituteByMeter,
+      zeroMeterIds: heatingCompensations.negativeMeterIds,
     });
 
   const {
@@ -1252,19 +1871,24 @@ export const calculateHeating = (
     totalAreaDays,
   } = computeAreaWeights(units, prorationMethod);
 
-  const { consumptionDistributionMethod, consumptionShares } =
-    computeConsumptionShares({
-      totalConsumption,
-      consumptionPortionCents,
-      units,
-      unitConsumption,
-      landlordConsumption,
-      areaWeightsWithLandlord,
-      totalAreaDays,
-      consumptionMeters,
-      consumptionMethod,
-      warnings,
-    });
+  const {
+    consumptionDistributionMethod,
+    areaDistributionReason,
+    consumptionShares,
+  } = computeConsumptionShares({
+    totalConsumption,
+    consumptionPortionCents,
+    units,
+    unitConsumption,
+    landlordConsumption,
+    areaWeightsWithLandlord,
+    totalAreaDays,
+    consumptionMeters,
+    consumptionMethod,
+    warnings,
+    substitutionLimitExceeded: heatingEvaluation.limitExceeded,
+  });
+  const heatingSubstitutedUnits = substitutedUnitIds(heatingEvaluation);
 
   const basicShares =
     totalAreaDays > 0
@@ -1282,6 +1906,9 @@ export const calculateHeating = (
       areaSqm: heatingAreaFor(unit),
       basicCostCents,
       totalCents: consumptionCostCents + basicCostCents,
+      ...(heatingSubstitutedUnits.has(unit.id)
+        ? { consumptionIsSubstituted: true }
+        : {}),
     };
   });
 
@@ -1291,15 +1918,45 @@ export const calculateHeating = (
   const landlordBasicCostCents = basicShares.at(-1) ?? 0;
   const landlordConsumptionCostCents = consumptionShares.at(-1) ?? 0;
 
+  const hotWaterScope = evaluateHotWaterScope({
+    input,
+    hotWaterSplit,
+    period,
+    tenantPeriod: { start: tenantStart, end: tenantEnd },
+    withCompensations,
+    compensations: input.compensations ?? [],
+    warnings,
+  });
   const hotWaterDetail = buildHotWaterDetail({
     hotWaterSplit,
     config,
     units,
     hotWater: input.hotWater,
     warnings,
+    ...(hotWaterScope ? hotWaterScopeResult(hotWaterScope.evaluation) : {}),
+    measured: hotWaterScope?.measured,
+  });
+
+  const substitutionFields = substitutionDetailFields({
+    heating: {
+      evaluation: heatingEvaluation,
+      compensations: heatingCompensations.snapshots,
+    },
+    hotWater:
+      hotWaterScope && hotWaterDetail
+        ? {
+            evaluation: hotWaterScope.evaluation,
+            compensations: hotWaterScope.compensations,
+          }
+        : undefined,
+    substitutions: input.substitutions ?? [],
+    targetUnitId,
+    warnings,
   });
 
   return {
+    ...substitutionFields,
+    ...(areaDistributionReason ? { areaDistributionReason } : {}),
     mode: "internal",
     billingInfoOmitted: false,
     // Verteilter (Netto-)Topf nach CO2-Abzug (ohne CO2 = Brutto-Topf).

@@ -23,7 +23,7 @@ export const MeterAssignmentSheet = ({
   defaultValues: MeterFormValues;
 
   /**
-   * Modus ist festgeschrieben (bereits abgerechnete Zeiträume)
+   * Modus ist gesperrt (bereits abgerechnete Zeiträume)
    */
   locked: boolean;
   onSubmit: (values: MeterFormValues) => Promise<void>;
