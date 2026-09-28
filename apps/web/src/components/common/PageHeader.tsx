@@ -72,9 +72,15 @@ export const PageHeader = ({
   );
 
   return (
-    <header className={cn("mb-6.5", ancestors.length > 0 ? "pt-0" : "pt-3.5")}>
+    <header
+      className={cn(
+        "mb-6.5 in-data-[desktop=mac]:pt-3.5",
+        ancestors.length > 0 ? "pt-0" : "pt-3.5",
+      )}
+    >
       {ancestors.length > 0 ? (
-        <nav className="mb-3.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        // In der Mac-App zeigt die Werkzeugleiste den Pfad
+        <nav className="mb-3.5 flex in-data-[desktop=mac]:hidden flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {ancestors.map((entry, index) => (
             <Fragment key={entry.to ?? entry.label}>
               {index > 0 ? (

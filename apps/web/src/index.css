@@ -220,3 +220,67 @@
 [data-slot="dialog-content"] {
   --scroll-shadow-surface: var(--popover);
 }
+
+/*
+ * Fensterrahmen der Desktop-App. `data-desktop` am <html> setzt main.tsx nur
+ * in der Desktop-App; im Browser und auf dem Server greift nichts hiervon.
+ */
+[data-desktop] {
+  /* Höhe der Titelleiste, unter der Sidebar, Inhalt, Sheets, Dialoge und
+     Toasts beginnen */
+  --desktop-bar-height: calc(var(--spacing) * 10);
+  /* Wie SIDEBAR_WIDTH in components/ui/Sidebar.tsx; Sheets liegen im Portal
+     außerhalb der Sidebar und sehen deren --sidebar-width nicht */
+  --desktop-sidebar-width: 15.25rem;
+}
+
+/* Ziehflächen des Fensters; alles Klickbare darin bleibt klickbar */
+[data-desktop] [data-drag-region] {
+  -webkit-app-region: drag;
+}
+
+[data-desktop] [data-drag-region] :is(a, button, input, select, textarea, [role="button"]) {
+  -webkit-app-region: no-drag;
+}
+
+/* Die ausgeklappte Sidebar bei schmalem Fenster ist so breit wie die
+   angedockte (sonst 17rem für Telefone) */
+[data-desktop] [data-slot="sidebar"][data-mobile] {
+  --sidebar-width: var(--desktop-sidebar-width) !important;
+}
+
+/* Menüzeile bzw. Pfad beginnen immer über der Inhaltsspalte, bündig mit dem
+   Seiteninhalt neben der angedockten Sidebar */
+[data-desktop] [data-slot="desktop-brand"] {
+  min-width: calc(var(--desktop-sidebar-width) - var(--spacing) * 1.5);
+}
+
+/* Alles beginnt unter der Titelleiste */
+[data-desktop] [data-slot="sidebar-wrapper"] {
+  padding-top: var(--desktop-bar-height);
+}
+
+[data-desktop] :is([data-slot="sidebar-container"], [data-slot="sidebar"][data-mobile], [data-slot="dialog-overlay"], [data-slot="alert-dialog-overlay"]) {
+  top: var(--desktop-bar-height);
+  height: auto;
+}
+
+[data-desktop] :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) {
+  top: calc(50% + var(--desktop-bar-height) / 2);
+  max-height: calc(100dvh - 2rem - var(--desktop-bar-height));
+}
+
+/* Sheets überdecken nur den Inhalt, nicht Sidebar und Leiste. Klicks
+   daneben fängt der Dialog weiterhin ab (modal). */
+[data-desktop] :is([data-slot="sheet-overlay"], [data-slot="sheet-content"][data-side="right"]) {
+  top: var(--desktop-bar-height);
+  height: auto;
+}
+
+[data-desktop]:has([data-slot="sidebar"][data-state="expanded"]) [data-slot="sheet-overlay"] {
+  left: var(--desktop-sidebar-width);
+}
+
+[data-desktop] [data-sonner-toaster][data-y-position="top"] {
+  top: calc(var(--offset-top) + var(--desktop-bar-height));
+}

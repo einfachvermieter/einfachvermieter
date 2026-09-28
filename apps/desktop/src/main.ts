@@ -23,7 +23,9 @@ import geistFont from "@fontsource-variable/geist/files/geist-latin-wght-normal.
 import {
   app,
   BrowserWindow,
+  type BrowserWindowConstructorOptions,
   dialog,
+  ipcMain,
   Menu,
   type MenuItemConstructorOptions,
   session,
@@ -42,9 +44,16 @@ const t = createTranslate(createI18nSync());
  */
 declare const __APP_PLATFORM__: string;
 
-const appPlatform =
+/**
+ * Testkopie statt echter Installation (siehe `scripts/bundle.mjs`)
+ */
+declare const __APP_TEST_BUILD__: boolean;
+
+// Der Zusatz hält Testkopien aus Versionsprüfung und Nutzungsstatistik heraus.
+const appPlatform = `${
   __APP_PLATFORM__ ||
-  (process.platform === "darwin" ? "macos-download" : "win-store");
+  (process.platform === "darwin" ? "macos-download" : "win-store")
+}${__APP_TEST_BUILD__ ? "-test" : ""}`;
 
 /**
  * Produktversion, beim Bündeln eingebrannt. Nicht `app.getVersion()`: Im
@@ -56,8 +65,8 @@ declare const __APP_VERSION__: string;
 const appVersion = __APP_VERSION__;
 
 // Vor jedem `getPath("userData")` und vor dem Single-Instance-Lock setzen:
-// beide hängen am App-Namen (Entwicklung liefe sonst unter dem Paketnamen).
-app.setName("EinfachVermieter");
+// beide hängen am App-Namen (Test-Build mit eigenem Namen).
+app.setName(__APP_TEST_BUILD__ ? "EinfachVermieter Test" : "EinfachVermieter");
 
 /**
  * Wurzel der gebündelten Server-Ressourcen (API-Build, Web-Build, Packages).
@@ -381,8 +390,16 @@ const buildMenu = (): Menu => {
 
   const template: MenuItemConstructorOptions[] = [
     ...(process.platform === "darwin" ? macAppMenu : []),
-    { label: t("desktop.menu.file"), submenu: fileSubmenu },
     {
+      id: "file",
+      label:
+        process.platform === "darwin"
+          ? t("desktop.menu.fileMac")
+          : t("desktop.menu.file"),
+      submenu: fileSubmenu,
+    },
+    {
+      id: "edit",
       label: t("desktop.menu.edit"),
       submenu: [
         { role: "undo", label: t("desktop.menu.undo") },
@@ -395,7 +412,11 @@ const buildMenu = (): Menu => {
       ],
     },
     {
-      label: t("desktop.menu.view"),
+      id: "view",
+      label:
+        process.platform === "darwin"
+          ? t("desktop.menu.viewMac")
+          : t("desktop.menu.view"),
       submenu: [
         { role: "resetZoom", label: t("desktop.menu.resetZoom") },
         { role: "zoomIn", label: t("desktop.menu.zoomIn") },
@@ -417,6 +438,7 @@ const buildMenu = (): Menu => {
       ],
     },
     {
+      id: "window",
       label: t("desktop.menu.window"),
       role: "windowMenu",
       submenu: [
@@ -481,6 +503,58 @@ setTimeout(() => document.getElementById("hint").classList.add("visible"), 5000)
   return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
 };
 
+/**
+ * Fensterrahmen je System: Die Web-App zeichnet die Titelleiste (40 px).
+ * Auf dem Mac sitzen die Ampel-Buttons mittig darin, unter Windows zeichnet
+ * das System nur die Fenster-Buttons (Farben: Schiefer 900/200).
+ */
+const titleBarOptions = (): Partial<BrowserWindowConstructorOptions> => {
+  if (process.platform === "darwin") {
+    return {
+      titleBarStyle: "hiddenInset",
+      // Ampel 16 px hoch, mittig in der 40-px-Titelleiste
+      trafficLightPosition: { x: 20, y: 12 },
+    };
+  }
+
+  return {
+    titleBarStyle: "hidden",
+    titleBarOverlay: { color: "#1a222c", symbolColor: "#d6dbe1", height: 40 },
+  };
+};
+
+/**
+ * Öffnet ein Menü des Anwendungsmenüs unter dem angeklickten Menünamen der
+ * Windows-Titelleiste. `buildMenu` bleibt so die einzige Quelle für Einträge
+ * und Tastenkürzel.
+ */
+ipcMain.on(
+  "desktop-shell:open-menu",
+  (event, menuId: unknown, x: unknown, y: unknown) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    const submenu =
+      typeof menuId === "string"
+        ? Menu.getApplicationMenu()?.getMenuItemById(menuId)?.submenu
+        : undefined;
+
+    if (
+      !(window && submenu) ||
+      typeof x !== "number" ||
+      typeof y !== "number"
+    ) {
+      return;
+    }
+
+    // Die Web-App misst in CSS-Pixeln, das Menü erwartet Fensterpunkte.
+    const zoom = event.sender.getZoomFactor();
+    submenu.popup({
+      window,
+      x: Math.round(x * zoom),
+      y: Math.round(y * zoom),
+    });
+  },
+);
+
 const createWindow = (origin: string): BrowserWindow => {
   const state = readWindowState();
   const window = new BrowserWindow({
@@ -491,7 +565,9 @@ const createWindow = (origin: string): BrowserWindow => {
     minWidth: 900,
     minHeight: 600,
     show: false,
+    ...titleBarOptions(),
     webPreferences: {
+      preload: join(__dirname, "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -503,9 +579,20 @@ const createWindow = (origin: string): BrowserWindow => {
   if (state?.maximized) {
     window.maximize();
   }
+
+  // Die Titelleiste gibt im Vollbild den Platz der Ampel-Buttons frei
+  window.on("enter-full-screen", () => {
+    window.webContents.send("desktop-shell:full-screen", true);
+  });
+
+  window.on("leave-full-screen", () => {
+    window.webContents.send("desktop-shell:full-screen", false);
+  });
+
   window.once("ready-to-show", () => {
     window.show();
   });
+
   window.on("close", (event) => {
     saveWindowState(window);
     // macOS: Schließen versteckt das Fenster nur, damit Ansicht, offene

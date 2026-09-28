@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
@@ -60,6 +61,17 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       require.resolve("electron-builder/out/cli/cli.js"),
       "--win",
       `-c.extraMetadata.version=${packageVersion}`,
+      // Testkopie (siehe bundle.mjs): eigene Identität, damit ein solches
+      // Paket nie als echte Version durchgeht oder sie überschreibt.
+      ...(existsSync(
+        fileURLToPath(new URL("../../../.test-build", import.meta.url)),
+      )
+        ? [
+            "-c.appId=de.einfachvermieter.app.test",
+            "-c.productName=EinfachVermieter Test",
+            "-c.appx.identityName=MarkusBaumer.EinfachVermieter.Test",
+          ]
+        : []),
       ...process.argv.slice(2),
     ],
     { stdio: "inherit" },

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,6 +20,22 @@ const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const appPlatform = process.env.APP_PLATFORM?.trim() || process.argv[2] || "";
 const { version } = createRequire(import.meta.url)("../package.json");
 
+/**
+ * Testkopie (von scripts/sync-win-test.mjs übertragen, erkennbar an
+ * `.test-build` im Repo-Root): eigener App-Name und Plattform-Schlüssel,
+ * damit sie nie mit einer echten Installation verwechselt wird.
+ */
+const testBuild = existsSync(join(packageRoot, "../../.test-build"));
+
+await build({
+  entryPoints: [join(packageRoot, "src/preload.ts")],
+  outfile: join(packageRoot, "dist/preload.cjs"),
+  bundle: true,
+  platform: "node",
+  format: "cjs",
+  external: ["electron"],
+});
+
 await build({
   entryPoints: [join(packageRoot, "src/main.ts")],
   outfile: join(packageRoot, "dist/main.cjs"),
@@ -33,5 +50,7 @@ await build({
     __APP_PLATFORM__: JSON.stringify(appPlatform),
     // biome-ignore lint/style/useNamingConvention: esbuild-Konstante
     __APP_VERSION__: JSON.stringify(version),
+    // biome-ignore lint/style/useNamingConvention: esbuild-Konstante
+    __APP_TEST_BUILD__: JSON.stringify(testBuild),
   },
 });

@@ -11,11 +11,13 @@ import {
 import { statsQueryOptions } from "@/lib/stats";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { useCurrentUser, useLogout } from "../../lib/auth";
+import { desktopPlatform } from "../../lib/desktopShell";
 import { t } from "../../lib/i18n";
 import { useAuthMode } from "../../lib/setup";
 import { BuildingSwitcher } from "./BuildingSwitcher";
 import { MainNavigationUser } from "./MainNavigationUser";
 import { NavGroup } from "./NavGroup";
+import { NavMenu } from "./NavMenu";
 import { NewBuildingButton } from "./NewBuildingButton";
 import {
   globalNav,
@@ -40,11 +42,14 @@ export const MainNavigation = () => {
 
   return (
     <Sidebar collapsible="offcanvas">
-      <SidebarHeader>
-        <div className="flex items-center px-2.5 pt-2 pb-3">
-          <AppBrand stacked={true} />
-        </div>
-      </SidebarHeader>
+      {/* In der Desktop-App steht das Logo in der Titelleiste */}
+      {desktopPlatform ? null : (
+        <SidebarHeader>
+          <div className="flex items-center px-2.5 pt-2 pb-3">
+            <AppBrand stacked={true} />
+          </div>
+        </SidebarHeader>
+      )}
 
       <SidebarContent>
         <UpdateHint />
@@ -85,7 +90,7 @@ export const MainNavigation = () => {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <NavGroup items={[settingsNav]} currentPath={currentPath} />
+        <NavMenu items={[settingsNav]} currentPath={currentPath} />
         {/* Desktop-App (`local`): kein Konto, kein Benutzer-Menü  */}
         {user && authMode !== "local" ? (
           <MainNavigationUser

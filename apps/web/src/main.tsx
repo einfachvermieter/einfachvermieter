@@ -21,6 +21,7 @@ import { TooltipProvider } from "@/components/ui/Tooltip";
 import { BackendReadyGate } from "./components/BackendReadyGate";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ApiError } from "./lib/api";
+import { desktopPlatform } from "./lib/desktopShell";
 import { router } from "./router";
 
 const shouldEscalateToBoundary = (error: Error): boolean => {
@@ -79,6 +80,10 @@ const queryClient = new QueryClient({
 });
 
 router.update({ context: { queryClient } });
+
+if (desktopPlatform) {
+  document.documentElement.dataset.desktop = desktopPlatform;
+}
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {

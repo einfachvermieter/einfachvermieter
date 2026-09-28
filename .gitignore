@@ -32,5 +32,8 @@ apps/desktop/staging.asar
 apps/desktop/staging.asar.unpacked/
 apps/desktop/release/
 
+# Markiert eine per scripts/sync-win-test.mjs übertragene Testkopie
+.test-build
+
 # Local scratch / verification artifacts (screenshots, throwaway files)
 tmp/
