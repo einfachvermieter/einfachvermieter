@@ -14,6 +14,7 @@ type EntityKey =
   | "costEntryAttachment"
   | "externalHeatingEntry"
   | "consumptionSubstitution"
+  | "unitSupplyExclusion"
   | "heatingSettings";
 
 /**

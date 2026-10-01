@@ -47,6 +47,15 @@ export type UnitInfo = {
    * Summe Gradtag-Promille über die volle Periode. Nenner bei `degree_days`.
    */
   periodDegreeDayPromille?: number;
+  /**
+   * Tage mit Versorgung aus der zentralen Anlage im gerade gerechneten
+   * Bereich. Fehlt, wenn die Wohnung die ganze Periode versorgt ist.
+   */
+  suppliedDays?: number;
+  /**
+   * Summe Gradtag-Promille über die versorgten Tage
+   */
+  suppliedDegreeDayPromille?: number;
 };
 
 export type MeterInfo = {
@@ -512,6 +521,15 @@ export type HeatingDetail = {
     hotWater?: SubstitutionAreaSnapshot;
   };
   /**
+   * Versorgung aus der zentralen Anlage je Wohnung, rein technisch ohne
+   * Belegung. Alle Wohnungen des Gebäudes; nur gesetzt, wenn mindestens
+   * eine nicht die ganze Periode versorgt war.
+   */
+  supply?: {
+    heating?: SupplySnapshotRow[];
+    hotWater?: SupplySnapshotRow[];
+  };
+  /**
    * Grund, wenn der Verbrauchsanteil nach Fläche verteilt wurde: fehlende
    * Messung (`fallback`) oder § 9a Abs. 2 (`substitution_limit_exceeded`).
    */
@@ -848,4 +866,12 @@ export type CompensationSnapshot = {
    * Nächster echter Stand minus Ausgleichsstand. null ohne nächsten Stand.
    */
   resultingConsumption: number | null;
+};
+
+export type SupplySnapshotRow = {
+  unitId: string;
+  unitName: string;
+  suppliedDays: number;
+  periodDays: number;
+  suppliedPeriods: Period[];
 };

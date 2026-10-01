@@ -26,6 +26,14 @@ import {
   interpolateReading,
 } from "./meters.js";
 import { addDaysIso, daysBetween } from "./period.js";
+import {
+  daysOfPeriods,
+  missingSupplyReadings,
+  readingsForSuppliedPeriod,
+  suppliedPeriodsOf,
+  supplyStateOf,
+  type UnitSupply,
+} from "./supply.js";
 
 /**
  * Erfassungsausfall, wie ihn die Berechnung braucht
@@ -338,6 +346,7 @@ export type ConsumptionGap = {
   meterLabel: string;
   date: string;
   resolved: boolean;
+  isSupplyBoundary?: boolean;
 };
 
 export type ScopeEvaluationInput = {
@@ -369,6 +378,11 @@ export type ScopeEvaluationInput = {
   referenceMeters: ScopeMeter[];
   substitutedPeriods: SubstitutedPeriodMeters[];
   intervalWeight?: (fromDate: string, toDate: string) => number;
+  /**
+   * Versorgte Zeiträume je Wohnung im Bereich. Ohne Angabe sind alle
+   * Wohnungen die ganze Periode versorgt.
+   */
+  supply?: UnitSupply;
 };
 
 export type ResolvedSubstitution = Omit<
@@ -455,8 +469,35 @@ const invalidate = (
 };
 
 /**
- * Misst jeden Zähler über die volle Periode und meldet fehlende
- * Stichtagsstände, die kein Erfassungsausfall abdeckt
+ * Verbrauch eines Zählers in den versorgten Zeiträumen seiner Wohnung, bei
+ * HKV mit `kTotal` gewichtet. Stände außerhalb zählen nicht, auch wenn der
+ * Zähler nach dem Ende der Versorgung weiterläuft.
+ */
+const suppliedConsumption = (
+  scopeMeter: ScopeMeter,
+  input: Pick<ScopeEvaluationInput, "period" | "supply" | "intervalWeight">,
+): number =>
+  sum(
+    suppliedPeriodsOf(input.supply, scopeMeter.meter.unitId, input.period).map(
+      (supplied) =>
+        fullPeriodConsumption(
+          {
+            meter: scopeMeter.meter,
+            readings: readingsForSuppliedPeriod(
+              scopeMeter.readings,
+              supplied,
+              scopeMeter.meter.resetDay,
+            ),
+          },
+          supplied,
+          input.intervalWeight,
+        ),
+    ),
+  );
+
+/**
+ * Misst jeden Zähler über die versorgten Zeiträume seiner Wohnung und
+ * meldet fehlende Stichtagsstände, die kein Erfassungsausfall abdeckt
  */
 const detectConsumptionGaps = (
   input: ScopeEvaluationInput,
@@ -464,7 +505,7 @@ const detectConsumptionGaps = (
   unitName: (unitId: string) => string,
   warnings: CalcWarning[],
 ): { gaps: ConsumptionGap[]; fullConsumptionByMeter: Map<string, number> } => {
-  const { meters, period, intervalWeight } = input;
+  const { meters, period } = input;
   const coveredMeterIds = new Set(
     scopeSubstitutions.flatMap((entry) => entry.affectedMeterIds),
   );
@@ -477,37 +518,40 @@ const detectConsumptionGaps = (
       meter.id,
       coveredMeterIds.has(meter.id)
         ? 0
-        : fullPeriodConsumption(scopeMeter, period, intervalWeight),
+        : suppliedConsumption(scopeMeter, input),
     );
 
-    const kinds = classifyPeriodBoundaries(
-      scopeMeter.readings,
-      period.start,
-      period.end,
-      meter.resetDay,
+    const missing = suppliedPeriodsOf(
+      input.supply,
+      meter.unitId,
+      period,
+    ).flatMap((supplied) =>
+      missingSupplyReadings(scopeMeter.readings, supplied, meter.resetDay),
     );
-    const missingDates = [
-      ...(kinds.start === "missing" ? [period.start] : []),
-      ...(kinds.end === "missing" ? [period.end] : []),
-    ];
 
-    for (const date of missingDates) {
+    for (const { date, isSupplyBoundary } of missing) {
       const unitId = meter.unitId ?? "";
-      const resolved = scopeSubstitutions.some(
-        (entry) =>
-          entry.unitId === unitId && entry.affectedMeterIds.includes(meter.id),
-      );
+      const resolved =
+        !isSupplyBoundary &&
+        scopeSubstitutions.some(
+          (entry) =>
+            entry.unitId === unitId &&
+            entry.affectedMeterIds.includes(meter.id),
+        );
       gaps.push({
         unitId,
         meterId: meter.id,
         meterLabel: meter.label,
         date,
         resolved,
+        ...(isSupplyBoundary ? { isSupplyBoundary } : {}),
       });
 
       if (!resolved) {
         warnings.push({
-          code: "consumptionGap",
+          code: isSupplyBoundary
+            ? "supplyBoundaryReadingMissing"
+            : "consumptionGap",
           params: {
             unit: unitName(unitId),
             date,
@@ -904,14 +948,73 @@ const toResolved = (
 };
 
 /**
+ * Grenzt die Eingaben auf die zentrale Versorgung ein: Zähler nicht
+ * versorgter Wohnungen entfallen, ebenso deren Erfassungsausfälle. Ein
+ * Erfassungsausfall bei teilweise versorgter Wohnung wird in dieser
+ * Version nicht gerechnet und blockiert.
+ */
+const restrictToSupply = (
+  input: ScopeEvaluationInput,
+  unitName: (unitId: string) => string,
+  warnings: CalcWarning[],
+): ScopeEvaluationInput => {
+  if (!input.supply) {
+    return input;
+  }
+
+  const stateOf = (unitId: string | null) =>
+    supplyStateOf(input.supply, unitId ?? "", input.period);
+
+  for (const entry of input.substitutions) {
+    if (entry.scope === input.scope && stateOf(entry.unitId) === "partial") {
+      warnings.push({
+        code: "supplyChangeWithSubstitution",
+        params: {
+          unit: unitName(entry.unitId),
+          unitId: entry.unitId,
+          scope: input.scope,
+        },
+      });
+    }
+  }
+
+  return {
+    ...input,
+    meters: input.meters.filter(
+      (entry) => stateOf(entry.meter.unitId) !== "none",
+    ),
+    substitutions: input.substitutions.filter(
+      (entry) => stateOf(entry.unitId) === "full",
+    ),
+  };
+};
+
+/**
+ * Fläche des Bereichs für die 25-%-Grenze, nach versorgten Tagen gewichtet
+ */
+const suppliedTotalArea = (input: ScopeEvaluationInput): number => {
+  const periodDays = daysBetween(input.period.start, input.period.end);
+
+  return sum(
+    input.units.map((unit) => {
+      const area = input.baseAreaByUnit.get(unit.id) ?? 0;
+      const supplied = input.supply?.get(unit.id);
+
+      return supplied ? (area * daysOfPeriods(supplied)) / periodDays : area;
+    }),
+  );
+};
+
+/**
  * Ermittelt Lücken, Ersatzverbräuche und die 25-%-Grenze eines Bereichs
  */
 export const evaluateSubstitutionScope = (
-  input: ScopeEvaluationInput,
+  rawInput: ScopeEvaluationInput,
 ): ScopeEvaluation => {
   const warnings: CalcWarning[] = [];
   const unitName = (unitId: string) =>
-    input.units.find((unit) => unit.id === unitId)?.name ?? unitId;
+    rawInput.units.find((unit) => unit.id === unitId)?.name ?? unitId;
+  const input = restrictToSupply(rawInput, unitName, warnings);
   const scopeSubstitutions = input.substitutions.filter(
     (entry) => entry.scope === input.scope,
   );
@@ -935,10 +1038,13 @@ export const evaluateSubstitutionScope = (
     unitName,
     fullConsumptionByMeter,
     gaps,
+    // Nur ganzjährig versorgte Wohnungen taugen als Vergleich, sonst wäre
+    // der Verbrauch je m² zu niedrig.
     hasUsableConsumption: (unitId) =>
       meteredUnits.has(unitId) &&
       !unitsWithGap.has(unitId) &&
-      !substitutedUnits.has(unitId),
+      !substitutedUnits.has(unitId) &&
+      supplyStateOf(input.supply, unitId, input.period) === "full",
     unitConsumption: (unitId) =>
       sum(
         input.meters
@@ -965,9 +1071,7 @@ export const evaluateSubstitutionScope = (
     toResolved(context, draft, substituteByMeter),
   );
   const affectedAreaSqm = sum(drafts.map((draft) => draft.affectedAreaSqm));
-  const totalAreaSqm = sum(
-    input.units.map((unit) => input.baseAreaByUnit.get(unit.id) ?? 0),
-  );
+  const totalAreaSqm = suppliedTotalArea(input);
 
   return {
     gaps,

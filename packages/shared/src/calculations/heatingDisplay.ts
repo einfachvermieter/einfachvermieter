@@ -654,7 +654,11 @@ export type AverageUserComparisonRow = {
 export const averageUserComparison = (
   detail: Pick<
     HeatingDetail,
-    "mode" | "consumptionMethod" | "consumptionDistributionMethod" | "perUnit"
+    | "mode"
+    | "consumptionMethod"
+    | "consumptionDistributionMethod"
+    | "perUnit"
+    | "supply"
   >,
   targetUnitId: string,
   tenantPeriod: Period,
@@ -667,16 +671,21 @@ export const averageUserComparison = (
     return null;
   }
 
-  const ownRow = detail.perUnit.find((row) => row.unitId === targetUnitId);
-  const totalArea = detail.perUnit.reduce((acc, row) => acc + row.areaSqm, 0);
+  // Nur ganzjährig versorgte Wohnungen: Bei teilweiser Versorgung wäre der
+  // Verbrauch je qm nicht vergleichbar.
+  const partlySupplied = new Set(
+    (detail.supply?.heating ?? [])
+      .filter((row) => row.suppliedDays < row.periodDays)
+      .map((row) => row.unitId),
+  );
+  const perUnit = detail.perUnit.filter(
+    (row) => !partlySupplied.has(row.unitId),
+  );
+  const ownRow = perUnit.find((row) => row.unitId === targetUnitId);
+  const totalArea = perUnit.reduce((acc, row) => acc + row.areaSqm, 0);
 
   // Bei einer einzigen Wohnung waere der "Durchschnitt" der eigene Verbrauch.
-  if (
-    !ownRow ||
-    ownRow.areaSqm <= 0 ||
-    totalArea <= 0 ||
-    detail.perUnit.length < 2
-  ) {
+  if (!ownRow || ownRow.areaSqm <= 0 || totalArea <= 0 || perUnit.length < 2) {
     return null;
   }
 
@@ -696,7 +705,7 @@ export const averageUserComparison = (
   // Die anderen Wohnungen stehen mit dem vollen Zeitraum im Snapshot, die
   // Ziel-Wohnung nur mit der Mietzeit, für den Durchschnitt zählt deshalb
   // ihr hochgerechneter Wert.
-  const totalConsumption = detail.perUnit.reduce(
+  const totalConsumption = perUnit.reduce(
     (acc, row) =>
       acc + (row.unitId === targetUnitId ? ownConsumption : row.consumptionKwh),
     0,
@@ -737,7 +746,7 @@ export const averageUserComparison = (
         key: "averageConsumption",
         label: {
           key: "statements.pdf.billingInfo.comparisonAverageLabel",
-          params: { count: String(detail.perUnit.length) },
+          params: { count: String(perUnit.length) },
         },
         value: perSqm(totalConsumption, totalArea),
       },

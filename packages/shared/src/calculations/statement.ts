@@ -135,7 +135,10 @@ const buildHeatingLines = (
     (p) => p.unitId === targetUnitId,
   );
 
-  if (!tenantHeatingShare) {
+  // Ohne Zeile ist die Wohnung nicht an die zentrale Heizung angeschlossen
+  // und trägt keinen Anteil. Fehlt sie aus einem anderen Grund, stimmt die
+  // Berechnung nicht.
+  if (!(tenantHeatingShare || heatingDetail.supply?.heating)) {
     throw new Error(`No heating share computed for unit ${targetUnitId}`);
   }
 
@@ -161,16 +164,18 @@ const buildHeatingLines = (
   if (!hotWaterDetail) {
     // Ohne Abspaltung: eine kombinierte Heizkostenzeile (Bestandsverhalten).
     push(
-      buildHeatingTypeLine({
-        costTypeId: STATEMENT_HEATING_COST_TYPE_ID,
-        costTypeName: translate("costs.heatingLines.combined"),
-        potCents: totalHeatingCostsCents,
-        tenantAmountCents: tenantHeatingShare.totalCents,
-        landlordAmountCents: landlordHeatingCents,
-        consumptionShareBps,
-        hasSplit,
-        translate,
-      }),
+      tenantHeatingShare === undefined
+        ? null
+        : buildHeatingTypeLine({
+            costTypeId: STATEMENT_HEATING_COST_TYPE_ID,
+            costTypeName: translate("costs.heatingLines.combined"),
+            potCents: totalHeatingCostsCents,
+            tenantAmountCents: tenantHeatingShare.totalCents,
+            landlordAmountCents: landlordHeatingCents,
+            consumptionShareBps,
+            hasSplit,
+            translate,
+          }),
     );
 
     return lines;
@@ -184,16 +189,18 @@ const buildHeatingLines = (
     totalHeatingCostsCents - hotWaterDetail.hotWaterPotCents;
 
   push(
-    buildHeatingTypeLine({
-      costTypeId: STATEMENT_HEATING_COST_TYPE_ID,
-      costTypeName: translate("costs.heatingLines.heating"),
-      potCents: heatingPotCents,
-      tenantAmountCents: tenantHeatingShare.totalCents,
-      landlordAmountCents: landlordHeatingCents,
-      consumptionShareBps,
-      hasSplit,
-      translate,
-    }),
+    tenantHeatingShare
+      ? buildHeatingTypeLine({
+          costTypeId: STATEMENT_HEATING_COST_TYPE_ID,
+          costTypeName: translate("costs.heatingLines.heating"),
+          potCents: heatingPotCents,
+          tenantAmountCents: tenantHeatingShare.totalCents,
+          landlordAmountCents: landlordHeatingCents,
+          consumptionShareBps,
+          hasSplit,
+          translate,
+        })
+      : null,
   );
 
   const tenantHotWaterShare = hotWaterDetail.perUnit.find(

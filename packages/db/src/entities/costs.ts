@@ -624,6 +624,50 @@ export const ConsumptionSubstitutionSchema =
   });
 
 /**
+ * Zeitraum, in dem eine Wohnung technisch nicht aus der zentralen Anlage
+ * versorgt wird, getrennt für Heizung und Warmwasser. Ohne Eintrag nimmt
+ * die Wohnung teil; je Wohnung und Bereich überschneiden sich die
+ * Zeiträume nicht.
+ */
+export type UnitSupplyExclusion = {
+  id: string;
+  unitId: string;
+  scope: SubstitutionScope;
+  validFrom: string;
+  validUntil: string | null;
+  notes: string | null;
+  createdAt: Opt<string>;
+  updatedAt: Opt<string>;
+};
+
+export const UnitSupplyExclusionSchema = new EntitySchema<UnitSupplyExclusion>({
+  name: "UnitSupplyExclusion",
+  tableName: "unit_supply_exclusions",
+  properties: {
+    id: {
+      type: "string",
+      primary: true,
+      onCreate: () => crypto.randomUUID(),
+    },
+    unitId: fk(() => UnitSchema, "unit_id", "restrict"),
+    scope: { type: "string" },
+    validFrom: { type: "string", fieldName: "valid_from" },
+    validUntil: { type: "string", fieldName: "valid_until", nullable: true },
+    notes: { type: "text", nullable: true },
+    createdAt: {
+      type: "string",
+      fieldName: "created_at",
+      defaultRaw: currentTimestamp,
+    },
+    updatedAt: {
+      type: "string",
+      fieldName: "updated_at",
+      defaultRaw: currentTimestamp,
+    },
+  },
+});
+
+/**
  * Hochgeladene Belege zu einer Kostenrechnung.
  */
 export type CostEntryAttachment = {

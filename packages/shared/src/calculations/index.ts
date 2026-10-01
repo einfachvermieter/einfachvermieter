@@ -12,5 +12,6 @@ export * from "./period.js";
 export * from "./rents.js";
 export * from "./statement.js";
 export * from "./substitution.js";
+export * from "./supply.js";
 export * from "./virtualMeter.js";
 export * from "./water.js";

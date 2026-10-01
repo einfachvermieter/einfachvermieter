@@ -22,6 +22,14 @@ const areaDistributionReasonSchema = z.enum([
   "substitution_limit_exceeded",
 ]);
 
+const supplyRowSchema = z.object({
+  unitId: z.string(),
+  unitName: z.string(),
+  suppliedDays: z.number().int().nonnegative(),
+  periodDays: z.number().int().positive(),
+  suppliedPeriods: z.array(periodSchema),
+});
+
 const substitutionAreaSchema = z.object({
   affectedAreaSqm: z.number(),
   totalAreaSqm: z.number(),
@@ -212,6 +220,12 @@ export const heatingDetailSchema = z.object({
     .object({
       heating: substitutionAreaSchema.optional(),
       hotWater: substitutionAreaSchema.optional(),
+    })
+    .optional(),
+  supply: z
+    .object({
+      heating: z.array(supplyRowSchema).optional(),
+      hotWater: z.array(supplyRowSchema).optional(),
     })
     .optional(),
   areaDistributionReason: areaDistributionReasonSchema.optional(),

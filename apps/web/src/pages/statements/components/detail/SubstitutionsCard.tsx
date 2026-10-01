@@ -14,11 +14,13 @@ import {
   substitutionGapsOf,
   substitutionsQueryOptions,
 } from "../../../../lib/substitutions";
+import { supplyIssuesOf } from "../../../../lib/unitSupply";
 import { SubstitutionAreaShares } from "./SubstitutionAreaShares";
 import { SubstitutionCompensationList } from "./SubstitutionCompensationList";
 import { SubstitutionGapList } from "./SubstitutionGapList";
 import { SubstitutionSheet } from "./SubstitutionSheet";
 import { SubstitutionTable } from "./SubstitutionTable";
+import { SupplyIssueList } from "./SupplyIssueList";
 
 /**
  * Verbrauchserfassung nach § 9a HeizkostenV im Reiter "Heizkosten":
@@ -46,7 +48,12 @@ export const SubstitutionsCard = ({
   const gaps = substitutionGapsOf(detail.warnings);
   const hasSubstitutions = (detail.substitutions ?? []).length > 0;
   const hasCompensations = (detail.compensations ?? []).length > 0;
-  const hasContent = gaps.length > 0 || hasSubstitutions || hasCompensations;
+  const supplyIssues = supplyIssuesOf(detail.warnings);
+  const hasContent =
+    gaps.length > 0 ||
+    supplyIssues.length > 0 ||
+    hasSubstitutions ||
+    hasCompensations;
   if (!(isDraft || hasContent)) {
     return null;
   }
@@ -82,6 +89,13 @@ export const SubstitutionsCard = ({
             {t("ui.substitutions.emptyHint")}
           </p>
         )}
+        {supplyIssues.length > 0 ? (
+          <SupplyIssueList
+            issues={supplyIssues}
+            buildingId={buildingId}
+            isDraft={isDraft}
+          />
+        ) : null}
         {gaps.length > 0 ? (
           <SubstitutionGapList
             gaps={gaps}

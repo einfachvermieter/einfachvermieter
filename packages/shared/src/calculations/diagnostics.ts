@@ -30,6 +30,7 @@ const TENANT_WARNING_CODES = new Set([
   "substitutionAreaDistributionHotWater",
   "substitutionCompensationHeating",
   "substitutionCompensationHotWater",
+  "supplyPartialParticipation",
 ]);
 
 /**
@@ -50,6 +51,12 @@ const BLOCKING_WARNING_CODES = new Set([
   "substitutionComparisonInvalid",
   "substitutionShareInvalid",
   "substitutionBasisMissing",
+  "consumptionMeterMissingHeating",
+  "consumptionMeterMissingHotWater",
+  "supplyBoundaryReadingMissing",
+  "supplyChangeWithSubstitution",
+  "supplyNoParticipantsHeating",
+  "supplyNoParticipantsHotWater",
 ]);
 
 /**

@@ -25,6 +25,7 @@ import {
   addDaysIso,
   aggregateHeatingCosts,
   buildEnergyComparison,
+  buildUnitSupply,
   CalculationError,
   type CalcWarning,
   type CalcWarningGroup,
@@ -64,6 +65,7 @@ import {
   STATEMENT_HEATING_COST_TYPE_ID,
   type StatementCalculationInput,
   type StatementResult,
+  type SupplyExclusion,
   statementResultSchema,
   suggestNextMonthlyAdvanceCents,
   suggestNextMonthlyAdvanceCentsWithTariffs,
@@ -250,6 +252,32 @@ const containsSubstituteFor = (
     (row) => row.unitId === targetUnitId && row.hotWaterIsSubstituted,
   ) ||
   (detail.compensations ?? []).some((entry) => entry.unitId === targetUnitId);
+
+type OccupancyDays = ReturnType<TenantsService["getOccupancyDaysPerUnit"]>;
+
+/**
+ * Versorgung und Belegung getrennt für die Heizkostenberechnung. Die
+ * Ziel-Wohnung bekommt die Belegung der Mietzeit, damit der Rest dem
+ * Vermieter zufällt. Ohne Einträge leer: Alle Wohnungen sind versorgt.
+ */
+const supplyInput = (
+  exclusions: SupplyExclusion[],
+  units: Unit[],
+  occupancyFor: (unitId: string) => OccupancyDays,
+): Pick<Parameters<typeof calculateHeating>[0], "supply"> =>
+  exclusions.length === 0
+    ? {}
+    : {
+        supply: {
+          exclusions,
+          occupiedSpansByUnit: new Map(
+            units.map((unit) => [
+              unit.id,
+              occupancyFor(unit.id).get(unit.id)?.occupiedSpans ?? [],
+            ]),
+          ),
+        },
+      };
 
 /**
  * Zähler samt Ablesungen und (bei Differenzzählern) Komponenten-Konfiguration
@@ -1815,6 +1843,7 @@ export class StatementsService {
    * Heizungseinstellungen, ersatzweise aus einem Haupt-WMZ.
    */
   private buildHotWaterInput(input: {
+    supplyExclusions: SupplyExclusion[];
     heatingSettings: Awaited<ReturnType<HeatingService["getForBuildingAt"]>>;
     unitsRaw: Unit[];
     metersRaw: Meter[];
@@ -1888,6 +1917,17 @@ export class StatementsService {
       }));
     const { unitHotWaterM3, landlordM3 } = measureHotWaterUnits({
       unitMeters,
+      // Volumen nur aus versorgter Zeit, auch wenn ein Zähler weiterläuft
+      ...(input.supplyExclusions.length > 0
+        ? {
+            supply: buildUnitSupply(
+              input.supplyExclusions,
+              unitsRaw.map((unit) => unit.id),
+              "hot_water",
+              statementPeriod,
+            ),
+          }
+        : {}),
       units: unitsRaw,
       targetUnitId,
       period: statementPeriod,
@@ -2055,7 +2095,10 @@ export class StatementsService {
     // (gemessen) oder der Schätzformel über den Warmwasserverbrauch; Q_gesamt
     // aus den Heizungseinstellungen, ersatzweise aus einem Haupt-WMZ.
     const hotWaterWarnings: CalcWarning[] = [];
+    const supplyExclusions =
+      await this.substitutionContextService.loadSupplyExclusions(buildingId);
     const hotWater = this.buildHotWaterInput({
+      supplyExclusions,
       heatingSettings,
       unitsRaw,
       metersRaw,
@@ -2097,6 +2140,11 @@ export class StatementsService {
           periodDays: statementPeriodDays,
         },
         ...substitutionInputs,
+        ...supplyInput(supplyExclusions, unitsRaw, (unitId) =>
+          unitId === targetUnitId
+            ? occupancyDaysByUnitTenant
+            : occupancyDaysByUnitFull,
+        ),
         fullOccupiedDaysByUnit: new Map(
           unitsRaw.map((u) => [
             u.id,

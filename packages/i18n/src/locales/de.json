@@ -192,6 +192,10 @@
     "consumptionSubstitution": {
       "one": "Erfassungsausfall",
       "other": "Erfassungsausfälle"
+    },
+    "unitSupplyExclusion": {
+      "one": "Eintrag zur Versorgung",
+      "other": "Einträge zur Versorgung"
     }
   },
   "startup": {
@@ -300,6 +304,8 @@
     "substitutionDuplicate": "Für diese Wohnung und diesen Bereich ist in der Periode schon ein Erfassungsausfall erfasst.",
     "substitutionIdentityFixed": "Wohnung, Bereich und Periode eines Erfassungsausfalls lassen sich nicht ändern. Bitte löschen Sie ihn und legen Sie ihn neu an.",
     "substitutionScopeInactive": "Dieser Bereich wird für die Periode nicht nach der Heizkostenverordnung in der App abgerechnet.",
+    "supplyExclusionOverlap": "Für diese Wohnung und diesen Bereich gibt es in dem Zeitraum schon einen Eintrag.",
+    "supplyExclusionFinalizedImmutable": "Die Änderung betrifft einen Zeitraum, für den bereits eine Abrechnung des Gebäudes finalisiert ist. Die Versorgung lässt sich dort nicht mehr ändern.",
     "substitution": {
       "meterMismatch": "Mindestens ein Zähler gehört nicht zur Wohnung oder passt nicht zum Bereich.",
       "meterKeptCountingRequired": "Bitte geben Sie an, ob der Zähler weitergezählt hat.",
@@ -357,6 +363,13 @@
     "substitutionComparisonInvalid": "Erfassungsausfall in Wohnung {unit}: Die Vergleichswohnungen taugen nicht als Grundlage. Nötig sind mindestens zwei Wohnungen mit vollständig erfassten Werten und ohne eigenen Erfassungsausfall.",
     "substitutionShareInvalid": "Erfassungsausfall in Wohnung {unit}: Die Vergleichsanteile aller Erfassungsausfälle ergeben zusammen 100 % oder mehr. Bitte prüfen Sie die Vergleichsgrundlagen.",
     "substitutionBasisMissing": "Erfassungsausfall in Wohnung {unit}: Ein angegebener Zähler oder eine Wohnung passt nicht mehr zur Grundlage. Bitte prüfen Sie die Angaben.",
+    "consumptionMeterMissingHeating": "Für Wohnung {unit} ist kein Zähler für den Heizverbrauch erfasst, obwohl sie an die zentrale Heizung angeschlossen ist. Bitte legen Sie den Zähler an. Wird die Wohnung nicht aus der zentralen Anlage beheizt, tragen Sie das bei der Wohnung unter „Versorgung“ ein.",
+    "consumptionMeterMissingHotWater": "Für Wohnung {unit} ist kein Warmwasserzähler erfasst, obwohl sie zentral mit Warmwasser versorgt wird. Bitte legen Sie den Zähler an. Hat die Wohnung eine eigene Warmwasserbereitung, tragen Sie das bei der Wohnung unter „Versorgung“ ein.",
+    "supplyBoundaryReadingMissing": "In Wohnung {unit} ändert sich die zentrale Versorgung. Für {label} fehlt der abgelesene Zählerstand zum {date}. Bitte erfassen Sie den Stand zur Umstellung, er wird nicht geschätzt.",
+    "supplyChangeWithSubstitution": "Für Wohnung {unit} gibt es im Abrechnungszeitraum eine Änderung der zentralen Versorgung und einen Erfassungsausfall. Diese Kombination wird derzeit nicht unterstützt.",
+    "supplyNoParticipantsHeating": "Es sind Heizkosten zu verteilen, aber keine Wohnung ist an die zentrale Heizung angeschlossen. Bitte prüfen Sie die Angaben zur Versorgung der Wohnungen.",
+    "supplyNoParticipantsHotWater": "Es sind Warmwasserkosten zu verteilen, aber keine Wohnung wird zentral mit Warmwasser versorgt. Bitte prüfen Sie die Angaben zur Versorgung der Wohnungen.",
+    "supplyPartialParticipation": "Die Kosten der zentralen Heizungs- und Warmwasseranlage wurden nur auf die Wohnungen verteilt, die aus ihr versorgt werden.",
     "substitutionMeterSetChanged": "Erfassungsausfall in Wohnung {unit}: Im Vergleichszeitraum waren andere Heizkostenverteiler erfasst als heute. Die Anteile können sich dadurch verschieben.",
     "substitutionComparisonVacancy": "Erfassungsausfall in Wohnung {unit}: Eine Vergleichswohnung stand in der Periode zeitweise leer, ihr Verbrauch ist dadurch niedriger.",
     "substitutionDataNowComplete": "Für Wohnung {unit} ist ein Erfassungsausfall erfasst, die Zählerstände sind inzwischen aber vollständig. Bitte prüfen Sie, ob der Erfassungsausfall noch nötig ist.",
@@ -861,6 +874,36 @@
       "emptySearchForBuilding": "Keine Wohnungen gefunden für „{query}“ in Gebäude „{building}“",
       "confirmDelete": "Wohnung löschen?",
       "confirmDeleteMessage": "Soll „{name}“ wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "supply": {
+        "title": "Versorgung",
+        "add": "Ausnahme eintragen",
+        "empty": "Heizung und Warmwasser aus der zentralen Anlage",
+        "emptyHeatingOnly": "Heizung aus der zentralen Anlage",
+        "rowOpen": "{scope} nicht aus der zentralen Anlage seit {from}",
+        "rowClosed": "{scope} nicht aus der zentralen Anlage vom {from} bis {until}",
+        "confirmDelete": "Eintrag löschen",
+        "sheet": {
+          "titleNew": "Ausnahme von der zentralen Versorgung",
+          "titleEdit": "Ausnahme bearbeiten",
+          "description": "Nur eintragen, wenn die Wohnung technisch nicht aus der zentralen Anlage versorgt wird, z. B. eigene Heizung oder Durchlauferhitzer. Leerstand, zugedrehte oder entfernte Heizkörper gehören nicht hierher.",
+          "readingHint": "Ändert sich die Versorgung, müssen Sie den Zählerstand am Tag der Umstellung erfassen. Ohne diesen Stand lässt sich die Abrechnung nicht finalisieren. Der Stand wird nicht geschätzt."
+        },
+        "fields": {
+          "scope": "Bereich",
+          "validFrom": "Ohne zentrale Versorgung ab",
+          "validUntil": "Bis einschließlich",
+          "validUntilHint": "Leer lassen, wenn die Wohnung bis auf Weiteres nicht zentral versorgt wird.",
+          "notes": "Notiz"
+        },
+        "scope": {
+          "heating": "Heizung",
+          "hot_water": "Warmwasser"
+        },
+        "validation": {
+          "required": "Bitte geben Sie ein Datum ein.",
+          "range": "Das Ende darf nicht vor dem Beginn liegen."
+        }
+      },
       "allBuildings": "Alle Gebäude",
       "editEyebrow": "Wohnung bearbeiten",
       "unitNumberMeta": "Mieteinheit {number}",
@@ -2553,6 +2596,13 @@
       "gapsTitle": "Offene Lücken",
       "gapHeating": "Für Wohnung {unit} konnte kein vollständiger Heizverbrauch ermittelt werden. Der Zählerstand von {meter} zum {date} fehlt.",
       "gapHotWater": "Für Wohnung {unit} konnte kein vollständiger Warmwasserverbrauch ermittelt werden. Der Zählerstand von {meter} zum {date} fehlt.",
+      "gapSupplyBoundary": "In Wohnung {unit} ändert sich die zentrale Versorgung. Für {meter} fehlt der abgelesene Stand zum {date}. Erfassen Sie den Stand zur Umstellung, er wird nicht geschätzt.",
+      "meterMissingHeating": "Für Wohnung {unit} ist kein Zähler für den Heizverbrauch erfasst.",
+      "meterMissingHotWater": "Für Wohnung {unit} ist kein Warmwasserzähler erfasst.",
+      "unsupportedCombination": "Für Wohnung {unit} gibt es im Abrechnungszeitraum eine Änderung der zentralen Versorgung und einen Erfassungsausfall. Diese Kombination wird derzeit nicht unterstützt.",
+      "createMeter": "Zähler anlegen",
+      "editSupply": "Versorgung der Wohnung bearbeiten",
+      "recordReading": "Zählerstand erfassen",
       "editReadings": "Zählerstände bearbeiten",
       "listTitle": "Erfasste Ausfälle",
       "columns": {

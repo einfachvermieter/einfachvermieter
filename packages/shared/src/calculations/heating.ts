@@ -10,6 +10,7 @@ import type {
   MeterInfo,
   Period,
   ReadingPoint,
+  SupplySnapshotRow,
   UnitInfo,
 } from "../types/index.js";
 import { CalculationError, type CalcWarning } from "./diagnostics.js";
@@ -27,6 +28,17 @@ import {
   type SubstitutedPeriodMeters,
   type SubstitutionInput,
 } from "./substitution.js";
+import {
+  buildUnitSupply,
+  daysOfPeriods,
+  intersectPeriods,
+  readingsForSuppliedPeriod,
+  type SupplyExclusion,
+  type SupplyScope,
+  suppliedPeriodsOf,
+  supplyStateOf,
+  type UnitSupply,
+} from "./supply.js";
 
 /**
  * Monatliche Gradtagszahlen als Promille des Jahresbedarfs (Summe 1.000 ‰).
@@ -480,6 +492,16 @@ type HeatingCalculationInput = {
    * Belegte Tage je Wohnung über die volle Periode
    */
   fullOccupiedDaysByUnit?: Map<string, number>;
+
+  /**
+   * Teilnahme an der zentralen Versorgung: Zeiträume ohne Versorgung und die
+   * Belegung je Wohnung (Ziel-Wohnung: nur die Mietzeit). Ohne Angabe sind
+   * alle Wohnungen die ganze Periode versorgt.
+   */
+  supply?: {
+    exclusions: SupplyExclusion[];
+    occupiedSpansByUnit: Map<string, Period[]>;
+  };
 };
 
 export type HotWaterInput = {
@@ -860,9 +882,16 @@ const computeHotWaterAreaWeights = (
   const areaDayWeights = units.map(
     (unit) => baseCostAreaFor("hot_water", unit) * unit.occupiedDays,
   );
-  const totalAreaDays =
-    units.reduce((acc, unit) => acc + baseCostAreaFor("hot_water", unit), 0) *
-    (units[0]?.periodDays ?? 0);
+  const totalAreaDays = units.some((unit) => unit.suppliedDays !== undefined)
+    ? units.reduce(
+        (acc, unit) =>
+          acc +
+          baseCostAreaFor("hot_water", unit) *
+            (unit.suppliedDays ?? unit.periodDays),
+        0,
+      )
+    : units.reduce((acc, unit) => acc + baseCostAreaFor("hot_water", unit), 0) *
+      (units[0]?.periodDays ?? 0);
   const sumAreaDayWeights = areaDayWeights.reduce((a, b) => a + b, 0);
 
   return {
@@ -872,6 +901,156 @@ const computeHotWaterAreaWeights = (
     ],
     totalAreaDays,
   };
+};
+
+type ScopedUnits = {
+  /**
+   * Wohnungen mit versorgten Tagen im Bereich. Bei teilweiser Versorgung
+   * ist die Belegung auf die versorgte Zeit begrenzt.
+   */
+  units: UnitInfo[];
+  supply: UnitSupply | undefined;
+};
+
+/**
+ * Kombiniert Versorgung und Belegung für die Kostenaufteilung eines
+ * Bereichs. Nicht versorgte Tage erzeugen weder einen Anteil der Wohnung
+ * noch Leerstand.
+ */
+const scopeUnits = (
+  input: HeatingCalculationInput,
+  scope: SupplyScope,
+  period: Period,
+): ScopedUnits => {
+  if (!input.supply) {
+    return { units: input.units, supply: undefined };
+  }
+
+  const supply = buildUnitSupply(
+    input.supply.exclusions,
+    input.units.map((unit) => unit.id),
+    scope,
+    period,
+  );
+  const occupiedSpans = input.supply.occupiedSpansByUnit;
+
+  const units = input.units.flatMap((unit) => {
+    const state = supplyStateOf(supply, unit.id, period);
+    if (state === "full") {
+      return [unit];
+    }
+    if (state === "none") {
+      return [];
+    }
+
+    const supplied = supply.get(unit.id) ?? [];
+    const occupied = intersectPeriods(
+      occupiedSpans.get(unit.id) ?? [],
+      supplied,
+    );
+
+    return [
+      {
+        ...unit,
+        occupiedDays: daysOfPeriods(occupied),
+        occupiedDegreeDayPromille: sumDegreeDaysOf(occupied),
+        suppliedDays: daysOfPeriods(supplied),
+        suppliedDegreeDayPromille: sumDegreeDaysOf(supplied),
+      },
+    ];
+  });
+
+  return { units, supply };
+};
+
+const sumDegreeDaysOf = (periods: Period[]): number =>
+  periods.reduce((acc, entry) => acc + sumDegreeDays(entry), 0);
+
+/**
+ * Versorgung je Wohnung für den Snapshot, rein technisch ohne Belegung.
+ * Nur, wenn mindestens eine Wohnung nicht die ganze Periode versorgt war.
+ */
+const supplySnapshotRows = (
+  units: UnitInfo[],
+  supply: UnitSupply | undefined,
+  period: Period,
+): SupplySnapshotRow[] | undefined => {
+  if (
+    !supply ||
+    units.every((unit) => supplyStateOf(supply, unit.id, period) === "full")
+  ) {
+    return;
+  }
+
+  const periodDays = daysBetween(period.start, period.end);
+
+  return units.map((unit) => {
+    const supplied = supply.get(unit.id) ?? [];
+
+    return {
+      unitId: unit.id,
+      unitName: unit.name,
+      suppliedDays: daysOfPeriods(supplied),
+      periodDays,
+      suppliedPeriods: supplied.map(({ start, end }) => ({ start, end })),
+    };
+  });
+};
+
+/**
+ * Snapshot-Feld zur Versorgung und der Hinweis fürs Mieterdokument
+ */
+const supplyDetailFields = (params: {
+  units: UnitInfo[];
+  heating: UnitSupply | undefined;
+  hotWater: UnitSupply | undefined;
+  period: Period;
+  warnings: CalcWarning[];
+}): Pick<HeatingDetail, "supply"> => {
+  const heating = supplySnapshotRows(
+    params.units,
+    params.heating,
+    params.period,
+  );
+  const hotWater = supplySnapshotRows(
+    params.units,
+    params.hotWater,
+    params.period,
+  );
+  if (!(heating || hotWater)) {
+    return {};
+  }
+
+  params.warnings.push({ code: "supplyPartialParticipation" });
+
+  return {
+    supply: {
+      ...(heating ? { heating } : {}),
+      ...(hotWater ? { hotWater } : {}),
+    },
+  };
+};
+
+/**
+ * Versorgte Wohnungen ohne Zähler im Bereich. Die Ausstattungspflicht ist
+ * verletzt, ein Erfassungsausfall nach § 9a kommt dafür nicht in Betracht.
+ */
+const pushMissingMeterWarnings = (
+  scope: SupplyScope,
+  units: UnitInfo[],
+  meters: Array<{ meter: MeterInfo }>,
+  warnings: CalcWarning[],
+): void => {
+  const metered = new Set(meters.map((entry) => entry.meter.unitId));
+
+  for (const unit of units) {
+    if (!metered.has(unit.id)) {
+      warnings.push({
+        code: `consumptionMeterMissing${scopeCodeSuffix(scope)}`,
+        params: { unit: unit.name, unitId: unit.id, scope },
+      });
+    }
+  }
 };
 
 /**
@@ -928,8 +1107,13 @@ const measuredMeterConsumption = (params: {
   landlordConsumption: number;
   row: NonNullable<HeatingDetail["perMeter"]>[number];
 } => {
-  const { meter, readings, isTarget, isZeroed, period, tenantPeriod } = params;
-  const meterPeriod = isTarget ? tenantPeriod : period;
+  const { meter, readings, isTarget, period, tenantPeriod } = params;
+  // Ziel-Wohnung: Mietzeit innerhalb des gemessenen Zeitraums. Ohne
+  // Überschneidung zählt der ganze Zeitraum als Verbrauch außerhalb der
+  // Mietzeit.
+  const tenantPart = isTarget ? intersect(period, tenantPeriod) : period;
+  const isZeroed = params.isZeroed || tenantPart === null;
+  const meterPeriod = tenantPart ?? period;
 
   // Aus Sicht des Ziel-Mieters sind Lücken in Zählerständen außerhalb seines
   // Mietzeitraums irrelevant; `relevantPeriod` unterdrückt nur die Warnungen.
@@ -959,7 +1143,7 @@ const measuredMeterConsumption = (params: {
   const weighted = kTotal === null ? delta : delta * kTotal;
 
   const landlordConsumption =
-    isTarget && !isZeroed
+    isTarget && !params.isZeroed
       ? residualTargetConsumption({
           readings,
           weighted,
@@ -972,11 +1156,9 @@ const measuredMeterConsumption = (params: {
 
   // Mindestens ein Stichtagsstand nicht direkt abgelesen -> der Verbrauch
   // ist rechnerisch ermittelt und wird so ausgewiesen.
-  const consumptionIsDerived = isDerivedConsumption(
-    readings,
-    meterPeriod.start,
-    meterPeriod.end,
-  );
+  const consumptionIsDerived =
+    tenantPart !== null &&
+    isDerivedConsumption(readings, meterPeriod.start, meterPeriod.end);
 
   return {
     landlordConsumption,
@@ -1076,6 +1258,34 @@ const residualTargetConsumption = (params: {
   return Math.max(0, fullWeighted - weighted);
 };
 
+type MeterPart = ReturnType<typeof measuredMeterConsumption>;
+
+/**
+ * Fasst die Messung eines Zählers über mehrere versorgte Zeiträume zusammen
+ */
+const mergeMeterParts = (parts: MeterPart[]): MeterPart => {
+  const [first, ...rest] = parts;
+  if (!first) {
+    throw new Error("Meter without supplied period");
+  }
+
+  return rest.reduce(
+    (acc, part) => ({
+      landlordConsumption: acc.landlordConsumption + part.landlordConsumption,
+      row: {
+        ...acc.row,
+        consumptionRaw: acc.row.consumptionRaw + part.row.consumptionRaw,
+        consumptionWeighted:
+          acc.row.consumptionWeighted + part.row.consumptionWeighted,
+        ...(acc.row.consumptionIsDerived || part.row.consumptionIsDerived
+          ? { consumptionIsDerived: true }
+          : {}),
+      },
+    }),
+    first,
+  );
+};
+
 /**
  * Liest den (gewichteten) Verbrauch je Zähler ab und aggregiert ihn pro
  * Wohnung. Ziel-Wohnung: Mieter-Zeitraum als Zähler, zusätzlich volle
@@ -1099,6 +1309,7 @@ const measureUnitConsumption = (params: {
   warnings: CalcWarning[];
   substituteByMeter?: Map<string, number>;
   zeroMeterIds?: Set<string>;
+  supply?: UnitSupply;
 }): {
   unitConsumption: Map<string, number>;
   perMeter: NonNullable<HeatingDetail["perMeter"]>;
@@ -1162,20 +1373,34 @@ const measureUnitConsumption = (params: {
     const substitute = substituteByMeter?.get(meter.id);
     const measured =
       substitute === undefined
-        ? measuredMeterConsumption({
-            meter,
-            readings,
-            isTarget,
-            // Negativer Ausgleich: nur vorläufig mit 0, ohne die allgemeine
-            // Warnung zum negativen Verbrauch (die eigene blockiert schon).
-            isZeroed: zeroMeterIds?.has(meter.id) ?? false,
-            period: { start: periodStart, end: periodEnd },
-            tenantPeriod: { start: tenantStart, end: tenantEnd },
-            consumptionMethod,
-            intervalWeight: consumptionIntervalWeight,
-            warnings,
-            unitName,
-          })
+        ? mergeMeterParts(
+            // Je versorgtem Zeitraum der Wohnung: Stände außerhalb zählen
+            // nicht, auch wenn der Zähler weiterläuft.
+            suppliedPeriodsOf(params.supply, meter.unitId, {
+              start: periodStart,
+              end: periodEnd,
+            }).map((supplied) =>
+              measuredMeterConsumption({
+                meter,
+                readings: readingsForSuppliedPeriod(
+                  readings,
+                  supplied,
+                  meter.resetDay,
+                ),
+                isTarget,
+                // Negativer Ausgleich: nur vorläufig mit 0, ohne die
+                // allgemeine Warnung zum negativen Verbrauch (die eigene
+                // blockiert schon).
+                isZeroed: zeroMeterIds?.has(meter.id) ?? false,
+                period: { start: supplied.start, end: supplied.end },
+                tenantPeriod: { start: tenantStart, end: tenantEnd },
+                consumptionMethod,
+                intervalWeight: consumptionIntervalWeight,
+                warnings,
+                unitName,
+              }),
+            ),
+          )
         : substitutedMeterConsumption({
             meter,
             substitute,
@@ -1247,7 +1472,17 @@ const computeAreaWeights = (
     (unit) => baseCostAreaFor("heating", unit) * unitTimeWeight(unit),
   );
 
-  const totalAreaDays = totalHeatingAreaSqm * periodTimeWeight;
+  // Gesamt nur über versorgte Zeit: Nicht versorgte Tage sind kein Leerstand.
+  const suppliedTimeWeight = (unit: UnitInfo) =>
+    (useDegreeDays ? unit.suppliedDegreeDayPromille : unit.suppliedDays) ??
+    periodTimeWeight;
+  const totalAreaDays = units.some((unit) => unit.suppliedDays !== undefined)
+    ? units.reduce(
+        (acc, unit) =>
+          acc + baseCostAreaFor("heating", unit) * suppliedTimeWeight(unit),
+        0,
+      )
+    : totalHeatingAreaSqm * periodTimeWeight;
   const sumAreaDayWeights = areaDayWeights.reduce((a, b) => a + b, 0);
   const landlordAreaDayWeight = Math.max(0, totalAreaDays - sumAreaDayWeights);
 
@@ -1412,6 +1647,7 @@ const buildHotWaterDetail = (params: {
  */
 const splitHeatingPot = (
   input: HeatingCalculationInput,
+  hotWaterUnits: UnitInfo[],
   warnings: CalcWarning[],
 ) => {
   const { units, periodStart, config } = input;
@@ -1427,7 +1663,16 @@ const splitHeatingPot = (
   const hotWaterSplit = computeHotWaterSplit(
     input.hotWater,
     distributablePotCents,
-    units.reduce((acc, u) => acc + u.areaSqm, 0),
+    // § 9 Abs. 2 Satz 5: nur die zentral mit Warmwasser versorgte Fläche,
+    // nach versorgten Tagen gewichtet.
+    hotWaterUnits.reduce(
+      (acc, u) =>
+        acc +
+        (u.suppliedDays === undefined
+          ? u.areaSqm
+          : (u.areaSqm * u.suppliedDays) / u.periodDays),
+      0,
+    ),
     units[0]?.periodDays ?? 0,
     yearDays,
     warnings,
@@ -1454,6 +1699,7 @@ const splitHeatingPot = (
  */
 const evaluateHeatingScope = (params: {
   input: HeatingCalculationInput;
+  scoped: ScopedUnits;
   period: Period;
   prorationMethod: HeatingProrationMethod;
   warnings: CalcWarning[];
@@ -1474,9 +1720,19 @@ const evaluateHeatingScope = (params: {
       input.readingInvalidations ?? [],
     ),
   });
-  const heatingMeters = input.consumptionMeters.map(withCompensations);
+  const heatingMeters = input.consumptionMeters
+    .filter(
+      (entry) =>
+        supplyStateOf(
+          params.scoped.supply,
+          entry.meter.unitId ?? "",
+          period,
+        ) !== "none",
+    )
+    .map(withCompensations);
   const heatingEvaluation = evaluateSubstitutionScope({
     scope: "heating",
+    supply: params.scoped.supply,
     period,
     units: input.units,
     baseAreaByUnit: new Map(
@@ -1495,6 +1751,12 @@ const evaluateHeatingScope = (params: {
         : undefined,
   });
   warnings.push(...heatingEvaluation.warnings);
+  pushMissingMeterWarnings(
+    "heating",
+    params.scoped.units,
+    heatingMeters,
+    warnings,
+  );
 
   return {
     heatingMeters,
@@ -1595,6 +1857,7 @@ const toAreaSnapshot = (evaluation: ScopeEvaluation) => ({
  */
 const evaluateHotWaterScope = (params: {
   input: HeatingCalculationInput;
+  scoped: ScopedUnits;
   hotWaterSplit: ReturnType<typeof computeHotWaterSplit>;
   period: Period;
   tenantPeriod: Period;
@@ -1614,9 +1877,17 @@ const evaluateHotWaterScope = (params: {
     return;
   }
 
-  const meters = unitMeters.map(params.withCompensations);
+  const { supply } = params.scoped;
+  const meters = unitMeters
+    .filter(
+      (entry) =>
+        supplyStateOf(supply, entry.meter.unitId ?? "", period) !== "none",
+    )
+    .map(params.withCompensations);
+  pushMissingMeterWarnings("hot_water", params.scoped.units, meters, warnings);
   const evaluation = evaluateSubstitutionScope({
     scope: "hot_water",
+    supply,
     period,
     units: input.units,
     baseAreaByUnit: new Map(
@@ -1649,6 +1920,7 @@ const evaluateHotWaterScope = (params: {
 
   const measured = measureHotWaterUnits({
     unitMeters: meters,
+    supply,
     units: input.units,
     targetUnitId: input.targetUnitId,
     period,
@@ -1668,6 +1940,73 @@ const evaluateHotWaterScope = (params: {
       landlordM3: measured.landlordM3,
     },
   };
+};
+
+/**
+ * Heizkosten je versorgter Wohnung aus Verbrauchs- und Grundkostenanteil
+ */
+const heatingPerUnit = (params: {
+  units: UnitInfo[];
+  consumptionShares: number[];
+  basicShares: number[];
+  unitConsumption: Map<string, number>;
+  substitutedUnits: Set<string>;
+}): HeatingDetail["perUnit"] =>
+  params.units.map((unit, idx) => {
+    const consumptionCostCents = params.consumptionShares[idx] ?? 0;
+    const basicCostCents = params.basicShares[idx] ?? 0;
+
+    return {
+      unitId: unit.id,
+      unitName: unit.name,
+      consumptionKwh: params.unitConsumption.get(unit.id) ?? 0,
+      consumptionCostCents,
+      areaSqm: heatingAreaFor(unit),
+      basicCostCents,
+      totalCents: consumptionCostCents + basicCostCents,
+      ...(params.substitutedUnits.has(unit.id)
+        ? { consumptionIsSubstituted: true }
+        : {}),
+    };
+  });
+
+/**
+ * Warmwasser: § 9a-Auswertung der Wohnungszähler und Verteilung des
+ * abgespaltenen Topfs auf die zentral versorgten Wohnungen
+ */
+const computeHotWater = (params: {
+  input: HeatingCalculationInput;
+  scoped: ScopedUnits;
+  hotWaterSplit: ReturnType<typeof computeHotWaterSplit>;
+  period: Period;
+  tenantPeriod: Period;
+  withCompensations: (bundle: ScopeMeter) => ScopeMeter;
+  warnings: CalcWarning[];
+}) => {
+  const { input, scoped, hotWaterSplit, warnings } = params;
+  const hotWaterScope = evaluateHotWaterScope({
+    ...params,
+    compensations: input.compensations ?? [],
+  });
+  if (
+    hotWaterSplit &&
+    hotWaterSplit.hotWaterPotCents > 0 &&
+    scoped.units.length === 0
+  ) {
+    warnings.push({ code: "supplyNoParticipantsHotWater" });
+  }
+
+  const hotWaterDetail = buildHotWaterDetail({
+    hotWaterSplit,
+    config: input.config,
+    units: scoped.units,
+    hotWater: input.hotWater,
+    warnings,
+    ...(hotWaterScope ? hotWaterScopeResult(hotWaterScope.evaluation) : {}),
+    measured: hotWaterScope?.measured,
+  });
+
+  return { hotWaterScope, hotWaterDetail };
 };
 
 const scopeCodeSuffix = (scope: "heating" | "hot_water"): string =>
@@ -1736,6 +2075,67 @@ const pushSubstitutionNotices = (params: {
   }
 };
 
+type HotWaterMeasureParams = {
+  period: Period;
+  tenantPeriod: Period;
+  warnings: CalcWarning[];
+  substituteByMeter?: Map<string, number>;
+  zeroMeterIds?: Set<string>;
+  supply?: UnitSupply;
+};
+
+/**
+ * Verbrauch eines Warmwasserzählers über die Periode und über die Mietzeit.
+ * Gemessen wird je versorgtem Zeitraum der Wohnung: Stände außerhalb zählen
+ * nicht, auch wenn der Zähler weiterläuft.
+ */
+const measureHotWaterMeter = (
+  { meter, readings }: ScopeMeter,
+  params: HotWaterMeasureParams,
+): { fullM3: number; tenantM3: number } => {
+  const { period, tenantPeriod } = params;
+  const substitute = params.substituteByMeter?.get(meter.id);
+  if (substitute !== undefined) {
+    return {
+      fullM3: substitute,
+      tenantM3: substitute * periodFraction(tenantPeriod, period),
+    };
+  }
+
+  if (params.zeroMeterIds?.has(meter.id) || readings.length === 0) {
+    return { fullM3: 0, tenantM3: 0 };
+  }
+
+  const options = { warnings: params.warnings, label: meter.label };
+  let fullM3 = 0;
+  let tenantM3 = 0;
+  for (const supplied of suppliedPeriodsOf(
+    params.supply,
+    meter.unitId,
+    period,
+  )) {
+    const suppliedReadings = readingsForSuppliedPeriod(readings, supplied);
+    const tenantPart = intersect(supplied, tenantPeriod);
+
+    fullM3 += consumptionBetween(
+      suppliedReadings,
+      supplied.start,
+      supplied.end,
+      options,
+    );
+    tenantM3 += tenantPart
+      ? consumptionBetween(
+          suppliedReadings,
+          tenantPart.start,
+          tenantPart.end,
+          options,
+        )
+      : 0;
+  }
+
+  return { fullM3, tenantM3 };
+};
+
 /**
  * Warmwasserverbrauch je Wohnung aus den Wohnungszählern (`water_hot`,
  * Rolle `unit`). Ziel-Wohnung: Mietzeit, der Rest der Periode fällt als
@@ -1751,11 +2151,12 @@ export const measureHotWaterUnits = (params: {
   warnings: CalcWarning[];
   substituteByMeter?: Map<string, number>;
   zeroMeterIds?: Set<string>;
+  supply?: UnitSupply;
 }): {
   unitHotWaterM3: Array<{ unitId: string; m3: number }>;
   landlordM3: number;
 } => {
-  const { unitMeters, period, tenantPeriod, warnings } = params;
+  const { unitMeters } = params;
   let landlordM3 = 0;
 
   const unitHotWaterM3 = params.units.map((unit) => {
@@ -1768,34 +2169,8 @@ export const measureHotWaterUnits = (params: {
         continue;
       }
 
-      const substitute = params.substituteByMeter?.get(meter.id);
-      const isZeroed = params.zeroMeterIds?.has(meter.id) ?? false;
-      let meterFullM3: number;
-      let meterTenantM3: number;
-
-      if (substitute !== undefined) {
-        meterFullM3 = substitute;
-        meterTenantM3 = substitute * periodFraction(tenantPeriod, period);
-      } else if (isZeroed || readings.length === 0) {
-        meterFullM3 = 0;
-        meterTenantM3 = 0;
-      } else {
-        const options = { warnings, label: meter.label };
-        meterFullM3 = consumptionBetween(
-          readings,
-          period.start,
-          period.end,
-          options,
-        );
-        meterTenantM3 = isTarget
-          ? consumptionBetween(
-              readings,
-              tenantPeriod.start,
-              tenantPeriod.end,
-              options,
-            )
-          : meterFullM3;
-      }
+      const { fullM3: meterFullM3, tenantM3: meterTenantM3 } =
+        measureHotWaterMeter({ meter, readings }, params);
 
       fullM3 += meterFullM3;
       m3 += isTarget ? meterTenantM3 : meterFullM3;
@@ -1816,8 +2191,6 @@ export const calculateHeating = (
 ): HeatingDetail => {
   const {
     config,
-    units,
-    consumptionMeters,
     consumptionMethod,
     periodStart,
     periodEnd,
@@ -1829,6 +2202,13 @@ export const calculateHeating = (
   const tenantStart = tenantPeriodStart ?? periodStart;
   const tenantEnd = tenantPeriodEnd ?? periodEnd;
   const warnings: CalcWarning[] = [];
+  const period = { start: periodStart, end: periodEnd };
+
+  // Teilnahme an der zentralen Versorgung, getrennt je Bereich. Ab hier
+  // rechnet jeder Bereich nur mit seinen versorgten Wohnungen.
+  const heatingScoped = scopeUnits(input, "heating", period);
+  const hotWaterScoped = scopeUnits(input, "hot_water", period);
+  const { units } = heatingScoped;
 
   const {
     co2Detail,
@@ -1837,17 +2217,25 @@ export const calculateHeating = (
     heatingPotCents,
     consumptionPortionCents,
     basicPortionCents,
-  } = splitHeatingPot(input, warnings);
+  } = splitHeatingPot(input, hotWaterScoped.units, warnings);
 
   // § 9a HeizkostenV: Ausgleichsstände einfügen, Lücken erkennen,
   // Ersatzverbräuche und 25-%-Grenze je Bereich ermitteln.
-  const period = { start: periodStart, end: periodEnd };
   const {
     heatingMeters,
     heatingEvaluation,
     heatingCompensations,
     withCompensations,
-  } = evaluateHeatingScope({ input, period, prorationMethod, warnings });
+  } = evaluateHeatingScope({
+    input,
+    scoped: heatingScoped,
+    period,
+    prorationMethod,
+    warnings,
+  });
+  if (units.length === 0 && heatingPotCents > 0) {
+    warnings.push({ code: "supplyNoParticipantsHeating" });
+  }
 
   const { unitConsumption, perMeter, totalConsumption, landlordConsumption } =
     measureUnitConsumption({
@@ -1863,6 +2251,7 @@ export const calculateHeating = (
       warnings,
       substituteByMeter: heatingEvaluation.substituteByMeter,
       zeroMeterIds: heatingCompensations.negativeMeterIds,
+      supply: heatingScoped.supply,
     });
 
   const {
@@ -1883,33 +2272,21 @@ export const calculateHeating = (
     landlordConsumption,
     areaWeightsWithLandlord,
     totalAreaDays,
-    consumptionMeters,
+    consumptionMeters: heatingMeters,
     consumptionMethod,
     warnings,
     substitutionLimitExceeded: heatingEvaluation.limitExceeded,
   });
-  const heatingSubstitutedUnits = substitutedUnitIds(heatingEvaluation);
-
   const basicShares =
     totalAreaDays > 0
       ? distributeCents(basicPortionCents, areaWeightsWithLandlord)
       : [...units.map(() => 0), 0];
-
-  const perUnit = units.map((unit, idx) => {
-    const consumptionCostCents = consumptionShares[idx] ?? 0;
-    const basicCostCents = basicShares[idx] ?? 0;
-    return {
-      unitId: unit.id,
-      unitName: unit.name,
-      consumptionKwh: unitConsumption.get(unit.id) ?? 0,
-      consumptionCostCents,
-      areaSqm: heatingAreaFor(unit),
-      basicCostCents,
-      totalCents: consumptionCostCents + basicCostCents,
-      ...(heatingSubstitutedUnits.has(unit.id)
-        ? { consumptionIsSubstituted: true }
-        : {}),
-    };
+  const perUnit = heatingPerUnit({
+    units,
+    consumptionShares,
+    basicShares,
+    unitConsumption,
+    substitutedUnits: substitutedUnitIds(heatingEvaluation),
   });
 
   // Vermieter-Anteil = letzte Share-Array-Position: Leerstand bei den
@@ -1918,23 +2295,14 @@ export const calculateHeating = (
   const landlordBasicCostCents = basicShares.at(-1) ?? 0;
   const landlordConsumptionCostCents = consumptionShares.at(-1) ?? 0;
 
-  const hotWaterScope = evaluateHotWaterScope({
+  const { hotWaterScope, hotWaterDetail } = computeHotWater({
     input,
+    scoped: hotWaterScoped,
     hotWaterSplit,
     period,
     tenantPeriod: { start: tenantStart, end: tenantEnd },
     withCompensations,
-    compensations: input.compensations ?? [],
     warnings,
-  });
-  const hotWaterDetail = buildHotWaterDetail({
-    hotWaterSplit,
-    config,
-    units,
-    hotWater: input.hotWater,
-    warnings,
-    ...(hotWaterScope ? hotWaterScopeResult(hotWaterScope.evaluation) : {}),
-    measured: hotWaterScope?.measured,
   });
 
   const substitutionFields = substitutionDetailFields({
@@ -1956,6 +2324,13 @@ export const calculateHeating = (
 
   return {
     ...substitutionFields,
+    ...supplyDetailFields({
+      units: input.units,
+      heating: heatingScoped.supply,
+      hotWater: hotWaterDetail ? hotWaterScoped.supply : undefined,
+      period,
+      warnings,
+    }),
     ...(areaDistributionReason ? { areaDistributionReason } : {}),
     mode: "internal",
     billingInfoOmitted: false,

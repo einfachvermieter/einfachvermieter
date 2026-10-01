@@ -5,11 +5,13 @@ import {
   MeterSchema,
   OperatingCostStatementSchema,
   UnitSchema,
+  UnitSupplyExclusionSchema,
 } from "@einfachvermieter/db";
 import {
   addDaysIso,
   applyCompensations,
   baseCostAreaFor,
+  buildUnitSupply,
   type CalcWarning,
   type CompensationInput,
   type ConsumptionSubstitution,
@@ -25,6 +27,7 @@ import {
   type SubstitutedPeriodMeters,
   type SubstitutionInput,
   type SubstitutionSnapshot,
+  type SupplyExclusion,
   sumDegreeDays,
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
@@ -123,6 +126,31 @@ export class SubstitutionContextService {
     private readonly em: EntityManager,
     private readonly heatingService: HeatingService,
   ) {}
+
+  /**
+   * Zeiträume ohne zentrale Versorgung aller Wohnungen des Gebäudes
+   */
+  async loadSupplyExclusions(buildingId: string): Promise<SupplyExclusion[]> {
+    const units = await this.em.find(
+      UnitSchema,
+      { buildingId },
+      { fields: ["id"] },
+    );
+    if (units.length === 0) {
+      return [];
+    }
+
+    const rows = await this.em.find(UnitSupplyExclusionSchema, {
+      unitId: { $in: units.map((unit) => unit.id) },
+    });
+
+    return rows.map((row) => ({
+      unitId: row.unitId,
+      scope: row.scope,
+      validFrom: row.validFrom,
+      validUntil: row.validUntil,
+    }));
+  }
 
   /**
    * Erfassungsausfälle genau dieser Periode
@@ -446,6 +474,8 @@ export class SubstitutionContextService {
       },
     );
 
+    const exclusions = await this.loadSupplyExclusions(buildingId);
+
     const evaluate = (
       scope: "heating" | "hot_water",
       scopeMeters: ScopeMeter[],
@@ -453,6 +483,16 @@ export class SubstitutionContextService {
     ): ScopeEvaluation =>
       evaluateSubstitutionScope({
         scope,
+        ...(exclusions.length > 0
+          ? {
+              supply: buildUnitSupply(
+                exclusions,
+                units.map((unit) => unit.id),
+                scope,
+                period,
+              ),
+            }
+          : {}),
         period,
         units,
         baseAreaByUnit: new Map(

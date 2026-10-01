@@ -1145,6 +1145,9 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
   const bMeterWaterEg = nid();
   const bMeterWaterOg = nid();
   const bMeterWaterDg = nid();
+  const bMeterHotWaterEg = nid();
+  const bMeterHotWaterOg = nid();
+  const bMeterHotWaterDg = nid();
   insert(schema.meters, [
     {
       id: bMeterHeatHotWater,
@@ -1254,6 +1257,25 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       validFrom: "2025-01-01",
       isActive: true,
     },
+    // Warmwasserzähler je Wohnung: Alle drei Wohnungen hängen am zentralen
+    // Warmwasser, ohne Zähler ließe sich die Abrechnung nicht finalisieren.
+    ...[
+      { id: bMeterHotWaterEg, unitId: bUnitEg, floor: "EG" },
+      { id: bMeterHotWaterOg, unitId: bUnitOg, floor: "OG" },
+      { id: bMeterHotWaterDg, unitId: bUnitDg, floor: "DG" },
+    ].map(({ id, unitId, floor }) => ({
+      id,
+      buildingId: bBuilding,
+      unitId,
+      type: "water_hot" as const,
+      role: "unit" as const,
+      label: `Warmwasser ${floor}`,
+      serialNumber: `DEMO-B-WW-${floor}`,
+      measurementUnit: "m3" as const,
+      costAllocationMode: "heating_cost_bill" as const,
+      validFrom: "2025-01-01",
+      isActive: true,
+    })),
   ]);
 
   insert(schema.heatingSettings, {
@@ -1342,6 +1364,27 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       value: 8000,
       readBy: "metering_service",
     },
+    // Warmwasser (m3)
+    ...[
+      { meterId: bMeterHotWaterEg, value: 18 },
+      { meterId: bMeterHotWaterOg, value: 22 },
+      { meterId: bMeterHotWaterDg, value: 12 },
+    ].flatMap(({ meterId, value }) => [
+      {
+        id: nid(),
+        meterId,
+        readingDate: "2025-01-01",
+        value: 0,
+        readBy: "metering_service" as const,
+      },
+      {
+        id: nid(),
+        meterId,
+        readingDate: "2025-12-31",
+        value,
+        readBy: "metering_service" as const,
+      },
+    ]),
     // Kaltwasser (m3)
     {
       id: nid(),

@@ -34,6 +34,7 @@ import {
   TenantResidentSchema,
   TenantSchema,
   UnitSchema,
+  UnitSupplyExclusionSchema,
   UserSchema,
 } from "../../src/index.js";
 
@@ -56,6 +57,7 @@ export const schema = {
   costTypes: CostTypeSchema,
   climateFactors: ClimateFactorSchema,
   consumptionSubstitutions: ConsumptionSubstitutionSchema,
+  unitSupplyExclusions: UnitSupplyExclusionSchema,
   externalHeatingEntries: ExternalHeatingEntrySchema,
   heatingSettings: HeatingSettingSchema,
   meters: MeterSchema,

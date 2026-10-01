@@ -22,5 +22,6 @@ export * from "./stats.js";
 export * from "./tenant-account.js";
 export * from "./tenant-form.js";
 export * from "./tenants.js";
+export * from "./unit-supply-exclusions.js";
 export * from "./units.js";
 export * from "./updates.js";

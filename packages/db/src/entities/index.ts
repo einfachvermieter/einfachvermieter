@@ -8,6 +8,7 @@ import {
   CostTypeSchema,
   ExternalHeatingEntrySchema,
   HeatingSettingSchema,
+  UnitSupplyExclusionSchema,
 } from "./costs.js";
 import { MeterCostTypeAssignmentSchema } from "./meter-cost-types.js";
 import {
@@ -56,6 +57,7 @@ export const entitySchemas = [
   HeatingSettingSchema,
   ExternalHeatingEntrySchema,
   ConsumptionSubstitutionSchema,
+  UnitSupplyExclusionSchema,
   CostEntryAttachmentSchema,
   ResidentSchema,
   TenantSchema,

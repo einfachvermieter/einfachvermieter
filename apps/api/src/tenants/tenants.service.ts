@@ -66,15 +66,21 @@ const increaseOneDayIso = (iso: string): string => {
  */
 const mergeOccupiedSpans = (
   intervals: [string, string][],
-): { occupiedDays: number; occupiedDegreeDayPromille: number } => {
+): {
+  occupiedDays: number;
+  occupiedDegreeDayPromille: number;
+  occupiedSpans: Array<{ start: string; end: string }>;
+} => {
   const sorted = [...intervals].sort((a, b) => (a[0] < b[0] ? -1 : 1));
 
   let occupiedDays = 0;
   let occupiedDegreeDayPromille = 0;
+  const occupiedSpans: Array<{ start: string; end: string }> = [];
   let curStart: string | null = null;
   let curEnd: string | null = null;
 
   const closeSpan = (spanStart: string, spanEnd: string): void => {
+    occupiedSpans.push({ start: spanStart, end: spanEnd });
     occupiedDays += daysBetween(spanStart, spanEnd);
     occupiedDegreeDayPromille += sumDegreeDays({
       start: spanStart,
@@ -104,7 +110,7 @@ const mergeOccupiedSpans = (
     closeSpan(curStart, curEnd);
   }
 
-  return { occupiedDays, occupiedDegreeDayPromille };
+  return { occupiedDays, occupiedDegreeDayPromille, occupiedSpans };
 };
 
 export type TenantAggregate = {
@@ -966,6 +972,7 @@ export class TenantsService {
       personDays: number;
       occupiedDays: number;
       occupiedDegreeDayPromille: number;
+      occupiedSpans: Array<{ start: string; end: string }>;
       occupantCount: number;
       residentSpans: Array<{
         residentId: string;
@@ -981,6 +988,7 @@ export class TenantsService {
       personDays: number;
       occupiedDays: number;
       occupiedDegreeDayPromille: number;
+      occupiedSpans: Array<{ start: string; end: string }>;
       occupantCount: number;
       residentSpans: {
         residentId: string;
@@ -994,6 +1002,7 @@ export class TenantsService {
       personDays: 0,
       occupiedDays: 0,
       occupiedDegreeDayPromille: 0,
+      occupiedSpans: [],
       occupantCount: 0,
       residentSpans: [],
     });
@@ -1049,11 +1058,12 @@ export class TenantsService {
     }
 
     for (const [unitId, intervals] of intervalsByUnit) {
-      const { occupiedDays, occupiedDegreeDayPromille } =
+      const { occupiedDays, occupiedDegreeDayPromille, occupiedSpans } =
         mergeOccupiedSpans(intervals);
       const acc = result.get(unitId) ?? initAcc();
       acc.occupiedDays = occupiedDays;
       acc.occupiedDegreeDayPromille = occupiedDegreeDayPromille;
+      acc.occupiedSpans = occupiedSpans;
 
       result.set(unitId, acc);
     }

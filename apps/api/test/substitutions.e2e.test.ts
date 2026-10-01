@@ -417,5 +417,90 @@ describe("Erfassungsausfall nach § 9a HeizkostenV", () => {
     expect(
       detail2027.warnings.map((warning: { code: string }) => warning.code),
     ).toContain("substitutionCompensationHeating");
+
+    // ── Teilnahme an der zentralen Versorgung ───────────────────────────
+    const supplyPath = `/units/${unitC.id}/supply-exclusions`;
+    const later = await api(supplyPath, {
+      method: "POST",
+      body: {
+        scope: "heating",
+        validFrom: "2028-01-01",
+        validUntil: null,
+        notes: null,
+      },
+      expect: 201,
+    });
+    // Überschneidung im selben Bereich
+    await api(supplyPath, {
+      method: "POST",
+      body: {
+        scope: "heating",
+        validFrom: "2028-06-01",
+        validUntil: null,
+        notes: null,
+      },
+      expect: 409,
+    });
+    // Sperre: Die finalisierte Periode 2026 darf sich nicht ändern, ...
+    await api(`/unit-supply-exclusions/${later.id}`, {
+      method: "PATCH",
+      body: {
+        scope: "heating",
+        validFrom: "2026-07-01",
+        validUntil: null,
+        notes: null,
+      },
+      expect: 400,
+    });
+    // ... außerhalb davon bleibt der Eintrag änderbar.
+    await api(`/unit-supply-exclusions/${later.id}`, {
+      method: "PATCH",
+      body: {
+        scope: "heating",
+        validFrom: "2027-07-01",
+        validUntil: null,
+        notes: "Etagenheizung",
+      },
+      expect: 200,
+    });
+
+    const supplyCodes = async () => {
+      const result = await api(
+        `/statements/preview/calculate?buildingId=${building.id}&tenantId=${tenantId}&from=2027-01-01&to=2027-12-31`,
+        { expect: 200 },
+      );
+
+      return result.heatingDetail;
+    };
+    const withoutBoundary = await supplyCodes();
+    expect(
+      withoutBoundary.warnings.find(
+        (warning: { code: string }) =>
+          warning.code === "supplyBoundaryReadingMissing",
+      ).params,
+    ).toMatchObject({ meterId: wmzC.id, date: "2027-06-30" });
+
+    // Stand zur Umstellung; der Zähler läuft danach weiter bis 15.000
+    await addReading(wmzC.id, "2027-06-30", 12_000);
+    const withBoundary = await supplyCodes();
+    expect(
+      withBoundary.warnings.map((warning: { code: string }) => warning.code),
+    ).not.toContain("supplyBoundaryReadingMissing");
+    expect(
+      withBoundary.perUnit.find(
+        (row: { unitId: string }) => row.unitId === unitC.id,
+      ).consumptionKwh,
+    ).toBe(2000);
+    expect(
+      withBoundary.supply.heating.find(
+        (row: { unitId: string }) => row.unitId === unitC.id,
+      ),
+    ).toMatchObject({ suppliedDays: 181, periodDays: 365 });
+
+    await api(`/unit-supply-exclusions/${later.id}`, {
+      method: "DELETE",
+      expect: 200,
+    });
+    expect(await api(supplyPath, { expect: 200 })).toEqual([]);
   }, 120_000);
 });

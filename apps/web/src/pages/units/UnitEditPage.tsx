@@ -34,6 +34,7 @@ import {
 import { type Unit, unitQueryOptions } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 import { useDeleteResource } from "../../lib/useDeleteResource";
+import { UnitSupplySection } from "./components/supply/UnitSupplySection";
 import { UnitSheet } from "./sheets/UnitSheet";
 
 const routeApi = getRouteApi("/wohnungen/$unitId");
@@ -222,6 +223,8 @@ export const UnitEditPage = () => {
             ]}
           />
         </SectionCard>
+
+        <UnitSupplySection unitId={unit.id} buildingId={unit.buildingId} />
       </div>
 
       {sheetOpen ? (
