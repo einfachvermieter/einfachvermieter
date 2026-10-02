@@ -250,6 +250,19 @@ const measureKwhConsumption = (
     });
   }
 
+  // Eine Wohnung ohne zugeordneten Zähler hat Verbrauch 0, die übrigen
+  // tragen die ganze Rechnung. Nur Warnung: Eine Anlage kann bewusst nur
+  // einen Teil der Wohnungen versorgen.
+  const meteredUnitIds = new Set(assigned.map((bundle) => bundle.meter.unitId));
+  for (const unit of ctx.units) {
+    if (!meteredUnitIds.has(unit.id)) {
+      ctx.warnings.push({
+        code: "kwhUnitWithoutMeter",
+        params: { label: unit.name, costTypeName: costType.name },
+      });
+    }
+  }
+
   const { unitConsumption, landlordConsumptionM3 } = aggregateUnitConsumption({
     units: ctx.units,
     waterMeters: assigned,

@@ -142,6 +142,20 @@ describe("calculateStatement mit Umlageschlüssel Verbrauch (kWh)", () => {
     ).toBe(75_000);
   });
 
+  it("warnt bei einer Wohnung ohne zugeordneten Zähler", () => {
+    expect(calculateStatement(input({})).kwhWarnings).toBeUndefined();
+
+    const result = calculateStatement(input({ meterIds: ["m-eg"] }));
+
+    expect(result.kwhWarnings).toEqual([
+      {
+        code: "kwhUnitWithoutMeter",
+        params: { label: "u-og", costTypeName: "Wärmepumpenstrom" },
+      },
+    ]);
+    expect(result.lines[0]?.tenantAmountCents).toBe(100_000);
+  });
+
   it("verlangt mindestens einen zugeordneten Zähler", () => {
     expect(() => calculateStatement(input({ meterIds: [] }))).toThrow(
       /allocationKwhNoMeters/u,
