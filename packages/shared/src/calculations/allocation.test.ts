@@ -322,7 +322,7 @@ describe("allocateCost per_consumption_kwh", () => {
         units,
         translate,
         targetUnitId: "unit-eg",
-        kwhConsumption: {
+        measuredConsumption: {
           perUnit: new Map([
             ["unit-eg", 300],
             ["unit-og", 600],
@@ -338,14 +338,14 @@ describe("allocateCost per_consumption_kwh", () => {
     expect(result.bemessungUnit).toBe("kWh");
   });
 
-  it("wirft ohne kwhConsumption", () => {
+  it("wirft ohne measuredConsumption", () => {
     expect(() =>
       allocateCost("Wärmepumpenstrom", "per_consumption_kwh", 10_000, {
         units,
         translate,
         targetUnitId: "unit-eg",
       }),
-    ).toThrow(/kwhConsumption/u);
+    ).toThrow(/measuredConsumption/u);
   });
 });
 

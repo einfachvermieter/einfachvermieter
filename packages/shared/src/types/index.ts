@@ -189,6 +189,12 @@ export type CostLineResult = {
   daysTotal: number | null;
   daysTenant: number | null;
   notes?: string;
+  /**
+   * Zähler der Ziel-Wohnung hinter dem Verbrauch dieser Zeile. Nur bei
+   * m3-Kostenarten mit zugeordneten Zählern; sonst gelten die Zähler aus
+   * `waterDetail`.
+   */
+  meterContributions?: Array<{ label: string; consumptionM3: number }>;
 };
 
 /**

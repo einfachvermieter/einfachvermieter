@@ -4,6 +4,53 @@
  */
 
 import { formatNumber } from "../format.js";
+import type { StatementResult } from "../types/index.js";
+
+type MeterContribution = { label: string; consumptionM3: number };
+
+/**
+ * Ob die Kostenart dem Namen nach Schmutzwasser ist
+ */
+export const isWasteWaterName = (name: string): boolean =>
+  /schmutzwasser|abwasser/iu.test(name);
+
+/**
+ * Zähler der Ziel-Wohnung für die Wasser-Fußnoten. `fresh` ist leer, wenn
+ * weniger als zwei Zähler beitragen (dann sagt die Bemessungs-Spalte schon
+ * alles). `waste` ist nur gesetzt, wenn das Schmutzwasser mit anderen Zählern
+ * rechnet als das Frischwasser, z.B. ohne den Gartenzähler.
+ */
+export const waterFootnoteMeters = (
+  result: Pick<StatementResult, "lines" | "waterDetail" | "unitId">,
+): { fresh: MeterContribution[]; waste: MeterContribution[] | null } => {
+  const allMeters =
+    result.waterDetail?.perUnit.find((unit) => unit.unitId === result.unitId)
+      ?.meterContributions ?? [];
+
+  const waterLines = result.lines.filter(
+    (line) => line.allocationKey === "per_consumption_m3",
+  );
+
+  const freshLine = waterLines.find(
+    (line) => !isWasteWaterName(line.costTypeName),
+  );
+
+  const wasteLine = waterLines.find((line) =>
+    isWasteWaterName(line.costTypeName),
+  );
+
+  const fresh = freshLine?.meterContributions ?? allMeters;
+  const waste = wasteLine?.meterContributions ?? allMeters;
+
+  const labels = (meters: MeterContribution[]) =>
+    meters.map((meter) => meter.label).join("\n");
+
+  return {
+    fresh: fresh.length >= 2 ? fresh : [],
+    waste:
+      freshLine && wasteLine && labels(fresh) !== labels(waste) ? waste : null,
+  };
+};
 
 /**
  * Nachkommastellen je Bemessungs-Einheit: Flächen/Volumen 2, Zähl-Einheiten 0

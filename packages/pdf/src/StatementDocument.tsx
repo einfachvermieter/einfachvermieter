@@ -7,8 +7,10 @@ import {
   groupCalcWarnings,
   hasHeatingBreakdown,
   isTenantWarning,
+  isWasteWaterName,
   type SenderLogoAlignment,
   type StatementResult,
+  waterFootnoteMeters,
 } from "@einfachvermieter/shared";
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { calcWarningKey, formatCalcWarning } from "./calcWarnings.js";
@@ -476,30 +478,35 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
           // Einzelverbrauch. Fußnote nur bei ≥ 2 beitragenden Zählern; bei
           // einem einzelnen Zähler ist die Information redundant zur
           // Bemessungs-Spalte.
-          const ownUnit = result.waterDetail?.perUnit.find(
-            (u) => u.unitId === result.unitId,
-          );
-
-          const contributions = ownUnit?.meterContributions ?? [];
+          const footnoteMeters = waterFootnoteMeters(result);
+          const meterList = (
+            meters: Array<{ label: string; consumptionM3: number }>,
+          ) =>
+            meters
+              .map(
+                (c) =>
+                  `${c.label} (${formatNumber(c.consumptionM3, 2)}\u00A0m³)`,
+              )
+              .join(", ");
           const consumptionNote =
-            contributions.length >= 2
-              ? `${t("statements.pdf.water.calculationNote")} ${contributions
-                  .map(
-                    (c) =>
-                      `${c.label} (${formatNumber(c.consumptionM3, 2)}\u00A0m³)`,
-                  )
-                  .join(", ")}`
+            footnoteMeters.fresh.length > 0
+              ? `${t("statements.pdf.water.calculationNote")} ${meterList(footnoteMeters.fresh)}`
               : undefined;
 
           const hasWasteWater = operatingLines.some(
             (l) =>
               l.allocationKey === "per_consumption_m3" &&
-              /schmutzwasser|abwasser/iu.test(l.costTypeName),
+              isWasteWaterName(l.costTypeName),
           );
 
-          const wasteWaterNote = hasWasteWater
-            ? t("statements.pdf.water.wasteWaterNote")
-            : undefined;
+          // Rechnet das Schmutzwasser mit anderen Zählern als das
+          // Frischwasser, stehen dort die eigenen Zähler statt des Verweises.
+          let wasteWaterNote: string | undefined;
+          if (hasWasteWater) {
+            wasteWaterNote = footnoteMeters.waste
+              ? `${t("statements.pdf.water.wasteWaterCalculationNote")} ${meterList(footnoteMeters.waste)}`
+              : t("statements.pdf.water.wasteWaterNote");
+          }
 
           return (
             <>

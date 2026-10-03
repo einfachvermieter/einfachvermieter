@@ -63,9 +63,9 @@ type AllocationContext = {
   targetUnitId: string;
   waterDetail?: WaterDetail;
   /**
-   * kWh-Verbrauch der Zähler, die der Kostenart zugeordnet sind
+   * Verbrauch der Zähler, die der Kostenart zugeordnet sind (m³ oder kWh)
    */
-  kwhConsumption?: MeasuredConsumption;
+  measuredConsumption?: MeasuredConsumption;
   translate: TranslateFn;
 };
 
@@ -76,7 +76,7 @@ type ResolvedAllocation = {
   targetUnitId: string;
   targetUnit: UnitInfo;
   waterDetail?: WaterDetail;
-  kwhConsumption?: MeasuredConsumption;
+  measuredConsumption?: MeasuredConsumption;
   translate: TranslateFn;
 };
 
@@ -364,13 +364,15 @@ const allocateByMeasuredConsumption = (
 };
 
 /**
- * per_consumption_m3: Verteilung nach gemessenem Wasserverbrauch
+ * per_consumption_m3: Verteilung nach gemessenem Wasserverbrauch. Mit
+ * zugeordneten Zählern zählt deren Verbrauch, sonst der aller Wasserzähler.
  */
 const allocatePerConsumptionM3 = (
   resolved: ResolvedAllocation,
 ): AllocatedLine => {
-  const { waterDetail, costTypeName, translate } = resolved;
-  if (!waterDetail) {
+  const { waterDetail, measuredConsumption, costTypeName, translate } =
+    resolved;
+  if (!waterDetail && !measuredConsumption) {
     throw new Error(
       `per_consumption_m3 for "${costTypeName}" requires waterDetail in context`,
     );
@@ -378,11 +380,14 @@ const allocatePerConsumptionM3 = (
 
   return allocateByMeasuredConsumption(
     resolved,
-    {
+    measuredConsumption ?? {
       perUnit: new Map(
-        waterDetail.perUnit.map((entry) => [entry.unitId, entry.consumptionM3]),
+        waterDetail?.perUnit.map((entry) => [
+          entry.unitId,
+          entry.consumptionM3,
+        ]),
       ),
-      landlord: waterDetail.landlordConsumptionM3 ?? 0,
+      landlord: waterDetail?.landlordConsumptionM3 ?? 0,
     },
     {
       allocationKey: "per_consumption_m3",
@@ -399,14 +404,14 @@ const allocatePerConsumptionM3 = (
 const allocatePerConsumptionKwh = (
   resolved: ResolvedAllocation,
 ): AllocatedLine => {
-  const { kwhConsumption, costTypeName, translate } = resolved;
-  if (!kwhConsumption) {
+  const { measuredConsumption, costTypeName, translate } = resolved;
+  if (!measuredConsumption) {
     throw new Error(
-      `per_consumption_kwh for "${costTypeName}" requires kwhConsumption in context`,
+      `per_consumption_kwh for "${costTypeName}" requires measuredConsumption in context`,
     );
   }
 
-  return allocateByMeasuredConsumption(resolved, kwhConsumption, {
+  return allocateByMeasuredConsumption(resolved, measuredConsumption, {
     allocationKey: "per_consumption_kwh",
     baseUnit: translate("costs.baseUnits.consumptionKwh"),
     bemessungUnit: "kWh",
@@ -448,7 +453,8 @@ export const allocateCost = (
   totalAmountCents: number,
   ctx: AllocationContext,
 ): AllocatedLine => {
-  const { units, targetUnitId, waterDetail, kwhConsumption, translate } = ctx;
+  const { units, targetUnitId, waterDetail, measuredConsumption, translate } =
+    ctx;
 
   const targetUnit = units.find((u) => u.id === targetUnitId);
   if (!targetUnit) {
@@ -462,7 +468,7 @@ export const allocateCost = (
     targetUnitId,
     targetUnit,
     waterDetail,
-    kwhConsumption,
+    measuredConsumption,
     translate,
   };
 

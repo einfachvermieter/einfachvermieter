@@ -378,14 +378,23 @@ const heatingEntriesFromCostType = (
 const operatingSharesFromResult = (
   result: StatementResult,
 ): Map<string, number> => {
-  const shares = new Map<string, number>();
+  // Eine Kostenart kann mehrere Zeilen haben (Vorwegabzug eines
+  // Allgemeinzählers), deshalb erst je Kostenart summieren.
+  const sums = new Map<string, { tenant: number; total: number }>();
 
   for (const line of result.lines) {
-    if (line.totalAmountCents <= 0) {
-      continue;
-    }
+    const sum = sums.get(line.costTypeId) ?? { tenant: 0, total: 0 };
+    sum.tenant += line.tenantAmountCents;
+    sum.total += line.totalAmountCents;
+    sums.set(line.costTypeId, sum);
+  }
 
-    shares.set(line.costTypeId, line.tenantAmountCents / line.totalAmountCents);
+  const shares = new Map<string, number>();
+
+  for (const [costTypeId, sum] of sums) {
+    if (sum.total > 0) {
+      shares.set(costTypeId, sum.tenant / sum.total);
+    }
   }
 
   return shares;

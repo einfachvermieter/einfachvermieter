@@ -149,11 +149,71 @@ describe("calculateStatement mit Umlageschlüssel Verbrauch (kWh)", () => {
 
     expect(result.kwhWarnings).toEqual([
       {
-        code: "kwhUnitWithoutMeter",
+        code: "unitWithoutAssignedMeter",
         params: { label: "u-og", costTypeName: "Wärmepumpenstrom" },
       },
     ]);
     expect(result.lines[0]?.tenantAmountCents).toBe(100_000);
+  });
+
+  it("zieht einen Allgemeinzähler ohne Wohnung vorweg ab", () => {
+    const result = calculateStatement(
+      input({
+        meterIds: ["m-eg", "m-og", "Allgemein"],
+        kwhMeters: [
+          kwhMeter("m-eg", "unit", "u-eg", 3000),
+          kwhMeter("m-og", "unit", "u-og", 1000),
+          kwhMeter("Allgemein", "common", null, 1000),
+        ],
+      }),
+    );
+
+    expect(
+      result.lines.map((line) => [
+        line.costTypeName,
+        line.allocationKey,
+        line.totalAmountCents,
+        line.tenantAmountCents,
+      ]),
+    ).toEqual([
+      // 4.000 von 5.000 kWh nach Verbrauch, davon EG 3.000 von 4.000
+      ["Wärmepumpenstrom", "per_consumption_kwh", 80_000, 60_000],
+      // 1.000 von 5.000 kWh nach Wohnfläche, EG 80 von 200 m²
+      ["Wärmepumpenstrom, Anteil Allgemein", "per_living_area", 20_000, 8000],
+    ]);
+    expect(result.kwhWarnings).toBeUndefined();
+  });
+
+  it("zählt einen Allgemeinzähler mit Wohnung zu dieser Wohnung", () => {
+    const [line, ...rest] = calculateStatement(
+      input({
+        meterIds: ["m-eg", "m-og", "Allgemein"],
+        kwhMeters: [
+          kwhMeter("m-eg", "unit", "u-eg", 3000),
+          kwhMeter("m-og", "unit", "u-og", 1000),
+          kwhMeter("Allgemein", "common", "u-og", 1000),
+        ],
+      }),
+    ).lines;
+
+    expect(rest).toEqual([]);
+    expect(line?.totalBase).toBe(5000);
+    expect(line?.tenantAmountCents).toBe(60_000);
+  });
+
+  it("lässt einen nicht zugeordneten Allgemeinzähler außen vor", () => {
+    const result = calculateStatement(
+      input({
+        kwhMeters: [
+          kwhMeter("m-eg", "unit", "u-eg", 3000),
+          kwhMeter("m-og", "unit", "u-og", 1000),
+          kwhMeter("Allgemein", "common", null, 1000),
+        ],
+      }),
+    );
+
+    expect(result.lines).toHaveLength(1);
+    expect(result.lines[0]?.tenantAmountCents).toBe(75_000);
   });
 
   it("verlangt mindestens einen zugeordneten Zähler", () => {

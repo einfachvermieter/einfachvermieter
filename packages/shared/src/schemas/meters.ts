@@ -39,11 +39,21 @@ export const isDifferenceCapableType = (type: MeterType): boolean =>
 
 /**
  * Steuert, wie der Verbrauch eines Zählers in die Abrechnung einfließt.
- * - "heating_cost_bill": Heizkostenabrechnung (HeizkostenV) - keine Kostenarten-Zuordnung.
+ * - "heating_cost_bill": Heizkostenabrechnung (HeizkostenV).
  * - "cost_types":        Verteilung über zugeordnete Kostenarten.
  */
 export const costAllocationModes = ["heating_cost_bill", "cost_types"] as const;
 export type CostAllocationMode = (typeof costAllocationModes)[number];
+
+/**
+ * Ob der Zähler Kostenarten zugeordnet werden kann. Warmwasserzähler dienen
+ * der Heizkostenabrechnung und liefern zugleich m3 für Frisch- und
+ * Schmutzwasser, deshalb unabhängig vom Abrechnungsweg.
+ */
+export const supportsCostTypeAssignment = (
+  type: MeterType,
+  costAllocationMode: CostAllocationMode,
+): boolean => costAllocationMode === "cost_types" || type === "water_hot";
 
 /**
  * Rollen, bei denen die Wohnungsauswahl angeboten wird. Differenzzähler
@@ -688,7 +698,9 @@ export const meterFormToDto = (
     resetDay:
       isHkv && values.resetDay !== RESET_DAY_NONE ? values.resetDay : null,
     costAllocationMode,
-    costTypeIds: costAllocationMode === "cost_types" ? values.costTypeIds : [],
+    costTypeIds: supportsCostTypeAssignment(values.type, costAllocationMode)
+      ? values.costTypeIds
+      : [],
     differenceConfig,
   };
 };

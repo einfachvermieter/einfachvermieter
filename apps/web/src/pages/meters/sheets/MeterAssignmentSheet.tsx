@@ -1,5 +1,8 @@
 import type { MeterFormValues } from "@einfachvermieter/shared";
-import { meterFormSchema } from "@einfachvermieter/shared";
+import {
+  meterFormSchema,
+  supportsCostTypeAssignment,
+} from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiPriceTag3Line } from "@remixicon/react";
 import { useForm } from "react-hook-form";
@@ -36,6 +39,7 @@ export const MeterAssignmentSheet = ({
   });
 
   const costAllocationMode = form.watch("costAllocationMode");
+  const type = form.watch("type");
 
   return (
     <FormSheet
@@ -48,7 +52,7 @@ export const MeterAssignmentSheet = ({
       onClose={onClose}
     >
       <CostAllocationModeField form={form} locked={locked} />
-      {costAllocationMode === "cost_types" ? (
+      {supportsCostTypeAssignment(type, costAllocationMode) ? (
         <CostTypeAssignment form={form} costTypes={costTypes} />
       ) : null}
     </FormSheet>

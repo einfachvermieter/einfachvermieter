@@ -118,6 +118,9 @@ const costLineResultSchema = z.object({
   daysTotal: z.number().nullable(),
   daysTenant: z.number().nullable(),
   notes: z.string().optional(),
+  meterContributions: z
+    .array(z.object({ label: z.string(), consumptionM3: z.number() }))
+    .optional(),
 });
 
 const waterDetailSchema = z.object({

@@ -2,6 +2,7 @@ import {
   type CostLineResult,
   formatBemessung,
   formatEur,
+  isWasteWaterName,
 } from "@einfachvermieter/shared";
 import { Text, View } from "@react-pdf/renderer";
 import { t } from "../i18n.js";
@@ -20,9 +21,9 @@ type Props = {
    */
   consumptionNote?: string;
   /**
-   * Optionaler Erläuterungstext für die Schmutzwasser-Position, z. B. der
+   * Optionaler Erläuterungstext für die Schmutzwasser-Position: der
    * Hinweis, dass der Schmutzwasserverbrauch dem Frischwasserverbrauch
-   * entspricht.
+   * entspricht, oder die Zähleraufstellung, wenn er abweicht.
    */
   wasteWaterNote?: string;
 };
@@ -36,9 +37,6 @@ const COL_AMOUNT = { flex: 1 };
  * Summe aller Spalten links vom Betrag (2 + 1 + 1.5 + 1 = 5.5)
  */
 const COL_TOTAL_LABEL = { flex: 5.5 };
-
-const isWasteWaterName = (name: string): boolean =>
-  /schmutzwasser|abwasser/iu.test(name);
 
 /**
  * Definition einer Fußnote: eine Hochstellziffer auf Zeilen-Ebene plus der

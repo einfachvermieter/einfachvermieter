@@ -3,16 +3,15 @@ import {
   formatBemessung,
   formatEur,
   formatNumber,
+  isWasteWaterName,
   type StatementResult,
+  waterFootnoteMeters,
 } from "@einfachvermieter/shared";
 import { RiHomeGearLine } from "@remixicon/react";
 import { SectionCard } from "../../../../components/common/SectionCard";
 import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
 import { t } from "../../../../lib/i18n";
 import { ALLOCATION_BY_LABEL_KEY } from "../../../../lib/statements";
-
-const isWasteWaterName = (name: string): boolean =>
-  /schmutzwasser|abwasser/iu.test(name);
 
 type FootnoteDef = {
   applies: (line: CostLineResult) => boolean;
@@ -72,17 +71,14 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
   // Fußnoten wie im PDF: Frischwasser-Zähleraufstellung, Schmutzwasser-
   // Kopplung und Personentage-Erläuterung. Bedingungen/Texte spiegeln
   // StatementDocument + CostsTable.
-  const ownUnit = result.waterDetail?.perUnit.find(
-    (u) => u.unitId === result.unitId,
-  );
-  const contributions = ownUnit?.meterContributions ?? [];
+  const footnoteMeters = waterFootnoteMeters(result);
+  const meterList = (meters: Array<{ label: string; consumptionM3: number }>) =>
+    meters
+      .map((c) => `${c.label} (${formatNumber(c.consumptionM3, 2)}\u00A0m³)`)
+      .join(", ");
   const consumptionNote =
-    contributions.length >= 2
-      ? `${t("statements.pdf.water.calculationNote")} ${contributions
-          .map(
-            (c) => `${c.label} (${formatNumber(c.consumptionM3, 2)}\u00A0m³)`,
-          )
-          .join(", ")}`
+    footnoteMeters.fresh.length > 0
+      ? `${t("statements.pdf.water.calculationNote")} ${meterList(footnoteMeters.fresh)}`
       : undefined;
   const hasWasteWater = operatingLines.some(
     (l) =>
@@ -105,7 +101,11 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
       applies: (line) =>
         line.allocationKey === "per_consumption_m3" &&
         isWasteWaterName(line.costTypeName),
-      text: t("statements.pdf.water.wasteWaterNote"),
+      // Rechnet das Schmutzwasser mit anderen Zählern als das Frischwasser,
+      // stehen dort die eigenen Zähler statt des Verweises.
+      text: footnoteMeters.waste
+        ? `${t("statements.pdf.water.wasteWaterCalculationNote")} ${meterList(footnoteMeters.waste)}`
+        : t("statements.pdf.water.wasteWaterNote"),
     });
   }
 

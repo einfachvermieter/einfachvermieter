@@ -1304,6 +1304,14 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     { meterId: bMeterWaterOg, costTypeId: bCtWasteWater },
     { meterId: bMeterWaterDg, costTypeId: bCtFreshWater },
     { meterId: bMeterWaterDg, costTypeId: bCtWasteWater },
+    // Warmwasser ist auch Frisch- und Schmutzwasser: Der Kaltwasserzähler
+    // der Wohnung misst nur die Kaltwasserleitung.
+    ...[bMeterHotWaterEg, bMeterHotWaterOg, bMeterHotWaterDg].flatMap(
+      (meterId) => [
+        { meterId, costTypeId: bCtFreshWater },
+        { meterId, costTypeId: bCtWasteWater },
+      ],
+    ),
   ]);
 
   insert(schema.meterReadings, [
@@ -1385,7 +1393,8 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
         readBy: "metering_service" as const,
       },
     ]),
-    // Kaltwasser (m3)
+    // Kaltwasser (m3): Hauptzähler 175 = Kaltwasser 52 + 58 + 13 und
+    // Warmwasser 18 + 22 + 12 der Wohnungen
     {
       id: nid(),
       meterId: bMeterWaterMain,
@@ -1411,7 +1420,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       id: nid(),
       meterId: bMeterWaterEg,
       readingDate: "2025-12-31",
-      value: 70,
+      value: 52,
       readBy: "landlord",
     },
     {
@@ -1425,7 +1434,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       id: nid(),
       meterId: bMeterWaterOg,
       readingDate: "2025-12-31",
-      value: 80,
+      value: 58,
       readBy: "landlord",
     },
     {
@@ -1439,7 +1448,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       id: nid(),
       meterId: bMeterWaterDg,
       readingDate: "2025-12-31",
-      value: 25,
+      value: 13,
       readBy: "landlord",
     },
   ]);

@@ -15,7 +15,7 @@ const UNIT_SUM_MISMATCH_TOLERANCE_M3 = 0.01;
  * über `consumptionBetween` und einmal rekursiv via `computeMeterConsumption`
  * gemeldet wird). Reihenfolge bleibt erhalten.
  */
-const dedupe = (warnings: CalcWarning[]): CalcWarning[] => {
+export const dedupe = (warnings: CalcWarning[]): CalcWarning[] => {
   const seen = new Set<string>();
   const out: CalcWarning[] = [];
 
@@ -58,8 +58,20 @@ type WaterCalculationInput = {
 };
 
 /**
+ * Ob die Gültigkeit des Zählers die Periode schneidet
+ */
+export const overlapsPeriod = (
+  meter: WaterMeterBundle["meter"],
+  periodStart: string,
+  periodEnd: string,
+): boolean =>
+  meter.validFrom <= periodEnd &&
+  (!meter.validUntil || meter.validUntil >= periodStart);
+
+/**
  * Liefert die Wohnung, der der Zähler zuzurechnen ist oder null, wenn er
- * für die Verbrauchs-Aggregation irrelevant ist.
+ * für die Verbrauchs-Aggregation irrelevant ist. Allgemeinzähler ohne
+ * Wohnung behandelt der Aufrufer vorab.
  */
 const allocatableUnitId = (
   meter: WaterMeterBundle["meter"],
@@ -80,15 +92,11 @@ const allocatableUnitId = (
       throw new Error(`Unit meter ${meter.id} has no unitId`);
     }
 
-    // Allgemein- und Differenzzähler ohne Wohnungszuordnung werden keiner
-    // Wohnung gutgeschrieben, ihr Verbrauch steckt aber im Hauptzähler-Total
-    // und wird dadurch bei `per_consumption_m3` lautlos anteilig auf alle
-    // Mieter mitverteilt (kein Vorwegabzug).
+    // Differenzzähler ohne Wohnungszuordnung werden keiner Wohnung
+    // gutgeschrieben, ihr Verbrauch steckt aber im Hauptzähler-Total und
+    // wird dadurch lautlos anteilig auf alle Mieter mitverteilt.
     warnings.push({
-      code:
-        meter.role === "common"
-          ? "commonConsumptionUnallocated"
-          : "differenceConsumptionUnallocated",
+      code: "differenceConsumptionUnallocated",
       params: { label: meter.label },
     });
 
@@ -97,12 +105,7 @@ const allocatableUnitId = (
 
   // Zähler, deren Gültigkeit die Statement-Periode nicht schneidet,
   // tragen weder zum Verbrauch noch zur Fußnoten-Liste bei.
-  const { validFrom, validUntil } = meter;
-  const overlapStart = validFrom > periodStart ? validFrom : periodStart;
-  const overlapEnd =
-    validUntil && validUntil < periodEnd ? validUntil : periodEnd;
-
-  return overlapStart > overlapEnd ? null : meter.unitId;
+  return overlapsPeriod(meter, periodStart, periodEnd) ? meter.unitId : null;
 };
 
 /**
@@ -111,6 +114,8 @@ const allocatableUnitId = (
  * Leerstand) fällt als auf den Vermieter, damit die Summe über alle
  * Statements einer Wohnung die Jahres-Kosten nicht übersteigt
  * (Mieterwechsel-Fall). Andere Wohnungen: volle Statement-Periode.
+ * Allgemeinzähler ohne Wohnung zählen für keine Wohnung und kommen
+ * gesondert als `sharedMeters` zurück.
  * Unabhängig vom Medium: dient auch der kWh-Umlage.
  */
 export const aggregateUnitConsumption = (params: {
@@ -128,6 +133,7 @@ export const aggregateUnitConsumption = (params: {
   unitDifferential: Map<string, WaterMeterBundle>;
   unitMeters: Map<string, Array<{ label: string; consumptionM3: number }>>;
   landlordConsumptionM3: number;
+  sharedMeters: Array<{ label: string; consumptionM3: number }>;
 } => {
   const {
     units,
@@ -159,9 +165,28 @@ export const aggregateUnitConsumption = (params: {
   }
 
   let landlordConsumptionM3 = 0;
+  const sharedMeters: Array<{ label: string; consumptionM3: number }> = [];
 
   for (const bundle of waterMeters) {
     const { meter } = bundle;
+
+    if (meter.role === "common" && !meter.unitId) {
+      if (overlapsPeriod(meter, periodStart, periodEnd)) {
+        sharedMeters.push({
+          label: meter.label,
+          consumptionM3: computeMeterConsumption(
+            meter.id,
+            bundles,
+            periodStart,
+            periodEnd,
+            undefined,
+            { warnings },
+          ),
+        });
+      }
+
+      continue;
+    }
 
     const unitId = allocatableUnitId(meter, periodStart, periodEnd, warnings);
     if (unitId === null) {
@@ -216,6 +241,7 @@ export const aggregateUnitConsumption = (params: {
     unitDifferential,
     unitMeters,
     landlordConsumptionM3,
+    sharedMeters,
   };
 };
 
@@ -272,6 +298,7 @@ export const calculateWater = (input: WaterCalculationInput): WaterDetail => {
     unitDifferential,
     unitMeters,
     landlordConsumptionM3,
+    sharedMeters,
   } = aggregateUnitConsumption({
     units,
     waterMeters,
@@ -300,9 +327,20 @@ export const calculateWater = (input: WaterCalculationInput): WaterDetail => {
     };
   });
 
+  // Ohne Zuordnung an der Kostenart gibt es keinen Vorwegabzug: Der
+  // Verbrauch eines Allgemeinzählers ohne Wohnung steckt im Hauptzähler-Total
+  // und wird lautlos anteilig auf alle Mieter mitverteilt.
+  for (const shared of sharedMeters) {
+    warnings.push({
+      code: "commonConsumptionUnallocated",
+      params: { label: shared.label },
+    });
+  }
+
   const unitSumM3 =
     perUnit.reduce((sum, unit) => sum + unit.consumptionM3, 0) +
-    landlordConsumptionM3;
+    landlordConsumptionM3 +
+    sharedMeters.reduce((sum, shared) => sum + shared.consumptionM3, 0);
   if (
     Math.abs(unitSumM3 - totalConsumptionM3) > UNIT_SUM_MISMATCH_TOLERANCE_M3
   ) {

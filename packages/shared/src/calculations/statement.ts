@@ -13,16 +13,15 @@ import {
   STATEMENT_HEATING_COST_TYPE_ID,
   STATEMENT_HOT_WATER_COST_TYPE_ID,
 } from "./advance.js";
-import {
-  aggregateCostsForPeriod,
-  allocateCost,
-  type MeasuredConsumption,
-} from "./allocation.js";
+import { aggregateCostsForPeriod, allocateCost } from "./allocation.js";
 import { CalculationError, type CalcWarning } from "./diagnostics.js";
+import { distributeCents } from "./money.js";
 import type { MeterBundle } from "./virtualMeter.js";
 import {
   aggregateUnitConsumption,
   calculateWater,
+  dedupe,
+  overlapsPeriod,
   type WaterMeterBundle,
 } from "./water.js";
 
@@ -225,31 +224,36 @@ const buildHeatingLines = (
   return lines;
 };
 
+type OperatingCostType = StatementCalculationInput["costTypes"][number];
+
 /**
- * kWh-Verbrauch je Wohnung aus den Zählern, die der Kostenart zugeordnet sind
+ * Zähler aus dem Vorrat, die der Kostenart zugeordnet sind
  */
-const measureKwhConsumption = (
-  costType: StatementCalculationInput["costTypes"][number],
+const assignedMeters = (
+  costType: OperatingCostType,
+  meters: MeterBundle[],
+): MeterBundle[] => {
+  const assignedIds = new Set(costType.meterIds ?? []);
+
+  return meters.filter((bundle) => assignedIds.has(bundle.meter.id));
+};
+
+/**
+ * Verbrauch je Wohnung aus den Zählern, die der Kostenart zugeordnet sind.
+ * `sharedMeters` sind zugeordnete Allgemeinzähler ohne Wohnung.
+ */
+const measureAssignedConsumption = (
+  costType: OperatingCostType,
+  assigned: MeterBundle[],
   period: Period,
   ctx: {
     units: UnitInfo[];
     targetUnitId: string;
     tenantPeriod: Period;
-    kwhMeters: MeterBundle[];
+    meters: MeterBundle[];
     warnings: CalcWarning[];
   },
-): MeasuredConsumption => {
-  const assignedIds = new Set(costType.meterIds ?? []);
-  const assigned = ctx.kwhMeters.filter((bundle) =>
-    assignedIds.has(bundle.meter.id),
-  );
-
-  if (assigned.length === 0) {
-    throw new CalculationError("allocationKwhNoMeters", {
-      costTypeName: costType.name,
-    });
-  }
-
+) => {
   // Eine Wohnung ohne zugeordneten Zähler hat Verbrauch 0, die übrigen
   // tragen die ganze Rechnung. Nur Warnung: Eine Anlage kann bewusst nur
   // einen Teil der Wohnungen versorgen.
@@ -257,36 +261,126 @@ const measureKwhConsumption = (
   for (const unit of ctx.units) {
     if (!meteredUnitIds.has(unit.id)) {
       ctx.warnings.push({
-        code: "kwhUnitWithoutMeter",
+        code: "unitWithoutAssignedMeter",
         params: { label: unit.name, costTypeName: costType.name },
       });
     }
   }
 
-  const { unitConsumption, landlordConsumptionM3 } = aggregateUnitConsumption({
-    units: ctx.units,
-    waterMeters: assigned,
-    bundles: new Map(
-      ctx.kwhMeters.map((bundle) => [bundle.meter.id, bundle] as const),
-    ),
-    periodStart: period.start,
-    periodEnd: period.end,
-    targetUnitId: ctx.targetUnitId,
-    tenantStart: ctx.tenantPeriod.start,
-    tenantEnd: ctx.tenantPeriod.end,
-    warnings: ctx.warnings,
-  });
+  const { unitConsumption, landlordConsumptionM3, sharedMeters, unitMeters } =
+    aggregateUnitConsumption({
+      units: ctx.units,
+      waterMeters: assigned,
+      bundles: new Map(
+        ctx.meters.map((bundle) => [bundle.meter.id, bundle] as const),
+      ),
+      periodStart: period.start,
+      periodEnd: period.end,
+      targetUnitId: ctx.targetUnitId,
+      tenantStart: ctx.tenantPeriod.start,
+      tenantEnd: ctx.tenantPeriod.end,
+      warnings: ctx.warnings,
+    });
 
-  const total =
-    [...unitConsumption.values()].reduce((sum, value) => sum + value, 0) +
-    landlordConsumptionM3;
-  if (total <= 0) {
+  return {
+    measured: { perUnit: unitConsumption, landlord: landlordConsumptionM3 },
+    sharedMeters,
+    targetMeters: unitMeters.get(ctx.targetUnitId) ?? [],
+  };
+};
+
+/**
+ * Kostenzeilen einer Verbrauchsumlage (m3 oder kWh) mit zugeordneten Zählern
+ */
+const buildAssignedLines = (
+  costType: OperatingCostType,
+  totalAmountCents: number,
+  period: Period,
+  ctx: {
+    units: UnitInfo[];
+    targetUnitId: string;
+    waterDetail: WaterDetail | undefined;
+    tenantPeriod: Period;
+    assigned: MeterBundle[];
+    meters: MeterBundle[];
+    warnings: CalcWarning[];
+    translate: TranslateFn;
+  },
+): CostLineResult[] => {
+  const allocationContext = {
+    units: ctx.units,
+    targetUnitId: ctx.targetUnitId,
+    waterDetail: ctx.waterDetail,
+    translate: ctx.translate,
+  };
+  const { measured, sharedMeters, targetMeters } = measureAssignedConsumption(
+    costType,
+    ctx.assigned,
+    period,
+    ctx,
+  );
+  const unitTotal =
+    [...measured.perUnit.values()].reduce((sum, value) => sum + value, 0) +
+    measured.landlord;
+  const sharedTotal = sharedMeters.reduce(
+    (sum, shared) => sum + shared.consumptionM3,
+    0,
+  );
+
+  if (
+    costType.allocationKey === "per_consumption_kwh" &&
+    unitTotal + sharedTotal <= 0
+  ) {
     throw new CalculationError("allocationKwhNoConsumption", {
       costTypeName: costType.name,
     });
   }
 
-  return { perUnit: unitConsumption, landlord: landlordConsumptionM3 };
+  // Vorwegabzug: Der Verbrauch eines Allgemeinzählers ohne Wohnung (z.B.
+  // Gartenwasser) nimmt seinen Anteil an der Rechnung mit und wird nach
+  // Wohnfläche verteilt, der Rest nach dem Verbrauch der Wohnungen.
+  const [unitCents = 0, ...sharedCents] =
+    sharedTotal > 0
+      ? distributeCents(totalAmountCents, [
+          unitTotal,
+          ...sharedMeters.map((shared) => shared.consumptionM3),
+        ])
+      : [totalAmountCents];
+
+  const lines: CostLineResult[] = [];
+
+  if (unitCents !== 0 || sharedTotal <= 0) {
+    lines.push({
+      ...allocateCost(costType.name, costType.allocationKey, unitCents, {
+        ...allocationContext,
+        measuredConsumption: measured,
+      }),
+      costTypeId: costType.id,
+      ...(costType.allocationKey === "per_consumption_m3"
+        ? { meterContributions: targetMeters }
+        : {}),
+    });
+  }
+
+  sharedMeters.forEach((shared, index) => {
+    const cents = sharedCents[index] ?? 0;
+    if (cents !== 0) {
+      lines.push({
+        ...allocateCost(
+          ctx.translate("costs.sharedMeterLine", {
+            costTypeName: costType.name,
+            meterLabel: shared.label,
+          }),
+          "per_living_area",
+          cents,
+          allocationContext,
+        ),
+        costTypeId: costType.id,
+      });
+    }
+  });
+
+  return lines;
 };
 
 /**
@@ -302,12 +396,20 @@ const buildOperatingLines = (
     targetUnitId: string;
     waterDetail: WaterDetail | undefined;
     tenantPeriod: Period;
+    waterMeters: MeterBundle[];
+    waterWarnings: CalcWarning[];
     kwhMeters: MeterBundle[];
     kwhWarnings: CalcWarning[];
     translate: TranslateFn;
   },
 ): CostLineResult[] => {
   const lines: CostLineResult[] = [];
+  const allocationContext = {
+    units: ctx.units,
+    targetUnitId: ctx.targetUnitId,
+    waterDetail: ctx.waterDetail,
+    translate: ctx.translate,
+  };
 
   for (const costType of costTypes) {
     if (costType.allocationKey === "heating_ordinance") {
@@ -332,32 +434,105 @@ const buildOperatingLines = (
       continue;
     }
 
-    const line = allocateCost(
-      costType.name,
-      costType.allocationKey,
-      totalAmountCents,
-      {
-        units: ctx.units,
-        targetUnitId: ctx.targetUnitId,
-        waterDetail: ctx.waterDetail,
-        kwhConsumption:
-          costType.allocationKey === "per_consumption_kwh"
-            ? measureKwhConsumption(costType, period, {
-                units: ctx.units,
-                targetUnitId: ctx.targetUnitId,
-                tenantPeriod: ctx.tenantPeriod,
-                kwhMeters: ctx.kwhMeters,
-                warnings: ctx.kwhWarnings,
-              })
-            : undefined,
-        translate: ctx.translate,
-      },
-    );
+    const isKwh = costType.allocationKey === "per_consumption_kwh";
+    let meters: MeterBundle[] = [];
+    if (isKwh) {
+      meters = ctx.kwhMeters;
+    } else if (costType.allocationKey === "per_consumption_m3") {
+      meters = ctx.waterMeters;
+    }
 
-    lines.push({ ...line, costTypeId: costType.id });
+    const assigned = assignedMeters(costType, meters);
+
+    if (isKwh && assigned.length === 0) {
+      throw new CalculationError("allocationKwhNoMeters", {
+        costTypeName: costType.name,
+      });
+    }
+
+    // Ohne Zuordnung rechnet eine m3-Kostenart mit allen Wasserzählern.
+    if (assigned.length === 0) {
+      lines.push({
+        ...allocateCost(
+          costType.name,
+          costType.allocationKey,
+          totalAmountCents,
+          allocationContext,
+        ),
+        costTypeId: costType.id,
+      });
+      continue;
+    }
+
+    lines.push(
+      ...buildAssignedLines(costType, totalAmountCents, period, {
+        ...allocationContext,
+        tenantPeriod: ctx.tenantPeriod,
+        assigned,
+        meters,
+        warnings: isKwh ? ctx.kwhWarnings : ctx.waterWarnings,
+      }),
+    );
   }
 
   return lines;
+};
+
+/**
+ * Führt die Hinweise der Wasserberechnung zusammen und ergänzt bzw. streicht,
+ * was von den Zählerzuordnungen der m3-Kostenarten abhängt.
+ */
+const mergeWaterWarnings = (
+  warnings: CalcWarning[],
+  costTypes: StatementCalculationInput["costTypes"],
+  waterMeters: MeterBundle[],
+  period: Period,
+): CalcWarning[] => {
+  const waterCostTypes = costTypes.filter(
+    (costType) => costType.allocationKey === "per_consumption_m3",
+  );
+  const assignedWaterMeterIds = new Set(
+    waterCostTypes.flatMap((costType) =>
+      assignedMeters(costType, waterMeters).map((bundle) => bundle.meter.id),
+    ),
+  );
+  const unassigned: CalcWarning[] = [];
+
+  // Sobald mit Zuordnungen gearbeitet wird, zählt ein Zähler ohne
+  // Zuordnung nirgends mit, z.B. der vergessene Warmwasserzähler neben
+  // dem zugeordneten Kaltwasserzähler.
+  if (assignedWaterMeterIds.size > 0) {
+    for (const { meter } of waterMeters) {
+      const countsForUnits =
+        meter.role === "common" ||
+        ((meter.role === "unit" || meter.role === "virtual_difference") &&
+          Boolean(meter.unitId));
+
+      if (
+        countsForUnits &&
+        !assignedWaterMeterIds.has(meter.id) &&
+        overlapsPeriod(meter, period.start, period.end)
+      ) {
+        unassigned.push({
+          code: "waterMeterUnassigned",
+          params: { label: meter.label },
+        });
+      }
+    }
+  }
+
+  // Der Hinweis auf den mitverteilten Allgemeinzähler gilt nur, solange
+  // eine m3-Kostenart ohne Zuordnung mit allen Wasserzählern rechnet.
+  const usesAllWaterMeters = waterCostTypes.some(
+    (costType) =>
+      costType.costs.length > 0 &&
+      assignedMeters(costType, waterMeters).length === 0,
+  );
+
+  return dedupe([...warnings, ...unassigned]).filter(
+    (warning) =>
+      usesAllWaterMeters || warning.code !== "commonConsumptionUnallocated",
+  );
 };
 
 /**
@@ -413,6 +588,7 @@ export const calculateStatement = (
       })
     : undefined;
 
+  const waterWarnings: CalcWarning[] = [];
   const kwhWarnings: CalcWarning[] = [];
 
   // 2. Kostenzeilen: Heizkosten (aus HeatingDetail) + umgelegte Betriebskosten.
@@ -425,6 +601,8 @@ export const calculateStatement = (
       targetUnitId,
       waterDetail,
       tenantPeriod: consumptionPeriod,
+      waterMeters,
+      waterWarnings,
       kwhMeters,
       kwhWarnings,
       translate,
@@ -451,6 +629,21 @@ export const calculateStatement = (
         params: { label: line.costTypeName },
       })),
     ];
+  }
+
+  if (waterDetail) {
+    const merged = mergeWaterWarnings(
+      [...(waterDetail.warnings ?? []), ...waterWarnings],
+      costTypes,
+      waterMeters,
+      period,
+    );
+
+    if (merged.length > 0) {
+      waterDetail.warnings = merged;
+    } else {
+      delete waterDetail.warnings;
+    }
   }
 
   // 5. Summen

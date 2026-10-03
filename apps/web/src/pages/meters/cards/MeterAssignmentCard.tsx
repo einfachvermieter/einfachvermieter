@@ -1,3 +1,4 @@
+import { supportsCostTypeAssignment } from "@einfachvermieter/shared";
 import {
   RiFireLine,
   RiPencilLine,
@@ -57,9 +58,8 @@ export const MeterAssignmentCard = ({
               </span>
             ),
           },
-          ...(isHeatingBill
-            ? []
-            : [
+          ...(supportsCostTypeAssignment(meter.type, meter.costAllocationMode)
+            ? [
                 {
                   label: t("ui.meters.detail.usedForCostTypes"),
                   value:
@@ -83,7 +83,8 @@ export const MeterAssignmentCard = ({
                       </span>
                     ),
                 },
-              ]),
+              ]
+            : []),
         ]}
       />
     </SectionCard>

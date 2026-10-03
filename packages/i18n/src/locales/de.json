@@ -335,10 +335,11 @@
     "readingNonMonotonic": "Zählerstand rückläufig: Am {toDate} wurde ein niedrigerer Stand erfasst als am {fromDate}. Bitte prüfen Sie, ob ein Zählertausch oder ein Ablesefehler vorliegt.",
     "consumptionNegative": "Der Verbrauch ist negativ: Der Stand am Ende der Periode liegt unter dem Stand am Anfang. Der Verbrauch wurde auf 0 gesetzt, die Kosten tragen dadurch die übrigen Wohnungen mit. Bitte prüfen Sie die Zählerstände auf Ablesefehler oder einen Zählertausch.",
     "differenceMeterNegative": "Der Differenzzähler ergibt einen negativen Verbrauch: Die Summe der Subtraktionszähler übersteigt den Basiszähler. Der Verbrauch wurde auf 0 m³ gesetzt. Bitte prüfen Sie die Quellzähler und deren Zählerstände.",
-    "commonConsumptionUnallocated": "Der Allgemeinzähler ist keiner Wohnung zugeordnet, sein Verbrauch wird deshalb nicht gesondert ausgewiesen, sondern anteilig auf alle Wohnungen mitverteilt. Bitte ordnen Sie ihn einer Wohnung zu oder prüfen Sie, ob ein Vorwegabzug gewünscht ist.",
+    "commonConsumptionUnallocated": "Der Allgemeinzähler ist keiner Wohnung zugeordnet, sein Verbrauch wird deshalb nicht gesondert ausgewiesen, sondern anteilig auf alle Wohnungen mitverteilt. Bitte ordnen Sie ihn einer Wohnung zu. Soll sein Verbrauch stattdessen vorweg nach Wohnfläche verteilt werden, ordnen Sie die Wasserzähler unter „Verwendet für Kostenarten“ den Kostenarten zu.",
     "differenceConsumptionUnallocated": "Der Differenzzähler ist keiner Wohnung zugeordnet, sein Verbrauch wird deshalb nicht gesondert ausgewiesen, sondern anteilig auf alle Wohnungen mitverteilt. Bitte ordnen Sie ihn einer Wohnung zu oder prüfen Sie, ob ein Vorwegabzug gewünscht ist.",
     "waterNoConsumption": "Für diese Kostenart wurde kein Verbrauch gemessen (Summe 0 m³). Die Kosten lassen sich deshalb nicht verbrauchsabhängig verteilen und tauchen weder beim Mieter noch beim Vermieter auf. Bitte prüfen Sie die Zählerstände oder wählen Sie einen anderen Umlageschlüssel.",
-    "kwhUnitWithoutMeter": "Der Kostenart „{costTypeName}“ ist für mindestens eine Wohnung kein Zähler zugeordnet. Diese Wohnung trägt deshalb keine Kosten, die übrigen Wohnungen zahlen die ganze Rechnung. Bitte prüfen Sie beim Zähler unter „Verwendet für Kostenarten“, ob eine Zuordnung fehlt.",
+    "unitWithoutAssignedMeter": "Der Kostenart „{costTypeName}“ ist für mindestens eine Wohnung kein Zähler zugeordnet. Diese Wohnung trägt deshalb keine Kosten, die übrigen Wohnungen zahlen die ganze Rechnung. Bitte prüfen Sie beim Zähler unter „Verwendet für Kostenarten“, ob eine Zuordnung fehlt.",
+    "waterMeterUnassigned": "Der Wasserzähler ist keiner Kostenart zugeordnet, sein Verbrauch zählt deshalb bei keiner Wasser-Kostenart mit. Andere Wasserzähler des Gebäudes sind zugeordnet. Bitte prüfen Sie beim Zähler unter „Verwendet für Kostenarten“, ob eine Zuordnung fehlt, z. B. beim Warmwasserzähler einer Wohnung.",
     "waterUnitSumMismatch": "Der Hauptzähler weist {total} m³ aus, die Summe der Wohnungsverbräuche (inkl. Vermieteranteil) ergibt aber {unitSum} m³. Vermutlich fehlt ein Differenzzähler; die Kosten werden nach der tatsächlichen Verbrauchssumme verteilt. Bitte prüfen Sie die Zählerzuordnung.",
     "hotWaterTotalHeatMissing": "Zentrale Warmwasserbereitung erfasst, aber die Gesamt-Wärmemenge (kWh) fehlt, daher kann der Warmwasseranteil nicht nach § 9 Abs. 2 HeizkostenV herausgerechnet werden.",
     "hotWaterSourceMissing": "Zentrale Warmwasserbereitung erfasst, aber weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch vorhanden, daher konnte der Warmwasseranteil nicht ermittelt werden.",
@@ -2785,6 +2786,7 @@
       "consumptionKwh": "kWh",
       "flatRate": "Pauschale"
     },
+    "sharedMeterLine": "{costTypeName}, Anteil {meterLabel}",
     "heatingLines": {
       "combined": "Heizkosten",
       "heating": "Heizung",
@@ -3036,7 +3038,8 @@
         "measured": "gemessen",
         "wasteWaterHint": "Hinweis: Der Schmutzwasseranteil wird im gleichen Prozentverhältnis wie der Frischwasserverbrauch umgelegt.",
         "wasteWaterNote": "Schmutzwasserverbrauch entspricht dem Frischwasserverbrauch.",
-        "calculationNote": "Frischwasserverbrauch ermittelt durch:"
+        "calculationNote": "Frischwasserverbrauch ermittelt durch:",
+        "wasteWaterCalculationNote": "Schmutzwasserverbrauch ermittelt durch:"
       },
       "occupancy": {
         "intro": "Personenbezogene Kostenarten werden anhand der folgenden Personentage je Wohnung umgelegt.",

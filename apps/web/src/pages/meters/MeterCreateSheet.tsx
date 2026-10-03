@@ -3,6 +3,7 @@ import {
   type MeterFormValues,
   meterFormSchema,
   meterFormToDto,
+  supportsCostTypeAssignment,
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -116,7 +117,7 @@ export const MeterCreateSheet = ({
           description={t("ui.meters.detail.assignmentDescription")}
         >
           <CostAllocationModeField form={form} />
-          {costAllocationMode === "cost_types" ? (
+          {supportsCostTypeAssignment(type, costAllocationMode) ? (
             <CostTypeAssignment form={form} costTypes={costTypes ?? []} />
           ) : null}
         </SheetSection>
