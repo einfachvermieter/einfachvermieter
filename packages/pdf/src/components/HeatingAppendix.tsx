@@ -184,7 +184,9 @@ const EnergyAndCo2Table = ({
             <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
               <Text>
                 {renderSuperscripts(
-                  `${formatNumber(co2.emissionsKgPerSqmYear, 1)}\u00A0kg/m²a`,
+                  t("statements.pdf.heating.co2.emissionsValue", {
+                    value: formatNumber(co2.emissionsKgPerSqmYear, 1),
+                  }),
                 )}
               </Text>
             </View>

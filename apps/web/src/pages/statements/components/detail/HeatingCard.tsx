@@ -273,7 +273,9 @@ export const HeatingCard = ({
                       {t("statements.pdf.heating.co2.emissions")}
                     </th>
                     <td className="py-2.5 text-right tabular-nums">
-                      {`${formatNumber(co2.emissionsKgPerSqmYear, 1)}\u00A0kg/m²a`}
+                      {t("statements.pdf.heating.co2.emissionsValue", {
+                        value: formatNumber(co2.emissionsKgPerSqmYear, 1),
+                      })}
                     </td>
                   </tr>
                   <tr className="border-b border-border">

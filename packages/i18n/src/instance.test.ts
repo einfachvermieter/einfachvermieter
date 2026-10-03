@@ -51,6 +51,6 @@ describe("i18n instance", () => {
 
   it("resolves a messageKey payload", () => {
     const raw = messageKey("validation.numberMin", { min: 10 });
-    expect(translateMessageKey(instance, raw)).toBe("Muss mindestens 10 sein");
+    expect(translateMessageKey(instance, raw)).toBe("Muss mindestens 10 sein.");
   });
 });
