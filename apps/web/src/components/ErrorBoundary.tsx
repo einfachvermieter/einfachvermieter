@@ -1,6 +1,7 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode, useEffect } from "react";
 import { ApiError } from "../lib/api";
 import { downloadDiagnosticsReport } from "../lib/diagnostics";
+import { composeDocumentTitle } from "../lib/documentTitle";
 import { t } from "../lib/i18n";
 import { OuterShell } from "./common/OuterShell";
 import { Button } from "./ui/Button";
@@ -19,6 +20,17 @@ export const ErrorFallback = ({
   error: unknown;
   onRetry: () => void;
 }) => {
+  // Fallback je nach Fehler innerhalb oder ausserhalb der Breadcrumb-Shell.
+  // Ohne eigenen Titel bleibt der des zuletzt gezeigten Screens stehen
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = composeDocumentTitle([t("errors.boundary.title")]);
+
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
+
   const isNetwork = error instanceof TypeError;
   const isServer = error instanceof ApiError && error.status >= 500;
   const status = error instanceof ApiError ? error.status : undefined;
