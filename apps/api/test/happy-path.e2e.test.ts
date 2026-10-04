@@ -1043,6 +1043,37 @@ describe("Mieterkonto bei angebrochenen Monaten", () => {
     });
     expect(balance.balanceCents).toBe(-140_000);
 
+    // Zweiter Vertrag, der heute beginnt: aktiv, aber je nach Tag mit
+    // angebrochenem Monat.
+    const secondUnit = await api("/units", {
+      method: "POST",
+      body: { buildingId: building.id, name: "OG", areaSqm: 60 },
+      expect: 201,
+    });
+    await api("/tenants", {
+      method: "POST",
+      body: {
+        ...tenantBody,
+        unitId: secondUnit.id,
+        startDate: todayIso(),
+        endDate: null,
+      },
+      expect: 201,
+    });
+
+    // Der Rückstand der Übersicht folgt dem anteiligen Soll, die Sollmiete
+    // des Gebäudes bleibt der volle Monatsbetrag.
+    const dashboard = await api("/stats/dashboard", { expect: 200 });
+    expect(
+      dashboard.overdueTenants.find(
+        (row: { tenantId: string }) => row.tenantId === tenantId,
+      ).amountCents,
+    ).toBe(140_000);
+    expect(
+      dashboard.buildings.find((row: { id: string }) => row.id === building.id)
+        .monthlyRentCents,
+    ).toBe(75_000);
+
     // Ein Mietsatzwechsel mitten im Monat wird nicht angenommen.
     const rejected = await api(`/tenants/${tenantId}`, {
       method: "PATCH",
