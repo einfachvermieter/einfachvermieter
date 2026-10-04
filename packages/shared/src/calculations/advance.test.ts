@@ -4,7 +4,9 @@ import {
   inferTariffAdjustmentBpsFromInvoices,
   isAdvanceValidFromRetroactive,
   STATEMENT_HEATING_COST_TYPE_ID,
+  suggestAdvanceValidFromDate,
   suggestNextMonthlyAdvanceCents,
+  suggestNextMonthlyAdvanceCentsWithTariffs,
   type TariffInferenceItem,
 } from "./advance.js";
 
@@ -83,6 +85,102 @@ describe("suggestNextMonthlyAdvanceCents", () => {
     // damit auf 120 €.
     expect(suggestNextMonthlyAdvanceCents(144_600, 366, 366)).toBe(12_100);
     expect(suggestNextMonthlyAdvanceCents(144_600, 366)).toBe(12_000);
+  });
+});
+
+describe("suggestNextMonthlyAdvanceCentsWithTariffs", () => {
+  const lines = { water: 120_000, heating: 60_000 };
+
+  it("entspricht ohne Anpassungen dem einfachen Vorschlag", () => {
+    // 1.800 EUR im Jahr = 150 EUR im Monat
+    expect(suggestNextMonthlyAdvanceCentsWithTariffs(lines, 365, null)).toBe(
+      15_000,
+    );
+    expect(suggestNextMonthlyAdvanceCentsWithTariffs(lines, 365, {})).toBe(
+      15_000,
+    );
+  });
+
+  it("schlägt den Tarif nur auf die genannte Kostenart auf", () => {
+    // Heizung +10 %: 1.200 + 660 = 1.860 EUR im Jahr = 155 EUR im Monat
+    expect(
+      suggestNextMonthlyAdvanceCentsWithTariffs(lines, 365, { heating: 1000 }),
+    ).toBe(15_500);
+  });
+
+  it("rechnet eine Senkung und ignoriert unbekannte Kostenarten", () => {
+    // Wasser -5 %: 1.140 + 600 = 1.740 EUR im Jahr = 145 EUR im Monat
+    expect(
+      suggestNextMonthlyAdvanceCentsWithTariffs(lines, 365, {
+        water: -500,
+        unknown: 5000,
+      }),
+    ).toBe(14_500);
+  });
+
+  it("rechnet eine Rumpfperiode aufs Jahr hoch", () => {
+    // 73 Tage sind ein Fünftel des Jahres: 396 EUR x 5 = 1.980 EUR im Jahr
+    expect(
+      suggestNextMonthlyAdvanceCentsWithTariffs(
+        { water: 24_000, heating: 12_000 },
+        73,
+        { water: 1000, heating: 1000 },
+      ),
+    ).toBe(16_500);
+  });
+
+  it("lässt eine volle Schaltjahres-Periode unverändert", () => {
+    expect(
+      suggestNextMonthlyAdvanceCentsWithTariffs(lines, 366, null, 366),
+    ).toBe(15_000);
+  });
+
+  it("rundet auf volle Euro und gibt mindestens 1 EUR zurück", () => {
+    // 1.000 EUR im Jahr = 83,33 EUR im Monat
+    expect(
+      suggestNextMonthlyAdvanceCentsWithTariffs({ water: 100_000 }, 365, null),
+    ).toBe(8300);
+    // 1.010 EUR im Jahr = 84,17 EUR im Monat
+    expect(
+      suggestNextMonthlyAdvanceCentsWithTariffs({ water: 100_000 }, 365, {
+        water: 100,
+      }),
+    ).toBe(8400);
+    expect(
+      suggestNextMonthlyAdvanceCentsWithTariffs({ water: 100 }, 365, null),
+    ).toBe(100);
+    expect(suggestNextMonthlyAdvanceCentsWithTariffs(lines, 0, null)).toBe(100);
+  });
+});
+
+describe("suggestAdvanceValidFromDate", () => {
+  it("nimmt den Folgemonat, wenn bis Monatsende mindestens 14 Tage bleiben", () => {
+    expect(suggestAdvanceValidFromDate("2025-06-10")).toBe("2025-07-01");
+    // Genau 14 Tage bis zum 30.06.
+    expect(suggestAdvanceValidFromDate("2025-06-16")).toBe("2025-07-01");
+  });
+
+  it("nimmt den übernächsten Monat, wenn weniger als 14 Tage bleiben", () => {
+    expect(suggestAdvanceValidFromDate("2025-06-17")).toBe("2025-08-01");
+    expect(suggestAdvanceValidFromDate("2025-06-30")).toBe("2025-08-01");
+  });
+
+  it("richtet sich nach der Länge des Monats", () => {
+    expect(suggestAdvanceValidFromDate("2025-02-14")).toBe("2025-03-01");
+    expect(suggestAdvanceValidFromDate("2025-02-15")).toBe("2025-04-01");
+    // Im Schaltjahr bleiben am 15.02. noch 14 Tage
+    expect(suggestAdvanceValidFromDate("2024-02-15")).toBe("2024-03-01");
+  });
+
+  it("geht über den Jahreswechsel", () => {
+    expect(suggestAdvanceValidFromDate("2025-12-05")).toBe("2026-01-01");
+    expect(suggestAdvanceValidFromDate("2025-12-20")).toBe("2026-02-01");
+    expect(suggestAdvanceValidFromDate("2025-11-20")).toBe("2026-01-01");
+  });
+
+  it("nimmt eine andere Mindestfrist an", () => {
+    expect(suggestAdvanceValidFromDate("2025-06-25", 5)).toBe("2025-07-01");
+    expect(suggestAdvanceValidFromDate("2025-06-26", 5)).toBe("2025-08-01");
   });
 });
 
