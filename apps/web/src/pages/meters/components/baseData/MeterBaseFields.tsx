@@ -143,6 +143,7 @@ export const MeterBaseFields = ({
           control={form.control}
           name="type"
           label={t("ui.meters.fields.type")}
+          labelHelp={t("ui.meters.fields.typeHelp")}
           onValueChange={(newType) => resetTypeBoundFields(form, newType)}
           options={meterTypes.map((type) => ({
             value: type,

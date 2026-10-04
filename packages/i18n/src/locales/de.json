@@ -646,6 +646,7 @@
       },
       "fields": {
         "type": "Art",
+        "typeHelp": "Die Zählerart legt die Einheit fest und bestimmt, wofür Sie den Zähler verwenden können.\n\nKaltwasser und Warmwasser messen in m³, Strom in kWh, Gas in m³.\n\nEin Wärmemengenzähler misst Wärme in kWh. Je nach Rolle misst er den Verbrauch einer Wohnung, die Wärme des ganzen Gebäudes oder die Wärme für das Warmwasser.\n\nEin Heizkostenverteiler sitzt am Heizkörper und zählt Einheiten. Die Einheiten sind keine kWh. Sie sagen nur, wie sich der Verbrauch im Gebäude verteilt.",
         "role": "Rolle",
         "label": "Bezeichnung",
         "labelDescription": "Frei wählbar. Bleibt sie leer, wird der Name aus Art, Rolle und Raum gebildet.",
@@ -1269,6 +1270,7 @@
         "unitDescription": "Diese Pauschale wird ausschließlich der gewählten Wohnung berechnet. Den Zeitraum (z. B. bei unterjähriger Abbestellung) steuern Sie über „Zeitraum von/bis“.",
         "unitPlaceholder": "Wohnung wählen",
         "periodFrom": "Zeitraum von",
+        "energyPeriodHelp": "Für Brennstoff gilt: Es zählt, was im Abrechnungszeitraum verbraucht wurde, nicht was Sie in dieser Zeit bezahlt haben (BGH VIII ZR 156/11). Bei Strom zum Heizen, etwa für eine Wärmepumpe, zählen ebenfalls die Kosten des verbrauchten Stroms (§ 7 Abs. 2 HeizkostenV).\n\nGas und Strom zum Heizen: Erfassen Sie die Rechnung des Versorgers mit ihrem Verbrauchszeitraum, nicht die Abschläge. Passt der Verbrauchszeitraum zum Abrechnungszeitraum, ist nichts weiter zu tun.\n\nPasst er nicht, müssen Sie den Verbrauch selbst abgrenzen: Lesen Sie den Zähler zum Beginn und zum Ende des Abrechnungszeitraums ab und erfassen Sie nur die Kosten dieses Verbrauchs, mit dem Abrechnungszeitraum als Zeitraum. EinfachVermieter kann das nicht für Sie tun. Eine Rechnung mit abweichendem Zeitraum wird nur gleichmäßig nach Tagen aufgeteilt. Das bildet den tatsächlichen Verbrauch nicht zuverlässig ab, weil der Heizenergieverbrauch innerhalb des Jahres typischerweise unterschiedlich hoch ist.\n\nHeizöl, Holzpellets, Holz und andere gelagerte Brennstoffe wie Flüssiggas: Erfassen Sie nur den Wert des verbrauchten Brennstoffs. Das ist der Anfangsbestand plus die Lieferungen minus der Restbestand am Ende des Zeitraums. Als Zeitraum tragen Sie den Abrechnungszeitraum ein.",
         "periodTo": "Zeitraum bis",
         "invoiceNumber": "Rechnungsnummer",
         "invoiceNumberPlaceholder": "z. B. RG-2025-0042",
@@ -2287,6 +2289,7 @@
         "valueWithUnit": "Zählerstand ({unit})",
         "consumptionWithUnit": "Verbrauch ({unit})",
         "estimatedHint": "Geschätzter Wert (z. B. kein Zugang zur Wohnung)",
+        "estimatedHelp": "Schalten Sie das ein, wenn der Stand nicht abgelesen, sondern geschätzt wurde.\n\nDie Abrechnung rechnet mit dem Wert wie mit jeder anderen Ablesung. Im PDF steht der Hinweis, dass der Verbrauch teilweise auf Schätzwerten beruht.\n\nFür Heizung und Warmwasser gilt die HeizkostenV. Betrifft die Ablesung den anteiligen Verbrauch einer Wohnung und konnte er nicht ordnungsgemäß erfasst werden, sieht § 9a bestimmte Ersatzverfahren vor. Sie legen das Ersatzverfahren in der Abrechnung an. Eine danach zulässige Ersatzermittlung löst kein Kürzungsrecht aus. Bei einer freien Schätzung kann der Mieter dagegen berechtigt sein, seinen Anteil um 15 % zu kürzen (§ 12 Abs. 1 HeizkostenV).",
         "readBy": "Abgelesen von",
         "note": "Notiz"
       },

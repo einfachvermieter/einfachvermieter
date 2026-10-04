@@ -198,6 +198,7 @@ export const ReadingSheet = ({
           control={form.control}
           name="isEstimated"
           label={t("ui.reading.fields.estimatedHint")}
+          labelHelp={t("ui.reading.fields.estimatedHelp")}
           fieldClassName="sm:col-span-2"
         />
       </FieldGroup>

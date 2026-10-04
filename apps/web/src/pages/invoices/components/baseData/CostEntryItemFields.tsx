@@ -70,6 +70,12 @@ export const CostEntryItemFields = ({
   // Enthaltene Steuern/Abgaben gibt es nur bei Heiz-Positionen.
   const showContainedTaxesInput = selectedCostType?.category === "heating";
 
+  // Näherung für Brennstoff und Strom zum Heizen: jede Heizkostenart außer
+  // dem Erfassungsentgelt. Die Kostenart kennt kein eigenes Merkmal dafür.
+  const showEnergyPeriodHelp =
+    selectedCostType?.category === "heating" &&
+    !selectedCostType.isMeteringServiceCost;
+
   // Pauschal-Kostenarten (`fixed`) werden einer einzelnen Wohnung direkt
   // berechnet. Die Wohnung ist dann Pflichtfeld. Auswahl auf die Wohnungen
   // des Gebäudes der Kostenart beschränken.
@@ -161,6 +167,11 @@ export const CostEntryItemFields = ({
         control={form.control}
         name={`items.${index}.periodStart`}
         label={t("ui.costs.entryFields.periodFrom")}
+        labelHelp={
+          showEnergyPeriodHelp
+            ? t("ui.costs.entryFields.energyPeriodHelp")
+            : undefined
+        }
       />
       <DateInput
         control={form.control}
