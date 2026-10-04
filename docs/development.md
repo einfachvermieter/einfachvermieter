@@ -98,6 +98,7 @@ Vollständige Referenz mit Kommentaren: `.env.example`. Die wichtigsten:
 ```bash
 npm test                                   # alle Workspaces
 npm run test -w @einfachvermieter/shared   # nur Berechnungen
+npm run test:coverage -w @einfachvermieter/shared   # Coverage der Berechnungen
 ```
 
 Die Berechnungsschicht (`packages/shared/src/calculations/*.test.ts` +
@@ -110,6 +111,10 @@ App gegen eine Wegwerf-SQLite hoch und testet den Happy Path über
 echtes HTTP (Login -> Stammdaten -> Abrechnung -> Finalize -> PDF ->
 Mieterkonto -> Storno). Läuft in `npm test` mit; einzeln:
 `npx vitest run test/happy-path.e2e.test.ts` in `apps/api`.
+
+`test:coverage` misst die Berechnungsschicht (`src/calculations`) und
+schlägt unter 90 % Zeilenabdeckung fehl. Der Bericht liegt danach in
+`packages/shared/coverage/`.
 
 ## Optionale Features
 

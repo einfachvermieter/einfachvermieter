@@ -9,7 +9,7 @@
     "dev": "node scripts/dev.mjs",
     "start": "node --enable-source-maps dist/main.js",
     "prune:attachments": "node dist/prune-attachments.js",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
