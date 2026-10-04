@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Component, type ErrorInfo, type ReactNode, useEffect } from "react";
 import { ApiError } from "../lib/api";
 import { downloadDiagnosticsReport } from "../lib/diagnostics";
@@ -30,6 +31,14 @@ export const ErrorFallback = ({
       document.title = previousTitle;
     };
   }, []);
+
+  // Eine gescheiterte Abfrage bleibt mit ihrem Fehler im Cache und würde
+  // beim erneuten Rendern sofort wieder denselben Fehler werfen.
+  const queryClient = useQueryClient();
+  const handleRetry = () => {
+    queryClient.resetQueries();
+    onRetry();
+  };
 
   const isNetwork = error instanceof TypeError;
   const isServer = error instanceof ApiError && error.status >= 500;
@@ -75,7 +84,9 @@ export const ErrorFallback = ({
               </div>
             ) : null}
             <div className="flex flex-wrap justify-center gap-2">
-              <Button onClick={onRetry}>{t("errors.boundary.retry")}</Button>
+              <Button onClick={handleRetry}>
+                {t("errors.boundary.retry")}
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => window.location.reload()}
@@ -98,7 +109,6 @@ export const ErrorFallback = ({
 
 type Props = {
   children: ReactNode;
-  onReset?: () => void;
 };
 
 type State = {
@@ -117,7 +127,6 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = (): void => {
-    this.props.onReset?.();
     this.setState({ error: null });
   };
 

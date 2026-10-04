@@ -90,15 +90,11 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-const handleReset = (): void => {
-  queryClient.resetQueries();
-};
-
 createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <ErrorBoundary onReset={handleReset}>
+        <ErrorBoundary>
           <BackendReadyGate>
             <RouterProvider router={router} />
           </BackendReadyGate>
