@@ -973,6 +973,92 @@ describe("Abrechnung ohne Datengrundlage", () => {
   });
 });
 
+describe("Mieterkonto bei angebrochenen Monaten", () => {
+  it("setzt Einzugs- und Auszugsmonat anteilig nach Kalendertagen an", async () => {
+    const building = await api("/buildings", {
+      method: "POST",
+      body: {
+        name: "Teilmonat-Haus",
+        addressStreet: "Teilmonatweg 1",
+        addressPostalCode: "45130",
+        addressCity: "Essen",
+      },
+      expect: 201,
+    });
+    const unit = await api("/units", {
+      method: "POST",
+      body: { buildingId: building.id, name: "EG", areaSqm: 60 },
+      expect: 201,
+    });
+    const tenantBody = {
+      unitId: unit.id,
+      kind: "private",
+      startDate: "2025-04-15",
+      endDate: "2025-06-10",
+      depositCents: 0,
+      residents: [
+        {
+          resident: { firstName: "Tilda", lastName: "Teilmonat" },
+          isContractParty: true,
+        },
+      ],
+      rents: [
+        {
+          startDate: null,
+          endDate: null,
+          monthlyBaseRentCents: 60_000,
+          monthlyAdvanceCents: 15_000,
+        },
+      ],
+    };
+    const aggregate = await api("/tenants", {
+      method: "POST",
+      body: tenantBody,
+      expect: 201,
+    });
+    const tenantId = aggregate.tenant.id as string;
+
+    const months = await api(
+      `/accounts/${tenantId}/months?from=2025-01-01&to=2025-12-31`,
+      { expect: 200 },
+    );
+    expect(
+      months.map(
+        (row: {
+          forMonth: string;
+          baseRent: { sollCents: number };
+          advance: { sollCents: number };
+        }) => [row.forMonth, row.baseRent.sollCents, row.advance.sollCents],
+      ),
+    ).toEqual([
+      // 15.04. bis 30.04. = 16 von 30 Tagen
+      ["2025-04", 32_000, 8000],
+      ["2025-05", 60_000, 15_000],
+      // 01.06. bis 10.06. = 10 von 30 Tagen
+      ["2025-06", 20_000, 5000],
+    ]);
+
+    const balance = await api(`/accounts/${tenantId}/balance?asOf=2025-12-31`, {
+      expect: 200,
+    });
+    expect(balance.balanceCents).toBe(-140_000);
+
+    // Ein Mietsatzwechsel mitten im Monat wird nicht angenommen.
+    const rejected = await api(`/tenants/${tenantId}`, {
+      method: "PATCH",
+      body: {
+        ...tenantBody,
+        rents: [
+          { ...tenantBody.rents[0], endDate: "2025-05-14" },
+          { ...tenantBody.rents[0], startDate: "2025-05-15" },
+        ],
+      },
+      expect: 400,
+    });
+    expect(JSON.stringify(rejected)).toContain("Ersten eines Monats");
+  });
+});
+
 describe("Passwortwechsel invalidiert bestehende Sessions", () => {
   const cookieOf = (response: globalThis.Response) =>
     (response.headers.get("set-cookie") ?? "").split(";")[0] ?? "";

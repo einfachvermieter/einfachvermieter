@@ -2152,6 +2152,7 @@
         "ownerNoRents": "Eigentümer-Vertrag darf keine Mietsätze enthalten.",
         "rentStartBeforeTenantStart": "Mietsatz beginnt vor Vertragsbeginn.",
         "rentEndAfterTenantEnd": "Mietsatz endet nach Vertragsende.",
+        "rentStartFirstOfMonth": "Ein neuer Mietsatz muss am Ersten eines Monats beginnen.",
         "endBeforeStart": "Enddatum liegt vor Startdatum.",
         "firstRentAtTenantStart": "Der erste Mietsatz muss am Vertragsbeginn starten.",
         "lastRentAtTenantEnd": "Der letzte Mietsatz muss am Vertragsende enden.",

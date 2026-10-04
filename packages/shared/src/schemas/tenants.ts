@@ -240,6 +240,20 @@ const checkRents = (data: TenantSaveData, ctx: z.RefinementCtx): void => {
       });
     }
 
+    // Ein Mietsatzwechsel gilt immer ab einem Monatsersten. Nur der
+    // Vertragsbeginn selbst darf mitten im Monat liegen.
+    if (
+      r.startDate &&
+      r.startDate !== data.startDate &&
+      !r.startDate.endsWith("-01")
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["rents", i, "startDate"],
+        message: messageKey("ui.tenant.validation.rentStartFirstOfMonth"),
+      });
+    }
+
     if (r.startDate && r.endDate && r.startDate > r.endDate) {
       ctx.addIssue({
         code: "custom",

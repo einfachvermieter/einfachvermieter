@@ -21,7 +21,7 @@ import {
   makePot,
   maxDate,
   minDate,
-  pickRentForMonth,
+  rentTargetForMonth,
   type SettlementRow,
   type TenantBalanceResult,
 } from "@einfachvermieter/shared";
@@ -74,16 +74,16 @@ const buildMonthRows = (
 
   const rows: MonthGridRow[] = [];
   for (const month of months) {
-    const rent = pickRentForMonth(rents, month);
-    if (!rent) {
+    const target = rentTargetForMonth(rents, tenant, month);
+    if (!target) {
       continue;
     }
     const bucket = byMonth.get(month);
     rows.push({
       tenantId: tenant.id,
       forMonth: month,
-      baseRent: makePot(rent.monthlyBaseRentCents, bucket?.baseRents ?? []),
-      advance: makePot(rent.monthlyAdvanceCents, bucket?.advances ?? []),
+      baseRent: makePot(target.baseRentCents, bucket?.baseRents ?? []),
+      advance: makePot(target.advanceCents, bucket?.advances ?? []),
       paymentIds: bucket?.ids ?? [],
     });
   }
