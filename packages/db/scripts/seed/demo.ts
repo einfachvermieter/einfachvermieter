@@ -1291,7 +1291,6 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     fuelType: "oil",
     hotWaterMeterId: bMeterHeatHotWater,
     hotWaterSupplyTemperatureCelsius: 60,
-    totalHeatEnergyKwh: 42_000,
     co2CostShareEnabled: true,
     validFrom: "2025-01-01",
     validTo: null,
@@ -1623,6 +1622,16 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     periodEnd: "2025-12-31",
     documentDate: "2026-02-01",
     status: "draft",
+  });
+
+  insert(schema.heatingPeriodValues, {
+    id: nid(),
+    buildingId: bBuilding,
+    periodStart: "2025-01-01",
+    periodEnd: "2025-12-31",
+    totalHeatEnergyKwh: 42_000,
+    districtHeatEmissionsKgPerYear: null,
+    districtHeatPrimaryEnergyFactor: null,
   });
 
   // ════════════════════════════════════════════════════════════════════════

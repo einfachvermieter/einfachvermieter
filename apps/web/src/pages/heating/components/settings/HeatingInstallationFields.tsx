@@ -75,35 +75,11 @@ export const HeatingInstallationFields = ({
         options={fuelTypeOptions}
       />
       {fuelType === "district_heat" ? (
-        <div className="grid grid-cols-2 gap-4">
-          <TextInput
-            control={form.control}
-            name="districtHeatEmissionsKgPerYear"
-            label={t("ui.heating.fields.districtHeatEmissionsKgPerYear")}
-            labelHelp={t(
-              "ui.heating.fields.districtHeatEmissionsKgPerYearDescription",
-            )}
-            inputMode="decimal"
-            placeholder={t(
-              "ui.heating.fields.districtHeatEmissionsKgPerYearPlaceholder",
-            )}
-            suffix="kg"
-            optional={true}
-          />
-          <TextInput
-            control={form.control}
-            name="districtHeatPrimaryEnergyFactor"
-            label={t("ui.heating.fields.districtHeatPrimaryEnergyFactor")}
-            labelHelp={t(
-              "ui.heating.fields.districtHeatPrimaryEnergyFactorDescription",
-            )}
-            inputMode="decimal"
-            placeholder={t(
-              "ui.heating.fields.districtHeatPrimaryEnergyFactorPlaceholder",
-            )}
-            optional={true}
-          />
-        </div>
+        <Alert variant="info">
+          <AlertDescription>
+            {t("ui.heating.fields.periodValuesHintDistrictHeat")}
+          </AlertDescription>
+        </Alert>
       ) : null}
       {heatingType === "central_with_hot_water" ? (
         <Disclose
@@ -151,17 +127,11 @@ export const HeatingInstallationFields = ({
               step="1"
               suffix="°C"
             />
-            <TextInput
-              control={form.control}
-              name="totalHeatEnergyKwh"
-              label={t("ui.heating.fields.totalHeatEnergyKwh")}
-              labelHelp={t("ui.heating.fields.totalHeatEnergyKwhDescription")}
-              type="number"
-              inputMode="decimal"
-              min="0"
-              step="1"
-              suffix="kWh"
-            />
+            <Alert variant="info">
+              <AlertDescription>
+                {t("ui.heating.fields.periodValuesHintTotalHeat")}
+              </AlertDescription>
+            </Alert>
             {fuelType === "gas" ? (
               <SwitchInput
                 control={form.control}

@@ -8,6 +8,7 @@ export * from "./consumption-substitutions.js";
 export * from "./core.js";
 export * from "./field-validation.js";
 export * from "./heating.js";
+export * from "./heating-period-values.js";
 export * from "./internet-settings.js";
 export * from "./meters.js";
 export * from "./password.js";

@@ -250,13 +250,6 @@ export type HeatingSetting = {
   hotWaterMeterId: string | null;
   hotWaterSupplyTemperatureCelsius: number;
   /**
-   * Gesamt-Wärmemenge der Heizungsanlage in kWh (Q_gesamt): Nenner der
-   * Warmwasser-Abspaltung nach § 9 Abs. 2 HeizkostenV. Nur bei
-   * `heatingType = "central_with_hot_water"` fachlich relevant; NULL, wenn
-   * (noch) nicht erfasst (dann unterbleibt die Abspaltung mit Warnung).
-   */
-  totalHeatEnergyKwh: number | null;
-  /**
    * Brennwertbezogene Abrechnung von Erdgas: die nach den Formeln des
    * § 9 Abs. 2 HeizkostenV bestimmte Warmwasser-Wärmemenge ist dann mit 1,11
    * zu multiplizieren. Nur bei `fuelType = "gas"` sinnvoll.
@@ -275,18 +268,6 @@ export type HeatingSetting = {
    * gedämmt).
    */
   mandatorySeventyPercent: Opt<boolean>;
-  /**
-   * Jährliche Treibhausgasemissionen des Fernwärmenetzes in kg. Pflicht-
-   * angabe der Abrechnungsinformationen nach § 6a Abs. 3 HeizkostenV.
-   * Nur bei `fuelType = "district_heat"` relevant; Wert steht auf der
-   * Rechnung des Wärmelieferanten.
-   */
-  districtHeatEmissionsKgPerYear: number | null;
-  /**
-   * Primärenergiefaktor des Fernwärmenetzes (§ 6a Abs. 3 HeizkostenV).
-   * Nur bei `fuelType = "district_heat"` relevant.
-   */
-  districtHeatPrimaryEnergyFactor: number | null;
   /**
    * Ob die Seite "Abrechnungsinformationen nach § 6a HeizkostenV" mit der
    * Abrechnung gedruckt wird. Nur im externen Modus abwählbar.
@@ -341,11 +322,6 @@ export const HeatingSettingSchema = new EntitySchema<HeatingSetting>({
       fieldName: "hot_water_supply_temperature_celsius",
       default: 60,
     },
-    totalHeatEnergyKwh: {
-      type: "double",
-      fieldName: "total_heat_energy_kwh",
-      nullable: true,
-    },
     gasBillingByCalorificValue: {
       type: "boolean",
       fieldName: "gas_billing_by_calorific_value",
@@ -360,16 +336,6 @@ export const HeatingSettingSchema = new EntitySchema<HeatingSetting>({
       type: "boolean",
       fieldName: "mandatory_seventy_percent",
       default: false,
-    },
-    districtHeatEmissionsKgPerYear: {
-      type: "double",
-      fieldName: "district_heat_emissions_kg_per_year",
-      nullable: true,
-    },
-    districtHeatPrimaryEnergyFactor: {
-      type: "double",
-      fieldName: "district_heat_primary_energy_factor",
-      nullable: true,
     },
     includeBillingInfo: {
       type: "boolean",
@@ -402,6 +368,77 @@ export const HeatingSettingSchema = new EntitySchema<HeatingSetting>({
     {
       name: "heating_settings_building_id_valid_from_unique",
       properties: ["buildingId", "validFrom"],
+    },
+  ],
+});
+
+/**
+ * Werte eines Abrechnungszeitraums je Gebäude. Sie ändern sich jedes Jahr
+ * und hängen deshalb nicht an der Version der Heizkosten-Konfiguration.
+ * Eine Abrechnung verwendet die Zeile mit genau ihrem Zeitraum.
+ */
+export type HeatingPeriodValue = {
+  id: string;
+  buildingId: string;
+  periodStart: string;
+  periodEnd: string;
+  /**
+   * Gesamt-Wärmemenge der Heizungsanlage in kWh (Q_gesamt): Nenner der
+   * Warmwasser-Abspaltung nach § 9 Abs. 2 HeizkostenV. NULL: Es zählt der
+   * Haupt-Wärmemengenzähler.
+   */
+  totalHeatEnergyKwh: number | null;
+  /**
+   * Jährliche Treibhausgasemissionen in kg, wie sie der Wärmelieferant
+   * ausweist. Pflichtangabe nach § 6a Abs. 3 HeizkostenV bei Fernwärme.
+   */
+  districtHeatEmissionsKgPerYear: number | null;
+  /**
+   * Primärenergiefaktor des Fernwärmenetzes (§ 6a Abs. 3 HeizkostenV)
+   */
+  districtHeatPrimaryEnergyFactor: number | null;
+  createdAt: Opt<string>;
+  updatedAt: Opt<string>;
+};
+
+export const HeatingPeriodValueSchema = new EntitySchema<HeatingPeriodValue>({
+  name: "HeatingPeriodValue",
+  tableName: "heating_period_values",
+  properties: {
+    id: { type: "string", primary: true, onCreate: () => crypto.randomUUID() },
+    buildingId: fk(() => BuildingSchema, "building_id", "cascade"),
+    periodStart: { type: "string", fieldName: "period_start" },
+    periodEnd: { type: "string", fieldName: "period_end" },
+    totalHeatEnergyKwh: {
+      type: "double",
+      fieldName: "total_heat_energy_kwh",
+      nullable: true,
+    },
+    districtHeatEmissionsKgPerYear: {
+      type: "double",
+      fieldName: "district_heat_emissions_kg_per_year",
+      nullable: true,
+    },
+    districtHeatPrimaryEnergyFactor: {
+      type: "double",
+      fieldName: "district_heat_primary_energy_factor",
+      nullable: true,
+    },
+    createdAt: {
+      type: "string",
+      fieldName: "created_at",
+      defaultRaw: currentTimestamp,
+    },
+    updatedAt: {
+      type: "string",
+      fieldName: "updated_at",
+      defaultRaw: currentTimestamp,
+    },
+  },
+  uniques: [
+    {
+      name: "heating_period_values_building_period_unique",
+      properties: ["buildingId", "periodStart", "periodEnd"],
     },
   ],
 });

@@ -1,7 +1,4 @@
-import {
-  formatNumberLoose,
-  type HeatingSettings,
-} from "@einfachvermieter/shared";
+import type { HeatingSettings } from "@einfachvermieter/shared";
 import { RiFireLine, RiPencilLine } from "@remixicon/react";
 import type { ResultRow } from "@/components/common/ResultRows";
 import { ResultRows } from "@/components/common/ResultRows";
@@ -24,7 +21,6 @@ export const HeatingInstallationCard = ({
   onEdit: () => void;
 }) => {
   const yesNo = (value: boolean) => (value ? t("common.yes") : t("common.no"));
-  const dash = t("ui.common.emptyValue");
 
   const rows: ResultRow[] = [
     {
@@ -36,29 +32,6 @@ export const HeatingInstallationCard = ({
       value: t(`ui.heating.fuelTypes.${version.fuelType}`),
     },
   ];
-
-  if (version.fuelType === "district_heat") {
-    rows.push(
-      {
-        label: t("ui.heating.fields.districtHeatEmissionsKgPerYear"),
-        value:
-          version.districtHeatEmissionsKgPerYear === null
-            ? dash
-            : t("ui.common.measures.kg", {
-                value: formatNumberLoose(
-                  version.districtHeatEmissionsKgPerYear,
-                ),
-              }),
-      },
-      {
-        label: t("ui.heating.fields.districtHeatPrimaryEnergyFactor"),
-        value:
-          version.districtHeatPrimaryEnergyFactor === null
-            ? dash
-            : formatNumberLoose(version.districtHeatPrimaryEnergyFactor, 3),
-      },
-    );
-  }
 
   if (version.heatingType === "central_with_hot_water") {
     rows.push(
@@ -73,15 +46,6 @@ export const HeatingInstallationCard = ({
         value: t("ui.common.measures.celsius", {
           value: version.hotWaterSupplyTemperatureCelsius,
         }),
-      },
-      {
-        label: t("ui.heating.fields.totalHeatEnergyKwh"),
-        value:
-          version.totalHeatEnergyKwh === null
-            ? dash
-            : t("ui.common.measures.kwh", {
-                value: formatNumberLoose(version.totalHeatEnergyKwh),
-              }),
       },
     );
 
@@ -116,6 +80,16 @@ export const HeatingInstallationCard = ({
       }
     >
       <ResultRows rows={rows} />
+      {version.heatingType === "central_with_hot_water" ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          {t("ui.heating.fields.periodValuesHintTotalHeat")}
+        </p>
+      ) : null}
+      {version.fuelType === "district_heat" ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          {t("ui.heating.fields.periodValuesHintDistrictHeat")}
+        </p>
+      ) : null}
     </SectionCard>
   );
 };

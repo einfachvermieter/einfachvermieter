@@ -53,3 +53,24 @@ export const assertBuildingPeriodNotFinalized = async (
     throw new BadRequestException(getI18n().t(messageKey));
   }
 };
+
+/**
+ * Finalisierte Abrechnung des Gebäudes für genau diesen Zeitraum. Werte je
+ * Abrechnungszeitraum wirken nur auf Abrechnungen mit demselben Zeitraum;
+ * eine bloße Überschneidung sperrt deshalb nicht. Stornierte und ersetzte
+ * Abrechnungen sperren ebenfalls nicht.
+ */
+export const findFinalizedStatementForExactPeriod = async (
+  em: EntityManager,
+  buildingId: string,
+  periodStart: string,
+  periodEnd: string,
+): Promise<string | null> => {
+  const finalized = await em.findOne(
+    OperatingCostStatementSchema,
+    { buildingId, status: "finalized", periodStart, periodEnd },
+    { fields: ["id"] },
+  );
+
+  return finalized?.id ?? null;
+};

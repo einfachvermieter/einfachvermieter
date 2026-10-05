@@ -374,6 +374,36 @@ describe("Happy Path", () => {
     });
     expect(JSON.stringify(lockError)).toContain("finalisiert");
 
+    // ── Werte des Abrechnungszeitraums: Sperre nur für genau den Zeitraum ─
+    const valuesPath = `/buildings/${building.id}/heating/period-values`;
+    const putPeriodValues = (
+      periodStart: string,
+      totalHeatEnergyKwh: number,
+      expectStatus: number,
+    ) =>
+      api(valuesPath, {
+        method: "PUT",
+        body: {
+          periodStart,
+          periodEnd: "2025-12-31",
+          totalHeatEnergyKwh,
+          districtHeatEmissionsKgPerYear: null,
+          districtHeatPrimaryEnergyFactor: null,
+        },
+        expect: expectStatus,
+      });
+
+    await putPeriodValues("2025-01-01", 9000, 400);
+    await putPeriodValues("2025-07-01", 4000, 200);
+    expect(
+      await api(`${valuesPath}?periodStart=2025-01-01&periodEnd=2025-12-31`, {
+        expect: 200,
+      }),
+    ).toMatchObject({
+      totalHeatEnergyKwh: null,
+      lockedByStatementId: statement.id,
+    });
+
     // ── Delete-Guard: Mietvertrag mit Zahlungen/Abrechnungen ────────────
     await api(`/tenants/${tenantId}`, { method: "DELETE", expect: 400 });
 
@@ -384,6 +414,9 @@ describe("Happy Path", () => {
       expect: 201,
     });
     expect(cancelled.status).toBe("cancelled");
+
+    // Nach der Stornierung sind die Werte wieder änderbar.
+    await putPeriodValues("2025-01-01", 9000, 200);
 
     const balancesCancelled = await api("/accounts/balances?asOf=2025-12-31", {
       expect: 200,
@@ -450,10 +483,15 @@ describe("Happy Path", () => {
       method: "POST",
       expect: 201,
     });
+    // Eine offene Korrektur hebt die Sperre nicht auf: Das Original bleibt
+    // finalisiert, bis die Korrektur finalisiert ist.
+    await putPeriodValues("2025-01-01", 9100, 400);
     const secondFinalized = await api(
       `/statements/${secondCorrection.id}/finalize`,
       { method: "POST", expect: 201 },
     );
+
+    await putPeriodValues("2025-01-01", 9100, 400);
 
     const movedPayment = await api(`/payments/${settlementPayment.id}`, {
       expect: 200,
@@ -619,7 +657,7 @@ describe("Happy Path", () => {
     });
 
     // Zentrale Heizung MIT Warmwasser; Boiler-WMZ als hotWaterMeterId.
-    await api(`/buildings/${building.id}/heating`, {
+    const heatingVersion = await api(`/buildings/${building.id}/heating`, {
       method: "POST",
       body: {
         mode: "internal",
@@ -634,7 +672,6 @@ describe("Happy Path", () => {
         fuelType: "gas",
         hotWaterMeterId: wmzBoiler.id,
         hotWaterSupplyTemperatureCelsius: 60,
-        totalHeatEnergyKwh: 10_000,
         co2CostShareEnabled: false,
       },
       expect: 201,
@@ -648,17 +685,179 @@ describe("Happy Path", () => {
     );
     expect(Array.isArray(externalEntries)).toBe(true);
 
-    // Vor dem Fix warf dieser Aufruf 400 "heatingMeterNoUnit".
-    const preview = await api(
-      `/statements/preview/calculate?buildingId=${building.id}&tenantId=${tenantId}&from=2025-01-01&to=2025-12-31`,
-      { expect: 200 },
+    // ── Werte des Abrechnungszeitraums ──────────────────────────────────
+    const valuesPath = `/buildings/${building.id}/heating/period-values`;
+    const year = { periodStart: "2025-01-01", periodEnd: "2025-12-31" };
+    const yearQuery = "periodStart=2025-01-01&periodEnd=2025-12-31";
+    const noValues = {
+      totalHeatEnergyKwh: null,
+      districtHeatEmissionsKgPerYear: null,
+      districtHeatPrimaryEnergyFactor: null,
+    };
+    const calculatePreview = () =>
+      api(
+        `/statements/preview/calculate?buildingId=${building.id}&tenantId=${tenantId}&from=2025-01-01&to=2025-12-31`,
+        { expect: 200 },
+      );
+    const warningCodes = (result: {
+      heatingDetail: { warnings?: Array<{ code: string }> };
+    }) => (result.heatingDetail.warnings ?? []).map((warning) => warning.code);
+
+    // Ohne Zeile: leere Werte, kein Fehler, und die Angabe zur Bedeutung.
+    expect(await api(`${valuesPath}?${yearQuery}`, { expect: 200 })).toEqual({
+      ...noValues,
+      relevance: { totalHeatEnergy: true, districtHeat: false },
+      hasMainHeatMeter: false,
+      lockedByStatementId: null,
+    });
+
+    // Kein Wert, kein Haupt-Wärmemengenzähler: keine Abspaltung.
+    const previewWithoutValue = await calculatePreview();
+    expect(previewWithoutValue.heatingDetail.hotWaterDetail).toBeUndefined();
+    expect(warningCodes(previewWithoutValue)).toContain(
+      "hotWaterTotalHeatMissing",
     );
+
+    // Schreiben verlangt alle drei Werte und prüft sie.
+    await api(valuesPath, {
+      method: "PUT",
+      body: { ...year, totalHeatEnergyKwh: 10_000 },
+      expect: 400,
+    });
+    await api(valuesPath, {
+      method: "PUT",
+      body: { ...year, ...noValues, totalHeatEnergyKwh: 0 },
+      expect: 400,
+    });
+    await api(valuesPath, {
+      method: "PUT",
+      body: { ...year, ...noValues, totalHeatEnergyKwh: 10_000 },
+      expect: 200,
+    });
+
+    // Die Zeile eines anderen, überschneidenden Zeitraums zählt nicht.
+    const secondHalf = { periodStart: "2025-07-01", periodEnd: "2025-12-31" };
+    await api(valuesPath, {
+      method: "PUT",
+      body: { ...secondHalf, ...noValues, totalHeatEnergyKwh: 777 },
+      expect: 200,
+    });
+
+    // Vor dem Fix warf dieser Aufruf 400 "heatingMeterNoUnit".
+    const preview = await calculatePreview();
 
     expect(preview.heatingDetail).toBeTruthy();
     // Warmwasser wurde abgespalten (eigener Topf existiert).
-    expect(preview.heatingDetail.hotWaterDetail).toBeTruthy();
+    expect(preview.heatingDetail.hotWaterDetail.totalHeatEnergyKwh).toBe(
+      10_000,
+    );
     expect(preview.totalCostsCents).toBeGreaterThan(0);
+
+    // Die Heizkostenkonfiguration kennt die Werte nicht mehr.
+    expect(heatingVersion).not.toHaveProperty("totalHeatEnergyKwh");
+    expect(heatingVersion).not.toHaveProperty("districtHeatEmissionsKgPerYear");
+
+    // Fernwärme: Angaben fehlen, bis beide Werte eingetragen sind.
+    const {
+      id: heatingVersionId,
+      buildingId: _buildingId,
+      includeBillingInfo: _includeBillingInfo,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      ...heatingDto
+    } = heatingVersion;
+    const setFuelType = (fuelType: string) =>
+      api(`/buildings/${building.id}/heating/${heatingVersionId}`, {
+        method: "PATCH",
+        body: { ...heatingDto, fuelType },
+        expect: 200,
+      });
+
+    await setFuelType("district_heat");
+    const districtWithoutValues = await calculatePreview();
+    expect(districtWithoutValues.heatingDetail.districtHeatInfo).toEqual({
+      emissionsKgPerYear: null,
+      primaryEnergyFactor: null,
+    });
+    expect(warningCodes(districtWithoutValues)).toContain(
+      "districtHeatInfoMissing",
+    );
+
+    const districtValues = {
+      ...year,
+      totalHeatEnergyKwh: 10_000,
+      districtHeatEmissionsKgPerYear: 1250,
+      districtHeatPrimaryEnergyFactor: 0.28,
+    };
+    await api(valuesPath, { method: "PUT", body: districtValues, expect: 200 });
+    const districtWithValues = await calculatePreview();
+    expect(districtWithValues.heatingDetail.districtHeatInfo).toEqual({
+      emissionsKgPerYear: 1250,
+      primaryEnergyFactor: 0.28,
+    });
+    expect(warningCodes(districtWithValues)).not.toContain(
+      "districtHeatInfoMissing",
+    );
+
+    // Anderer Energieträger: Werte bleiben gespeichert, wirken aber nicht.
+    await setFuelType("gas");
+    expect(
+      (await calculatePreview()).heatingDetail.districtHeatInfo,
+    ).toBeUndefined();
+    expect(
+      await api(`${valuesPath}?${yearQuery}`, { expect: 200 }),
+    ).toMatchObject({
+      districtHeatEmissionsKgPerYear: 1250,
+      districtHeatPrimaryEnergyFactor: 0.28,
+      relevance: { totalHeatEnergy: true, districtHeat: false },
+    });
+
+    // Drei leere Werte löschen die Zeile.
+    await api(valuesPath, {
+      method: "PUT",
+      body: { ...year, ...noValues },
+      expect: 200,
+    });
+    expect(
+      await api(`${valuesPath}?${yearQuery}`, { expect: 200 }),
+    ).toMatchObject(noValues);
   }, 120_000);
+
+  it("löscht ein Gebäude samt Werten eines Zeitraums ohne Abrechnung", async () => {
+    const building = await api("/buildings", {
+      method: "POST",
+      body: {
+        name: "Leeres Haus",
+        addressStreet: "Leerweg 1",
+        addressPostalCode: "45128",
+        addressCity: "Essen",
+      },
+      expect: 201,
+    });
+
+    await api(`/buildings/${building.id}/heating/period-values`, {
+      method: "PUT",
+      body: {
+        periodStart: "2025-01-01",
+        periodEnd: "2025-12-31",
+        totalHeatEnergyKwh: 5000,
+        districtHeatEmissionsKgPerYear: null,
+        districtHeatPrimaryEnergyFactor: null,
+      },
+      expect: 200,
+    });
+
+    await api(`/buildings/${building.id}`, { method: "DELETE", expect: 200 });
+
+    const remaining = await app
+      .get(MikroORM)
+      .em.fork()
+      .getConnection()
+      .execute("select id from heating_period_values where building_id = ?", [
+        building.id,
+      ]);
+    expect(remaining).toHaveLength(0);
+  }, 60_000);
 });
 
 describe("Stichtag der Vorauszahlung vor dem Dokumentdatum", () => {

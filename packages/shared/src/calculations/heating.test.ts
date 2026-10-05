@@ -1293,43 +1293,27 @@ describe("calculateHeating - Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV)", (
     ).toBe(true);
   });
 
-  it("Jahres-Q_gesamt bei Halbjahresperiode warnt, bei Jahresperiode nicht", () => {
-    const hotWater = {
-      totalHeatEnergyKwh: 10_000,
-      totalHeatEnergyIsAnnual: true,
-      boilerHeatKwh: 2000,
-      hotWaterVolumeM3: null,
-      supplyTemperatureCelsius: 60,
-      unitHotWaterM3: [],
-    };
-
-    const hasWarning = (result: ReturnType<typeof calculateHeating>): boolean =>
-      result.warnings?.some(
-        (w) => w.code === "hotWaterTotalHeatPeriodMismatch",
-      ) === true;
-
-    const halfYearInput = () => {
-      const input = baseInput();
-      return {
-        ...input,
-        units: input.units.map((unit) => ({ ...unit, periodDays: 181 })),
-        periodEnd: "2025-06-30",
-      };
-    };
-
-    const halfYear = calculateHeating({ ...halfYearInput(), hotWater });
-    const fullYear = calculateHeating({ ...baseInput(), hotWater });
-
-    // Ein gemessener Haupt-Wärmemengenzähler deckt die Periode ab, dann
-    // passt der Wert auch bei kurzen Perioden.
-    const halfYearMeasured = calculateHeating({
-      ...halfYearInput(),
-      hotWater: { ...hotWater, totalHeatEnergyIsAnnual: false },
+  it("Q_gesamt bei Halbjahresperiode warnt nicht: Der Wert gilt für den Zeitraum", () => {
+    const input = baseInput();
+    const halfYear = calculateHeating({
+      ...input,
+      units: input.units.map((unit) => ({ ...unit, periodDays: 181 })),
+      periodEnd: "2025-06-30",
+      hotWater: {
+        totalHeatEnergyKwh: 10_000,
+        boilerHeatKwh: 2000,
+        hotWaterVolumeM3: null,
+        supplyTemperatureCelsius: 60,
+        unitHotWaterM3: [],
+      },
     });
 
-    expect(hasWarning(halfYear)).toBe(true);
-    expect(hasWarning(fullYear)).toBe(false);
-    expect(hasWarning(halfYearMeasured)).toBe(false);
+    expect(halfYear.hotWaterDetail).toBeDefined();
+    expect(
+      halfYear.warnings?.some(
+        (w) => w.code === "hotWaterTotalHeatPeriodMismatch",
+      ),
+    ).not.toBe(true);
   });
 
   it("Korrekturfaktoren nach § 9 Abs. 2 greifen nur auf die Formel-Wärmemenge", () => {

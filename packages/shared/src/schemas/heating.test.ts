@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { heatingSettingsWriteSchema } from "./heating.js";
+import {
+  heatingPeriodValueRelevance,
+  heatingPeriodValuesFormToDto,
+  heatingPeriodValuesWriteSchema,
+} from "./heating-period-values.js";
 
 const internalBase = {
   mode: "internal" as const,
@@ -12,7 +17,6 @@ const internalBase = {
   fuelType: "gas" as const,
   hotWaterMeterId: null,
   hotWaterSupplyTemperatureCelsius: 60,
-  totalHeatEnergyKwh: null,
   gasBillingByCalorificValue: false,
   heatPumpMonovalent: false,
   mandatorySeventyPercent: false,
@@ -70,5 +74,106 @@ describe("heatingSettingsWriteSchema - 70-%-Pflichtfall (§ 7 Abs. 1 Satz 2 Heiz
 
   it("lässt 60 % ohne den Pflichtfall weiter zu", () => {
     expect(withShares(60, 40).success).toBe(true);
+  });
+});
+
+describe("Werte je Abrechnungszeitraum", () => {
+  const period = { periodStart: "2025-01-01", periodEnd: "2025-12-31" };
+  const allNull = {
+    totalHeatEnergyKwh: null,
+    districtHeatEmissionsKgPerYear: null,
+    districtHeatPrimaryEnergyFactor: null,
+  };
+
+  it("die Heizkostenkonfiguration nimmt die Werte nicht mehr an", () => {
+    const result = heatingSettingsWriteSchema.safeParse({
+      ...internalBase,
+      consumptionSharePercent: 70,
+      baseSharePercent: 30,
+      totalHeatEnergyKwh: 42_000,
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("verlangt alle drei Werte, jeweils Zahl oder null", () => {
+    expect(
+      heatingPeriodValuesWriteSchema.safeParse({ ...period, ...allNull })
+        .success,
+    ).toBe(true);
+    expect(
+      heatingPeriodValuesWriteSchema.safeParse({
+        ...period,
+        totalHeatEnergyKwh: 42_000,
+        districtHeatEmissionsKgPerYear: null,
+      }).success,
+    ).toBe(false);
+  });
+
+  it.each([
+    { totalHeatEnergyKwh: 0 },
+    { districtHeatEmissionsKgPerYear: -1 },
+    { districtHeatPrimaryEnergyFactor: 0 },
+    { districtHeatPrimaryEnergyFactor: 10.1 },
+  ])("lehnt ungültige Werte ab: %o", (override) => {
+    expect(
+      heatingPeriodValuesWriteSchema.safeParse({
+        ...period,
+        ...allNull,
+        ...override,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("lehnt ein Ende vor dem Beginn ab", () => {
+    expect(
+      heatingPeriodValuesWriteSchema.safeParse({
+        ...allNull,
+        periodStart: "2025-12-31",
+        periodEnd: "2025-01-01",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("liest kWh mit Tausenderpunkt und den Faktor als Dezimalzahl", () => {
+    expect(
+      heatingPeriodValuesFormToDto(
+        {
+          totalHeatEnergyKwh: "42.000",
+          districtHeatEmissionsKgPerYear: "",
+          districtHeatPrimaryEnergyFactor: "0.280",
+        },
+        { start: "2025-01-01", end: "2025-12-31" },
+      ),
+    ).toEqual({
+      ...period,
+      totalHeatEnergyKwh: 42_000,
+      districtHeatEmissionsKgPerYear: null,
+      districtHeatPrimaryEnergyFactor: 0.28,
+    });
+  });
+
+  it("gibt Werten nur im internen Modus Bedeutung", () => {
+    expect(
+      heatingPeriodValueRelevance({
+        mode: "internal",
+        heatingType: "central_with_hot_water",
+        fuelType: "gas",
+      }),
+    ).toEqual({ totalHeatEnergy: true, districtHeat: false });
+    expect(
+      heatingPeriodValueRelevance({
+        mode: "internal",
+        heatingType: "central_without_hot_water",
+        fuelType: "district_heat",
+      }),
+    ).toEqual({ totalHeatEnergy: false, districtHeat: true });
+    expect(
+      heatingPeriodValueRelevance({
+        mode: "external",
+        heatingType: "central_with_hot_water",
+        fuelType: "district_heat",
+      }),
+    ).toEqual({ totalHeatEnergy: false, districtHeat: false });
   });
 });

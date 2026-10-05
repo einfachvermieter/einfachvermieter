@@ -45,8 +45,10 @@ import {
   formatWarningParams,
   groupCalcWarnings,
   type HeatingDetail,
+  type HeatingPeriodValueSet,
   type HotWaterInput,
   hasBlockingWarning,
+  heatingPeriodValueRelevance,
   hotWaterCorrectionFactor,
   inferTariffAdjustmentBpsFromInvoices,
   intersect,
@@ -93,6 +95,7 @@ import {
 } from "../common/assert-exists.js";
 import { ExternalHeatingEntriesService } from "../heating/external-heating-entries.service.js";
 import { HeatingService } from "../heating/heating.service.js";
+import { HeatingPeriodValuesService } from "../heating/heating-period-values.service.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
 import { SettingsService } from "../settings/settings.service.js";
@@ -214,23 +217,15 @@ const heatingCostBreakdown = (
  */
 const attachDistrictHeatInfo = (
   heatingDetail: HeatingDetail,
-  heatingSettings: {
-    fuelType: string;
-    districtHeatEmissionsKgPerYear: number | null;
-    districtHeatPrimaryEnergyFactor: number | null;
-  },
+  periodValues: HeatingPeriodValueSet,
 ): void => {
-  if (heatingSettings.fuelType !== "district_heat") {
-    return;
-  }
-
   heatingDetail.districtHeatInfo = {
-    emissionsKgPerYear: heatingSettings.districtHeatEmissionsKgPerYear,
-    primaryEnergyFactor: heatingSettings.districtHeatPrimaryEnergyFactor,
+    emissionsKgPerYear: periodValues.districtHeatEmissionsKgPerYear,
+    primaryEnergyFactor: periodValues.districtHeatPrimaryEnergyFactor,
   };
   if (
-    heatingSettings.districtHeatEmissionsKgPerYear === null ||
-    heatingSettings.districtHeatPrimaryEnergyFactor === null
+    periodValues.districtHeatEmissionsKgPerYear === null ||
+    periodValues.districtHeatPrimaryEnergyFactor === null
   ) {
     heatingDetail.warnings = heatingDetail.warnings ?? [];
     heatingDetail.warnings.push({ code: "districtHeatInfoMissing" });
@@ -613,6 +608,7 @@ export class StatementsService {
     private readonly climateFactorService: ClimateFactorService,
     private readonly settingsService: SettingsService,
     private readonly substitutionContextService: SubstitutionContextService,
+    private readonly heatingPeriodValuesService: HeatingPeriodValuesService,
   ) {}
 
   /**
@@ -1849,10 +1845,11 @@ export class StatementsService {
    * Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV): nur bei zentraler
    * Warmwasserbereitung über die Heizung. Q_WW aus dem Boiler-WMZ (gemessen)
    * oder der Schätzformel über den Warmwasserverbrauch; Q_gesamt aus den
-   * Heizungseinstellungen, ersatzweise aus einem Haupt-WMZ.
+   * Werten des Abrechnungszeitraums, ersatzweise aus einem Haupt-WMZ.
    */
   private buildHotWaterInput(input: {
     supplyExclusions: SupplyExclusion[];
+    periodValues: HeatingPeriodValueSet;
     heatingSettings: Awaited<ReturnType<HeatingService["getForBuildingAt"]>>;
     unitsRaw: Unit[];
     metersRaw: Meter[];
@@ -1872,7 +1869,7 @@ export class StatementsService {
       targetUnitId,
       warnings,
     } = input;
-    if (heatingSettings.heatingType !== "central_with_hot_water") {
+    if (!heatingPeriodValueRelevance(heatingSettings).totalHeatEnergy) {
       return;
     }
     // warnings durchreichen: Fehlt am Perioden-Rand eine Ablesung, begrenzt die
@@ -1892,8 +1889,7 @@ export class StatementsService {
     const deltaOverPeriod = (meterId: string, label?: string): number =>
       deltaBetween(meterId, statementPeriod, label);
 
-    let { totalHeatEnergyKwh } = heatingSettings;
-    const totalHeatEnergyIsAnnual = totalHeatEnergyKwh !== null;
+    let { totalHeatEnergyKwh } = input.periodValues;
     if (totalHeatEnergyKwh === null) {
       const mainHeatMeter = metersRaw.find(
         (m) => m.type === "heat_meter" && m.role === "main",
@@ -1949,7 +1945,6 @@ export class StatementsService {
 
     return {
       totalHeatEnergyKwh,
-      totalHeatEnergyIsAnnual,
       correctionFactor: hotWaterCorrectionFactor(heatingSettings),
       boilerHeatKwh,
       hotWaterVolumeM3: totalHotWaterM3 > 0 ? totalHotWaterM3 : null,
@@ -2102,12 +2097,17 @@ export class StatementsService {
     // Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV): nur bei zentraler
     // Warmwasserbereitung über die Heizung. Q_WW kommt aus dem Boiler-WMZ
     // (gemessen) oder der Schätzformel über den Warmwasserverbrauch; Q_gesamt
-    // aus den Heizungseinstellungen, ersatzweise aus einem Haupt-WMZ.
+    // aus den Werten des Abrechnungszeitraums, ersatzweise aus einem Haupt-WMZ.
     const hotWaterWarnings: CalcWarning[] = [];
+    const periodValues = await this.heatingPeriodValuesService.valuesFor(
+      buildingId,
+      statementPeriod,
+    );
     const supplyExclusions =
       await this.substitutionContextService.loadSupplyExclusions(buildingId);
     const hotWater = this.buildHotWaterInput({
       supplyExclusions,
+      periodValues,
       heatingSettings,
       unitsRaw,
       metersRaw,
@@ -2172,7 +2172,9 @@ export class StatementsService {
         heatingDetail.warnings = [];
       }
       heatingDetail.warnings.push(...hotWaterWarnings, ...substitutionWarnings);
-      attachDistrictHeatInfo(heatingDetail, heatingSettings);
+      if (heatingPeriodValueRelevance(heatingSettings).districtHeat) {
+        attachDistrictHeatInfo(heatingDetail, periodValues);
+      }
     } catch (err) {
       throw this.toCalcHttpError(err);
     }

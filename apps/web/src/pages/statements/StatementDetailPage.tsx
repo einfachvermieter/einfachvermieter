@@ -79,6 +79,7 @@ import { OccupancyCard } from "./components/detail/OccupancyCard";
 import { OperatingCostsCard } from "./components/detail/OperatingCostsCard";
 import { OverviewCard } from "./components/detail/OverviewCard";
 import { PaymentsCard } from "./components/detail/PaymentsCard";
+import { PeriodValuesCard } from "./components/detail/PeriodValuesCard";
 import { StatementFinalizeDialog } from "./components/detail/StatementFinalizeDialog";
 import { StatementPdfTab } from "./components/detail/StatementPdfTab";
 import { SubstitutionsCard } from "./components/detail/SubstitutionsCard";
@@ -332,12 +333,19 @@ const StatementTabs = ({
         <TabsContent value="heizkosten">
           <div className="space-y-5">
             {heatingDetail.mode === "internal" ? (
-              <SubstitutionsCard
-                buildingId={buildingId}
-                period={result.period}
-                isDraft={isDraft}
-                detail={heatingDetail}
-              />
+              <>
+                <SubstitutionsCard
+                  buildingId={buildingId}
+                  period={result.period}
+                  isDraft={isDraft}
+                  detail={heatingDetail}
+                />
+                <PeriodValuesCard
+                  buildingId={buildingId}
+                  period={result.period}
+                  isDraft={isDraft}
+                />
+              </>
             ) : null}
             {showHeatingBreakdown ? (
               <HeatingCard

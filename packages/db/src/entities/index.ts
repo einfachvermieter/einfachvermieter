@@ -7,6 +7,7 @@ import {
   CostEntrySchema,
   CostTypeSchema,
   ExternalHeatingEntrySchema,
+  HeatingPeriodValueSchema,
   HeatingSettingSchema,
   UnitSupplyExclusionSchema,
 } from "./costs.js";
@@ -55,6 +56,7 @@ export const entitySchemas = [
   CostEntryItemSchema,
   ClimateFactorSchema,
   HeatingSettingSchema,
+  HeatingPeriodValueSchema,
   ExternalHeatingEntrySchema,
   ConsumptionSubstitutionSchema,
   UnitSupplyExclusionSchema,

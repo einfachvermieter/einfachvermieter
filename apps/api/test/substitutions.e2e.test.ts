@@ -256,7 +256,6 @@ describe("Erfassungsausfall nach § 9a HeizkostenV", () => {
         fuelType: "gas",
         hotWaterMeterId: null,
         hotWaterSupplyTemperatureCelsius: 60,
-        totalHeatEnergyKwh: null,
         co2CostShareEnabled: false,
       },
       expect: 201,
