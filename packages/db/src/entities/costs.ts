@@ -154,6 +154,14 @@ export type CostEntryItem = {
   co2AmountGrams: number | null;
   co2CostCents: number | null;
   /**
+   * Energiegehalt der Brennstoffmenge in kWh laut Rechnung
+   */
+  co2EnergyKwh: number | null;
+  /**
+   * Emissionsfaktor in kg CO2 je kWh laut Rechnung
+   */
+  co2EmissionFactorKgPerKwh: number | null;
+  /**
    * Im `amountCents` enthaltene Steuern, Abgaben und Zölle in Cent (Summe
    * aus USt, Energiesteuer, CO2-Preis laut Brennstoffrechnung);
    * nur bei Heiz-Positionen erfasst.
@@ -199,6 +207,16 @@ export const CostEntryItemSchema = new EntitySchema<CostEntryItem>({
     co2CostCents: {
       type: "integer",
       fieldName: "co2_cost_cents",
+      nullable: true,
+    },
+    co2EnergyKwh: {
+      type: "double",
+      fieldName: "co2_energy_kwh",
+      nullable: true,
+    },
+    co2EmissionFactorKgPerKwh: {
+      type: "double",
+      fieldName: "co2_emission_factor_kg_per_kwh",
       nullable: true,
     },
     containedTaxesCents: {

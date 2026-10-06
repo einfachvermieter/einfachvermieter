@@ -152,6 +152,20 @@ export const costEntryItemSchema = z
      */
     co2CostCents: z.number().int().nonnegative().optional().nullable(),
     /**
+     * Energiegehalt der Brennstoffmenge in kWh laut Rechnung.
+     */
+    co2EnergyKwh: z.number().positive().optional().nullable(),
+    /**
+     * Emissionsfaktor in kg CO2 je kWh laut Rechnung. Die Obergrenze fängt
+     * eine Eingabe in Gramm je kWh ab.
+     */
+    co2EmissionFactorKgPerKwh: z
+      .number()
+      .positive()
+      .max(1, messageKey("ui.costs.validation.co2EmissionFactorTooHigh"))
+      .optional()
+      .nullable(),
+    /**
      * Im `amountCents` enthaltene Steuern, Abgaben und Zölle in Cent.
      * Muss zwischen 0 und `amountCents` liegen.
      */

@@ -58,6 +58,8 @@ type CostEntryItemRow = {
   laborCostsCents: number | null;
   co2AmountGrams: number | null;
   co2CostCents: number | null;
+  co2EnergyKwh: number | null;
+  co2EmissionFactorKgPerKwh: number | null;
   containedTaxesCents: number | null;
   containedTaxKinds: string[] | null;
   periodStart: string;
@@ -749,6 +751,8 @@ export class CostsService {
       laborCostsCents: item.laborCostsCents,
       co2AmountGrams: item.co2AmountGrams,
       co2CostCents: item.co2CostCents,
+      co2EnergyKwh: item.co2EnergyKwh,
+      co2EmissionFactorKgPerKwh: item.co2EmissionFactorKgPerKwh,
       containedTaxesCents: item.containedTaxesCents,
       containedTaxKinds: item.containedTaxKinds,
       periodStart: item.periodStart,
@@ -777,6 +781,8 @@ export class CostsService {
           laborCostsCents: item.laborCostsCents ?? null,
           co2AmountGrams: item.co2AmountGrams ?? null,
           co2CostCents: item.co2CostCents ?? null,
+          co2EnergyKwh: item.co2EnergyKwh ?? null,
+          co2EmissionFactorKgPerKwh: item.co2EmissionFactorKgPerKwh ?? null,
           containedTaxesCents: item.containedTaxesCents ?? null,
           containedTaxKinds: item.containedTaxKinds ?? null,
           periodStart: item.periodStart,

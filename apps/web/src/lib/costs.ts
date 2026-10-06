@@ -81,6 +81,14 @@ export type CostEntryItem = {
    */
   co2CostCents: number | null;
   /**
+   * Energiegehalt der Brennstoffmenge in kWh laut Rechnung
+   */
+  co2EnergyKwh: number | null;
+  /**
+   * Emissionsfaktor in kg CO2 je kWh laut Rechnung
+   */
+  co2EmissionFactorKgPerKwh: number | null;
+  /**
    * Enthaltene Steuern, Abgaben und Zölle in Cent
    */
   containedTaxesCents: number | null;
