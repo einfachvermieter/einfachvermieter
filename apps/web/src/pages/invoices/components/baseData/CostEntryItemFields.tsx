@@ -1,4 +1,8 @@
-import { containedTaxKinds } from "@einfachvermieter/shared";
+import {
+  co2BasisMismatchKg,
+  containedTaxKinds,
+  formatNumberLoose,
+} from "@einfachvermieter/shared";
 import { RiFundsLine, RiPriceTag3Line } from "@remixicon/react";
 import { useEffect } from "react";
 import { type UseFormReturn, useWatch } from "react-hook-form";
@@ -8,12 +12,14 @@ import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { DateInput } from "@/components/form/DateInput";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
+import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
 import type { CostType } from "../../../../lib/costs";
 import { t } from "../../../../lib/i18n";
 import type { Unit } from "../../../../lib/units";
 import {
   type CostEntryFormValues,
+  parseOptionalDecimal,
   unitPriceDisplayConfig,
 } from "./costEntryForm.schema";
 
@@ -113,8 +119,41 @@ export const CostEntryItemFields = ({
     if (!showCo2Inputs) {
       form.setValue(`items.${index}.co2AmountInput`, "", { shouldDirty: true });
       form.setValue(`items.${index}.co2CostInput`, "", { shouldDirty: true });
+      form.setValue(`items.${index}.co2EnergyInput`, "", { shouldDirty: true });
+      form.setValue(`items.${index}.co2EmissionFactorInput`, "", {
+        shouldDirty: true,
+      });
     }
   }, [showCo2Inputs, form, index]);
+
+  // Hinweise zu den Berechnungsgrundlagen. Beide sperren das Speichern nicht.
+  const [co2AmountInput, co2CostInput, co2EnergyInput, co2EmissionFactorInput] =
+    useWatch({
+      control: form.control,
+      name: [
+        `items.${index}.co2AmountInput`,
+        `items.${index}.co2CostInput`,
+        `items.${index}.co2EnergyInput`,
+        `items.${index}.co2EmissionFactorInput`,
+      ],
+    });
+  const co2AmountKg = parseOptionalDecimal(co2AmountInput);
+  const co2EnergyKwh = parseOptionalDecimal(co2EnergyInput);
+  const co2EmissionFactor = parseOptionalDecimal(co2EmissionFactorInput);
+  // Sobald eine der vier Angaben eingetragen ist, gehören alle vier dazu.
+  const co2Inputs = [
+    co2AmountKg,
+    parseOptionalDecimal(co2CostInput),
+    co2EnergyKwh,
+    co2EmissionFactor,
+  ];
+  const co2BasisMissing =
+    co2Inputs.some((value) => value !== null) &&
+    co2Inputs.some((value) => value === null);
+  const co2MismatchKg =
+    co2AmountKg !== null && co2EnergyKwh !== null && co2EmissionFactor !== null
+      ? co2BasisMismatchKg(co2AmountKg * 1000, co2EnergyKwh, co2EmissionFactor)
+      : null;
 
   // Wechselt die Position auf eine Nicht-Heiz-Kostenart, die Steuern-/
   // Abgaben-Eingabe verwerfen. Sonst landet ein unsichtbarer Wert im Submit.
@@ -257,6 +296,46 @@ export const CostEntryItemFields = ({
             placeholder={t("ui.common.placeholders.amount")}
             suffix="€"
           />
+          <TextInput
+            control={form.control}
+            name={`items.${index}.co2EnergyInput`}
+            label={t("ui.costs.entryFields.co2Energy")}
+            description={t("ui.costs.entryFields.co2EnergyDescription")}
+            optional={true}
+            inputMode="decimal"
+            placeholder={t("ui.common.placeholders.quantity")}
+            suffix="kWh"
+          />
+          <TextInput
+            control={form.control}
+            name={`items.${index}.co2EmissionFactorInput`}
+            label={t("ui.costs.entryFields.co2EmissionFactor")}
+            description={t("ui.costs.entryFields.co2EmissionFactorDescription")}
+            optional={true}
+            inputMode="decimal"
+            suffix={t("ui.costs.entryFields.co2EmissionFactorUnit")}
+          />
+          {co2BasisMissing ? (
+            <div className="sm:col-span-2">
+              <Alert variant="warning">
+                <AlertDescription>
+                  {t("ui.costs.entryFields.co2BasisMissingHint")}
+                </AlertDescription>
+              </Alert>
+            </div>
+          ) : null}
+          {co2MismatchKg !== null && co2AmountKg !== null ? (
+            <div className="sm:col-span-2">
+              <Alert variant="warning">
+                <AlertDescription>
+                  {t("ui.costs.entryFields.co2BasisMismatchHint", {
+                    computed: formatNumberLoose(co2MismatchKg, 0),
+                    entered: formatNumberLoose(co2AmountKg, 0),
+                  })}
+                </AlertDescription>
+              </Alert>
+            </div>
+          ) : null}
         </>
       ) : null}
       {showContainedTaxesInput ? (

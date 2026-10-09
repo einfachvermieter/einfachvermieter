@@ -1,4 +1,8 @@
-import { formatEur, formatNumberLoose } from "@einfachvermieter/shared";
+import {
+  formatEmissionFactor,
+  formatEur,
+  formatNumberLoose,
+} from "@einfachvermieter/shared";
 import { RiAddLine, RiListCheck2 } from "@remixicon/react";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
@@ -74,6 +78,25 @@ const itemExtras = (
     extras.push({
       label: t("ui.costs.entryFields.co2Cost"),
       value: formatEur(item.co2CostCents),
+    });
+  }
+
+  if (item.co2EnergyKwh !== null) {
+    extras.push({
+      label: t("ui.costs.entryFields.co2Energy"),
+      value: t("ui.common.measures.kwh", {
+        value: formatNumberLoose(item.co2EnergyKwh, 3),
+      }),
+    });
+  }
+
+  if (item.co2EmissionFactorKgPerKwh !== null) {
+    extras.push({
+      label: t("ui.costs.entryFields.co2EmissionFactor"),
+      value: t("ui.common.measures.withUnit", {
+        value: formatEmissionFactor(item.co2EmissionFactorKgPerKwh),
+        unit: t("ui.costs.entryFields.co2EmissionFactorUnit"),
+      }),
     });
   }
 

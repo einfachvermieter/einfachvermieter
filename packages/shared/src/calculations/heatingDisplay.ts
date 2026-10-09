@@ -5,7 +5,12 @@
  */
 
 import { MONTH_KEYS, type TranslateFn } from "@einfachvermieter/i18n";
-import { formatDate, formatEur, formatNumber } from "../format.js";
+import {
+  formatDate,
+  formatEmissionFactor,
+  formatEur,
+  formatNumber,
+} from "../format.js";
 import type {
   EnergyComparison,
   HeatingDetail,
@@ -338,6 +343,250 @@ export const co2TenantShareCents = (
   return Math.round(
     tenantSideCo2Cents * (ownTotalCents / detail.totalHeatingCostsCents),
   );
+};
+
+type Co2FuelBasisRow = NonNullable<
+  NonNullable<HeatingDetail["co2Detail"]>["fuelBasis"]
+>[number];
+
+const CO2_VALUE_MISSING: HeatingLabelDescriptor = {
+  key: "statements.pdf.heating.co2.valueMissing",
+};
+
+const co2EnergyValue = (group: Co2FuelBasisRow): HeatingLabelDescriptor =>
+  group.energyKwh === null
+    ? CO2_VALUE_MISSING
+    : {
+        key: "statements.pdf.heating.co2.energyContentValue",
+        params: { value: formatNumber(group.energyKwh, 0) },
+      };
+
+const co2FactorValue = (group: Co2FuelBasisRow): HeatingLabelDescriptor =>
+  group.emissionFactorKgPerKwh === null
+    ? CO2_VALUE_MISSING
+    : {
+        key: "statements.pdf.heating.co2.emissionFactorValue",
+        params: { value: formatEmissionFactor(group.emissionFactorKgPerKwh) },
+      };
+
+const co2AmountValue = (amountGrams: number | null): HeatingLabelDescriptor =>
+  amountGrams === null
+    ? CO2_VALUE_MISSING
+    : {
+        key: "statements.pdf.heating.co2.amountValue",
+        params: { value: formatNumber(amountGrams / 1000, 0) },
+      };
+
+const co2CostValue = (
+  costCents: number | null,
+): HeatingLabelDescriptor | string =>
+  costCents === null ? CO2_VALUE_MISSING : formatEur(costCents);
+
+export type Co2TableRow = {
+  key:
+    | "energySource"
+    | "energyContent"
+    | "emissionFactor"
+    | "amount"
+    | "totalCost"
+    | "areaBasis"
+    | "emissions"
+    | "tier"
+    | "sharePair"
+    | "landlordDeduction"
+    | "tenantSideCost"
+    | "potShare"
+    | "tenantShare";
+  label: HeatingLabelDescriptor;
+  /**
+   * Fertig formatierter Wert (Geldbetrag) oder ein zu übersetzender Text.
+   */
+  value: HeatingLabelDescriptor | string;
+};
+
+/**
+ * Zeilen der Tabelle "CO2-Kostenaufteilung" in Rechenfolge: vom Brennstoff
+ * über Ausstoß und Einstufung zum Anteil des Mieters. Enthält damit die
+ * Berechnungsgrundlagen nach § 7 Abs. 3 CO2KostAufG.
+ *
+ * Energiegehalt und Emissionsfaktor stehen nur bei genau einer
+ * Brennstoffgruppe hier, mehrere Gruppen zeigt `co2FuelTable`. Snapshots
+ * ohne `fuelBasis` zeigen die beiden Zeilen nicht.
+ */
+export const co2TableRows = (
+  detail: HeatingDetail,
+  ownTotalCents: number,
+): Co2TableRow[] => {
+  const rows: Co2TableRow[] = [];
+  const label = (key: Co2TableRow["key"]): HeatingLabelDescriptor => ({
+    key: `statements.pdf.heating.co2.${key}`,
+  });
+
+  if (detail.fuelType) {
+    rows.push({
+      key: "energySource",
+      label: { key: "statements.pdf.heating.energySource" },
+      value: { key: `ui.heating.fuelTypes.${detail.fuelType}` },
+    });
+  }
+
+  const co2 = detail.co2Detail;
+  if (!co2) {
+    return rows;
+  }
+
+  const [singleGroup, ...otherGroups] = co2.fuelBasis ?? [];
+  if (singleGroup && otherGroups.length === 0) {
+    rows.push(
+      {
+        key: "energyContent",
+        label: label("energyContent"),
+        value: co2EnergyValue(singleGroup),
+      },
+      {
+        key: "emissionFactor",
+        label: label("emissionFactor"),
+        value: co2FactorValue(singleGroup),
+      },
+    );
+  }
+
+  rows.push(
+    {
+      key: "amount",
+      label: label("amount"),
+      value: co2AmountValue(co2.totalAmountGrams),
+    },
+    {
+      key: "totalCost",
+      label: label("totalCost"),
+      value: formatEur(co2.totalCostCents),
+    },
+    {
+      key: "areaBasis",
+      label: label("areaBasis"),
+      value: {
+        key: "statements.pdf.heating.co2.areaBasisValue",
+        params: { value: formatNumber(co2.livingAreaSqm, 2) },
+      },
+    },
+    {
+      key: "emissions",
+      label: label("emissions"),
+      value: {
+        key: "statements.pdf.heating.co2.emissionsValue",
+        params: { value: formatNumber(co2.emissionsKgPerSqmYear, 1) },
+      },
+    },
+    {
+      key: "tier",
+      label: label("tier"),
+      value: co2TierLabel(co2.emissionsKgPerSqmYear),
+    },
+    {
+      key: "sharePair",
+      label: label("sharePair"),
+      value: {
+        key: "statements.pdf.heating.co2.sharePairValue",
+        params: {
+          tenant: formatNumber(100 - co2.landlordSharePercent, 0),
+          landlord: formatNumber(co2.landlordSharePercent, 0),
+        },
+      },
+    },
+    {
+      key: "landlordDeduction",
+      label: label("landlordDeduction"),
+      value: formatEur(co2.landlordDeductionCents),
+    },
+  );
+
+  const tenantShareCents = co2TenantShareCents(detail, ownTotalCents);
+  if (tenantShareCents !== null) {
+    rows.push(
+      {
+        key: "tenantSideCost",
+        label: label("tenantSideCost"),
+        value: formatEur(co2.totalCostCents - co2.landlordDeductionCents),
+      },
+      {
+        key: "potShare",
+        label: label("potShare"),
+        value: {
+          key: "statements.pdf.heating.co2.potShareValue",
+          params: {
+            own: formatEur(ownTotalCents),
+            total: formatEur(detail.totalHeatingCostsCents),
+            // Nur Anzeige, gerechnet wird mit den Cent-Beträgen.
+            percent: formatNumber(
+              (ownTotalCents / detail.totalHeatingCostsCents) * 100,
+              2,
+            ),
+          },
+        },
+      },
+      {
+        key: "tenantShare",
+        label: label("tenantShare"),
+        value: formatEur(tenantShareCents),
+      },
+    );
+  }
+
+  return rows;
+};
+
+export type Co2FuelTable = {
+  rows: Array<{
+    key: string;
+    label: string;
+    energy: HeatingLabelDescriptor;
+    factor: HeatingLabelDescriptor;
+    amount: HeatingLabelDescriptor;
+    cost: HeatingLabelDescriptor | string;
+  }>;
+  sumAmount: HeatingLabelDescriptor;
+  sumCost: HeatingLabelDescriptor | string;
+};
+
+/**
+ * Tabelle "Brennstoffe im Abrechnungszeitraum": je Brennstoffgruppe die
+ * vier Kenngrößen der Lieferantenrechnung. Nur bei mehr als einer Gruppe,
+ * sonst stehen die Werte in `co2TableRows`. Die Summe des Energiegehalts
+ * fehlt bewusst: sie geht in keine Rechnung ein.
+ *
+ * Die Summenzeile zeigt die Gesamtwerte der Aufteilung. Fehlt in einer
+ * Gruppe Menge oder Kosten, ist der Gesamtwert nur eine Teilsumme und wird
+ * hier nicht als Summe ausgegeben.
+ */
+export const co2FuelTable = (
+  co2: HeatingDetail["co2Detail"],
+): Co2FuelTable | null => {
+  const groups = co2?.fuelBasis ?? [];
+  if (!co2 || groups.length < 2) {
+    return null;
+  }
+
+  return {
+    rows: groups.map((group, index) => ({
+      key: `${index}`,
+      label: group.label,
+      energy: co2EnergyValue(group),
+      factor: co2FactorValue(group),
+      amount: co2AmountValue(group.amountGrams),
+      cost: co2CostValue(group.costCents),
+    })),
+    sumAmount: co2AmountValue(
+      groups.some((group) => group.amountGrams === null)
+        ? null
+        : co2.totalAmountGrams,
+    ),
+    sumCost: co2CostValue(
+      groups.some((group) => group.costCents === null)
+        ? null
+        : co2.totalCostCents,
+    ),
+  };
 };
 
 /**

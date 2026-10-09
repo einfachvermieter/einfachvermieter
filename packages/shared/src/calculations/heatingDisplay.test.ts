@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { formatNumber } from "../format.js";
+import { formatEur, formatNumber } from "../format.js";
 import type { EnergyComparison, HeatingDetail } from "../types/index.js";
 import {
   averageUserComparison,
   billingInfoCostRows,
   billingInfoRows,
+  co2FuelTable,
+  co2TableRows,
   co2TenantShareCents,
   co2TierLabel,
   consumptionUnitLabel,
@@ -195,6 +197,154 @@ describe("co2TierLabel", () => {
       key: "statements.pdf.heating.co2.tierAbove",
       params: { min: formatNumber(52, 0) },
     });
+  });
+});
+
+describe("co2TableRows und co2FuelTable (§ 7 Abs. 3 CO2KostAufG)", () => {
+  // Erdgas, volles Jahr, 420 m2: 44.000 kWh x 0,20088 = 8.839 kg.
+  const co2Detail = {
+    totalCostCents: 58_031,
+    totalAmountGrams: 8_839_000,
+    emissionsKgPerSqmYear: 21,
+    landlordSharePercent: 20,
+    landlordDeductionCents: 11_606,
+    livingAreaSqm: 420,
+  };
+  const gas = {
+    label: "Gas",
+    energyKwh: 44_000,
+    emissionFactorKgPerKwh: 0.200_88,
+    amountGrams: 8_839_000,
+    costCents: 58_031,
+  };
+  const detail = (
+    fuelBasis?: NonNullable<HeatingDetail["co2Detail"]>["fuelBasis"],
+  ) =>
+    baseDetail({
+      fuelType: "gas",
+      totalHeatingCostsCents: 487_000,
+      co2Detail: { ...co2Detail, ...(fuelBasis ? { fuelBasis } : {}) },
+    });
+  const rowValue = (rows: ReturnType<typeof co2TableRows>, key: string) =>
+    rows.find((row) => row.key === key)?.value;
+
+  it("stellt die Zeilen einer Gruppe in Rechenfolge", () => {
+    const rows = co2TableRows(detail([gas]), 152_340);
+
+    expect(rows.map((row) => row.key)).toEqual([
+      "energySource",
+      "energyContent",
+      "emissionFactor",
+      "amount",
+      "totalCost",
+      "areaBasis",
+      "emissions",
+      "tier",
+      "sharePair",
+      "landlordDeduction",
+      "tenantSideCost",
+      "potShare",
+      "tenantShare",
+    ]);
+    expect(rowValue(rows, "emissionFactor")).toMatchObject({
+      params: { value: "0,20088" },
+    });
+    expect(rowValue(rows, "tenantSideCost")).toBe(formatEur(46_425));
+    expect(rowValue(rows, "potShare")).toMatchObject({
+      params: { percent: "31,28" },
+    });
+    expect(rowValue(rows, "tenantShare")).toBe(formatEur(14_522));
+  });
+
+  it("zeigt bei fehlendem Wert den Hinweis statt der Zahl", () => {
+    const rows = co2TableRows(detail([{ ...gas, energyKwh: null }]), 152_340);
+
+    expect(rowValue(rows, "energyContent")).toEqual({
+      key: "statements.pdf.heating.co2.valueMissing",
+    });
+    expect(rowValue(rows, "amount")).toMatchObject({
+      params: { value: formatNumber(8839, 0) },
+    });
+  });
+
+  it("zeigt ältere Snapshots ohne Energiegehalt und Faktor, aber mit Herleitung", () => {
+    const keys = co2TableRows(detail(), 152_340).map((row) => row.key);
+
+    expect(keys).not.toContain("energyContent");
+    expect(keys).not.toContain("emissionFactor");
+    expect(keys).toContain("tenantSideCost");
+    expect(keys).toContain("potShare");
+    expect(co2FuelTable(detail().co2Detail)).toBeNull();
+  });
+
+  it("zieht mehrere Gruppen in eine eigene Tabelle mit Summenzeile", () => {
+    const groups = [
+      { ...gas, label: "Fernwärme", amountGrams: 2_107_000, costCents: 13_840 },
+      {
+        ...gas,
+        label: "Fernwärme",
+        energyKwh: null,
+        emissionFactorKgPerKwh: 0.0915,
+        amountGrams: 1_857_000,
+        costCents: 13_410,
+      },
+    ];
+    const withGroups = baseDetail({
+      fuelType: "district_heat",
+      co2Detail: {
+        ...co2Detail,
+        totalAmountGrams: 3_964_000,
+        totalCostCents: 27_250,
+        fuelBasis: groups,
+      },
+    });
+    const keys = co2TableRows(withGroups, 55_000).map((row) => row.key);
+    const table = co2FuelTable(withGroups.co2Detail);
+
+    expect(keys).not.toContain("energyContent");
+    expect(keys).not.toContain("emissionFactor");
+    expect(table?.rows).toHaveLength(2);
+    expect(table?.rows[1]?.energy).toEqual({
+      key: "statements.pdf.heating.co2.valueMissing",
+    });
+    expect(table?.rows[1]?.factor.params).toEqual({ value: "0,0915" });
+    expect(table?.rows[1]?.cost).toBe(formatEur(13_410));
+    expect(table?.sumAmount.params).toEqual({ value: formatNumber(3964, 0) });
+    expect(table?.sumCost).toBe(formatEur(27_250));
+  });
+
+  it("gibt eine Teilsumme nicht als Summe aus", () => {
+    const missing = { key: "statements.pdf.heating.co2.valueMissing" };
+    const table = co2FuelTable({
+      ...co2Detail,
+      fuelBasis: [
+        gas,
+        // CO2-Kosten erfasst, CO2-Menge nicht.
+        { ...gas, label: "Heizöl", amountGrams: null, costCents: 4000 },
+      ],
+    });
+
+    expect(table?.rows[1]?.amount).toEqual(missing);
+    expect(table?.rows[1]?.cost).toBe(formatEur(4000));
+    expect(table?.sumAmount).toEqual(missing);
+    expect(table?.sumCost).toBe(formatEur(co2Detail.totalCostCents));
+
+    const withoutCost = co2FuelTable({
+      ...co2Detail,
+      fuelBasis: [gas, { ...gas, label: "Heizöl", costCents: null }],
+    });
+
+    expect(withoutCost?.rows[1]?.cost).toEqual(missing);
+    expect(withoutCost?.sumCost).toEqual(missing);
+    expect(withoutCost?.sumAmount.params).toEqual({
+      value: formatNumber(8839, 0),
+    });
+  });
+
+  it("zeigt ohne CO2-Aufteilung nur den Energieträger", () => {
+    const rows = co2TableRows(baseDetail({ fuelType: "gas" }), 55_000);
+
+    expect(rows.map((row) => row.key)).toEqual(["energySource"]);
   });
 });
 

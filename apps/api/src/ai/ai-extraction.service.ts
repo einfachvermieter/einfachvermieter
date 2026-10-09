@@ -123,6 +123,13 @@ const mapRawItemsToPublic = (items: AiRawItem[]): AiExtractionItem[] =>
     periodEnd: item.periodEnd,
     costTypeId: item.costTypeId,
     costTypeMatchReason: item.costTypeMatchReason,
+    co2AmountGrams:
+      item.co2EmissionsKg === null
+        ? null
+        : Math.round(item.co2EmissionsKg * 1000),
+    co2CostCents: item.co2CostGrossCents,
+    co2EnergyKwh: item.co2EnergyKwh,
+    co2EmissionFactorKgPerKwh: item.co2EmissionFactorKgPerKwh,
   }));
 
 const MIME_TO_EXT: Record<string, string> = {

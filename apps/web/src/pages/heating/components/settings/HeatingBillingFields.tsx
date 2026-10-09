@@ -7,6 +7,7 @@ import { MonthInput } from "@/components/form/MonthInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { HelpHint } from "@/components/help/HelpHint";
+import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/Field";
 import { t } from "../../../../lib/i18n";
 import {
@@ -185,6 +186,13 @@ export const HeatingBillingFields = ({
       )}
 
       <ExternalBillingInfoToggle form={form} mode={mode} />
+      {mode === "external" ? (
+        <Alert variant="warning">
+          <AlertDescription>
+            {t("ui.heating.fields.co2ExternalHint")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
     </FieldGroup>
   );
 };

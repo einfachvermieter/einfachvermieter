@@ -642,6 +642,18 @@ export type HeatingDetail = {
      * Fläche, auf die `emissionsKgPerSqmYear` bezogen ist.
      */
     livingAreaSqm: number;
+    /**
+     * Berechnungsgrundlage je Brennstoffgruppe (Kostenart und
+     * Emissionsfaktor), anteilig zur Periode. `null` = Angabe nicht erfasst.
+     * Fehlt in älteren Snapshots.
+     */
+    fuelBasis?: Array<{
+      label: string;
+      energyKwh: number | null;
+      emissionFactorKgPerKwh: number | null;
+      amountGrams: number | null;
+      costCents: number | null;
+    }>;
   };
   /**
    * Warmwasser-Abspaltung nach § 9 Abs. 2 HeizkostenV. Gesetzt bei zentraler

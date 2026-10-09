@@ -99,6 +99,17 @@ export const formatNumberLoose = (value: number, maxDigits = 2): string =>
   });
 
 /**
+ * Emissionsfaktor in kg CO2 je kWh: mindestens vier, höchstens sechs
+ * Nachkommastellen. Vier, weil die Standardwerte der Verordnung so
+ * geschrieben werden; sechs, weil das Formular nicht mehr annimmt.
+ */
+export const formatEmissionFactor = (value: number): string =>
+  value.toLocaleString("de-DE", {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 6,
+  });
+
+/**
  * Formatiert eine IBAN in 4er-Blöcken, getrennt durch geschützte
  * Leerzeichen (U+00A0), damit sie nie umbricht. Nur für die Anzeige.
  */

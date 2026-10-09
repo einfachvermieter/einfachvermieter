@@ -4,6 +4,8 @@ import {
   type ContainedTaxKind,
   centsToEurInput,
   containedTaxKinds,
+  formatEmissionFactor,
+  normalizeNumberInput,
   parseEurToCents,
 } from "@einfachvermieter/shared";
 import { z } from "zod";
@@ -20,6 +22,24 @@ const unitPriceRegex = /^\d+([.,]\d{1,4})?$/u;
  * Daher bis zu drei Nachkommastellen zulässig.
  */
 const co2AmountRegex = /^\d+([.,]\d{1,3})?$/u;
+/**
+ * Emissionsfaktor in kg CO2 je kWh, höchstens sechs Nachkommastellen. Mehr
+ * nimmt das Formular nicht an, damit die Anzeige nie eine Stelle verliert.
+ */
+const co2EmissionFactorRegex = /^\d+([.,]\d{1,6})?$/u;
+
+/**
+ * Liest ein optionales Dezimalfeld. Leer oder nicht lesbar ergibt `null`.
+ */
+export const parseOptionalDecimal = (input: string): number | null => {
+  if (input.trim() === "") {
+    return null;
+  }
+
+  const value = Number.parseFloat(normalizeNumberInput(input));
+
+  return Number.isNaN(value) ? null : value;
+};
 
 /**
  * `unit_price_cents` speichert Tarife mit Skalierung x 10000 (= 1/10000 €).
@@ -199,6 +219,16 @@ export type CostEntryItemFormValues = {
    */
   co2CostInput: string;
   /**
+   * Energiegehalt der gelieferten Menge als kWh-String, bis zu drei
+   * Nachkommastellen. Gleiche Sichtbarkeitsregel wie `co2AmountInput`.
+   */
+  co2EnergyInput: string;
+  /**
+   * Emissionsfaktor als String in kg CO2 je kWh, bis zu sechs
+   * Nachkommastellen. Gleiche Sichtbarkeitsregel wie `co2AmountInput`.
+   */
+  co2EmissionFactorInput: string;
+  /**
    * Im Gesamtbetrag enthaltene Steuern, Abgaben und Zölle als €-String
    * (§ 6a Abs. 3 Nr. 1b HeizkostenV). Wird nur bei Heiz-Kostenarten
    * eingeblendet; leer = nicht erfasst.
@@ -260,6 +290,29 @@ const itemSchema = z
       .refine(
         (value) => value === "" || amountRegex.test(value),
         messageKey("ui.costs.validation.co2CostFormat"),
+      ),
+    co2EnergyInput: z
+      .string()
+      .refine(
+        (value) =>
+          value === "" ||
+          (co2AmountRegex.test(value) &&
+            Number.parseFloat(value.replace(",", ".")) > 0),
+        messageKey("ui.costs.validation.co2EnergyFormat"),
+      ),
+    co2EmissionFactorInput: z
+      .string()
+      .refine(
+        (value) =>
+          value === "" ||
+          (co2EmissionFactorRegex.test(value) &&
+            Number.parseFloat(value.replace(",", ".")) > 0),
+        messageKey("ui.costs.validation.co2EmissionFactorFormat"),
+      )
+      .refine(
+        (value) =>
+          value === "" || Number.parseFloat(value.replace(",", ".")) <= 1,
+        messageKey("ui.costs.validation.co2EmissionFactorTooHigh"),
       ),
     containedTaxesInput: z
       .string()
@@ -370,6 +423,8 @@ export type CostEntryItemSubmitValues = {
   laborCostsCents: number | null;
   co2AmountGrams: number | null;
   co2CostCents: number | null;
+  co2EnergyKwh: number | null;
+  co2EmissionFactorKgPerKwh: number | null;
   containedTaxesCents: number | null;
   containedTaxKinds: ContainedTaxKind[] | null;
   periodStart: string;
@@ -418,6 +473,10 @@ export const costEntryFormToDto = (
         item.co2CostInput.trim() === ""
           ? null
           : parseEurToCents(item.co2CostInput),
+      co2EnergyKwh: parseOptionalDecimal(item.co2EnergyInput),
+      co2EmissionFactorKgPerKwh: parseOptionalDecimal(
+        item.co2EmissionFactorInput,
+      ),
       containedTaxesCents:
         item.containedTaxesInput.trim() === ""
           ? null
@@ -438,6 +497,8 @@ type CostEntryItemSource = {
   laborCostsCents?: number | null;
   co2AmountGrams?: number | null;
   co2CostCents?: number | null;
+  co2EnergyKwh?: number | null;
+  co2EmissionFactorKgPerKwh?: number | null;
   containedTaxesCents?: number | null;
   containedTaxKinds?: ContainedTaxKind[] | null;
   periodStart: string;
@@ -484,6 +545,18 @@ export const costEntryToFormValues = (
         item.co2CostCents === null || item.co2CostCents === undefined
           ? ""
           : centsToEurInput(item.co2CostCents),
+      co2EnergyInput:
+        item.co2EnergyKwh === null || item.co2EnergyKwh === undefined
+          ? ""
+          : item.co2EnergyKwh.toLocaleString("de-DE", {
+              maximumFractionDigits: 3,
+              useGrouping: false,
+            }),
+      co2EmissionFactorInput:
+        item.co2EmissionFactorKgPerKwh === null ||
+        item.co2EmissionFactorKgPerKwh === undefined
+          ? ""
+          : formatEmissionFactor(item.co2EmissionFactorKgPerKwh),
       containedTaxesInput:
         item.containedTaxesCents === null ||
         item.containedTaxesCents === undefined
@@ -505,6 +578,8 @@ export const emptyItem = (defaultCostTypeId = ""): CostEntryItemFormValues => ({
   laborCostsInput: "",
   co2AmountInput: "",
   co2CostInput: "",
+  co2EnergyInput: "",
+  co2EmissionFactorInput: "",
   containedTaxesInput: "",
   containedTaxKinds: [],
   periodStart: "",

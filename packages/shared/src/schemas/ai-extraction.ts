@@ -13,6 +13,14 @@ export const aiExtractionItemSchema = z.object({
   periodEnd: isoDate().nullable(),
   costTypeId: z.string().nullable(),
   costTypeMatchReason: z.string(),
+  /**
+   * Angaben nach § 3 Abs. 1 CO2KostAufG von der Brennstoffrechnung. Nur an
+   * Verbrauchspositionen gesetzt, sonst `null`.
+   */
+  co2AmountGrams: z.number().int().nonnegative().nullable(),
+  co2CostCents: z.number().int().nonnegative().nullable(),
+  co2EnergyKwh: z.number().nonnegative().nullable(),
+  co2EmissionFactorKgPerKwh: z.number().nonnegative().nullable(),
 });
 
 export const costEntryExtractionResultSchema = z.object({

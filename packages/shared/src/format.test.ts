@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   amountRegex,
   centsToEurInput,
+  formatEmissionFactor,
   formatEur,
   parseEurToCents,
   unsignedAmountRegex,
@@ -14,6 +15,18 @@ describe("formatEur", () => {
 
   it("behält das Vorzeichen bei echten negativen Beträgen", () => {
     expect(formatEur(-288_000)).toBe("-2.880,00 €");
+  });
+});
+
+describe("formatEmissionFactor", () => {
+  it.each([
+    [0.201, "0,2010"],
+    [0.200_88, "0,20088"],
+    [0.181_397, "0,181397"],
+    [0.2358, "0,2358"],
+    [0.2664, "0,2664"],
+  ])("%s -> %s", (value, expected) => {
+    expect(formatEmissionFactor(value)).toBe(expected);
   });
 });
 

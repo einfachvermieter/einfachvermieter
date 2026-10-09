@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { HeatingFuelType } from "../schemas/heating.js";
 import type { MeterInfo, ReadingPoint, UnitInfo } from "../types/index.js";
+import { hasBlockingWarning } from "./diagnostics.js";
 import {
   aggregateHeatingCosts,
+  type Co2FuelBasisEntry,
+  type Co2FuelGroup,
   calculateCo2Split,
   calculateExternalHeating,
   calculateHeating,
+  co2BasisMismatchKg,
   co2LandlordSharePercent,
   co2Tier,
   hotWaterCorrectionFactor,
@@ -862,6 +866,200 @@ describe("aggregateHeatingCosts", () => {
     expect(result.totalCo2AmountGrams).toBe(Math.round(2_000_000 * factor));
   });
 
+  describe("Brennstoffgruppen (§ 7 Abs. 3 CO2KostAufG)", () => {
+    const year = { start: "2024-01-01", end: "2024-12-31" };
+    const fuelItem = (
+      overrides: Partial<Parameters<typeof aggregateHeatingCosts>[0][number]>,
+    ) => ({
+      costTypeId: "gas",
+      amountCents: 100_000,
+      co2CostCents: 10_000,
+      co2AmountGrams: 2_000_000,
+      co2EnergyKwh: 10_000,
+      co2EmissionFactorKgPerKwh: 0.2,
+      periodStart: "2024-01-01",
+      periodEnd: "2024-12-31",
+      ...overrides,
+    });
+
+    it("bildet aus einer Position eine Gruppe mit den eingegebenen Werten", () => {
+      const result = aggregateHeatingCosts([fuelItem({})], year);
+
+      expect(result.co2Groups).toEqual([
+        {
+          costTypeId: "gas",
+          emissionFactorKgPerKwh: 0.2,
+          energyKwh: 10_000,
+          amountGrams: 2_000_000,
+          costCents: 10_000,
+        },
+      ]);
+    });
+
+    it.each([
+      "linear",
+      "degree_days",
+    ] as const)("kürzt Energiegehalt und Menge mit demselben Faktor (%s), der Emissionsfaktor bleibt", (method) => {
+      const half = { start: "2024-01-01", end: "2024-06-30" };
+      const result = aggregateHeatingCosts([fuelItem({})], half, method);
+      const [group] = result.co2Groups;
+      const factor = result.totalCo2AmountGrams / 2_000_000;
+
+      expect(factor).toBeGreaterThan(0);
+      expect(factor).toBeLessThan(1);
+      expect(group?.energyKwh).toBe(Math.round(10_000 * factor));
+      expect(group?.amountGrams).toBe(result.totalCo2AmountGrams);
+      expect(group?.emissionFactorKgPerKwh).toBe(0.2);
+    });
+
+    it("fasst Positionen gleicher Kostenart mit gleichem Faktor zusammen", () => {
+      const result = aggregateHeatingCosts(
+        [
+          fuelItem({}),
+          // Als Gleitkommazahl von 0,3 verschieden, als Faktor derselbe.
+          fuelItem({ co2EmissionFactorKgPerKwh: 0.3 }),
+          fuelItem({ co2EmissionFactorKgPerKwh: 0.1 + 0.2 }),
+        ],
+        year,
+      );
+
+      expect(result.co2Groups).toHaveLength(2);
+      expect(result.co2Groups[1]).toMatchObject({
+        energyKwh: 20_000,
+        amountGrams: 4_000_000,
+        costCents: 20_000,
+      });
+    });
+
+    it("trennt nach Kostenart, auch bei gleichem Faktor", () => {
+      const result = aggregateHeatingCosts(
+        [fuelItem({}), fuelItem({ costTypeId: "oil" })],
+        year,
+      );
+
+      expect(result.co2Groups.map((group) => group.costTypeId)).toEqual([
+        "gas",
+        "oil",
+      ]);
+    });
+
+    it("zeigt keine Teilsumme, wenn einer Position der Energiegehalt fehlt", () => {
+      const result = aggregateHeatingCosts(
+        [fuelItem({}), fuelItem({ co2EnergyKwh: null })],
+        year,
+      );
+
+      expect(result.co2Groups).toEqual([
+        {
+          costTypeId: "gas",
+          emissionFactorKgPerKwh: 0.2,
+          energyKwh: null,
+          amountGrams: 4_000_000,
+          costCents: 20_000,
+        },
+      ]);
+    });
+
+    it("führt Positionen ohne Faktor als eigene Gruppe", () => {
+      const result = aggregateHeatingCosts(
+        [fuelItem({}), fuelItem({ co2EmissionFactorKgPerKwh: null })],
+        year,
+      );
+
+      expect(
+        result.co2Groups.map((group) => group.emissionFactorKgPerKwh),
+      ).toEqual([0.2, null]);
+    });
+
+    it("hält CO2-Kosten ohne CO2-Menge in der Gruppe und meldet die Menge als fehlend", () => {
+      const result = aggregateHeatingCosts(
+        [
+          fuelItem({}),
+          fuelItem({ co2AmountGrams: null, co2CostCents: 4000 }),
+          // Andere Kostenart, weder Faktor noch Menge erfasst.
+          fuelItem({
+            costTypeId: "oil",
+            co2AmountGrams: null,
+            co2EnergyKwh: null,
+            co2EmissionFactorKgPerKwh: null,
+          }),
+        ],
+        year,
+      );
+
+      expect(result.co2Groups).toEqual([
+        {
+          costTypeId: "gas",
+          emissionFactorKgPerKwh: 0.2,
+          energyKwh: 20_000,
+          amountGrams: null,
+          costCents: 14_000,
+        },
+        {
+          costTypeId: "oil",
+          emissionFactorKgPerKwh: null,
+          energyKwh: null,
+          amountGrams: null,
+          costCents: 10_000,
+        },
+      ]);
+      // Die Gesamtwerte kommen unverändert aus der bisherigen Rechnung.
+      expect(result.totalCo2AmountGrams).toBe(2_000_000);
+      expect(result.totalCo2CostCents).toBe(24_000);
+    });
+
+    it("meldet nicht erfasste CO2-Kosten als fehlend, eine eingetragene 0 bleibt 0", () => {
+      const result = aggregateHeatingCosts(
+        [
+          fuelItem({ co2CostCents: null }),
+          fuelItem({ costTypeId: "oil", co2CostCents: 0 }),
+        ],
+        year,
+      );
+
+      expect(result.co2Groups.map((group) => group.costCents)).toEqual([
+        null,
+        0,
+      ]);
+      expect(result.co2Groups.map((group) => group.amountGrams)).toEqual([
+        2_000_000, 2_000_000,
+      ]);
+    });
+
+    it("bildet keine Gruppe ohne CO2-Menge und -Kosten oder außerhalb des Zeitraums", () => {
+      const result = aggregateHeatingCosts(
+        [
+          fuelItem({ co2AmountGrams: null, co2CostCents: null }),
+          fuelItem({ periodStart: "2023-01-01", periodEnd: "2023-12-31" }),
+        ],
+        year,
+      );
+
+      expect(result.co2Groups).toEqual([]);
+    });
+
+    it("ergibt über alle Gruppen genau die Gesamtmenge und die Gesamtkosten", () => {
+      const result = aggregateHeatingCosts(
+        [
+          fuelItem({ periodStart: "2023-07-01", periodEnd: "2024-06-30" }),
+          fuelItem({ co2EmissionFactorKgPerKwh: 0.18, co2CostCents: 3333 }),
+          fuelItem({ costTypeId: "oil", co2AmountGrams: 777_777 }),
+          // Unvollständige Positionen zählen in den Gesamtwerten als 0.
+          fuelItem({ costTypeId: "pellets", co2AmountGrams: null }),
+          fuelItem({ costTypeId: "coal", co2CostCents: null }),
+        ],
+        { start: "2024-01-01", end: "2024-09-30" },
+      );
+      const sum = (pick: (group: Co2FuelGroup) => number | null) =>
+        result.co2Groups.reduce((acc, group) => acc + (pick(group) ?? 0), 0);
+
+      expect(sum((group) => group.amountGrams)).toBe(
+        result.totalCo2AmountGrams,
+      );
+      expect(sum((group) => group.costCents)).toBe(result.totalCo2CostCents);
+    });
+  });
+
   it("rechnet enthaltene Steuern/Abgaben mit demselben Periodenfaktor anteilig zu", () => {
     const result = aggregateHeatingCosts(
       [
@@ -884,6 +1082,30 @@ describe("aggregateHeatingCosts", () => {
 
     const factor = 182 / 366;
     expect(result.totalContainedTaxesCents).toBe(Math.round(25_000 * factor));
+  });
+});
+
+describe("co2BasisMismatchKg", () => {
+  it.each([
+    [1.019, false],
+    [1.021, true],
+    [0.981, false],
+    [0.979, true],
+  ])("Abweichung um Faktor %s meldet %s", (ratio, expected) => {
+    const result = co2BasisMismatchKg(1_000_000, 10_000 * ratio, 0.1);
+
+    expect(result !== null).toBe(expected);
+  });
+
+  it("meldet Erdgas mit kWh Brennwert und heizwertbezogenem Faktor", () => {
+    // 44.000 kWh Brennwert, ausgewiesene Menge passt zu 0,1814 kg/kWh.
+    const amountGrams = Math.round(44_000 * 0.1814 * 1000);
+
+    expect(co2BasisMismatchKg(amountGrams, 44_000, 0.200_88)).toBeCloseTo(
+      8838.72,
+      2,
+    );
+    expect(co2BasisMismatchKg(amountGrams, 44_000, 0.1814)).toBeNull();
   });
 });
 
@@ -1097,6 +1319,176 @@ describe("calculateHeating mit CO2KostAufG", () => {
     expect(result.warnings?.some((w) => w.code === "co2SplitMissingData")).toBe(
       true,
     );
+  });
+
+  describe("Berechnungsgrundlagen", () => {
+    const co2 = {
+      enabled: true,
+      totalCostCents: 20_000,
+      totalAmountGrams: 3_500_000,
+      livingAreaSqm: 200,
+      periodDays: 365,
+    };
+    const group = {
+      label: "Gas",
+      energyKwh: 17_500,
+      emissionFactorKgPerKwh: 0.2,
+      amountGrams: 3_500_000,
+      costCents: 20_000,
+    };
+    const run = (co2Input: typeof co2 & { fuelBasis?: Co2FuelBasisEntry[] }) =>
+      calculateHeating({
+        ...baseInput,
+        totalHeatingCostsCents: 100_000,
+        co2: co2Input,
+      });
+    const hasWarning = (result: ReturnType<typeof run>, code: string) =>
+      result.warnings?.some((w) => w.code === code) ?? false;
+
+    it("reicht vollständige Gruppen ohne Warnung durch", () => {
+      const result = run({ ...co2, fuelBasis: [group] });
+
+      expect(result.co2Detail?.fuelBasis).toEqual([group]);
+      expect(hasWarning(result, "co2BasisIncomplete")).toBe(false);
+    });
+
+    it("warnt bei fehlendem Energiegehalt oder Faktor, rechnet aber wie sonst", () => {
+      const complete = run({ ...co2, fuelBasis: [group] });
+      const incomplete = run({
+        ...co2,
+        fuelBasis: [{ ...group, emissionFactorKgPerKwh: null }],
+      });
+
+      expect(hasWarning(incomplete, "co2BasisIncomplete")).toBe(true);
+      expect(incomplete.co2Detail?.landlordDeductionCents).toBe(
+        complete.co2Detail?.landlordDeductionCents,
+      );
+      expect(incomplete.totalHeatingCostsCents).toBe(
+        complete.totalHeatingCostsCents,
+      );
+    });
+
+    it.each([
+      "energyKwh",
+      "emissionFactorKgPerKwh",
+    ] as const)("fehlender Ausweiswert %s warnt nur und sperrt nicht", (field) => {
+      const result = run({
+        ...co2,
+        fuelBasis: [group, { ...group, [field]: null }],
+      });
+
+      expect(hasWarning(result, "co2BasisIncomplete")).toBe(true);
+      expect(hasWarning(result, "co2SplitValuesIncomplete")).toBe(false);
+      expect(hasBlockingWarning({ heatingDetail: result })).toBe(false);
+    });
+
+    it.each([
+      "amountGrams",
+      "costCents",
+    ] as const)("fehlender Rechenwert %s sperrt das Finalisieren, auch neben einer vollständigen Gruppe", (field) => {
+      const result = run({
+        ...co2,
+        fuelBasis: [group, { ...group, [field]: null }],
+      });
+
+      expect(hasWarning(result, "co2SplitValuesIncomplete")).toBe(true);
+      expect(hasWarning(result, "co2BasisIncomplete")).toBe(false);
+      expect(hasBlockingWarning({ heatingDetail: result })).toBe(true);
+      // Gerechnet wird trotzdem wie bisher, für die Vorschau.
+      expect(result.co2Detail?.landlordDeductionCents).toBe(
+        run({ ...co2, fuelBasis: [group] }).co2Detail?.landlordDeductionCents,
+      );
+    });
+
+    it("eine eingetragene 0 bei Menge oder Kosten sperrt nicht", () => {
+      const result = run({
+        ...co2,
+        fuelBasis: [group, { ...group, amountGrams: 0, costCents: 0 }],
+      });
+
+      expect(hasBlockingWarning({ heatingDetail: result })).toBe(false);
+    });
+
+    it("sperrt auch, wenn keiner Position die Menge erfasst ist und gar nicht aufgeteilt wird", () => {
+      const result = run({
+        ...co2,
+        totalAmountGrams: 0,
+        fuelBasis: [{ ...group, amountGrams: null }],
+      });
+
+      expect(result.co2Detail).toBeUndefined();
+      expect(hasWarning(result, "co2SplitMissingData")).toBe(true);
+      expect(hasBlockingWarning({ heatingDetail: result })).toBe(true);
+    });
+
+    it("sperrt nicht bei ausgeschalteter Aufteilung", () => {
+      const result = run({
+        ...co2,
+        enabled: false,
+        fuelBasis: [{ ...group, amountGrams: null }],
+      });
+
+      expect(hasBlockingWarning({ heatingDetail: result })).toBe(false);
+    });
+
+    it("von den Positionen bis zur Sperre: nur asymmetrische CO2-Angaben sperren", () => {
+      const position = {
+        costTypeId: "gas",
+        amountCents: 100_000,
+        periodStart: "2025-01-01",
+        periodEnd: "2025-12-31",
+      };
+      const blocked = (
+        co2Fields: Partial<Parameters<typeof aggregateHeatingCosts>[0][number]>,
+      ) => {
+        const complete = {
+          ...position,
+          co2AmountGrams: 3_500_000,
+          co2CostCents: 20_000,
+          co2EnergyKwh: 17_500,
+          co2EmissionFactorKgPerKwh: 0.2,
+        };
+        const aggregation = aggregateHeatingCosts(
+          [complete, { ...position, ...co2Fields }],
+          { start: "2025-01-01", end: "2025-12-31" },
+        );
+        const result = run({
+          ...co2,
+          totalCostCents: aggregation.totalCo2CostCents,
+          totalAmountGrams: aggregation.totalCo2AmountGrams,
+          fuelBasis: aggregation.co2Groups.map(({ costTypeId, ...rest }) => ({
+            label: costTypeId,
+            ...rest,
+          })),
+        });
+        return hasBlockingWarning({ heatingDetail: result });
+      };
+
+      // Kosten ohne Menge und Menge ohne Kosten.
+      expect(blocked({ co2CostCents: 5000 })).toBe(true);
+      expect(blocked({ co2AmountGrams: 1_000_000 })).toBe(true);
+      // Vollständig leere CO2-Felder (Wartung, Betriebsstrom).
+      expect(blocked({})).toBe(false);
+      expect(blocked({ co2AmountGrams: null, co2CostCents: null })).toBe(false);
+      // Eine eingetragene 0 ist ein Wert.
+      expect(blocked({ co2AmountGrams: 1_000_000, co2CostCents: 0 })).toBe(
+        false,
+      );
+      expect(blocked({ co2AmountGrams: 0, co2CostCents: 5000 })).toBe(false);
+      // Nur Ausweiswerte fehlen.
+      expect(blocked({ co2AmountGrams: 1_000_000, co2CostCents: 5000 })).toBe(
+        false,
+      );
+    });
+
+    it("warnt bei ausgeschalteter Aufteilung nur, wenn CO2-Kosten erfasst sind", () => {
+      const withCosts = run({ ...co2, enabled: false });
+      const withoutCosts = run({ ...co2, enabled: false, totalCostCents: 0 });
+
+      expect(withCosts.co2Detail).toBeUndefined();
+      expect(hasWarning(withCosts, "co2DataWithoutSplit")).toBe(true);
+      expect(hasWarning(withoutCosts, "co2DataWithoutSplit")).toBe(false);
+    });
   });
 
   it("warnt, wenn die Aufteilung aktiviert ist, aber keiner Kostenart CO2-Kosten zugeordnet sind", () => {

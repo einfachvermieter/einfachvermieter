@@ -57,6 +57,7 @@ const BLOCKING_WARNING_CODES = new Set([
   "supplyChangeWithSubstitution",
   "supplyNoParticipantsHeating",
   "supplyNoParticipantsHotWater",
+  "co2SplitValuesIncomplete",
 ]);
 
 /**

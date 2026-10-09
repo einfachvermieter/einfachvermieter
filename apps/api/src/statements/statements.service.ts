@@ -29,6 +29,7 @@ import {
   CalculationError,
   type CalcWarning,
   type CalcWarningGroup,
+  type Co2FuelBasisEntry,
   type ContainedTaxKind,
   type CostEntry,
   calculateExternalHeating,
@@ -169,6 +170,8 @@ export type StatementListResult = {
 type HeatingPotEntry = CostEntry & {
   co2CostCents: number | null;
   co2AmountGrams: number | null;
+  co2EnergyKwh: number | null;
+  co2EmissionFactorKgPerKwh: number | null;
   containedTaxesCents: number | null;
   containedTaxKinds: ContainedTaxKind[] | null;
   isMeteringServiceCost: boolean;
@@ -344,6 +347,31 @@ const applyBillingInfoCosts = (
 };
 
 /**
+ * Brennstoffgruppen mit dem Namen ihrer Kostenart, sortiert nach Name und
+ * Emissionsfaktor (fehlender Faktor zuletzt).
+ */
+const co2FuelBasis = (
+  aggregation: AggregatedHeatingCosts,
+  heatingCostEntries: HeatingPotEntry[],
+): Co2FuelBasisEntry[] => {
+  const nameByCostTypeId = new Map(
+    heatingCostEntries.map((entry) => [entry.costTypeId, entry.name]),
+  );
+
+  return aggregation.co2Groups
+    .map(({ costTypeId, ...group }) => ({
+      label: nameByCostTypeId.get(costTypeId) ?? "",
+      ...group,
+    }))
+    .sort(
+      (a, b) =>
+        a.label.localeCompare(b.label, "de") ||
+        (a.emissionFactorKgPerKwh ?? Number.POSITIVE_INFINITY) -
+          (b.emissionFactorKgPerKwh ?? Number.POSITIVE_INFINITY),
+    );
+};
+
+/**
  * Heizkosten-Topf-Positionen einer Kostenart (category=heating)
  */
 const heatingEntriesFromCostType = (
@@ -358,6 +386,10 @@ const heatingEntriesFromCostType = (
     amountCents: c.amountCents,
     co2CostCents: ct.co2Tracked ? c.co2CostCents : null,
     co2AmountGrams: ct.co2Tracked ? c.co2AmountGrams : null,
+    co2EnergyKwh: ct.co2Tracked ? c.co2EnergyKwh : null,
+    co2EmissionFactorKgPerKwh: ct.co2Tracked
+      ? c.co2EmissionFactorKgPerKwh
+      : null,
     containedTaxesCents: c.containedTaxesCents,
     containedTaxKinds: (c.containedTaxKinds ?? null) as
       | ContainedTaxKind[]
@@ -2145,6 +2177,7 @@ export class StatementsService {
           enabled: heatingSettings.co2CostShareEnabled,
           totalCostCents: heatingAggregation.totalCo2CostCents,
           totalAmountGrams: heatingAggregation.totalCo2AmountGrams,
+          fuelBasis: co2FuelBasis(heatingAggregation, heatingCostEntries),
           livingAreaSqm: unitsRaw.reduce((acc, u) => acc + u.areaSqm, 0),
           periodDays: statementPeriodDays,
         },
@@ -2452,9 +2485,9 @@ export class StatementsService {
 
     const result = await this.calculateForStatement(statement);
 
-    // Blockierende Warnungen (z. B. ein auf null begrenzter negativer
-    // Verbrauch oder eine offene Messdatenlücke) dürfen nicht in eine
-    // unveränderbare Abrechnung wandern.
+    // Blockierende Warnungen stehen für ein erkennbar unvollständiges oder
+    // falsches Ergebnis und dürfen nicht in eine unveränderbare Abrechnung
+    // wandern.
     if (hasBlockingWarning(result)) {
       throw new BadRequestException(
         getI18n().t("errors.statementFinalizeBlocked"),

@@ -4,6 +4,7 @@ import type { CostType } from "../../../../lib/costs";
 import {
   type CostEntryFormValues,
   type CostEntryItemFormValues,
+  costEntryToFormValues,
   unitPriceDisplayConfig,
 } from "../baseData/costEntryForm.schema";
 
@@ -33,6 +34,56 @@ const unitPriceStorageToInput = (
     maximumFractionDigits: 4,
     useGrouping: false,
   });
+};
+
+type Co2Inputs = Pick<
+  CostEntryItemFormValues,
+  | "co2AmountInput"
+  | "co2CostInput"
+  | "co2EnergyInput"
+  | "co2EmissionFactorInput"
+>;
+
+/**
+ * CO2-Angaben der Rechnung als Formularwerte. Nur bei Kostenarten mit
+ * CO2-Erfassung, sonst bleiben die Felder leer. Der Emissionsfaktor wird
+ * auf die sechs Nachkommastellen gerundet, die das Formular annimmt.
+ */
+const co2Inputs = (
+  item: CostEntryExtractionResult["items"][number],
+  costType: CostType | undefined,
+): Co2Inputs => {
+  const tracked = costType?.co2Tracked === true;
+  const [values] = costEntryToFormValues(
+    {
+      buildingId: "",
+      invoiceDate: "",
+      invoiceNumber: null,
+      vendor: null,
+      items: [
+        {
+          costTypeId: costType?.id ?? "",
+          amountCents: 0,
+          periodStart: "",
+          periodEnd: "",
+          co2AmountGrams: tracked ? item.co2AmountGrams : null,
+          co2CostCents: tracked ? item.co2CostCents : null,
+          co2EnergyKwh: tracked ? item.co2EnergyKwh : null,
+          co2EmissionFactorKgPerKwh: tracked
+            ? item.co2EmissionFactorKgPerKwh
+            : null,
+        },
+      ],
+    },
+    costType ? [costType] : [],
+  ).items;
+
+  return {
+    co2AmountInput: values?.co2AmountInput ?? "",
+    co2CostInput: values?.co2CostInput ?? "",
+    co2EnergyInput: values?.co2EnergyInput ?? "",
+    co2EmissionFactorInput: values?.co2EmissionFactorInput ?? "",
+  };
 };
 
 /**
@@ -87,10 +138,7 @@ export const applyExtraction = (
         // User trägt den auf der Rechnung ausgewiesenen Betrag bei Bedarf
         // selbst nach.
         laborCostsInput: "",
-        // KI extrahiert keine CO2-Werte (der enthaltene CO2-Preis steckt
-        // bereits im Bruttobetrag). Felder bleiben leer.
-        co2AmountInput: "",
-        co2CostInput: "",
+        ...co2Inputs(item, matchedCostType),
         // KI extrahiert keine Steuer-/Abgaben-Anteile; Felder bleiben leer.
         containedTaxesInput: "",
         containedTaxKinds: [],

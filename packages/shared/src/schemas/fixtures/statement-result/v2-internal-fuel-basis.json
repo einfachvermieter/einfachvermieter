@@ -1,0 +1,486 @@
+{
+  "version": 2,
+  "tenantId": "11f86380-0d81-4eec-903c-6f916557dcd8",
+  "unitId": "9f244938-7701-4c7c-89f2-34cb7ca8d978",
+  "period": {
+    "start": "2025-01-01",
+    "end": "2025-12-31"
+  },
+  "tenantPeriod": {
+    "start": "2025-01-01",
+    "end": "2025-12-31"
+  },
+  "lines": [
+    {
+      "costTypeId": "__heating__",
+      "costTypeName": "Heizung",
+      "allocationKey": "heating_ordinance",
+      "totalAmountCents": 227921,
+      "totalBase": 100,
+      "tenantBase": 37,
+      "shareBps": 3661,
+      "tenantAmountCents": 83437,
+      "baseUnit": "70 % Verbrauch / 30 % Fläche",
+      "bemessungTotal": null,
+      "bemessungTenant": null,
+      "bemessungUnit": null,
+      "daysTotal": null,
+      "daysTenant": null,
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "notes": "Berechnung gemäß Heizkostenverordnung, Details im Anhang"
+    },
+    {
+      "costTypeId": "__hot_water__",
+      "costTypeName": "Warmwasser",
+      "allocationKey": "heating_ordinance",
+      "totalAmountCents": 53629,
+      "totalBase": 100,
+      "tenantBase": 36,
+      "shareBps": 3647,
+      "tenantAmountCents": 19559,
+      "baseUnit": "70 % Verbrauch / 30 % Fläche",
+      "bemessungTotal": null,
+      "bemessungTenant": null,
+      "bemessungUnit": null,
+      "daysTotal": null,
+      "daysTenant": null,
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "notes": "Berechnung gemäß Heizkostenverordnung, Details im Anhang"
+    },
+    {
+      "costTypeName": "Frischwasser",
+      "allocationKey": "per_consumption_m3",
+      "totalAmountCents": 39375,
+      "totalBase": 175,
+      "tenantBase": 70,
+      "shareBps": 4000,
+      "tenantAmountCents": 15750,
+      "baseUnit": "m³",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "bemessungTotal": 175,
+      "bemessungTenant": 70,
+      "bemessungUnit": "m³",
+      "daysTotal": null,
+      "daysTenant": null,
+      "costTypeId": "6863b2a6-695d-42be-86f0-ada7ad133c2d"
+    },
+    {
+      "costTypeName": "Schmutzwasser",
+      "allocationKey": "per_consumption_m3",
+      "totalAmountCents": 48125,
+      "totalBase": 175,
+      "tenantBase": 70,
+      "shareBps": 4000,
+      "tenantAmountCents": 19250,
+      "baseUnit": "m³",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "bemessungTotal": 175,
+      "bemessungTenant": 70,
+      "bemessungUnit": "m³",
+      "daysTotal": null,
+      "daysTenant": null,
+      "costTypeId": "fcdca8cb-4c03-4654-98b4-0bc2b9463969"
+    },
+    {
+      "costTypeName": "Grundsteuer",
+      "allocationKey": "per_living_area",
+      "totalAmountCents": 44000,
+      "totalBase": 64240,
+      "tenantBase": 23360,
+      "shareBps": 3636,
+      "tenantAmountCents": 16000,
+      "baseUnit": "m²·Tage",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "tenantBaseExplain": "64 m² × 365 Tage",
+      "totalBaseExplain": "176 m² × 365 Tage",
+      "bemessungTotal": 176,
+      "bemessungTenant": 64,
+      "bemessungUnit": "m²",
+      "daysTotal": 365,
+      "daysTenant": 365,
+      "costTypeId": "7d867c15-bf62-4928-9207-e3da077c12af"
+    },
+    {
+      "costTypeName": "Treppenhausreinigung",
+      "allocationKey": "per_living_area",
+      "totalAmountCents": 28800,
+      "totalBase": 64240,
+      "tenantBase": 23360,
+      "shareBps": 3636,
+      "tenantAmountCents": 10472,
+      "baseUnit": "m²·Tage",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "tenantBaseExplain": "64 m² × 365 Tage",
+      "totalBaseExplain": "176 m² × 365 Tage",
+      "bemessungTotal": 176,
+      "bemessungTenant": 64,
+      "bemessungUnit": "m²",
+      "daysTotal": 365,
+      "daysTenant": 365,
+      "costTypeId": "4802e252-a83e-4697-b53a-4368e7340ef2"
+    },
+    {
+      "costTypeName": "Gebäudeversicherung",
+      "allocationKey": "per_living_area",
+      "totalAmountCents": 52000,
+      "totalBase": 64240,
+      "tenantBase": 23360,
+      "shareBps": 3636,
+      "tenantAmountCents": 18909,
+      "baseUnit": "m²·Tage",
+      "landlordAmountCents": 0,
+      "landlordShareBps": 0,
+      "tenantBaseExplain": "64 m² × 365 Tage",
+      "totalBaseExplain": "176 m² × 365 Tage",
+      "bemessungTotal": 176,
+      "bemessungTenant": 64,
+      "bemessungUnit": "m²",
+      "daysTotal": 365,
+      "daysTenant": 365,
+      "costTypeId": "3fe6e809-6165-4f1d-9bcd-63b2261f3c9a"
+    }
+  ],
+  "totalCostsCents": 183377,
+  "totalAdvancesCents": 228000,
+  "balanceCents": -44623,
+  "waterDetail": {
+    "totalConsumptionM3": 175,
+    "perUnit": [
+      {
+        "unitId": "9f244938-7701-4c7c-89f2-34cb7ca8d978",
+        "unitName": "EG Wohnung",
+        "consumptionM3": 70,
+        "sharePct": 40,
+        "isDifferential": false,
+        "meterContributions": [
+          {
+            "label": "Kaltwasser EG",
+            "consumptionM3": 70
+          }
+        ]
+      },
+      {
+        "unitId": "1aceecd0-f4e2-4876-9030-55d3f9b0d343",
+        "unitName": "OG Wohnung",
+        "consumptionM3": 80,
+        "sharePct": 45.714285714285715,
+        "isDifferential": false,
+        "meterContributions": [
+          {
+            "label": "Kaltwasser OG",
+            "consumptionM3": 80
+          }
+        ]
+      },
+      {
+        "unitId": "7c990316-05fc-41ae-bb0f-fa03ab9c9733",
+        "unitName": "DG Wohnung",
+        "consumptionM3": 25,
+        "sharePct": 14.285714285714285,
+        "isDifferential": false,
+        "meterContributions": [
+          {
+            "label": "Kaltwasser DG",
+            "consumptionM3": 25
+          }
+        ]
+      }
+    ],
+    "landlordConsumptionM3": 0
+  },
+  "heatingDetail": {
+    "mode": "internal",
+    "billingInfoOmitted": false,
+    "totalHeatingCostsCents": 281550,
+    "heatingPotCents": 227921,
+    "consumptionShareBps": 7000,
+    "consumptionPortionCents": 159545,
+    "basicPortionCents": 68376,
+    "consumptionMethod": "heat_meter",
+    "consumptionDistributionMethod": "consumption",
+    "prorationMethod": "linear",
+    "warnings": [
+      {
+        "code": "hotWaterConsumptionFallbackArea"
+      }
+    ],
+    "perMeter": [
+      {
+        "meterId": "f7903409-dfc9-4a85-ae52-60d58bd35b76",
+        "meterLabel": "Wärmemengenzähler EG",
+        "serialNumber": "DEMO-B-WMZ-EG",
+        "unitId": "9f244938-7701-4c7c-89f2-34cb7ca8d978",
+        "unitName": "EG Wohnung",
+        "consumptionRaw": 11000,
+        "kTotal": null,
+        "consumptionWeighted": 11000
+      },
+      {
+        "meterId": "dedd6119-c016-4bdc-9f68-83e66b00615a",
+        "meterLabel": "Wärmemengenzähler OG",
+        "serialNumber": "DEMO-B-WMZ-OG",
+        "unitId": "1aceecd0-f4e2-4876-9030-55d3f9b0d343",
+        "unitName": "OG Wohnung",
+        "consumptionRaw": 12500,
+        "kTotal": null,
+        "consumptionWeighted": 12500
+      },
+      {
+        "meterId": "c8cfcf31-294e-4748-95a1-36a273976b2a",
+        "meterLabel": "Wärmemengenzähler DG",
+        "serialNumber": "DEMO-B-WMZ-DG",
+        "unitId": "7c990316-05fc-41ae-bb0f-fa03ab9c9733",
+        "unitName": "DG Wohnung",
+        "consumptionRaw": 6500,
+        "kTotal": null,
+        "consumptionWeighted": 6500
+      }
+    ],
+    "perUnit": [
+      {
+        "unitId": "9f244938-7701-4c7c-89f2-34cb7ca8d978",
+        "unitName": "EG Wohnung",
+        "consumptionKwh": 11000,
+        "consumptionCostCents": 58500,
+        "areaSqm": 62,
+        "basicCostCents": 24937,
+        "totalCents": 83437
+      },
+      {
+        "unitId": "1aceecd0-f4e2-4876-9030-55d3f9b0d343",
+        "unitName": "OG Wohnung",
+        "consumptionKwh": 12500,
+        "consumptionCostCents": 66477,
+        "areaSqm": 62,
+        "basicCostCents": 24937,
+        "totalCents": 91414
+      },
+      {
+        "unitId": "7c990316-05fc-41ae-bb0f-fa03ab9c9733",
+        "unitName": "DG Wohnung",
+        "consumptionKwh": 6500,
+        "consumptionCostCents": 34568,
+        "areaSqm": 46,
+        "basicCostCents": 18502,
+        "totalCents": 53070
+      }
+    ],
+    "landlordBasicCostCents": 0,
+    "landlordConsumptionCostCents": 0,
+    "heatingAreaDiffersFromLivingArea": true,
+    "co2Detail": {
+      "totalCostCents": 43500,
+      "totalAmountGrams": 7900000,
+      "emissionsKgPerSqmYear": 44.9,
+      "landlordSharePercent": 70,
+      "landlordDeductionCents": 30450,
+      "livingAreaSqm": 176,
+      "fuelBasis": [
+        {
+          "label": "Heizöl",
+          "energyKwh": 29655,
+          "emissionFactorKgPerKwh": 0.2664,
+          "amountGrams": 7900000,
+          "costCents": 43500
+        }
+      ]
+    },
+    "hotWaterDetail": {
+      "method": "boiler_meter",
+      "hotWaterHeatKwh": 8000,
+      "totalHeatEnergyKwh": 42000,
+      "hotWaterShareBps": 1905,
+      "hotWaterPotCents": 53629,
+      "consumptionShareBps": 7000,
+      "consumptionPortionCents": 37540,
+      "basicPortionCents": 16089,
+      "consumptionDistributionMethod": "heating_area",
+      "perUnit": [
+        {
+          "unitId": "9f244938-7701-4c7c-89f2-34cb7ca8d978",
+          "unitName": "EG Wohnung",
+          "hotWaterM3": 0,
+          "consumptionCostCents": 13691,
+          "areaSqm": 62,
+          "basicCostCents": 5868,
+          "totalCents": 19559
+        },
+        {
+          "unitId": "1aceecd0-f4e2-4876-9030-55d3f9b0d343",
+          "unitName": "OG Wohnung",
+          "hotWaterM3": 0,
+          "consumptionCostCents": 13691,
+          "areaSqm": 62,
+          "basicCostCents": 5868,
+          "totalCents": 19559
+        },
+        {
+          "unitId": "7c990316-05fc-41ae-bb0f-fa03ab9c9733",
+          "unitName": "DG Wohnung",
+          "hotWaterM3": 0,
+          "consumptionCostCents": 10158,
+          "areaSqm": 46,
+          "basicCostCents": 4353,
+          "totalCents": 14511
+        }
+      ],
+      "landlordBasicCostCents": 0,
+      "landlordConsumptionCostCents": 0
+    },
+    "costBreakdown": [
+      {
+        "label": "Heizung & Warmwasser (Öl)",
+        "amountCents": 312000
+      }
+    ],
+    "containedTaxesCents": 116000,
+    "containedTaxKinds": ["value_added_tax", "energy_tax", "co2_price"],
+    "fuelType": "oil",
+    "energyComparison": {
+      "consumptionUnit": "kwh",
+      "includesHotWater": false,
+      "current": {
+        "period": {
+          "start": "2025-01-01",
+          "end": "2025-12-31"
+        },
+        "normalizedConsumption": 12870,
+        "climateFactor": 1.17
+      }
+    }
+  },
+  "warnings": [
+    "Heizkosten: Es ist kein Warmwasserverbrauch je Wohnung erfasst. Der Verbrauchsanteil der Warmwasserkosten wird ersatzweise nach Heizfläche verteilt. Das 15 %-Kürzungsrecht des Mieters nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt."
+  ],
+  "payments": [
+    {
+      "id": "080dcb3b-2203-4cfa-97e7-3d9a64d92bcd",
+      "forMonth": "2025-01",
+      "date": "2025-01-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "d3db15db-8f3c-4d2a-b35f-fbfea7dff3d9",
+      "forMonth": "2025-02",
+      "date": "2025-02-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "9fc77e2c-4206-4592-b939-37fedb9fce26",
+      "forMonth": "2025-03",
+      "date": "2025-03-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "0ce3a4fa-c995-493d-b91f-d156d039b084",
+      "forMonth": "2025-04",
+      "date": "2025-04-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "6839df1c-fec9-4a05-8b61-f8fcddb982b1",
+      "forMonth": "2025-05",
+      "date": "2025-05-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "64cfc9a6-6cbf-42e1-9d17-2711d645ea2f",
+      "forMonth": "2025-06",
+      "date": "2025-06-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "298d01b7-7d2b-450b-9eed-fa97ef338da8",
+      "forMonth": "2025-07",
+      "date": "2025-07-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "8e1c4432-4ff5-4df5-a582-6e535bcf06c7",
+      "forMonth": "2025-08",
+      "date": "2025-08-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "f29fb649-fa0e-41c8-9075-e10889f56feb",
+      "forMonth": "2025-09",
+      "date": "2025-09-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "ea8613ce-9bad-4ca6-b6a1-85cc3ef66409",
+      "forMonth": "2025-10",
+      "date": "2025-10-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "abe02be7-79dc-4480-8b68-b59004e97ac9",
+      "forMonth": "2025-11",
+      "date": "2025-11-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    },
+    {
+      "id": "91b51ee4-9421-4804-be97-1d1845e28bef",
+      "forMonth": "2025-12",
+      "date": "2025-12-03",
+      "baseRentCents": 60000,
+      "advanceCents": 19000,
+      "reference": null
+    }
+  ],
+  "advanceAdjustment": {
+    "currentMonthlyAdvanceCents": 19000,
+    "currentMonthlyBaseRentCents": 60000,
+    "suggestedMonthlyAdvanceCents": 15300,
+    "suggestedMonthlyAdvanceWithTariffsCents": 15300,
+    "tenantBilledDays": 365,
+    "daysInBaseYear": 365,
+    "adjustedMonthlyAdvanceCents": null,
+    "adjustedAdvanceValidFrom": null,
+    "tariffAdjustmentBps": null,
+    "autoTariffAdjustmentBps": null
+  },
+  "taxableLaborCosts": {
+    "byCategory": [
+      {
+        "category": "household_service",
+        "tenantTotalCents": 10472,
+        "lines": [
+          {
+            "costTypeId": "4802e252-a83e-4697-b53a-4368e7340ef2",
+            "costTypeName": "Treppenhausreinigung",
+            "tenantAmountCents": 10472
+          }
+        ]
+      }
+    ]
+  }
+}

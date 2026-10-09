@@ -155,22 +155,98 @@ export const degreeDaysMonthlyBreakdown = (
 };
 
 type HeatingCostItem = {
+  costTypeId?: string;
   amountCents: number;
   periodStart: string;
   periodEnd: string;
   co2CostCents?: number | null;
   co2AmountGrams?: number | null;
+  co2EnergyKwh?: number | null;
+  co2EmissionFactorKgPerKwh?: number | null;
   containedTaxesCents?: number | null;
   containedTaxKinds?: ContainedTaxKind[] | null;
 };
+
+/**
+ * Brennstoffpositionen einer Kostenart mit demselben Emissionsfaktor,
+ * anteilig zur Periode. Energiegehalt, Menge und Kosten sind `null`, sobald
+ * der Wert einer Position der Gruppe fehlt: eine Teilsumme sähe wie eine
+ * vollständige aus. Eine eingetragene 0 ist ein Wert und fehlt nicht.
+ */
+export type Co2FuelGroup = {
+  costTypeId: string;
+  emissionFactorKgPerKwh: number | null;
+  energyKwh: number | null;
+  amountGrams: number | null;
+  costCents: number | null;
+};
+
+/**
+ * Summe, die unvollständig bleibt, sobald ein Summand fehlt.
+ */
+const addOrMissing = (sum: number | null, value: number | null) =>
+  sum === null || value === null ? null : sum + value;
+
+const scaledOrMissing = (
+  value: number | null | undefined,
+  periodFactor: number,
+): number | null =>
+  value === null || value === undefined ? null : value * periodFactor;
 
 export type AggregatedHeatingCosts = {
   totalCents: number;
   perItemAttributedCents: number[];
   totalCo2CostCents: number;
   totalCo2AmountGrams: number;
+  /**
+   * Gruppen in der Reihenfolge ihres ersten Auftretens. Jede Position mit
+   * CO2-Menge oder CO2-Kosten gehört zu einer Gruppe, damit die Gruppen
+   * zusammen genau die beiden Gesamtwerte ergeben.
+   */
+  co2Groups: Co2FuelGroup[];
   totalContainedTaxesCents: number;
   containedTaxKindsFound: ContainedTaxKind[];
+};
+
+/**
+ * Rechnet eine Brennstoffposition ihrer Gruppe zu (Kostenart und
+ * Emissionsfaktor). Menge und Kosten werden je Position gerundet wie in den
+ * Gesamtwerten, der Energiegehalt bekommt denselben Periodenfaktor.
+ */
+const addToCo2Groups = (
+  groups: Map<string, Co2FuelGroup>,
+  item: HeatingCostItem,
+  periodFactor: number,
+): void => {
+  const roundedOrMissing = (value: number | null | undefined) => {
+    const scaled = scaledOrMissing(value, periodFactor);
+    return scaled === null ? null : Math.round(scaled);
+  };
+  const amountGrams = roundedOrMissing(item.co2AmountGrams);
+  const costCents = roundedOrMissing(item.co2CostCents);
+  const emissionFactor = item.co2EmissionFactorKgPerKwh ?? null;
+  // Faktor als ganze Zahl in Millionstel, damit keine Gleitkommazahlen
+  // verglichen werden (0,1 + 0,2 und 0,3 sind derselbe Faktor).
+  const factorKey =
+    emissionFactor === null ? "missing" : Math.round(emissionFactor * 1e6);
+  const groupKey = `${item.costTypeId ?? ""}|${factorKey}`;
+  const energyKwh = scaledOrMissing(item.co2EnergyKwh, periodFactor);
+  const group = groups.get(groupKey);
+
+  if (!group) {
+    groups.set(groupKey, {
+      costTypeId: item.costTypeId ?? "",
+      emissionFactorKgPerKwh: emissionFactor,
+      energyKwh,
+      amountGrams,
+      costCents,
+    });
+    return;
+  }
+
+  group.energyKwh = addOrMissing(group.energyKwh, energyKwh);
+  group.amountGrams = addOrMissing(group.amountGrams, amountGrams);
+  group.costCents = addOrMissing(group.costCents, costCents);
 };
 
 /**
@@ -195,6 +271,7 @@ export const aggregateHeatingCosts = (
   let totalCo2AmountGrams = 0;
   let totalContainedTaxesCents = 0;
   const kindsFound = new Set<ContainedTaxKind>();
+  const co2Groups = new Map<string, Co2FuelGroup>();
 
   for (const item of items) {
     const itemPeriod: Period = {
@@ -232,8 +309,14 @@ export const aggregateHeatingCosts = (
     perItemAttributedCents.push(rounded);
 
     total += rounded;
-    totalCo2CostCents += Math.round((item.co2CostCents ?? 0) * factor);
-    totalCo2AmountGrams += Math.round((item.co2AmountGrams ?? 0) * factor);
+    const co2CostCents = Math.round((item.co2CostCents ?? 0) * factor);
+    const co2AmountGrams = Math.round((item.co2AmountGrams ?? 0) * factor);
+    totalCo2CostCents += co2CostCents;
+    totalCo2AmountGrams += co2AmountGrams;
+
+    if ((item.co2AmountGrams ?? 0) > 0 || (item.co2CostCents ?? 0) > 0) {
+      addToCo2Groups(co2Groups, item, factor);
+    }
     totalContainedTaxesCents += Math.round(
       (item.containedTaxesCents ?? 0) * factor,
     );
@@ -247,6 +330,10 @@ export const aggregateHeatingCosts = (
     perItemAttributedCents,
     totalCo2CostCents,
     totalCo2AmountGrams,
+    co2Groups: [...co2Groups.values()].map((group) => ({
+      ...group,
+      energyKwh: group.energyKwh === null ? null : Math.round(group.energyKwh),
+    })),
     totalContainedTaxesCents,
     containedTaxKindsFound: containedTaxKinds.filter((kind) =>
       kindsFound.has(kind),
@@ -338,11 +425,45 @@ export const co2LandlordSharePercent = (
   emissionsKgPerSqmYear: number,
 ): number => co2Tier(emissionsKgPerSqmYear).landlordPercent;
 
+/**
+ * Berechnungsgrundlage je Brennstoffgruppe, wie sie die Abrechnung nach
+ * § 7 Abs. 3 CO2KostAufG ausweist. `label` ist der Name der Kostenart.
+ */
+export type Co2FuelBasisEntry = Omit<Co2FuelGroup, "costTypeId"> & {
+  label: string;
+};
+
+/**
+ * Meldet, ob Energiegehalt mal Emissionsfaktor um mehr als 2 % von der
+ * eingetragenen CO2-Menge abweicht. Ein auf zwei bis drei Stellen
+ * gerundeter Faktor liegt darunter. Liefert die errechnete Menge in kg
+ * oder `null`, wenn die Werte zusammenpassen.
+ */
+export const co2BasisMismatchKg = (
+  amountGrams: number,
+  energyKwh: number,
+  emissionFactorKgPerKwh: number,
+): number | null => {
+  const computedKg = energyKwh * emissionFactorKgPerKwh;
+  const enteredKg = amountGrams / 1000;
+
+  if (enteredKg <= 0 || Math.abs(computedKg - enteredKg) / enteredKg <= 0.02) {
+    return null;
+  }
+
+  return computedKg;
+};
+
 export type Co2SplitInput = {
   totalCostCents: number;
   totalAmountGrams: number;
   livingAreaSqm: number;
   periodDays: number;
+  /**
+   * Wird unverändert ins Ergebnis durchgereicht, die Aufteilung rechnet
+   * damit nicht.
+   */
+  fuelBasis?: Co2FuelBasisEntry[];
   /**
    * Tage des Bezugsjahres (366 im Schaltjahr). Ohne Angabe 365.
    */
@@ -360,6 +481,7 @@ export type Co2SplitResult = {
    * damit die kg/qm-Basis nachvollziehbar ist.
    */
   livingAreaSqm: number;
+  fuelBasis?: Co2FuelBasisEntry[];
 };
 
 /**
@@ -389,6 +511,7 @@ export const calculateCo2Split = (input: Co2SplitInput): Co2SplitResult => {
     landlordSharePercent,
     landlordDeductionCents,
     livingAreaSqm: input.livingAreaSqm,
+    ...(input.fuelBasis ? { fuelBasis: input.fuelBasis } : {}),
   };
 };
 
@@ -1046,7 +1169,21 @@ const computeCo2Deduction = (
   landlordCo2DeductionCents: number;
 } => {
   if (!co2?.enabled) {
+    if (co2 && co2.totalCostCents > 0) {
+      warnings.push({ code: "co2DataWithoutSplit" });
+    }
     return { co2Detail: undefined, landlordCo2DeductionCents: 0 };
+  }
+
+  // Menge und Kosten gehen in die Rechnung ein. Fehlt einer Position mit
+  // CO2-Daten einer der beiden Werte, wäre das Ergebnis erkennbar
+  // unvollständig; die Warnung sperrt deshalb das Finalisieren.
+  if (
+    co2.fuelBasis?.some(
+      (group) => group.amountGrams === null || group.costCents === null,
+    )
+  ) {
+    warnings.push({ code: "co2SplitValuesIncomplete" });
   }
 
   if (co2.totalCostCents === 0) {
@@ -1056,6 +1193,16 @@ const computeCo2Deduction = (
 
   if (co2.totalAmountGrams > 0 && co2.livingAreaSqm > 0 && co2.periodDays > 0) {
     const co2Detail = calculateCo2Split({ ...co2, daysInYear: daysInBaseYear });
+    // Energiegehalt und Faktor werden nur ausgewiesen, gerechnet wird damit
+    // nicht. Fehlen sie, bleibt es bei einem Hinweis.
+    if (
+      co2.fuelBasis?.some(
+        (group) =>
+          group.energyKwh === null || group.emissionFactorKgPerKwh === null,
+      )
+    ) {
+      warnings.push({ code: "co2BasisIncomplete" });
+    }
     return {
       co2Detail,
       landlordCo2DeductionCents: co2Detail.landlordDeductionCents,

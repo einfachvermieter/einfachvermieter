@@ -1,6 +1,8 @@
 import {
-  co2TenantShareCents,
-  co2TierLabel,
+  type Co2FuelTable,
+  type Co2TableRow,
+  co2FuelTable,
+  co2TableRows,
   consumptionUnitLabel,
   formatEur,
   formatNumber,
@@ -51,6 +53,11 @@ const BREAKDOWN_COL_AMOUNT = { flex: 1 };
 // CO2-Aufteilungstabelle: Label-Spalte (Header-Zellen links) + Wertspalte.
 const CO2_COL_LABEL = { flex: 1 };
 const CO2_COL_VALUE = { flex: 1 };
+
+const FUEL_COL_LABEL = { flex: 1.4 };
+const FUEL_COL_NUM = { flex: 1 };
+// Breiter, damit Faktor samt Einheit (bis sechs Nachkommastellen) nicht umbricht.
+const FUEL_COL_FACTOR = { flex: 1.6 };
 
 const METER_COL_NAME = { flex: 1.8 };
 const METER_COL_UNIT = { flex: 1.2 };
@@ -125,139 +132,128 @@ const footnoteMarkers = (indices: number[]) =>
 
 /**
  * Rechte Info-Tabelle des Heizkosten-Anhangs: Energieträger als erste Zeile,
- * darunter die CO2-Kostenaufteilung. Nur aufrufen, wenn Energieträger bekannt
- * oder CO2 aufgeteilt ist (sonst wäre die Tabelle leer).
+ * darunter die CO2-Kostenaufteilung in Rechenfolge. Nur aufrufen, wenn es
+ * Zeilen gibt (sonst wäre die Tabelle leer).
  */
 const EnergyAndCo2Table = ({
-  fuelType,
-  co2,
-  tenantCo2Cents,
+  rows,
+  hasCo2,
 }: {
-  fuelType: HeatingDetail["fuelType"];
-  co2: HeatingDetail["co2Detail"];
-  /**
-   * Auf den Mieter entfallender CO2-Kostenanteil (§ 7 Abs. 3 CO2KostAufG),
-   * `null` wenn nicht ermittelbar.
-   */
-  tenantCo2Cents: number | null;
-}) => {
-  // Einstufungs-Label (Stufe, in die der Gebäude-Ausstoß fällt).
-  const co2TierText = co2
-    ? (() => {
-        const label = co2TierLabel(co2.emissionsKgPerSqmYear);
-        return t(label.key, label.params);
-      })()
-    : "";
-
-  return (
-    <Table
-      heading={
-        co2
-          ? t("statements.pdf.heating.co2.title")
-          : t("statements.pdf.heating.energySource")
-      }
-    >
-      {fuelType ? (
-        <View style={styles.row}>
-          <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-            <Text>{t("statements.pdf.heating.energySource")}</Text>
-          </View>
-          <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-            <Text>{t(`ui.heating.fuelTypes.${fuelType}`)}</Text>
-          </View>
+  rows: Co2TableRow[];
+  hasCo2: boolean;
+}) => (
+  <Table
+    heading={
+      hasCo2
+        ? t("statements.pdf.heating.co2.title")
+        : t("statements.pdf.heating.energySource")
+    }
+  >
+    {rows.map((row, index) => (
+      <View
+        key={row.key}
+        style={index === 0 ? styles.row : [styles.row, styles.rowDivider]}
+      >
+        <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
+          <Text>{t(row.label.key, row.label.params)}</Text>
         </View>
-      ) : null}
-      {co2 ? (
-        <>
-          <View style={[styles.row, styles.rowDivider]}>
-            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-              <Text>{t("statements.pdf.heating.co2.totalCost")}</Text>
-            </View>
-            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-              <Text>{formatEur(co2.totalCostCents)}</Text>
-            </View>
-          </View>
-          <View style={[styles.row, styles.rowDivider]}>
-            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-              <Text>{t("statements.pdf.heating.co2.emissions")}</Text>
-            </View>
-            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-              <Text>
-                {renderSuperscripts(
-                  t("statements.pdf.heating.co2.emissionsValue", {
-                    value: formatNumber(co2.emissionsKgPerSqmYear, 1),
-                  }),
-                )}
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.row, styles.rowDivider]}>
-            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-              <Text>{t("statements.pdf.heating.co2.amount")}</Text>
-            </View>
-            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-              <Text>
-                {t("statements.pdf.heating.co2.amountValue", {
-                  value: formatNumber(co2.totalAmountGrams / 1000, 0),
-                })}
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.row, styles.rowDivider]}>
-            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-              <Text>{t("statements.pdf.heating.co2.areaBasis")}</Text>
-            </View>
-            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-              <Text>
-                {renderSuperscripts(
-                  t("statements.pdf.heating.co2.areaBasisValue", {
-                    value: formatNumber(co2.livingAreaSqm, 2),
-                  }),
-                )}
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.row, styles.rowDivider]}>
-            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-              <Text>{t("statements.pdf.heating.co2.tier")}</Text>
-            </View>
-            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-              <Text>{renderSuperscripts(co2TierText)}</Text>
-            </View>
-          </View>
-          <View style={[styles.row, styles.rowDivider]}>
-            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-              <Text>{t("statements.pdf.heating.co2.sharePair")}</Text>
-            </View>
-            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-              <Text>{`${formatNumber(100 - co2.landlordSharePercent, 0)}\u00A0% / ${formatNumber(co2.landlordSharePercent, 0)}\u00A0%`}</Text>
-            </View>
-          </View>
-          <View style={[styles.row, styles.rowDivider]}>
-            <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-              <Text>{t("statements.pdf.heating.co2.landlordDeduction")}</Text>
-            </View>
-            <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
-              <Text>{formatEur(co2.landlordDeductionCents)}</Text>
-            </View>
-          </View>
-          {tenantCo2Cents === null ? null : (
-            <View style={[styles.row, styles.rowDivider]}>
-              <View style={[styles.cellLeftHeader, CO2_COL_LABEL]}>
-                <Text>{t("statements.pdf.heating.co2.tenantShare")}</Text>
-              </View>
-              <View
-                style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}
-              >
-                <Text>{formatEur(tenantCo2Cents)}</Text>
-              </View>
-            </View>
-          )}
-        </>
-      ) : null}
-    </Table>
-  );
-};
+        <View style={[styles.cellRight, styles.cellDivider, CO2_COL_VALUE]}>
+          <Text>
+            {renderSuperscripts(
+              typeof row.value === "string"
+                ? row.value
+                : t(row.value.key, row.value.params),
+            )}
+          </Text>
+        </View>
+      </View>
+    ))}
+  </Table>
+);
+
+/**
+ * Brennstoffe im Abrechnungszeitraum: je Brennstoffgruppe Energiegehalt,
+ * Emissionsfaktor, CO2-Menge und CO2-Kosten, darunter die Summen.
+ */
+const Co2FuelBasisTable = ({ fuelTable }: { fuelTable: Co2FuelTable }) => (
+  <Table
+    heading={t("statements.pdf.heating.co2.fuelTableTitle")}
+    head={
+      <>
+        <View style={[styles.cellLeft, FUEL_COL_LABEL]}>
+          <Text>{t("statements.pdf.heating.co2.fuelColumn")}</Text>
+        </View>
+        <View style={[styles.cellRight, styles.cellDivider, FUEL_COL_NUM]}>
+          <Text>{t("statements.pdf.heating.co2.fuelEnergyColumn")}</Text>
+        </View>
+        <View style={[styles.cellRight, styles.cellDivider, FUEL_COL_FACTOR]}>
+          <Text>{t("statements.pdf.heating.co2.emissionFactor")}</Text>
+        </View>
+        <View style={[styles.cellRight, styles.cellDivider, FUEL_COL_NUM]}>
+          <Text>{t("statements.pdf.heating.co2.amount")}</Text>
+        </View>
+        <View style={[styles.cellRight, styles.cellDivider, FUEL_COL_NUM]}>
+          <Text>{t("statements.pdf.heating.co2.fuelCostColumn")}</Text>
+        </View>
+      </>
+    }
+  >
+    {fuelTable.rows.map((row) => (
+      <View key={row.key} style={[styles.row, styles.rowDivider]}>
+        <View style={[styles.cellLeft, FUEL_COL_LABEL]}>
+          <Text>{row.label}</Text>
+        </View>
+        <View style={[styles.cellRight, styles.cellDivider, FUEL_COL_NUM]}>
+          <Text>{t(row.energy.key, row.energy.params)}</Text>
+        </View>
+        <View style={[styles.cellRight, styles.cellDivider, FUEL_COL_FACTOR]}>
+          <Text>{t(row.factor.key, row.factor.params)}</Text>
+        </View>
+        <View style={[styles.cellRight, styles.cellDivider, FUEL_COL_NUM]}>
+          <Text>{t(row.amount.key, row.amount.params)}</Text>
+        </View>
+        <View style={[styles.cellRight, styles.cellDivider, FUEL_COL_NUM]}>
+          <Text>
+            {typeof row.cost === "string"
+              ? row.cost
+              : t(row.cost.key, row.cost.params)}
+          </Text>
+        </View>
+      </View>
+    ))}
+    <View style={[styles.row, styles.rowDividerStrong]}>
+      <View style={[styles.cellLeft, styles.bold, FUEL_COL_LABEL]}>
+        <Text>{t("statements.pdf.heating.co2.fuelSum")}</Text>
+      </View>
+      <View style={[styles.cellRight, styles.cellDivider, FUEL_COL_NUM]} />
+      <View style={[styles.cellRight, styles.cellDivider, FUEL_COL_FACTOR]} />
+      <View
+        style={[
+          styles.cellRight,
+          styles.cellDivider,
+          styles.bold,
+          FUEL_COL_NUM,
+        ]}
+      >
+        <Text>{t(fuelTable.sumAmount.key, fuelTable.sumAmount.params)}</Text>
+      </View>
+      <View
+        style={[
+          styles.cellRight,
+          styles.cellDivider,
+          styles.bold,
+          FUEL_COL_NUM,
+        ]}
+      >
+        <Text>
+          {typeof fuelTable.sumCost === "string"
+            ? fuelTable.sumCost
+            : t(fuelTable.sumCost.key, fuelTable.sumCost.params)}
+        </Text>
+      </View>
+    </View>
+  </Table>
+);
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: Länge liegt am Markup
 export const HeatingAppendix = ({
@@ -345,12 +341,13 @@ export const HeatingAppendix = ({
   // Wohnung zusammengefasst. Nur wenn Warmwasser abgespalten ist
   const ownHeatingUnit = detail.perUnit.find((u) => u.unitId === targetUnitId);
   const ownHotWaterUnit = hw?.perUnit.find((u) => u.unitId === targetUnitId);
-  // § 7 Abs. 3 CO2KostAufG: der auf den Mieter entfallende CO2-Kostenanteil
-  // gehört ausdrücklich in die Abrechnung.
-  const tenantCo2Cents = co2TenantShareCents(
+  // Zeilen der CO2-Tabelle samt Berechnungsgrundlagen (§ 7 Abs. 3
+  // CO2KostAufG), gemeinsame Quelle mit der Web-Ansicht.
+  const co2Rows = co2TableRows(
     detail,
     (ownHeatingUnit?.totalCents ?? 0) + (ownHotWaterUnit?.totalCents ?? 0),
   );
+  const fuelTable = co2FuelTable(co2);
   const yourHeatingIntro =
     hw && ownHeatingUnit && ownHotWaterUnit
       ? t("statements.pdf.heating.yourHeatingIntro", {
@@ -438,11 +435,7 @@ export const HeatingAppendix = ({
   // CO2-Aufteilungstabelle (Header-Zellen in der linken Spalte).
   const infoSection =
     co2 || detail.fuelType ? (
-      <EnergyAndCo2Table
-        fuelType={detail.fuelType}
-        co2={co2}
-        tenantCo2Cents={tenantCo2Cents}
-      />
+      <EnergyAndCo2Table rows={co2Rows} hasCo2={co2 !== undefined} />
     ) : null;
 
   // Warmwasser-Sektion (§ 9 Abs. 2 HeizkostenV): Zerlegung Q_WW/Q_gesamt plus
@@ -679,6 +672,7 @@ export const HeatingAppendix = ({
       {yourHeatingIntro ? (
         <Text style={styles.paragraph}>{yourHeatingIntro}</Text>
       ) : null}
+      {fuelTable ? <Co2FuelBasisTable fuelTable={fuelTable} /> : null}
       {breakdownTable && infoSection ? (
         <View wrap={false} style={styles.twoColumnRow}>
           <View style={styles.twoColumnLeft}>{breakdownTable}</View>
@@ -690,6 +684,11 @@ export const HeatingAppendix = ({
           {infoSection}
         </View>
       )}
+      {co2 ? (
+        <Text style={styles.footnote}>
+          {t("statements.pdf.heating.co2.basisNote")}
+        </Text>
+      ) : null}
 
       {perMeter.length === 0 ? (
         <View wrap={false}>

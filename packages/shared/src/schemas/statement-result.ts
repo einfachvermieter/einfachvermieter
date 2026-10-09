@@ -322,6 +322,22 @@ export const heatingDetailSchema = z.object({
       landlordSharePercent: z.number().int().min(0).max(100),
       landlordDeductionCents: z.number().int(),
       livingAreaSqm: z.number(),
+      /**
+       * Berechnungsgrundlage je Brennstoffgruppe. Optional: fehlt in
+       * Snapshots, die vor der Erfassung von Energiegehalt und
+       * Emissionsfaktor entstanden sind.
+       */
+      fuelBasis: z
+        .array(
+          z.object({
+            label: z.string(),
+            energyKwh: z.number().nullable(),
+            emissionFactorKgPerKwh: z.number().nullable(),
+            amountGrams: z.number().int().nullable(),
+            costCents: z.number().int().nullable(),
+          }),
+        )
+        .optional(),
     })
     .optional(),
   /**
