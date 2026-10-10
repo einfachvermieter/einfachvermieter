@@ -1,6 +1,7 @@
 import {
   type Co2FuelTable,
   type Co2TableRow,
+  co2AreaIsPartial,
   co2FuelTable,
   co2TableRows,
   consumptionUnitLabel,
@@ -684,6 +685,11 @@ export const HeatingAppendix = ({
           {infoSection}
         </View>
       )}
+      {co2AreaIsPartial(detail) ? (
+        <Text style={styles.footnote}>
+          {t("statements.pdf.heating.co2.areaBasisPartialNote")}
+        </Text>
+      ) : null}
       {co2 ? (
         <Text style={styles.footnote}>
           {t("statements.pdf.heating.co2.basisNote")}

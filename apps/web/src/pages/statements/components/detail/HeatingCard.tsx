@@ -1,4 +1,5 @@
 import {
+  co2AreaIsPartial,
   co2FuelTable,
   co2TableRows,
   consumptionUnitLabel,
@@ -317,6 +318,11 @@ export const HeatingCard = ({
               ))}
             </tbody>
           </table>
+          {co2AreaIsPartial(detail) ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              {t("statements.pdf.heating.co2.areaBasisPartialNote")}
+            </p>
+          ) : null}
           {co2 ? (
             <p className="mt-3 text-xs text-muted-foreground">
               {t("statements.pdf.heating.co2.basisNote")}

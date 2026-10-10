@@ -6,9 +6,9 @@ import type {
   ReadingPoint,
   UnitInfo,
 } from "../types/index.js";
-import { hasBlockingWarning } from "./diagnostics.js";
+import { hasBlockingWarning, isTenantWarning } from "./diagnostics.js";
 import { calculateHeating } from "./heating.js";
-import { averageUserComparison } from "./heatingDisplay.js";
+import { averageUserComparison, co2AreaIsPartial } from "./heatingDisplay.js";
 import type { SubstitutionInput } from "./substitution.js";
 import { type SupplyExclusion, suppliedPeriods } from "./supply.js";
 
@@ -509,20 +509,21 @@ describe("calculateHeating mit Versorgungsteilnahme", () => {
   });
 });
 
-describe("Warmwasser mit Versorgungsteilnahme", () => {
-  const hotWaterMeter = (id: string, unitId: string, end: ReadingPoint[]) => ({
-    meter: meter(id, unitId, "water_hot"),
-    readings: [reading("2027-01-01", 0), ...end],
-  });
-  const hotWater = (unitMeters: ReturnType<typeof hotWaterMeter>[]) => ({
-    totalHeatEnergyKwh: 10_000,
-    boilerHeatKwh: null,
-    hotWaterVolumeM3: null,
-    supplyTemperatureCelsius: 60,
-    unitHotWaterM3: [],
-    unitMeters,
-  });
+const hotWaterMeter = (id: string, unitId: string, end: ReadingPoint[]) => ({
+  meter: meter(id, unitId, "water_hot"),
+  readings: [reading("2027-01-01", 0), ...end],
+});
 
+const hotWater = (unitMeters: ReturnType<typeof hotWaterMeter>[]) => ({
+  totalHeatEnergyKwh: 10_000,
+  boilerHeatKwh: null,
+  hotWaterVolumeM3: null,
+  supplyTemperatureCelsius: 60,
+  unitHotWaterM3: [],
+  unitMeters,
+});
+
+describe("Warmwasser mit Versorgungsteilnahme", () => {
   it("Pauschale: AWohn nur die versorgte Wohnfläche, nach Tagen gewichtet", () => {
     const whole = calc({
       exclusions: [exclusion("B", "2020-01-01", null, "hot_water")],
@@ -589,5 +590,223 @@ describe("Warmwasser mit Versorgungsteilnahme", () => {
     expect(codes(excluded.warnings)).not.toContain(
       "consumptionMeterMissingHotWater",
     );
+  });
+});
+
+describe("Maßgebliche Wohnfläche der CO2-Einstufung (§ 5 Abs. 1 Satz 2 CO2KostAufG)", () => {
+  // 1.190 kg: 11,9 kg/qm bei 100 qm (0 %), 19,8 kg/qm bei 60 qm (20 %)
+  const co2 = (totalAmountGrams = 1_190_000, periodDays = 365) => ({
+    enabled: true,
+    totalCostCents: 10_000,
+    totalAmountGrams,
+    periodDays,
+  });
+  const bothHotWaterMeters = hotWater([
+    hotWaterMeter("wA", "A", [reading("2027-12-31", 0)]),
+    hotWaterMeter("wB", "B", [reading("2027-12-31", 0)]),
+  ]);
+  const area = (detail: ReturnType<typeof calc>) =>
+    detail.co2Detail?.livingAreaSqm;
+  const hotWaterOnlyUnits = (detail: ReturnType<typeof calc>) =>
+    (detail.warnings ?? [])
+      .filter((warning) => warning.code === "co2AreaHotWaterOnly")
+      .map((warning) => warning.params?.unitId);
+
+  it("ohne Nichtteilnahme zählt die Wohnfläche aller Wohnungen", () => {
+    expect(area(calc({ co2: co2() }))).toBe(100);
+    expect(area(calc({ co2: co2(), exclusions: [] }))).toBe(100);
+    expect(co2AreaIsPartial(calc({ co2: co2() }))).toBe(false);
+  });
+
+  it("ganzjährig nicht beheizte Wohnung zählt nicht, die Stufe steigt", () => {
+    const whole = calc({ co2: co2() });
+    const partial = calc({
+      co2: co2(),
+      exclusions: [exclusion("B", "2020-01-01")],
+    });
+
+    expect(whole.co2Detail).toMatchObject({
+      emissionsKgPerSqmYear: 11.9,
+      landlordSharePercent: 0,
+      landlordDeductionCents: 0,
+    });
+    expect(partial.co2Detail).toMatchObject({
+      livingAreaSqm: 60,
+      emissionsKgPerSqmYear: 19.8,
+      landlordSharePercent: 20,
+      landlordDeductionCents: 2000,
+    });
+    expect(co2AreaIsPartial(partial)).toBe(true);
+    // Abzug des Vermieters plus verteilter Topf ergibt die Gesamtkosten
+    expect(partial.totalHeatingCostsCents).toBe(98_000);
+    expect(row(partial, "A")?.totalCents).toBe(98_000);
+  });
+
+  it("kleinere Fläche in derselben Stufe ändert den Abzug nicht", () => {
+    // 5.500 kg: 55,0 kg/qm bei 100 qm, 91,7 kg/qm bei 60 qm, beides 95 %
+    const whole = calc({ co2: co2(5_500_000) });
+    const partial = calc({
+      co2: co2(5_500_000),
+      exclusions: [exclusion("B", "2020-01-01")],
+    });
+
+    expect(partial.co2Detail?.emissionsKgPerSqmYear).toBe(91.7);
+    expect(whole.co2Detail?.landlordDeductionCents).toBe(9500);
+    expect(partial.co2Detail?.landlordDeductionCents).toBe(9500);
+  });
+
+  it("stuft an der Grenze mit der maßgeblichen Fläche ein", () => {
+    const exclusions = [exclusion("B", "2020-01-01")];
+    const atLimit = calc({ co2: co2(717_600), exclusions });
+    const below = calc({ co2: co2(716_400), exclusions });
+
+    expect(atLimit.co2Detail).toMatchObject({
+      emissionsKgPerSqmYear: 12,
+      landlordSharePercent: 10,
+    });
+    expect(below.co2Detail).toMatchObject({
+      emissionsKgPerSqmYear: 11.9,
+      landlordSharePercent: 0,
+    });
+  });
+
+  it("eigenes Warmwasser nimmt eine beheizte Wohnung nicht aus der Fläche", () => {
+    const detail = calc({
+      co2: co2(),
+      exclusions: [exclusion("B", "2020-01-01", null, "hot_water")],
+      hotWater: hotWater([
+        hotWaterMeter("wA", "A", [reading("2027-12-31", 0)]),
+      ]),
+    });
+
+    expect(area(detail)).toBe(100);
+    expect(co2AreaIsPartial(detail)).toBe(false);
+    expect(hotWaterOnlyUnits(detail)).toEqual([]);
+  });
+
+  it("nur Warmwasser aus der Anlage: zählt nicht, mit Hinweis an den Vermieter", () => {
+    const detail = calc({
+      co2: co2(),
+      exclusions: [exclusion("B", "2020-01-01")],
+      hotWater: bothHotWaterMeters,
+    });
+
+    expect(area(detail)).toBe(60);
+    expect(hotWaterOnlyUnits(detail)).toEqual(["B"]);
+    expect(isTenantWarning({ code: "co2AreaHotWaterOnly" })).toBe(false);
+    expect(hasBlockingWarning({ heatingDetail: detail })).toBe(false);
+  });
+
+  it("kein Hinweis ohne zentrales Warmwasser und keiner bei Selbstversorgung", () => {
+    const withoutHotWater = calc({
+      co2: co2(),
+      exclusions: [exclusion("B", "2020-01-01")],
+    });
+    const selfSupplied = calc({
+      co2: co2(),
+      exclusions: [
+        exclusion("B", "2020-01-01"),
+        exclusion("B", "2020-01-01", null, "hot_water"),
+      ],
+      hotWater: hotWater([
+        hotWaterMeter("wA", "A", [reading("2027-12-31", 0)]),
+      ]),
+    });
+
+    expect(hotWaterOnlyUnits(withoutHotWater)).toEqual([]);
+    expect(hotWaterOnlyUnits(selfSupplied)).toEqual([]);
+    expect(area(selfSupplied)).toBe(60);
+  });
+
+  it("nur zeitweise ohne Heizung aus der Anlage: Fläche nach versorgten Tagen, Hinweis bleibt", () => {
+    const detail = calc({
+      co2: co2(),
+      exclusions: [exclusion("B", "2027-07-01")],
+      readingsB: [reading("2027-01-01", 0), reading("2027-06-30", 300)],
+      hotWater: bothHotWaterMeters,
+    });
+
+    expect(area(detail)).toBeCloseTo(60 + (40 * 181) / 365, 9);
+    expect(hotWaterOnlyUnits(detail)).toEqual(["B"]);
+  });
+
+  it("Versorgung beginnt im Zeitraum", () => {
+    const detail = calc({
+      co2: co2(),
+      exclusions: [exclusion("B", "2020-01-01", "2027-06-30")],
+      readingsB: [reading("2027-07-01", 0), reading("2027-12-31", 300)],
+    });
+
+    expect(area(detail)).toBeCloseTo(60 + (40 * 184) / 365, 9);
+  });
+
+  it("Schaltjahr rechnet mit 366 Tagen", () => {
+    const detail = calc({
+      co2: co2(1_190_000, 366),
+      units: [
+        { ...unit("A", 60), periodDays: 366 },
+        { ...unit("B", 40), periodDays: 366 },
+      ],
+      consumptionMeters: [],
+      periodStart: "2028-01-01",
+      periodEnd: "2028-12-31",
+      exclusions: [exclusion("B", "2028-07-01")],
+    });
+
+    expect(area(detail)).toBeCloseTo(60 + (40 * 182) / 366, 9);
+  });
+
+  it("mehrere Wohnungen mit verschiedenen Zeiträumen: Summe der Anteile", () => {
+    const detail = calc({
+      co2: co2(),
+      units: [unit("A", 60), unit("B", 40), unit("C", 50), unit("D", 30)],
+      consumptionMeters: [],
+      exclusions: [
+        // B endet im März, C beginnt im Oktober, D mit Lücke im Juni
+        exclusion("B", "2027-04-01"),
+        exclusion("C", "2020-01-01", "2027-09-30"),
+        exclusion("D", "2027-06-01", "2027-06-30"),
+      ],
+    });
+
+    expect(area(detail)).toBeCloseTo(
+      60 + (40 * 90) / 365 + (50 * 92) / 365 + (30 * 335) / 365,
+      9,
+    );
+  });
+
+  it("Leerstand und abweichende Heizfläche ändern die Fläche nicht", () => {
+    const detail = calc({
+      co2: co2(),
+      units: [unit("A", 60), { ...unit("B", 40, 0), heatingAreaSqm: 25 }],
+      exclusions: [],
+    });
+
+    expect(area(detail)).toBe(100);
+  });
+
+  it("gleiche Fläche in den Abrechnungen aller Mieter", () => {
+    const exclusions = [exclusion("B", "2027-07-01")];
+    const readingsB = [reading("2027-01-01", 0), reading("2027-06-30", 300)];
+    const forA = calc({ co2: co2(), exclusions, readingsB, targetUnitId: "A" });
+    const forB = calc({ co2: co2(), exclusions, readingsB, targetUnitId: "B" });
+
+    expect(area(forA)).toBe(area(forB));
+    expect(forA.co2Detail?.landlordDeductionCents).toBe(
+      forB.co2Detail?.landlordDeductionCents,
+    );
+  });
+
+  it("keine Wohnung beheizt: keine Einstufung, kein Abzug, blockiert", () => {
+    const detail = calc({
+      co2: co2(),
+      exclusions: [exclusion("A", "2020-01-01"), exclusion("B", "2020-01-01")],
+    });
+
+    expect(detail.co2Detail).toBeUndefined();
+    expect(detail.totalHeatingCostsCents).toBe(100_000);
+    expect(codes(detail.warnings)).toContain("co2SplitMissingData");
+    expect(codes(detail.warnings)).toContain("supplyNoParticipantsHeating");
+    expect(hasBlockingWarning({ heatingDetail: detail })).toBe(true);
   });
 });

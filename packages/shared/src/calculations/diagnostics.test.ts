@@ -1,6 +1,14 @@
+import {
+  createI18nSync,
+  createTranslate,
+  deTranslations,
+} from "@einfachvermieter/i18n";
 import { describe, expect, it } from "vitest";
+import { formatWarningParams } from "../format.js";
 import type { CalcWarning } from "../types/index.js";
 import { formatWarningLabels, groupCalcWarnings } from "./diagnostics.js";
+
+const translate = createTranslate(createI18nSync());
 
 const nonMonotonic = (
   label: string,
@@ -79,5 +87,44 @@ describe("formatWarningLabels", () => {
         () => "nicht genutzt",
       ),
     ).toEqual(["Küche"]);
+  });
+});
+
+describe("Warntexte und Bündelung", () => {
+  it("kein Warntext nutzt das Label, das die Bündelung in die Betreff-Liste verschiebt", () => {
+    const withLabel = Object.entries(deTranslations.warnings)
+      .filter(
+        ([, text]) => typeof text === "string" && text.includes("{label}"),
+      )
+      .map(([code]) => code);
+
+    expect(withLabel).toEqual([]);
+  });
+
+  it("setzt bei fehlender Grenzablesung Wohnung und Datum ein und nennt den Zähler als Betroffenen", () => {
+    const [group] = groupCalcWarnings([
+      {
+        code: "supplyBoundaryReadingMissing",
+        params: {
+          unit: "DG Wohnung",
+          date: "2025-06-30",
+          label: "Wärmemengenzähler DG",
+          unitId: "unit-dg",
+          meterId: "meter-dg",
+          scope: "heating",
+        },
+      },
+    ]) as [NonNullable<ReturnType<typeof groupCalcWarnings>[number]>];
+    const message = translate("warnings.affected", {
+      message: translate(
+        `warnings.${group.code}`,
+        formatWarningParams(group.params),
+      ),
+      labels: formatWarningLabels(group, translate).join(", "),
+    });
+
+    expect(message).toBe(
+      "In Wohnung DG Wohnung ändert sich die zentrale Versorgung. Der abgelesene Zählerstand zum 30.06.2025 fehlt. Bitte erfassen Sie den Stand zur Umstellung, er wird nicht geschätzt. Betrifft: Wärmemengenzähler DG",
+    );
   });
 });

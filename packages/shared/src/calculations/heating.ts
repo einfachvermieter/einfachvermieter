@@ -577,7 +577,7 @@ type HeatingCalculationInput = {
    * `heating_settings.co2CostShareEnabled`) und liegen CO2-Kosten vor, wird
    * der Vermieteranteil aus dem Kostentopf herausgerechnet
    */
-  co2?: { enabled: boolean } & Co2SplitInput;
+  co2?: { enabled: boolean } & Omit<Co2SplitInput, "livingAreaSqm">;
 
   /**
    * Warmwasser-Abspaltung nach § 9 Abs. 2 HeizkostenV. Nur gesetzt, wenn das
@@ -1006,6 +1006,20 @@ const computeHotWaterAreaWeights = (
   };
 };
 
+/**
+ * Wohnfläche der versorgten Wohnungen eines Bereichs, nach versorgten Tagen
+ * gewichtet
+ */
+const suppliedLivingAreaSqm = (units: UnitInfo[]): number =>
+  units.reduce(
+    (acc, unit) =>
+      acc +
+      (unit.suppliedDays === undefined
+        ? unit.areaSqm
+        : (unit.areaSqm * unit.suppliedDays) / unit.periodDays),
+    0,
+  );
+
 type ScopedUnits = {
   /**
    * Wohnungen mit versorgten Tagen im Bereich. Bei teilweiser Versorgung
@@ -1135,6 +1149,34 @@ const supplyDetailFields = (params: {
 };
 
 /**
+ * Wohnungen, die an mindestens einem Tag aus der zentralen Anlage nur
+ * Warmwasser bekommen. Das CO2KostAufG regelt den Fall nicht ausdrücklich;
+ * ihre Wohnfläche zählt an diesen Tagen nicht zur Einstufung.
+ */
+const pushHotWaterOnlyWarnings = (params: {
+  units: UnitInfo[];
+  heating: UnitSupply | undefined;
+  hotWater: UnitSupply | undefined;
+  period: Period;
+  warnings: CalcWarning[];
+}): void => {
+  for (const unit of params.units) {
+    const hotWater = suppliedPeriodsOf(params.hotWater, unit.id, params.period);
+    const both = intersectPeriods(
+      hotWater,
+      suppliedPeriodsOf(params.heating, unit.id, params.period),
+    );
+
+    if (daysOfPeriods(hotWater) > daysOfPeriods(both)) {
+      params.warnings.push({
+        code: "co2AreaHotWaterOnly",
+        params: { unit: unit.name, unitId: unit.id },
+      });
+    }
+  }
+};
+
+/**
  * Versorgte Wohnungen ohne Zähler im Bereich. Die Ausstattungspflicht ist
  * verletzt, ein Erfassungsausfall nach § 9a kommt dafür nicht in Betracht.
  */
@@ -1162,6 +1204,7 @@ const pushMissingMeterWarnings = (
  */
 const computeCo2Deduction = (
   co2: HeatingCalculationInput["co2"],
+  livingAreaSqm: number,
   daysInBaseYear: number,
   warnings: CalcWarning[],
 ): {
@@ -1191,8 +1234,12 @@ const computeCo2Deduction = (
     return { co2Detail: undefined, landlordCo2DeductionCents: 0 };
   }
 
-  if (co2.totalAmountGrams > 0 && co2.livingAreaSqm > 0 && co2.periodDays > 0) {
-    const co2Detail = calculateCo2Split({ ...co2, daysInYear: daysInBaseYear });
+  if (co2.totalAmountGrams > 0 && livingAreaSqm > 0 && co2.periodDays > 0) {
+    const co2Detail = calculateCo2Split({
+      ...co2,
+      livingAreaSqm,
+      daysInYear: daysInBaseYear,
+    });
     // Energiegehalt und Faktor werden nur ausgewiesen, gerechnet wird damit
     // nicht. Fehlen sie, bleibt es bei einem Hinweis.
     if (
@@ -1774,16 +1821,30 @@ const buildHotWaterDetail = (params: {
  */
 const splitHeatingPot = (
   input: HeatingCalculationInput,
-  hotWaterUnits: UnitInfo[],
+  heatingScoped: ScopedUnits,
+  hotWaterScoped: ScopedUnits,
   warnings: CalcWarning[],
 ) => {
   const { units, periodStart, config } = input;
   const yearDays = daysInYear(periodStart);
   const { co2Detail, landlordCo2DeductionCents } = computeCo2Deduction(
     input.co2,
+    // § 5 Abs. 1 Satz 2 CO2KostAufG: Maßgeblich ist die Wohnfläche der
+    // Wohnungen, die aus der Anlage beheizt werden. Warmwasser allein
+    // zählt nicht, die Belegung spielt keine Rolle.
+    suppliedLivingAreaSqm(heatingScoped.units),
     yearDays,
     warnings,
   );
+  if (co2Detail && input.hotWater) {
+    pushHotWaterOnlyWarnings({
+      units,
+      heating: heatingScoped.supply,
+      hotWater: hotWaterScoped.supply,
+      period: { start: periodStart, end: input.periodEnd },
+      warnings,
+    });
+  }
   const distributablePotCents =
     input.totalHeatingCostsCents - landlordCo2DeductionCents;
 
@@ -1792,14 +1853,7 @@ const splitHeatingPot = (
     distributablePotCents,
     // § 9 Abs. 2 Satz 5: nur die zentral mit Warmwasser versorgte Fläche,
     // nach versorgten Tagen gewichtet.
-    hotWaterUnits.reduce(
-      (acc, u) =>
-        acc +
-        (u.suppliedDays === undefined
-          ? u.areaSqm
-          : (u.areaSqm * u.suppliedDays) / u.periodDays),
-      0,
-    ),
+    suppliedLivingAreaSqm(hotWaterScoped.units),
     units[0]?.periodDays ?? 0,
     yearDays,
     warnings,
@@ -2344,7 +2398,7 @@ export const calculateHeating = (
     heatingPotCents,
     consumptionPortionCents,
     basicPortionCents,
-  } = splitHeatingPot(input, hotWaterScoped.units, warnings);
+  } = splitHeatingPot(input, heatingScoped, hotWaterScoped, warnings);
 
   // § 9a HeizkostenV: Ausgleichsstände einfügen, Lücken erkennen,
   // Ersatzverbräuche und 25-%-Grenze je Bereich ermitteln.

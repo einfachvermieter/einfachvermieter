@@ -1163,7 +1163,6 @@ describe("calculateHeating - Bezugsjahr des CO2-Splits", () => {
         enabled: true,
         totalCostCents: 10_000,
         totalAmountGrams: 16.96 * 200 * 1000,
-        livingAreaSqm: 200,
         periodDays: 366,
       },
     });
@@ -1269,7 +1268,6 @@ describe("calculateHeating mit CO2KostAufG", () => {
         enabled: true,
         totalCostCents: 10_000, // 100 € CO2-Kosten im Topf
         totalAmountGrams: 3_500_000, // 17,5 kg/qm x a bei 200 qm
-        livingAreaSqm: 200,
         periodDays: 365,
       },
     });
@@ -1294,7 +1292,6 @@ describe("calculateHeating mit CO2KostAufG", () => {
         enabled: false,
         totalCostCents: 10_000,
         totalAmountGrams: 3_500_000,
-        livingAreaSqm: 200,
         periodDays: 365,
       },
     });
@@ -1310,7 +1307,6 @@ describe("calculateHeating mit CO2KostAufG", () => {
         enabled: true,
         totalCostCents: 10_000,
         totalAmountGrams: 0, // Menge fehlt -> keine Einstufung möglich
-        livingAreaSqm: 200,
         periodDays: 365,
       },
     });
@@ -1326,7 +1322,6 @@ describe("calculateHeating mit CO2KostAufG", () => {
       enabled: true,
       totalCostCents: 20_000,
       totalAmountGrams: 3_500_000,
-      livingAreaSqm: 200,
       periodDays: 365,
     };
     const group = {
@@ -1499,7 +1494,6 @@ describe("calculateHeating mit CO2KostAufG", () => {
         enabled: true,
         totalCostCents: 0, // keine Kostenart mit CO2-Kosten hinterlegt
         totalAmountGrams: 3_500_000,
-        livingAreaSqm: 200,
         periodDays: 365,
       },
     });

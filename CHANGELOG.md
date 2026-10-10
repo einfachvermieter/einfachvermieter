@@ -5,6 +5,11 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Behoben:** Der Hinweis auf eine fehlende Ablesung zur Umstellung der
+  Versorgung zeigt Wohnung, Zähler und Datum statt Platzhaltern.
+- **Geändert:** Bei der CO₂-Kostenaufteilung zählt nur noch die Wohnfläche
+  der Wohnungen, die aus der zentralen Anlage beheizt werden. Der Anteil des
+  Vermieters kann dadurch steigen.
 - **Neu:** Brennstoffrechnungen nehmen Energiegehalt und Emissionsfaktor
   auf. Die Heizkostenabrechnung weist beide Werte und die Herleitung des
   CO₂-Kostenanteils aus (§ 7 Abs. 3 CO2KostAufG). Bei bestehenden

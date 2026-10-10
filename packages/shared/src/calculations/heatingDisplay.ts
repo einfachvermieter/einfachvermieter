@@ -382,6 +382,19 @@ const co2CostValue = (
 ): HeatingLabelDescriptor | string =>
   costCents === null ? CO2_VALUE_MISSING : formatEur(costCents);
 
+/**
+ * Ob die maßgebliche Wohnfläche der CO2-Einstufung kleiner ist als die des
+ * Gebäudes, weil nicht alle Wohnungen die ganze Periode aus der zentralen
+ * Anlage beheizt werden. Snapshots ohne `supply` gelten als ganz versorgt.
+ */
+export const co2AreaIsPartial = (
+  detail: Pick<HeatingDetail, "co2Detail" | "supply">,
+): boolean =>
+  detail.co2Detail !== undefined &&
+  (detail.supply?.heating ?? []).some(
+    (row) => row.suppliedDays < row.periodDays,
+  );
+
 export type Co2TableRow = {
   key:
     | "energySource"

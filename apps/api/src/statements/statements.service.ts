@@ -2178,7 +2178,6 @@ export class StatementsService {
           totalCostCents: heatingAggregation.totalCo2CostCents,
           totalAmountGrams: heatingAggregation.totalCo2AmountGrams,
           fuelBasis: co2FuelBasis(heatingAggregation, heatingCostEntries),
-          livingAreaSqm: unitsRaw.reduce((acc, u) => acc + u.areaSqm, 0),
           periodDays: statementPeriodDays,
         },
         ...substitutionInputs,
