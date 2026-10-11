@@ -14,6 +14,8 @@ import { type PasswordPolicy, passwordSchema } from "./password.js";
  * `databaseNewerThanApp` ist gesetzt, wenn die Datenbank zuletzt von einer
  * neueren App-Version benutzt wurde: die App ist dann gesperrt und zeigt nur
  * den Hinweis, die aktuelle Version zu installieren.
+ * `migrationFailed` ist gesetzt, wenn die Aktualisierung der Datenbank beim
+ * Start gescheitert ist: die App ist dann gesperrt und zeigt nur den Rückweg.
  * `privacyUrl` ist die verlinkte Datenschutzerklaerung (`PRIVACY_URL`); leer
  * bedeutet, dass die App keinen Link anzeigt. `licenseUrl` ebenso für den
  * Lizenztext (`LICENSE_URL`).
@@ -27,6 +29,39 @@ export type SetupStatus = {
   recoveryEmails: string[];
   recoveryUsed: boolean;
   databaseNewerThanApp: { lastVersion: string; currentVersion: string } | null;
+  migrationFailed: MigrationFailure | null;
+};
+
+/**
+ * Gescheiterte Einrichtung oder Aktualisierung der Datenbank beim Start.
+ * `lastVersion` ist die Version, die die Datenbank davor benutzt hat
+ * (unbekannt: `null`), `migration` die Migration, in der es scheiterte
+ * (`null`, wenn erst das gemeinsame Abschließen scheiterte). `state` sagt,
+ * was die API festgestellt hat:
+ * - `setupFailed`: Erststart, vor dem Versuch gab es weder eine angewendete
+ *   Migration noch Tabellen.
+ * - `setupBlocked`: keine angewendete Migration, aber schon Tabellen. Ob das
+ *   eine abgebrochene Ersteinrichtung oder ein beschädigter Bestand ist,
+ *   lässt sich nicht unterscheiden.
+ * - `rolledBack`: die Datenbank ist auf dem Stand von vorher.
+ * - `unknown`: nicht feststellbar, auf MariaDB immer.
+ * - `backupFailed`: schon die Sicherung scheiterte, die Migration lief nicht.
+ *
+ * `backupFile` ist der Dateiname der Sicherung in `backups/` im Datenordner,
+ * die es nur bei SQLite gibt.
+ */
+export type MigrationFailure = {
+  lastVersion: string | null;
+  currentVersion: string;
+  migration: string | null;
+  database: "libsql" | "postgresql" | "mariadb";
+  state:
+    | "setupFailed"
+    | "setupBlocked"
+    | "rolledBack"
+    | "unknown"
+    | "backupFailed";
+  backupFile: string | null;
 };
 
 /**

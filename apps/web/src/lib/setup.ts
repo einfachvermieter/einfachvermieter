@@ -62,6 +62,7 @@ export const useRunSetup = () => {
           recoveryEmails: previous?.recoveryEmails ?? [],
           recoveryUsed: previous?.recoveryUsed ?? false,
           databaseNewerThanApp: previous?.databaseNewerThanApp ?? null,
+          migrationFailed: previous?.migrationFailed ?? null,
         }),
       );
     },

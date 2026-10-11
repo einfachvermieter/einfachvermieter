@@ -59,6 +59,7 @@ import { type Unit, unitQueryOptions, unitsQueryOptions } from "./lib/units";
 // gefaltet (kein Code-Splitting). Die App wird nur via Docker/Electron
 // vertrieben, wo Chunk-Splitting nur Blitzer beim Seitenwechsel bringt.
 import { LoginPage } from "./pages/auth/LoginPage";
+import { MigrationFailedPage } from "./pages/auth/MigrationFailedPage";
 import { OutdatedVersionPage } from "./pages/auth/OutdatedVersionPage";
 import { PasswordRecoveryPage } from "./pages/auth/PasswordRecoveryPage";
 import { BuildingEditPage } from "./pages/buildings/BuildingEditPage";
@@ -106,6 +107,10 @@ const getSetupStatus = async (context: RouterContext) => {
     // Status-Endpoint nicht erreichbar: nicht in den Assistenten umleiten,
     // sondern den regulären Auth-Pfad entscheiden lassen.
     return null;
+  }
+
+  if (status.migrationFailed) {
+    throw redirect({ to: "/aktualisierung-fehlgeschlagen" });
   }
 
   if (status.databaseNewerThanApp) {
@@ -196,6 +201,24 @@ const redirectAwayIfVersionCurrent = async ({
 };
 
 /**
+ * Sperrseite nach gescheiterter Aktualisierung: nur erreichbar, solange die
+ * API deswegen gesperrt ist.
+ */
+const redirectAwayIfMigrationSucceeded = async ({
+  context,
+}: {
+  context: RouterContext;
+}) => {
+  const locked = await loadSetupStatus(context)
+    .then((status) => status.migrationFailed !== null)
+    .catch(() => false);
+
+  if (!locked) {
+    throw redirect({ to: "/" });
+  }
+};
+
+/**
  * Assistent: ist die App bereits eingerichtet, gibt es nichts mehr zu tun.
  */
 const redirectAwayIfSetupDone = async ({
@@ -213,6 +236,7 @@ const AUTH_PATHNAMES: ReadonlySet<string> = new Set([
   "/einrichtung",
   "/passwort-zuruecksetzen",
   "/version-veraltet",
+  "/aktualisierung-fehlgeschlagen",
 ]);
 
 const RootComponent = () => {
@@ -260,6 +284,13 @@ const outdatedVersionRoute = createRoute({
   path: "/version-veraltet",
   beforeLoad: redirectAwayIfVersionCurrent,
   component: OutdatedVersionPage,
+});
+
+const migrationFailedRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/aktualisierung-fehlgeschlagen",
+  beforeLoad: redirectAwayIfMigrationSucceeded,
+  component: MigrationFailedPage,
 });
 
 const dashboardRoute = createRoute({
@@ -907,6 +938,7 @@ const routeTree = rootRoute.addChildren([
   setupRoute,
   passwordRecoveryRoute,
   outdatedVersionRoute,
+  migrationFailedRoute,
   dashboardRoute,
   buildingsRoute,
   buildingEditRoute,

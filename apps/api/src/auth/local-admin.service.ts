@@ -1,6 +1,7 @@
 import { hashPassword, UserSchema } from "@einfachvermieter/db";
 import { EntityManager } from "@mikro-orm/core";
 import { Injectable, type OnModuleInit } from "@nestjs/common";
+import { migrationFailure } from "../updates/migration-guard.js";
 import type { AuthUser } from "./auth.service.js";
 import { authMode } from "./auth-mode.js";
 
@@ -20,8 +21,9 @@ export class LocalAdminService implements OnModuleInit {
   constructor(private readonly em: EntityManager) {}
 
   async onModuleInit(): Promise<void> {
-    // Beim Start anlegen
-    if (authMode() === "local") {
+    // Beim Start anlegen. Nach einer gescheiterten Migration passt das Schema
+    // womöglich nicht zur Entity, die App zeigt dann nur die Sperrseite.
+    if (authMode() === "local" && !migrationFailure()) {
       await this.ensure();
     }
   }

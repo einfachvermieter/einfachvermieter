@@ -49,7 +49,15 @@ identisch rechnen. Änderungen dort brauchen einen Test.
 - **Datenbank:** Schema nur über die MikroORM-EntitySchemas in
   `packages/db/src/entities/`. Schema-Änderungen in allen Seed-Profilen
   nachziehen. Veröffentlichte Migrationen bleiben unangetastet,
-  jede Änderung bekommt eine neue Migration je Dialekt.
+  jede Änderung bekommt eine neue Migration je Dialekt. Für jede neue
+  Migration gilt: Auf MariaDB muss sie nach einem Abbruch erneut
+  durchlaufen, weil MariaDB Schema-Befehle nicht zurückrollt (eine Tabelle
+  samt Indizes und Fremdschlüsseln in einem `create table if not exists`,
+  mehrere Änderungen an einer Tabelle in einem `alter table`). Übernimmt
+  sie Bestand, wird vorher festgelegt, welche unsauberen Daten übernommen,
+  übersprungen oder mit Abbruch beantwortet werden. Werte, die Beträge einer offenen Abrechnung bestimmen, gehen nie
+  still verloren. Dazu gehört ein Test mit Bestand in
+  `packages/db/src/migrations.test.ts`.
 - **Frontend:** shadcn-Komponenten ohne eigene `className`, Varianten
   nutzen. Fehlt eine Komponente, im PR oder Issue ansprechen statt sie
   selbst nachzubauen. Eine Komponente pro Datei, Datei nach dem Export

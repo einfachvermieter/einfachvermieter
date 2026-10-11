@@ -18,6 +18,7 @@ import { getI18n } from "../i18n/i18n.registry.js";
 import { TelemetryService } from "../telemetry/telemetry.service.js";
 import { currentAppVersion } from "../updates/app-version.js";
 import { databaseNewerThanApp } from "../updates/database-version-guard.js";
+import { migrationFailure } from "../updates/migration-guard.js";
 
 const DEFAULT_PRIVACY_URL = "https://einfachvermieter.de/datenschutz/";
 const DEFAULT_LICENSE_URL = "https://einfachvermieter.de/lizenz/";
@@ -45,11 +46,29 @@ export class SetupService {
    * zur Auswahl, `recoveryUsed` das bereits erfolgte Zurücksetzen.
    * `databaseNewerThanApp` nennt die Versionen, wenn die Datenbank zuletzt
    * von einer neueren App benutzt wurde und die App deshalb gesperrt ist.
+   * `migrationFailed` beschreibt eine gescheiterte Aktualisierung der
+   * Datenbank. Die Antwort kommt dann ohne Zugriff auf die Datenbank
+   * zustande, weil deren Schema halb umgebaut sein kann.
    *
    * @returns needsSetup:true, solange noch kein Benutzer existiert
    */
   async getStatus(): Promise<SetupStatus> {
     const mode = authMode();
+    const migrationFailed = migrationFailure();
+    if (migrationFailed) {
+      return {
+        needsSetup: false,
+        authMode: mode,
+        privacyUrl: this.privacyUrl,
+        licenseUrl: this.licenseUrl,
+        recovery: false,
+        recoveryEmails: [],
+        recoveryUsed: false,
+        databaseNewerThanApp: null,
+        migrationFailed,
+      };
+    }
+
     const recovery = recoveryMode();
     const recoveryEmails = recovery ? await this.findAdminEmails() : [];
     const recoveryUsed = isRecoveryUsed();
@@ -66,6 +85,7 @@ export class SetupService {
         recoveryEmails,
         recoveryUsed,
         databaseNewerThanApp: versionLock,
+        migrationFailed: null,
       };
     }
 
@@ -80,6 +100,7 @@ export class SetupService {
       recoveryEmails,
       recoveryUsed,
       databaseNewerThanApp: versionLock,
+      migrationFailed: null,
     };
   }
 

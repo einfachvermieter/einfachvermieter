@@ -17,9 +17,12 @@ const widthClasses = {
  */
 export const OuterShell = ({
   width = "sm",
+  betaNoticeAutoOpen = true,
   children,
 }: {
   width?: keyof typeof widthClasses;
+  /** `false` auf Status-, Sperr- und Fehlerseiten, siehe BetaNotice */
+  betaNoticeAutoOpen?: boolean;
   children: ReactNode;
 }) => (
   <div className="flex min-h-dvh flex-col items-center justify-center gap-7 bg-sidebar p-6 in-data-desktop:pt-16">
@@ -28,7 +31,7 @@ export const OuterShell = ({
     {desktopPlatform ? (
       <div data-drag-region={true} className="fixed inset-x-0 top-0 h-10" />
     ) : null}
-    <BetaNotice />
+    <BetaNotice autoOpen={betaNoticeAutoOpen} />
     <AppBrand tone="dark" />
     <div className={cn("w-full", widthClasses[width])}>{children}</div>
     <p className="text-xs text-schiefer-500 tabular-nums">

@@ -207,6 +207,7 @@
   },
   "errors": {
     "notFound": "{entity} „{id}“ nicht gefunden",
+    "migrationFailed": "Die Datenbank konnte beim Start nicht eingerichtet oder aktualisiert werden. Die App ist gesperrt.",
     "databaseNewerThanApp": "Die Datenbank wurde zuletzt mit Version {lastVersion} benutzt, diese App ist Version {currentVersion}. Die App ist gesperrt, bis die aktuelle Version läuft.",
     "fileRequired": "Es wurde keine Datei übermittelt.",
     "logoSvgText": "Das SVG enthält Text bzw. Schriftverweise. Bitte wandeln Sie die Schrift vor dem Hochladen in Pfade (Kurven) um.",
@@ -2081,6 +2082,25 @@
     "outdatedVersion": {
       "title": "Diese Version ist zu alt",
       "description": "Ihre Daten wurden zuletzt mit Version {lastVersion} bearbeitet, diese App ist Version {currentVersion}. Bitte installieren Sie die aktuelle Version. Bis dahin bleibt die App gesperrt."
+    },
+    "migrationFailed": {
+      "title": "Aktualisierung fehlgeschlagen",
+      "setupTitle": "Einrichtung fehlgeschlagen",
+      "setupFailed": "Die Datenbank konnte nicht eingerichtet werden. Die Einrichtung wurde nicht abgeschlossen. Bitte melden Sie den Fehler.",
+      "setupFailedRecreate": "Die Datenbank konnte nicht eingerichtet werden. Die Einrichtung wurde nicht abgeschlossen. Legen Sie die Datenbank neu an, bevor Sie die Einrichtung erneut starten. Bitte melden Sie den Fehler.",
+      "setupBlocked": "Die Datenbank konnte nicht eingerichtet werden. Ihr Zustand lässt sich nicht sicher feststellen. Bitte melden Sie den Fehler.",
+      "setupBlockedWithBackup": "Die Datenbank konnte nicht eingerichtet werden. Ihr Zustand lässt sich nicht sicher feststellen. Vorher wurde eine Sicherung angelegt: backups/{backupFile} im Datenordner. Bitte melden Sie den Fehler.",
+      "rolledBackWithBackup": "Die Aktualisierung auf Version {currentVersion} ist fehlgeschlagen und wurde abgebrochen. Vorher wurde eine Sicherung angelegt: backups/{backupFile} im Datenordner. Installieren Sie wieder Version {lastVersion}, um weiterzuarbeiten. Bitte melden Sie den Fehler.",
+      "rolledBackWithBackupNoVersion": "Die Aktualisierung auf Version {currentVersion} ist fehlgeschlagen und wurde abgebrochen. Vorher wurde eine Sicherung angelegt: backups/{backupFile} im Datenordner. Installieren Sie wieder die vorige Version, um weiterzuarbeiten. Bitte melden Sie den Fehler.",
+      "rolledBack": "Die Aktualisierung auf Version {currentVersion} ist fehlgeschlagen und wurde abgebrochen. Starten Sie wieder Version {lastVersion}, um weiterzuarbeiten. Bitte melden Sie den Fehler.",
+      "rolledBackNoVersion": "Die Aktualisierung auf Version {currentVersion} ist fehlgeschlagen und wurde abgebrochen. Starten Sie wieder die vorige Version, um weiterzuarbeiten. Bitte melden Sie den Fehler.",
+      "unknownWithBackup": "Die Aktualisierung auf Version {currentVersion} ist fehlgeschlagen. In welchem Zustand die Datenbank ist, ließ sich nicht feststellen. Vorher wurde eine Sicherung angelegt: backups/{backupFile} im Datenordner. Beenden Sie die App und ersetzen Sie die Datenbank durch diese Sicherung, bevor Sie wieder Version {lastVersion} starten. Bitte melden Sie den Fehler.",
+      "unknownWithBackupNoVersion": "Die Aktualisierung auf Version {currentVersion} ist fehlgeschlagen. In welchem Zustand die Datenbank ist, ließ sich nicht feststellen. Vorher wurde eine Sicherung angelegt: backups/{backupFile} im Datenordner. Beenden Sie die App und ersetzen Sie die Datenbank durch diese Sicherung, bevor Sie wieder die vorige Version starten. Bitte melden Sie den Fehler.",
+      "unknown": "Die Aktualisierung auf Version {currentVersion} ist fehlgeschlagen. In welchem Zustand die Datenbank ist, ließ sich nicht feststellen. Spielen Sie Ihre Sicherung der Datenbank von vor der Aktualisierung zurück, bevor Sie wieder Version {lastVersion} starten. Ohne diesen Schritt darf die alte Version nicht mit dieser Datenbank laufen. Bitte melden Sie den Fehler.",
+      "unknownNoVersion": "Die Aktualisierung auf Version {currentVersion} ist fehlgeschlagen. In welchem Zustand die Datenbank ist, ließ sich nicht feststellen. Spielen Sie Ihre Sicherung der Datenbank von vor der Aktualisierung zurück, bevor Sie wieder die vorige Version starten. Ohne diesen Schritt darf die alte Version nicht mit dieser Datenbank laufen. Bitte melden Sie den Fehler.",
+      "backupFailed": "Vor der Aktualisierung auf Version {currentVersion} konnte keine Sicherung angelegt werden. Die Aktualisierung wurde nicht begonnen. Prüfen Sie den freien Speicherplatz und die Schreibrechte im Datenordner und starten Sie die App neu.",
+      "details": "Migration: {migration}, Datenbank: {database}",
+      "detailsNoMigration": "Datenbank: {database}"
     },
     "recovery": {
       "title": "Passwort zurücksetzen",

@@ -9,20 +9,10 @@ import type { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import { AppModule } from "./app.module.js";
 import { authMode } from "./auth/auth-mode.js";
+import { framed } from "./common/framed.js";
 import { startApiLogFile } from "./diagnostics/api-log.js";
 import { currentAppVersion } from "./updates/app-version.js";
-import { checkDatabaseVersion } from "./updates/database-version-guard.js";
-
-/**
- * Meldung im ASCII-Rahmen
- */
-const framed = (lines: string[]): string => {
-  const width = Math.max(...lines.map((line) => line.length));
-  const border = `+${"-".repeat(width + 2)}+`;
-  const body = lines.map((line) => `| ${line.padEnd(width)} |`);
-
-  return [border, ...body, border].join("\n");
-};
+import { prepareDatabase } from "./updates/migration-guard.js";
 
 const bootstrap = async (): Promise<void> => {
   // Im Container ist die Datei der einzige Weg zum Protokoll, `docker logs`
@@ -47,13 +37,10 @@ const bootstrap = async (): Promise<void> => {
   );
 
   // Produktion provisioniert sich beim Start selbst: Datenbank anlegen (falls
-  // nötig) und ausstehende Migrationen anwenden.
+  // nötig) und ausstehende Migrationen anwenden. Eine gescheiterte Migration
+  // sperrt die App, statt den Start abzubrechen.
   const orm = app.get(MikroORM);
-  if (isProduction) {
-    await orm.schema.ensureDatabase();
-    await orm.migrator.up();
-  }
-  await checkDatabaseVersion(orm.em);
+  await prepareDatabase(orm, { migrate: isProduction });
 
   // TRUST_PROXY = Anzahl vertrauenswürdiger Proxy-Hops: `req.ip` (Rate-Limit)
   // und `req.secure` (Secure-Cookie) kommen dann aus X-Forwarded-*. Default 0,

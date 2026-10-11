@@ -22,7 +22,7 @@ export const StartupNotice = ({
   description?: string;
   children?: ReactNode;
 }) => (
-  <OuterShell width="md">
+  <OuterShell width="md" betaNoticeAutoOpen={false}>
     <Card>
       <CardHeader>
         <div className="flex flex-col items-center gap-1 text-center">

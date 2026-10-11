@@ -5,6 +5,13 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Neu:** Schlägt eine Aktualisierung fehl, zeigt die App eine Seite mit
+  dem Weg zurück, statt nicht mehr zu starten.
+- **Geändert:** Die Datenbank wird vor jeder Aktualisierung, die sie
+  umstellt, gesichert, jetzt auch im Docker-Betrieb. Die Sicherung liegt
+  unter `backups` im Datenordner.
+- **Geändert:** Als externe Datenbank gilt MariaDB ab 10.11 oder
+  PostgreSQL. MySQL wird nicht unterstützt.
 - **Geändert:** Bei einem Abrechnungszeitraum unter einem Jahr werden für
   die CO₂-Kostenaufteilung die Grenzwerte der Stufen anteilig gekürzt
   (§ 5 Abs. 1 Satz 4 CO2KostAufG). Der Ausstoß wird nicht mehr auf ein Jahr

@@ -20,6 +20,9 @@ export const isScreenshotMode = ((): boolean => {
 
 export const showBetaMarker = isPrerelease && !isScreenshotMode;
 
+export const ISSUES_URL =
+  "https://github.com/einfachvermieter/einfachvermieter/issues";
+
 export const BETA_NOTICE_OPEN_EVENT = "betanotice:open";
 
 /**

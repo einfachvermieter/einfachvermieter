@@ -3,7 +3,9 @@ export type Dialect = "libsql" | "postgresql" | "mariadb";
 /**
  * Aktiver Dialekt. Explizit über `DB_DRIVER`, sonst aus dem Schema der
  * `DATABASE_URL` abgeleitet. Ohne Angabe: eingebettetes SQLite (libsql),
- * der Zero-Config-Default für Container-mit-DB und Electron.
+ * der Zero-Config-Default für Container-mit-DB und Electron. `mysql` ist
+ * eine alte Schreibweise und meint MariaDB; MySQL selbst wird nicht
+ * unterstützt.
  */
 export const detectDialect = (): Dialect => {
   const explicit = process.env.DB_DRIVER?.toLowerCase() ?? "";

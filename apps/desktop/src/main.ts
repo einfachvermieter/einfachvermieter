@@ -1,12 +1,6 @@
 // biome-ignore-all lint/style/useNamingConvention: ENV-Variablen des API-Kindprozesses
 import { randomBytes } from "node:crypto";
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { join } from "node:path";
 import { createI18nSync, createTranslate } from "@einfachvermieter/i18n";
@@ -184,39 +178,6 @@ const findFreePort = (): Promise<number> =>
       probe.close(() => resolve(address.port));
     });
   });
-
-/**
- * Kopiert die DB-Datei vor dem ersten Start einer neuen App-Version nach
- * `backups/`. Ersatz für den Volume-Snapshot, den es im Docker-Betrieb gäbe:
- * die anschließende Migration (`migrator.up()` im API-Boot) läuft damit nie
- * ohne Rückfallebene.
- *
- * Die Datenbank läuft im WAL-Modus. Endete der letzte Lauf hart (Absturz,
- * Sofort-Beenden), steht der zuletzt erfasste Stand noch in der `-wal`-Datei
- * daneben; sie gehört deshalb mit in die Sicherung. Zum Zurücksichern beide
- * Dateien zusammen zurückkopieren. Zu diesem Zeitpunkt läuft die API noch
- * nicht, es schreibt also niemand dazwischen.
- */
-const backupOnVersionChange = (): void => {
-  const versionFile = join(app.getPath("userData"), "last-run-version");
-  const lastVersion = existsSync(versionFile)
-    ? readFileSync(versionFile, "utf8").trim()
-    : null;
-
-  if (lastVersion !== appVersion && existsSync(dbPath())) {
-    const backupsDir = join(dataDir(), "backups");
-    mkdirSync(backupsDir, { recursive: true });
-    const date = new Date().toISOString().slice(0, 10);
-    const target = join(backupsDir, `${appVersion}-${date}.db`);
-    copyFileSync(dbPath(), target);
-
-    if (existsSync(`${dbPath()}-wal`)) {
-      copyFileSync(`${dbPath()}-wal`, `${target}-wal`);
-    }
-  }
-
-  writeFileSync(versionFile, appVersion);
-};
 
 /**
  * Startet die kompilierte NestJS-API als Kindprozess (Electrons gebündeltes
@@ -632,8 +593,6 @@ const createWindow = (origin: string): BrowserWindow => {
 };
 
 const init = async (): Promise<void> => {
-  backupOnVersionChange();
-
   const { port, token } = await startApi();
   const origin = `http://127.0.0.1:${port}`;
 

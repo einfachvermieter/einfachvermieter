@@ -24,6 +24,7 @@ import {
   type OnModuleDestroy,
 } from "@nestjs/common";
 import { appPlatform, currentAppVersion } from "../updates/app-version.js";
+import { migrationFailure } from "../updates/migration-guard.js";
 
 const DEFAULT_TELEMETRY_URL = "https://api.einfachvermieter.de/v1/telemetry";
 const FETCH_TIMEOUT_MS = 5000;
@@ -194,6 +195,12 @@ export class TelemetryService
   constructor(private readonly em: EntityManager) {}
 
   onApplicationBootstrap(): void {
+    // Gesperrt nach gescheiterter Migration: Das Schema passt womöglich
+    // nicht zu den Entities.
+    if (migrationFailure()) {
+      return;
+    }
+
     this.trigger(this.desktop);
 
     this.timer = setInterval(

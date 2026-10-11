@@ -8,6 +8,7 @@ import {
 import type { Request } from "express";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { databaseNewerThanApp } from "../updates/database-version-guard.js";
+import { migrationFailure } from "../updates/migration-guard.js";
 import { recoveryMode } from "./auth-mode.js";
 
 export const RECOVERY_PATH = "/api/auth/recover";
@@ -26,17 +27,19 @@ const ALLOWED_IN_RECOVERY = new Set([
 ]);
 
 /**
- * Im Versionskonflikt (Datenbank stammt von einer neueren App) erreichbar:
- * Status (daran erkennt das Frontend die Sperre) und Health-Check.
+ * Im Versionskonflikt (Datenbank stammt von einer neueren App) und nach einer
+ * gescheiterten Aktualisierung erreichbar: Status (daran erkennt das Frontend
+ * die Sperre) und Health-Check.
  */
-const ALLOWED_WHEN_DATABASE_NEWER = new Set([
+const ALLOWED_WHEN_UPDATE_LOCKED = new Set([
   "/api/setup/status",
   "/api/health",
 ]);
 
 /**
- * Sperrt die API, solange der Rücksetz-Modus läuft oder die Datenbank von
- * einer neueren App-Version stammt, und versteckt umgekehrt den
+ * Sperrt die API, solange der Rücksetz-Modus läuft, die Datenbank von einer
+ * neueren App-Version stammt oder die Aktualisierung der Datenbank
+ * gescheitert ist, und versteckt umgekehrt den
  * Rücksetz-Endpunkt im Normalbetrieb. Die statischen Web-Assets laufen nicht
  * durch Guards, die jeweilige Sperrseite ist also weiterhin aufrufbar.
  */
@@ -45,8 +48,15 @@ export class AppLockGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const { path } = context.switchToHttp().getRequest<Request>();
 
+    const failedMigration = migrationFailure();
+    if (failedMigration && !ALLOWED_WHEN_UPDATE_LOCKED.has(path)) {
+      throw new ServiceUnavailableException(
+        getI18n().t("errors.migrationFailed"),
+      );
+    }
+
     const versionLock = databaseNewerThanApp();
-    if (versionLock && !ALLOWED_WHEN_DATABASE_NEWER.has(path)) {
+    if (versionLock && !ALLOWED_WHEN_UPDATE_LOCKED.has(path)) {
       throw new ServiceUnavailableException(
         getI18n().t("errors.databaseNewerThanApp", versionLock),
       );
