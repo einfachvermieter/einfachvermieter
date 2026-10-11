@@ -2178,7 +2178,6 @@ export class StatementsService {
           totalCostCents: heatingAggregation.totalCo2CostCents,
           totalAmountGrams: heatingAggregation.totalCo2AmountGrams,
           fuelBasis: co2FuelBasis(heatingAggregation, heatingCostEntries),
-          periodDays: statementPeriodDays,
         },
         ...substitutionInputs,
         ...supplyInput(supplyExclusions, unitsRaw, (unitId) =>

@@ -10,6 +10,11 @@ export type Period = {
   end: string; // YYYY-MM-DD inklusiv
 };
 
+/**
+ * Anteil eines Zeitraums am Jahr als gekürzter Bruch aus zwei ganzen Zahlen
+ */
+export type PeriodShare = { numerator: number; denominator: number };
+
 export type DiagnosticParams = Record<string, string | number>;
 
 export type CalcWarning = {
@@ -627,9 +632,22 @@ export type HeatingDetail = {
      */
     totalAmountGrams: number;
     /**
-     * Spezifischer Ausstoß in kg/qm x a.
+     * Spezifischer Ausstoß in kg/qm x a. Nur beim vollen Jahr gesetzt, sonst
+     * steht der Ausstoß in `emissionsKgPerSqmPeriod`. Snapshots aus der Zeit
+     * der Hochrechnung tragen hier auch bei kurzem Zeitraum einen Jahreswert.
      */
-    emissionsKgPerSqmYear: number;
+    emissionsKgPerSqmYear?: number;
+    /**
+     * Spezifischer Ausstoß in kg/qm bezogen auf einen Abrechnungszeitraum
+     * unter einem Jahr, gerundet auf eine Nachkommastelle. Mit diesem Wert
+     * und `periodShare` wurde eingestuft.
+     */
+    emissionsKgPerSqmPeriod?: number;
+    /**
+     * Anteil des Abrechnungszeitraums am Jahr, um den die Grenzwerte der
+     * Einstufung gekürzt sind. Nur bei einem Zeitraum unter einem Jahr.
+     */
+    periodShare?: PeriodShare;
     /**
      * Vermieteranteil (%) aus dem 10-Stufen-Modell.
      */
@@ -639,7 +657,7 @@ export type HeatingDetail = {
      */
     landlordDeductionCents: number;
     /**
-     * Fläche, auf die `emissionsKgPerSqmYear` bezogen ist.
+     * Fläche, auf die der spezifische Ausstoß bezogen ist.
      */
     livingAreaSqm: number;
     /**

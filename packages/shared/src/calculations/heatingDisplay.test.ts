@@ -1,5 +1,7 @@
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { formatEur, formatNumber } from "../format.js";
+import { statementResultSchema } from "../schemas/statement-result.js";
 import type { EnergyComparison, HeatingDetail } from "../types/index.js";
 import {
   averageUserComparison,
@@ -345,6 +347,140 @@ describe("co2TableRows und co2FuelTable (§ 7 Abs. 3 CO2KostAufG)", () => {
     const rows = co2TableRows(baseDetail({ fuelType: "gas" }), 55_000);
 
     expect(rows.map((row) => row.key)).toEqual(["energySource"]);
+  });
+});
+
+describe("co2TableRows bei Abrechnungszeitraum unter einem Jahr", () => {
+  const rowsFor = (
+    emissionsKgPerSqmPeriod: number,
+    periodShare = { numerator: 2, denominator: 3 },
+  ) =>
+    co2TableRows(
+      baseDetail({
+        co2Detail: {
+          totalCostCents: 10_000,
+          totalAmountGrams: 1_592_000,
+          emissionsKgPerSqmPeriod,
+          periodShare,
+          landlordSharePercent: 10,
+          landlordDeductionCents: 1000,
+          livingAreaSqm: 200,
+        },
+      }),
+      55_000,
+    );
+  const row = (rows: ReturnType<typeof rowsFor>, key: string) =>
+    rows.find((entry) => entry.key === key);
+
+  it("zeigt den Ausstoß des Zeitraums ohne Jahresbezug und beide Grenzwerte", () => {
+    const rows = rowsFor(8);
+
+    expect(rows.map((entry) => entry.key)).toEqual([
+      "amount",
+      "totalCost",
+      "areaBasis",
+      "emissionsPeriod",
+      "tier",
+      "tierShortened",
+      "sharePair",
+      "landlordDeduction",
+      "tenantSideCost",
+      "potShare",
+      "tenantShare",
+    ]);
+    expect(row(rows, "emissionsPeriod")?.value).toEqual({
+      key: "statements.pdf.heating.co2.emissionsValuePeriod",
+      params: { value: "8,0" },
+    });
+    // Die Stufe behält die Werte der Anlage mit Jahresbezug
+    expect(row(rows, "tier")?.value).toEqual({
+      key: "statements.pdf.heating.co2.tierRange",
+      params: { min: "12", max: "17" },
+    });
+    expect(row(rows, "tierShortened")).toMatchObject({
+      label: {
+        key: "statements.pdf.heating.co2.tierShortened",
+        params: { months: "8" },
+      },
+      value: {
+        key: "statements.pdf.heating.co2.tierRangePeriod",
+        params: { min: "8,00", max: "11,33" },
+      },
+    });
+  });
+
+  it("zeigt unterste und oberste Stufe mit gekürztem Grenzwert", () => {
+    expect(row(rowsFor(7.9), "tierShortened")?.value).toEqual({
+      key: "statements.pdf.heating.co2.tierBelowPeriod",
+      params: { max: "8,00" },
+    });
+    expect(row(rowsFor(40), "tierShortened")?.value).toEqual({
+      key: "statements.pdf.heating.co2.tierAbovePeriod",
+      params: { min: "34,67" },
+    });
+    expect(row(rowsFor(40), "tier")?.value).toEqual({
+      key: "statements.pdf.heating.co2.tierAbove",
+      params: { min: "52" },
+    });
+  });
+
+  it("nennt angebrochene Monate mit höchstens zwei Nachkommastellen", () => {
+    // 01.01. bis 15.08.2027: 7 Monate und 15 von 31 Tagen
+    const rows = rowsFor(8, { numerator: 58, denominator: 93 });
+
+    expect(row(rows, "tierShortened")?.label.params).toEqual({
+      months: "7,48",
+    });
+  });
+
+  it("zeigt den gerundeten Grenzwert, stuft aber mit dem genauen ein", () => {
+    // 12 x 7/93 = 0,9032: 0,9 liegt darunter, obwohl die Zeile 0,90 zeigt
+    const rows = rowsFor(0.9, { numerator: 7, denominator: 93 });
+
+    expect(row(rows, "tierShortened")?.value).toEqual({
+      key: "statements.pdf.heating.co2.tierBelowPeriod",
+      params: { max: "0,90" },
+    });
+  });
+});
+
+describe("co2TableRows für gespeicherte Snapshots", () => {
+  const fixtureDir = new URL(
+    "../schemas/fixtures/statement-result/",
+    import.meta.url,
+  );
+  const withCo2 = readdirSync(fixtureDir)
+    .filter((name) => name.endsWith(".json"))
+    .map((name) => ({
+      name,
+      result: statementResultSchema.parse(
+        JSON.parse(readFileSync(new URL(name, fixtureDir), "utf-8")),
+      ),
+    }))
+    .filter(({ result }) => result.heatingDetail?.co2Detail);
+
+  it("findet einen Snapshot mit kurzem Zeitraum aus der Zeit der Hochrechnung", () => {
+    expect(withCo2.map(({ name }) => name)).toContain(
+      "v2-internal-co2-short-period.json",
+    );
+  });
+
+  it.each(withCo2)("$name zeigt Jahreswert und Jahrestabelle", ({ result }) => {
+    const detail = result.heatingDetail as HeatingDetail;
+    const emissions = detail.co2Detail?.emissionsKgPerSqmYear ?? Number.NaN;
+    const rows = co2TableRows(detail, 0);
+    const keys = rows.map((entry) => entry.key);
+
+    expect(rows.find((entry) => entry.key === "emissions")?.value).toEqual({
+      key: "statements.pdf.heating.co2.emissionsValue",
+      params: { value: formatNumber(emissions, 1) },
+    });
+    expect(rows.find((entry) => entry.key === "tier")?.value).toEqual(
+      co2TierLabel(emissions),
+    );
+    expect(keys).not.toContain("emissionsPeriod");
+    expect(keys).not.toContain("tierShortened");
+    expect(detail.co2Detail?.periodShare).toBeUndefined();
   });
 });
 

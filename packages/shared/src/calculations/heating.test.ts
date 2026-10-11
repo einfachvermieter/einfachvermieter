@@ -1140,9 +1140,9 @@ describe("co2LandlordSharePercent (CO2KostAufG Stufenmodell, Wohngebäude)", () 
   });
 });
 
-describe("calculateHeating - Bezugsjahr des CO2-Splits", () => {
-  it("leitet die Jahreslänge aus dem Periodenstart ab", () => {
-    const result = calculateHeating({
+describe("calculateHeating - Zeitraum der CO2-Einstufung", () => {
+  const run = (periodStart: string, periodEnd: string, kgPerSqm: number) =>
+    calculateHeating({
       totalHeatingCostsCents: 100_000,
       config: { consumptionShareBps: 7000 },
       units: [unitEg, unitOg],
@@ -1150,94 +1150,175 @@ describe("calculateHeating - Bezugsjahr des CO2-Splits", () => {
       consumptionMeters: [
         {
           meter: heatMeter("wmz-eg", "unit-eg"),
-          readings: [reading("2024-01-01", 0), reading("2024-12-31", 100)],
+          readings: [reading(periodStart, 0), reading(periodEnd, 100)],
         },
         {
           meter: heatMeter("wmz-og", "unit-og"),
-          readings: [reading("2024-01-01", 0), reading("2024-12-31", 300)],
+          readings: [reading(periodStart, 0), reading(periodEnd, 300)],
         },
       ],
-      periodStart: "2024-01-01",
-      periodEnd: "2024-12-31",
+      periodStart,
+      periodEnd,
       co2: {
         enabled: true,
         totalCostCents: 10_000,
-        totalAmountGrams: 16.96 * 200 * 1000,
-        periodDays: 366,
+        totalAmountGrams: Math.round(kgPerSqm * 200 * 1000),
       },
     });
 
+  it("stuft das volle Schaltjahr ohne Umrechnung ein", () => {
+    const result = run("2024-01-01", "2024-12-31", 16.96);
+
     expect(result.co2Detail?.emissionsKgPerSqmYear).toBe(17);
+    expect(result.co2Detail?.periodShare).toBeUndefined();
+  });
+
+  it("nimmt den Abrechnungszeitraum des Gebäudes und kürzt die Grenzwerte", () => {
+    const result = run("2027-03-01", "2027-10-31", 7.96);
+
+    expect(result.co2Detail).toMatchObject({
+      emissionsKgPerSqmPeriod: 8,
+      periodShare: { numerator: 2, denominator: 3 },
+      landlordSharePercent: 10,
+      landlordDeductionCents: 1000,
+    });
+    expect(result.co2Detail?.emissionsKgPerSqmYear).toBeUndefined();
+    // Abzug des Vermieters plus verteilter Topf ergibt die Gesamtkosten
+    expect(result.totalHeatingCostsCents).toBe(99_000);
   });
 });
 
 describe("calculateCo2Split", () => {
+  const split = (
+    periodStart: string,
+    periodEnd: string,
+    kgPerSqm: number,
+    livingAreaSqm = 200,
+  ) =>
+    calculateCo2Split({
+      totalCostCents: 10_000,
+      totalAmountGrams: Math.round(kgPerSqm * livingAreaSqm * 1000),
+      livingAreaSqm,
+      periodStart,
+      periodEnd,
+    });
+  const fullYear = (kgPerSqm: number) =>
+    split("2027-01-01", "2027-12-31", kgPerSqm, 100);
+
   it("rechnet Ausstoß, Stufe und Abzug für ein volles Jahr (Beispiel 17,5 -> 20 %)", () => {
-    const split = calculateCo2Split({
+    const result = calculateCo2Split({
       totalCostCents: 11_770,
       totalAmountGrams: 3_500_000, // 3.500 kg
       livingAreaSqm: 200,
-      periodDays: 365,
+      periodStart: "2027-01-01",
+      periodEnd: "2027-12-31",
     });
-    expect(split.emissionsKgPerSqmYear).toBeCloseTo(17.5, 5);
-    expect(split.landlordSharePercent).toBe(20);
+    expect(result.emissionsKgPerSqmYear).toBeCloseTo(17.5, 5);
+    expect(result.landlordSharePercent).toBe(20);
     // 20 % von 117,70 € = 23,54 €.
-    expect(split.landlordDeductionCents).toBe(2354);
+    expect(result.landlordDeductionCents).toBe(2354);
   });
 
-  it("rechnet bei Teil-Abrechnungszeitraum auf ein Jahr hoch", () => {
-    // Halbes Jahr, halbe Jahresmenge -> aufs Jahr gerechnet dieselbe Intensität
-    const split = calculateCo2Split({
-      totalCostCents: 10_000,
-      totalAmountGrams: 1_750_000, // 1.750 kg in 182 Tagen
-      livingAreaSqm: 200,
-      periodDays: 182,
-    });
-    // (1750/200) x (365/182) ~= 17,55 -> gerundet 17,5 -> Stufe 17..<22 -> 20 %.
-    expect(split.emissionsKgPerSqmYear).toBeCloseTo(17.5, 5);
-    expect(split.landlordSharePercent).toBe(20);
-  });
+  it.each([
+    ["über den Jahreswechsel", "2027-07-01", "2028-06-30"],
+    ["über den Schalttag", "2027-03-01", "2028-02-29"],
+    ["ab dem 29.02.", "2028-02-29", "2029-02-28"],
+    ["nach dem Schalttag", "2028-03-01", "2029-02-28"],
+  ])("rechnet das volle Jahr %s nicht um", (_name, periodStart, periodEnd) => {
+    // 16,96 -> 17,0 -> 20 %. Jede Umrechnung nach Tagen ergäbe einen
+    // anderen Wert als die Menge je Fläche.
+    const result = split(periodStart, periodEnd, 16.96);
 
-  it("nimmt im Schaltjahr 366 Tage als Bezugsjahr", () => {
-    // 16,96 kg/qm über die volle Schaltjahres-Periode: mit 366 Bezugstagen
-    // bleibt die Intensität unverändert und wird auf 17,0 gerundet (Stufe
-    // 17..<22 -> 20 %). Mit fest 365 Tagen wären es 16,9 und nur 10 %.
-    const leapYearInput = {
-      totalCostCents: 10_000,
-      totalAmountGrams: 16.96 * 200 * 1000,
-      livingAreaSqm: 200,
-      periodDays: 366,
-    };
-
-    const split = calculateCo2Split({ ...leapYearInput, daysInYear: 366 });
-    expect(split.emissionsKgPerSqmYear).toBe(17);
-    expect(split.landlordSharePercent).toBe(20);
-
-    const withoutLeapDay = calculateCo2Split(leapYearInput);
-    expect(withoutLeapDay.emissionsKgPerSqmYear).toBe(16.9);
+    expect(result.emissionsKgPerSqmYear).toBe(17);
+    expect(result.emissionsKgPerSqmPeriod).toBeUndefined();
+    expect(result.periodShare).toBeUndefined();
+    expect(result.landlordSharePercent).toBe(20);
   });
 
   it("rundet den Ausstoß auf eine Nachkommastelle, bevor eingestuft wird", () => {
-    const splitFor = (kgPerSqm: number) =>
-      calculateCo2Split({
-        totalCostCents: 10_000,
-        totalAmountGrams: kgPerSqm * 100 * 1000,
-        livingAreaSqm: 100,
-        periodDays: 365,
-      });
-
     // 16,96 -> 17,0 -> Stufe 17..<22 -> 20 %; ungerundet wären es 10 %.
-    expect(splitFor(16.96).emissionsKgPerSqmYear).toBe(17);
-    expect(splitFor(16.96).landlordSharePercent).toBe(20);
+    expect(fullYear(16.96).emissionsKgPerSqmYear).toBe(17);
+    expect(fullYear(16.96).landlordSharePercent).toBe(20);
     // 16,94 -> 16,9 -> bleibt unter 17 -> 10 %.
-    expect(splitFor(16.94).emissionsKgPerSqmYear).toBe(16.9);
-    expect(splitFor(16.94).landlordSharePercent).toBe(10);
+    expect(fullYear(16.94).emissionsKgPerSqmYear).toBe(16.9);
+    expect(fullYear(16.94).landlordSharePercent).toBe(10);
     // 11,95 -> 12,0 -> Stufe 12..<17 -> 10 %.
-    expect(splitFor(11.95).emissionsKgPerSqmYear).toBe(12);
-    expect(splitFor(11.95).landlordSharePercent).toBe(10);
+    expect(fullYear(11.95).emissionsKgPerSqmYear).toBe(12);
+    expect(fullYear(11.95).landlordSharePercent).toBe(10);
     // 11,94 -> 11,9 -> bleibt unter 12 -> 0 %.
-    expect(splitFor(11.94).emissionsKgPerSqmYear).toBe(11.9);
-    expect(splitFor(11.94).landlordSharePercent).toBe(0);
+    expect(fullYear(11.94).emissionsKgPerSqmYear).toBe(11.9);
+    expect(fullYear(11.94).landlordSharePercent).toBe(0);
+  });
+
+  describe("Abrechnungszeitraum unter einem Jahr (§ 5 Abs. 1 Satz 4 CO2KostAufG)", () => {
+    it.each([
+      // 7,96 -> 8,0 erreicht die gekürzte Grenze 8,00. Hochgerechnet wären
+      // es 11,9 und 0 %.
+      ["2027-03-01", "2027-10-31", 7.96, 8, 10],
+      // 11,31 -> 11,3 bleibt unter 11,33. Hochgerechnet wären es 17,0 und
+      // 20 %.
+      ["2027-01-01", "2027-08-31", 11.31, 11.3, 10],
+      // Acht Monate sind zwei Drittel, nicht 245 von 365 Tagen.
+      ["2027-03-01", "2027-10-31", 8.02, 8, 10],
+    ])("%s bis %s mit %f kg/qm", (periodStart, periodEnd, kgPerSqm, rounded, percent) => {
+      const result = split(periodStart, periodEnd, kgPerSqm);
+
+      expect(result.emissionsKgPerSqmPeriod).toBe(rounded);
+      expect(result.emissionsKgPerSqmYear).toBeUndefined();
+      expect(result.periodShare).toEqual({ numerator: 2, denominator: 3 });
+      expect(result.landlordSharePercent).toBe(percent);
+    });
+
+    it("rechnet den Abzug vom gekürzt eingestuften Anteil", () => {
+      const result = split("2027-03-01", "2027-10-31", 7.96);
+
+      expect(result.landlordDeductionCents).toBe(1000);
+    });
+  });
+});
+
+describe("co2Tier mit gekürzten Grenzwerten", () => {
+  const twoThirds = { numerator: 2, denominator: 3 };
+  const half = { numerator: 1, denominator: 2 };
+
+  it("erreicht die Stufe genau auf der Grenze, ein Zehntel darunter nicht", () => {
+    expect(co2LandlordSharePercent(8, twoThirds)).toBe(10);
+    expect(co2LandlordSharePercent(7.9, twoThirds)).toBe(0);
+  });
+
+  it("vergleicht mit dem genauen Bruch, wenn der Grenzwert kein Zehntel ist", () => {
+    // 17 x 2/3 = 11,333
+    expect(co2LandlordSharePercent(11.3, twoThirds)).toBe(10);
+    expect(co2LandlordSharePercent(11.4, twoThirds)).toBe(20);
+  });
+
+  it.each([
+    [12, 10],
+    [17, 20],
+    [22, 30],
+    [27, 40],
+    [32, 50],
+    [37, 60],
+    [42, 70],
+    [47, 80],
+    [52, 95],
+  ])("halbes Jahr: Grenze %i wird bei der Hälfte erreicht (%i %%)", (limit, percent) => {
+    const reached = co2Tier(limit / 2, half);
+
+    expect(reached.landlordPercent).toBe(percent);
+    // Die Stufe trägt weiter die Werte der Anlage
+    expect(reached.minInclusive).toBe(limit);
+    expect(
+      co2LandlordSharePercent(Math.round(limit * 5 - 1) / 10, half),
+    ).toBeLessThan(percent);
+  });
+
+  it("folgt dem genauen Grenzwert, nicht dem gerundeten Anzeigewert", () => {
+    // 01.01. bis 28.01.2027: 12 x 7/93 = 0,9032, angezeigt 0,90
+    const share = { numerator: 7, denominator: 93 };
+
+    expect(co2LandlordSharePercent(0.9, share)).toBe(0);
+    expect(co2LandlordSharePercent(1, share)).toBe(10);
   });
 });
 
@@ -1268,7 +1349,6 @@ describe("calculateHeating mit CO2KostAufG", () => {
         enabled: true,
         totalCostCents: 10_000, // 100 € CO2-Kosten im Topf
         totalAmountGrams: 3_500_000, // 17,5 kg/qm x a bei 200 qm
-        periodDays: 365,
       },
     });
     // 20 % von 100 € = 20 € Abzug -> Netto-Topf 980 €.
@@ -1292,7 +1372,6 @@ describe("calculateHeating mit CO2KostAufG", () => {
         enabled: false,
         totalCostCents: 10_000,
         totalAmountGrams: 3_500_000,
-        periodDays: 365,
       },
     });
     expect(result.co2Detail).toBeUndefined();
@@ -1307,7 +1386,6 @@ describe("calculateHeating mit CO2KostAufG", () => {
         enabled: true,
         totalCostCents: 10_000,
         totalAmountGrams: 0, // Menge fehlt -> keine Einstufung möglich
-        periodDays: 365,
       },
     });
     expect(result.co2Detail).toBeUndefined();
@@ -1322,7 +1400,6 @@ describe("calculateHeating mit CO2KostAufG", () => {
       enabled: true,
       totalCostCents: 20_000,
       totalAmountGrams: 3_500_000,
-      periodDays: 365,
     };
     const group = {
       label: "Gas",
@@ -1494,7 +1571,6 @@ describe("calculateHeating mit CO2KostAufG", () => {
         enabled: true,
         totalCostCents: 0, // keine Kostenart mit CO2-Kosten hinterlegt
         totalAmountGrams: 3_500_000,
-        periodDays: 365,
       },
     });
     expect(result.co2Detail).toBeUndefined();

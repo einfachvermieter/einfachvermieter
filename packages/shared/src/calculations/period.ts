@@ -1,4 +1,4 @@
-import type { Period } from "../types/index.js";
+import type { Period, PeriodShare } from "../types/index.js";
 
 /**
  * Verschiebt ein ISO-Datum (YYYY-MM-DD) um `days` Tage
@@ -83,4 +83,78 @@ export const prorationFactor = (
   const overlapDays = daysBetween(overlap.start, overlap.end);
   const invoiceDays = daysBetween(invoicePeriod.start, invoicePeriod.end);
   return overlapDays / invoiceDays;
+};
+
+/**
+ * Monatsgrenze: der erste Tag, der nicht mehr zum `months`-ten Monat ab
+ * `periodStart` gehört. Der Tag trägt im Zielmonat die Zahl des Anfangstags;
+ * gibt es ihn dort nicht, ist es der Erste des Monats danach (ein Monat ab
+ * dem 31.01. endet am letzten Februartag). Immer vom Anfangstag aus gezählt,
+ * nie von der vorigen Grenze, und immer ein gültiges Kalenderdatum.
+ */
+export const monthBoundary = (periodStart: string, months: number): string => {
+  const year = Number(periodStart.slice(0, 4));
+  const monthIndex = Number(periodStart.slice(5, 7)) - 1 + months;
+  const day = Number(periodStart.slice(8, 10));
+  const lastDayOfTargetMonth = new Date(
+    Date.UTC(year, monthIndex + 1, 0),
+  ).getUTCDate();
+  const boundary =
+    day <= lastDayOfTargetMonth
+      ? Date.UTC(year, monthIndex, day)
+      : Date.UTC(year, monthIndex + 1, 1);
+
+  return new Date(boundary).toISOString().slice(0, 10);
+};
+
+/**
+ * Zählt die Monate eines Zeitraums vom Anfangstag aus: vollständig
+ * enthaltene Monate, die Resttage danach und die Länge des Monats, in den
+ * der Rest fällt. `null` ab zwölf Monaten (volles Jahr).
+ */
+export const countPeriodMonths = (
+  period: Period,
+): { fullMonths: number; restDays: number; nextMonthDays: number } | null => {
+  const endExclusive = addDaysIso(period.end, 1);
+  if (endExclusive >= monthBoundary(period.start, 12)) {
+    return null;
+  }
+
+  let fullMonths = 0;
+  while (monthBoundary(period.start, fullMonths + 1) <= endExclusive) {
+    fullMonths++;
+  }
+  const lastBoundary = monthBoundary(period.start, fullMonths);
+  // daysBetween zählt beide Enden mit, hier ist das Ende ausgeschlossen
+  const daysUntil = (iso: string) => daysBetween(lastBoundary, iso) - 1;
+
+  return {
+    fullMonths,
+    restDays: daysUntil(endExclusive),
+    nextMonthDays: daysUntil(monthBoundary(period.start, fullMonths + 1)),
+  };
+};
+
+const greatestCommonDivisor = (a: number, b: number): number =>
+  b === 0 ? a : greatestCommonDivisor(b, a % b);
+
+/**
+ * Anteil eines Abrechnungszeitraums unter einem Jahr am Jahr: Monate
+ * geteilt durch 12, der Rest nach den vollen Monaten als Bruchteil des
+ * folgenden Monats. Acht Monate ergeben genau 2/3. `null` beim vollen Jahr.
+ */
+export const periodShareOfYear = (period: Period): PeriodShare | null => {
+  const months = countPeriodMonths(period);
+  if (!months) {
+    return null;
+  }
+
+  const numerator = months.fullMonths * months.nextMonthDays + months.restDays;
+  const denominator = 12 * months.nextMonthDays;
+  const divisor = greatestCommonDivisor(numerator, denominator);
+
+  return {
+    numerator: numerator / divisor,
+    denominator: denominator / divisor,
+  };
 };

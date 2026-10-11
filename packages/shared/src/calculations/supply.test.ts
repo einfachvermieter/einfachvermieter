@@ -595,11 +595,10 @@ describe("Warmwasser mit Versorgungsteilnahme", () => {
 
 describe("Maßgebliche Wohnfläche der CO2-Einstufung (§ 5 Abs. 1 Satz 2 CO2KostAufG)", () => {
   // 1.190 kg: 11,9 kg/qm bei 100 qm (0 %), 19,8 kg/qm bei 60 qm (20 %)
-  const co2 = (totalAmountGrams = 1_190_000, periodDays = 365) => ({
+  const co2 = (totalAmountGrams = 1_190_000) => ({
     enabled: true,
     totalCostCents: 10_000,
     totalAmountGrams,
-    periodDays,
   });
   const bothHotWaterMeters = hotWater([
     hotWaterMeter("wA", "A", [reading("2027-12-31", 0)]),
@@ -742,7 +741,7 @@ describe("Maßgebliche Wohnfläche der CO2-Einstufung (§ 5 Abs. 1 Satz 2 CO2Kos
 
   it("Schaltjahr rechnet mit 366 Tagen", () => {
     const detail = calc({
-      co2: co2(1_190_000, 366),
+      co2: co2(1_190_000),
       units: [
         { ...unit("A", 60), periodDays: 366 },
         { ...unit("B", 40), periodDays: 366 },

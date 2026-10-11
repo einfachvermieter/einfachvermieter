@@ -5,6 +5,11 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Geändert:** Bei einem Abrechnungszeitraum unter einem Jahr werden für
+  die CO₂-Kostenaufteilung die Grenzwerte der Stufen anteilig gekürzt
+  (§ 5 Abs. 1 Satz 4 CO2KostAufG). Der Ausstoß wird nicht mehr auf ein Jahr
+  hochgerechnet. An einer Stufengrenze kann sich der Anteil des Vermieters
+  dadurch um eine Stufe ändern.
 - **Behoben:** Der Hinweis auf eine fehlende Ablesung zur Umstellung der
   Versorgung zeigt Wohnung, Zähler und Datum statt Platzhaltern.
 - **Geändert:** Bei der CO₂-Kostenaufteilung zählt nur noch die Wohnfläche

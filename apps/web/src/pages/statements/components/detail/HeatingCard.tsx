@@ -323,6 +323,11 @@ export const HeatingCard = ({
               {t("statements.pdf.heating.co2.areaBasisPartialNote")}
             </p>
           ) : null}
+          {co2?.periodShare ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              {t("statements.pdf.heating.co2.periodShareNote")}
+            </p>
+          ) : null}
           {co2 ? (
             <p className="mt-3 text-xs text-muted-foreground">
               {t("statements.pdf.heating.co2.basisNote")}

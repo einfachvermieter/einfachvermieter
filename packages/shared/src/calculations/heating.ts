@@ -9,6 +9,7 @@ import type {
   HeatingDetail,
   MeterInfo,
   Period,
+  PeriodShare,
   ReadingPoint,
   SupplySnapshotRow,
   UnitInfo,
@@ -16,7 +17,12 @@ import type {
 import { CalculationError, type CalcWarning } from "./diagnostics.js";
 import { consumptionBetween, isDerivedConsumption } from "./meters.js";
 import { bpsToFactor, distributeCents } from "./money.js";
-import { daysBetween, daysInYear, intersect } from "./period.js";
+import {
+  daysBetween,
+  daysInYear,
+  intersect,
+  periodShareOfYear,
+} from "./period.js";
 import {
   applyCompensations,
   type CompensationInput,
@@ -349,8 +355,9 @@ export const aggregateHeatingCosts = (
  * Je höher der spezifische CO2-Ausstoß des Gebäudes (kg CO2 je qm Wohnfläche
  * und Jahr), desto größer der Anteil der CO2-Kosten, den der Vermieter trägt.
  * Schlecht gedämmte Gebäude entlasten so den Mieter. Die Schwellen sind
- * ausdrücklich auf kg CO2/qm x **Jahr** bezogen; Teil-Abrechnungszeiträume
- * werden zuvor auf ein Jahr hochgerechnet (siehe `calculateCo2Split`).
+ * auf kg CO2/qm x **Jahr** bezogen. Bei einem Abrechnungszeitraum unter
+ * einem Jahr werden sie anteilig gekürzt (§ 5 Abs. 1 Satz 4), der Ausstoß
+ * wird nicht hochgerechnet (siehe `co2Tier`).
  * Nichtwohngebäude (50/50-Pauschale) sind hier bewusst nicht abgebildet.
  */
 const CO2_LANDLORD_SHARE_TIERS: ReadonlyArray<{
@@ -375,6 +382,7 @@ const CO2_LANDLORD_SHARE_TIERS: ReadonlyArray<{
 export type Co2Tier = {
   /**
    * Untere Grenze (inklusiv) in kg CO2/qm x a - 0 für die unterste Stufe.
+   * Immer der Wert der Anlage, auch bei kurzem Zeitraum.
    */
   minInclusive: number;
   /**
@@ -388,16 +396,31 @@ export type Co2Tier = {
 };
 
 /**
- * Stufe des 10-Stufen-Modells, in die ein spezifischer CO2-Ausstoß
- * (kg/qm x a) fällt. Inklusive Grenzwerte für die Anzeige der Einstufung.
+ * Stufe des 10-Stufen-Modells, in die ein spezifischer CO2-Ausstoß fällt.
+ * Inklusive Grenzwerte für die Anzeige der Einstufung.
+ *
+ * Ohne `periodShare` ist der Ausstoß ein Jahreswert (kg/qm x a). Mit
+ * `periodShare` ist er der auf eine Nachkommastelle gerundete Ausstoß eines
+ * kurzen Abrechnungszeitraums und wird mit den anteilig gekürzten
+ * Grenzwerten verglichen. Der Vergleich läuft in ganzen Zahlen (Ausstoß in
+ * Zehnteln), weil ein gekürzter Grenzwert wie 34/3 als Gleitkommazahl
+ * genau an der Grenze kippen kann.
  */
-export const co2Tier = (emissionsKgPerSqmYear: number): Co2Tier => {
+export const co2Tier = (
+  emissionsKgPerSqm: number,
+  periodShare?: PeriodShare,
+): Co2Tier => {
   const tiers = CO2_LANDLORD_SHARE_TIERS;
+  const isBelow = (limit: number): boolean =>
+    periodShare
+      ? Math.round(emissionsKgPerSqm * 10) * periodShare.denominator <
+        10 * limit * periodShare.numerator
+      : emissionsKgPerSqm < limit;
 
   for (let index = 0; index < tiers.length; index++) {
     const current = tiers[index];
 
-    if (current && emissionsKgPerSqmYear < current.maxExclusive) {
+    if (current && isBelow(current.maxExclusive)) {
       const previous = index === 0 ? undefined : tiers[index - 1];
 
       return {
@@ -419,11 +442,13 @@ export const co2Tier = (emissionsKgPerSqmYear: number): Co2Tier => {
 };
 
 /**
- * Vermieteranteil (%) für einen spezifischen CO2-Ausstoß in kg/qm x a.
+ * Vermieteranteil (%) für einen spezifischen CO2-Ausstoß, Parameter wie
+ * bei `co2Tier`.
  */
 export const co2LandlordSharePercent = (
-  emissionsKgPerSqmYear: number,
-): number => co2Tier(emissionsKgPerSqmYear).landlordPercent;
+  emissionsKgPerSqm: number,
+  periodShare?: PeriodShare,
+): number => co2Tier(emissionsKgPerSqm, periodShare).landlordPercent;
 
 /**
  * Berechnungsgrundlage je Brennstoffgruppe, wie sie die Abrechnung nach
@@ -458,22 +483,24 @@ export type Co2SplitInput = {
   totalCostCents: number;
   totalAmountGrams: number;
   livingAreaSqm: number;
-  periodDays: number;
+  /**
+   * Abrechnungszeitraum des Gebäudes, nicht die Mietzeit
+   */
+  periodStart: string;
+  periodEnd: string;
   /**
    * Wird unverändert ins Ergebnis durchgereicht, die Aufteilung rechnet
    * damit nicht.
    */
   fuelBasis?: Co2FuelBasisEntry[];
-  /**
-   * Tage des Bezugsjahres (366 im Schaltjahr). Ohne Angabe 365.
-   */
-  daysInYear?: number;
 };
 
 export type Co2SplitResult = {
   totalCostCents: number;
   totalAmountGrams: number;
-  emissionsKgPerSqmYear: number;
+  emissionsKgPerSqmYear?: number;
+  emissionsKgPerSqmPeriod?: number;
+  periodShare?: PeriodShare;
   landlordSharePercent: number;
   landlordDeductionCents: number;
   /**
@@ -485,21 +512,28 @@ export type Co2SplitResult = {
 };
 
 /**
- * CO2KostAufG-Aufteilung für Wohngebäude. Rechnet die CO2-Menge auf ein Jahr
- * hoch (kg/qm x a), liest daraus den Vermieteranteil aus dem Stufenmodell und
- * wendet diesen Prozentsatz auf die tatsächlichen Perioden-CO2-Kosten an.
+ * CO2KostAufG-Aufteilung für Wohngebäude. Bezieht die CO2-Menge auf die
+ * Wohnfläche, liest daraus den Vermieteranteil aus dem Stufenmodell und
+ * wendet diesen Prozentsatz auf die CO2-Kosten des Zeitraums an.
+ *
+ * Bei einem Abrechnungszeitraum unter einem Jahr wird der Ausstoß nicht
+ * hochgerechnet. Gekürzt werden die Grenzwerte der Stufen (§ 5 Abs. 1
+ * Satz 4 CO2KostAufG).
  */
 export const calculateCo2Split = (input: Co2SplitInput): Co2SplitResult => {
   // § 5 Abs. 1 S. 3 CO2KostAufG: erst auf eine Nachkommastelle runden,
   // dann einstufen, sonst kippt der Vermieteranteil an Stufengrenzen.
-  const emissionsKgPerSqmYear =
-    Math.round(
-      (input.totalAmountGrams / 1000 / input.livingAreaSqm) *
-        ((input.daysInYear ?? 365) / input.periodDays) *
-        10,
-    ) / 10;
+  // Gerundet wird der Ausstoß des Abrechnungszeitraums.
+  const emissionsKgPerSqm =
+    Math.round((input.totalAmountGrams / 1000 / input.livingAreaSqm) * 10) / 10;
+  const periodShare =
+    periodShareOfYear({ start: input.periodStart, end: input.periodEnd }) ??
+    undefined;
 
-  const landlordSharePercent = co2LandlordSharePercent(emissionsKgPerSqmYear);
+  const landlordSharePercent = co2LandlordSharePercent(
+    emissionsKgPerSqm,
+    periodShare,
+  );
   const landlordDeductionCents = Math.round(
     (input.totalCostCents * landlordSharePercent) / 100,
   );
@@ -507,7 +541,9 @@ export const calculateCo2Split = (input: Co2SplitInput): Co2SplitResult => {
   return {
     totalCostCents: input.totalCostCents,
     totalAmountGrams: input.totalAmountGrams,
-    emissionsKgPerSqmYear,
+    ...(periodShare
+      ? { emissionsKgPerSqmPeriod: emissionsKgPerSqm, periodShare }
+      : { emissionsKgPerSqmYear: emissionsKgPerSqm }),
     landlordSharePercent,
     landlordDeductionCents,
     livingAreaSqm: input.livingAreaSqm,
@@ -577,7 +613,10 @@ type HeatingCalculationInput = {
    * `heating_settings.co2CostShareEnabled`) und liegen CO2-Kosten vor, wird
    * der Vermieteranteil aus dem Kostentopf herausgerechnet
    */
-  co2?: { enabled: boolean } & Omit<Co2SplitInput, "livingAreaSqm">;
+  co2?: { enabled: boolean } & Omit<
+    Co2SplitInput,
+    "livingAreaSqm" | "periodStart" | "periodEnd"
+  >;
 
   /**
    * Warmwasser-Abspaltung nach § 9 Abs. 2 HeizkostenV. Nur gesetzt, wenn das
@@ -1205,7 +1244,7 @@ const pushMissingMeterWarnings = (
 const computeCo2Deduction = (
   co2: HeatingCalculationInput["co2"],
   livingAreaSqm: number,
-  daysInBaseYear: number,
+  statementPeriod: Period,
   warnings: CalcWarning[],
 ): {
   co2Detail: Co2SplitResult | undefined;
@@ -1234,11 +1273,12 @@ const computeCo2Deduction = (
     return { co2Detail: undefined, landlordCo2DeductionCents: 0 };
   }
 
-  if (co2.totalAmountGrams > 0 && livingAreaSqm > 0 && co2.periodDays > 0) {
+  if (co2.totalAmountGrams > 0 && livingAreaSqm > 0) {
     const co2Detail = calculateCo2Split({
       ...co2,
       livingAreaSqm,
-      daysInYear: daysInBaseYear,
+      periodStart: statementPeriod.start,
+      periodEnd: statementPeriod.end,
     });
     // Energiegehalt und Faktor werden nur ausgewiesen, gerechnet wird damit
     // nicht. Fehlen sie, bleibt es bei einem Hinweis.
@@ -1833,7 +1873,7 @@ const splitHeatingPot = (
     // Wohnungen, die aus der Anlage beheizt werden. Warmwasser allein
     // zählt nicht, die Belegung spielt keine Rolle.
     suppliedLivingAreaSqm(heatingScoped.units),
-    yearDays,
+    { start: periodStart, end: input.periodEnd },
     warnings,
   );
   if (co2Detail && input.hotWater) {

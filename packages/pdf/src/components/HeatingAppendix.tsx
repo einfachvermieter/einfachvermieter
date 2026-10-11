@@ -690,6 +690,11 @@ export const HeatingAppendix = ({
           {t("statements.pdf.heating.co2.areaBasisPartialNote")}
         </Text>
       ) : null}
+      {co2?.periodShare ? (
+        <Text style={styles.footnote}>
+          {t("statements.pdf.heating.co2.periodShareNote")}
+        </Text>
+      ) : null}
       {co2 ? (
         <Text style={styles.footnote}>
           {t("statements.pdf.heating.co2.basisNote")}

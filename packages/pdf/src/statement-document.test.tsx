@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import {
   calculateStatement,
   type HeatingDetail,
@@ -7,6 +8,7 @@ import {
 } from "@einfachvermieter/shared";
 import { type DocumentProps, Font, renderToBuffer } from "@react-pdf/renderer";
 import type { ReactElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
   geistNormalPath,
@@ -193,6 +195,89 @@ describe("StatementDocument", () => {
     );
 
     expect(buffer.subarray(0, 5).toString()).toBe("%PDF-");
+  });
+
+  describe("CO2-Einstufung bei Abrechnungszeitraum unter einem Jahr", () => {
+    // Mit der Hochrechnung finalisiert: Jahreswert trotz kurzem Zeitraum
+    const stored = statementResultSchema.parse(
+      JSON.parse(
+        readFileSync(
+          new URL(
+            "../../shared/src/schemas/fixtures/statement-result/v2-internal-co2-short-period.json",
+            import.meta.url,
+          ),
+          "utf-8",
+        ),
+      ),
+    );
+    const { emissionsKgPerSqmYear: _yearValue, ...co2Fields } =
+      stored.heatingDetail?.co2Detail ?? {};
+    const shortened = statementResultSchema.parse({
+      ...stored,
+      heatingDetail: {
+        ...stored.heatingDetail,
+        co2Detail: {
+          ...co2Fields,
+          emissionsKgPerSqmPeriod: 13.3,
+          periodShare: { numerator: 2, denominator: 3 },
+        },
+      },
+    });
+
+    const documentFor = (snapshot: typeof stored) => (
+      <StatementDocument result={snapshot} meta={meta} />
+    );
+    /**
+     * Texte des Dokuments ohne Layout. Die Fußzeile mit der Seitenzahl
+     * entsteht erst beim Umbruch und fehlt hier.
+     */
+    const textOf = (snapshot: typeof stored): string =>
+      renderToStaticMarkup(documentFor(snapshot))
+        .replace(/<[^>]+>/gu, "")
+        .replaceAll("&lt;", "<");
+    const pageCount = async (snapshot: typeof stored): Promise<number> => {
+      const buffer = await renderToBuffer(
+        documentFor(snapshot) as unknown as ReactElement<DocumentProps>,
+      );
+
+      return (buffer.toString("latin1").match(/\/Type\s*\/Page[^s]/gu) ?? [])
+        .length;
+    };
+    const co2 = (key: string, params?: Record<string, string>) =>
+      t(`statements.pdf.heating.co2.${key}`, params);
+
+    it("zeigt Ausstoß des Zeitraums, Stufe der Anlage und gekürzte Grenzwerte", () => {
+      const text = textOf(shortened);
+
+      expect(text).toContain(co2("emissionsPeriod"));
+      // Hochgestellte 2 ist ein eigenes Element, im reinen Text steht "m2"
+      expect(text).toContain("13,3\u00a0kg\u00a0CO₂/m2");
+      expect(text).not.toContain("13,3\u00a0kg\u00a0CO₂/m2/a");
+      expect(text).toContain("17 bis < 22\u00a0kg\u00a0CO₂/m2/a");
+      expect(text).toContain(co2("tierShortened", { months: "8" }));
+      expect(text).toContain("11,33 bis <\u00a014,67\u00a0kg\u00a0CO₂/m2");
+      expect(text).not.toContain("14,67\u00a0kg\u00a0CO₂/m2/a");
+      expect(text).toContain(co2("periodShareNote"));
+      expect(text).not.toContain(co2("emissions"));
+    });
+
+    it("zeigt einen Snapshot mit Jahreswert wie vor der Umstellung", () => {
+      const text = textOf(stored);
+
+      expect(text).toContain(co2("emissions"));
+      expect(text).toContain("20,0\u00a0kg\u00a0CO₂/m2/a");
+      expect(text).toContain("17 bis < 22\u00a0kg\u00a0CO₂/m2/a");
+      expect(text).not.toContain(co2("emissionsPeriod"));
+      expect(text).not.toContain("von 12\u00a0Monaten");
+      expect(text).not.toContain(co2("periodShareNote"));
+    });
+
+    it("erzeugt beide PDFs, die Zusatzzeilen verschieben keinen Seitenumbruch", async () => {
+      const storedPages = await pageCount(stored);
+
+      expect(storedPages).toBeGreaterThan(0);
+      expect(await pageCount(shortened)).toBe(storedPages);
+    }, 30_000);
   });
 
   it("rendert ohne Heizung, ohne Wasser und mit lückenhaftem Absender", async () => {

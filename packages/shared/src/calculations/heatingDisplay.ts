@@ -10,11 +10,13 @@ import {
   formatEmissionFactor,
   formatEur,
   formatNumber,
+  formatNumberLoose,
 } from "../format.js";
 import type {
   EnergyComparison,
   HeatingDetail,
   Period,
+  PeriodShare,
 } from "../types/index.js";
 import {
   co2Tier,
@@ -404,7 +406,9 @@ export type Co2TableRow = {
     | "totalCost"
     | "areaBasis"
     | "emissions"
+    | "emissionsPeriod"
     | "tier"
+    | "tierShortened"
     | "sharePair"
     | "landlordDeduction"
     | "tenantSideCost"
@@ -425,6 +429,10 @@ export type Co2TableRow = {
  * Energiegehalt und Emissionsfaktor stehen nur bei genau einer
  * Brennstoffgruppe hier, mehrere Gruppen zeigt `co2FuelTable`. Snapshots
  * ohne `fuelBasis` zeigen die beiden Zeilen nicht.
+ *
+ * Bei einem Abrechnungszeitraum unter einem Jahr (`periodShare`) steht der
+ * Ausstoß des Zeitraums ohne Jahresbezug da, und unter der Stufe der Anlage
+ * folgen die anteilig gekürzten Grenzwerte.
  */
 export const co2TableRows = (
   detail: HeatingDetail,
@@ -483,19 +491,60 @@ export const co2TableRows = (
         params: { value: formatNumber(co2.livingAreaSqm, 2) },
       },
     },
-    {
-      key: "emissions",
-      label: label("emissions"),
-      value: {
-        key: "statements.pdf.heating.co2.emissionsValue",
-        params: { value: formatNumber(co2.emissionsKgPerSqmYear, 1) },
-      },
-    },
-    {
-      key: "tier",
-      label: label("tier"),
-      value: co2TierLabel(co2.emissionsKgPerSqmYear),
-    },
+    ...(co2.periodShare
+      ? ([
+          {
+            key: "emissionsPeriod",
+            label: label("emissionsPeriod"),
+            value: {
+              key: "statements.pdf.heating.co2.emissionsValuePeriod",
+              params: {
+                value: formatNumber(co2.emissionsKgPerSqmPeriod ?? 0, 1),
+              },
+            },
+          },
+          {
+            key: "tier",
+            label: label("tier"),
+            value: co2TierLabel(
+              co2.emissionsKgPerSqmPeriod ?? 0,
+              co2.periodShare,
+            ),
+          },
+          {
+            key: "tierShortened",
+            label: {
+              ...label("tierShortened"),
+              params: {
+                months: formatNumberLoose(
+                  (12 * co2.periodShare.numerator) /
+                    co2.periodShare.denominator,
+                ),
+              },
+            },
+            value: co2ShortenedTierLabel(
+              co2.emissionsKgPerSqmPeriod ?? 0,
+              co2.periodShare,
+            ),
+          },
+        ] satisfies Co2TableRow[])
+      : ([
+          {
+            key: "emissions",
+            label: label("emissions"),
+            value: {
+              key: "statements.pdf.heating.co2.emissionsValue",
+              params: {
+                value: formatNumber(co2.emissionsKgPerSqmYear ?? 0, 1),
+              },
+            },
+          },
+          {
+            key: "tier",
+            label: label("tier"),
+            value: co2TierLabel(co2.emissionsKgPerSqmYear ?? 0),
+          },
+        ] satisfies Co2TableRow[])),
     {
       key: "sharePair",
       label: label("sharePair"),
@@ -1208,35 +1257,69 @@ export const energyComparisonDisplay = (
 };
 
 /**
- * CO2KostAufG-Einstufungs-Label: Stufe des Gebäude-Ausstoßes als eine der drei
- * Bereichsformen (unterste/mittlere/oberste Stufe).
+ * Bereich einer Stufe als eine der drei Formen (unterste/mittlere/oberste
+ * Stufe). `keySuffix` wählt die Texte mit oder ohne Jahresbezug.
  */
-export const co2TierLabel = (
-  emissionsKgPerSqmYear: number,
+const co2TierRangeLabel = (
+  tier: { minInclusive: number; maxExclusive: number },
+  keySuffix: "" | "Period",
+  formatLimit: (limit: number) => string,
 ): HeatingLabelDescriptor => {
-  const tier = co2Tier(emissionsKgPerSqmYear);
   if (!Number.isFinite(tier.maxExclusive)) {
     return {
-      key: "statements.pdf.heating.co2.tierAbove",
-      params: { min: formatNumber(tier.minInclusive, 0) },
+      key: `statements.pdf.heating.co2.tierAbove${keySuffix}`,
+      params: { min: formatLimit(tier.minInclusive) },
     };
   }
 
   if (tier.minInclusive === 0) {
     return {
-      key: "statements.pdf.heating.co2.tierBelow",
-      params: { max: formatNumber(tier.maxExclusive, 0) },
+      key: `statements.pdf.heating.co2.tierBelow${keySuffix}`,
+      params: { max: formatLimit(tier.maxExclusive) },
     };
   }
 
   return {
-    key: "statements.pdf.heating.co2.tierRange",
+    key: `statements.pdf.heating.co2.tierRange${keySuffix}`,
     params: {
-      min: formatNumber(tier.minInclusive, 0),
-      max: formatNumber(tier.maxExclusive, 0),
+      min: formatLimit(tier.minInclusive),
+      max: formatLimit(tier.maxExclusive),
     },
   };
 };
+
+/**
+ * CO2KostAufG-Einstufungs-Label: Stufe des Gebäude-Ausstoßes mit den
+ * Grenzwerten der Anlage, auch bei kurzem Abrechnungszeitraum.
+ */
+export const co2TierLabel = (
+  emissionsKgPerSqm: number,
+  periodShare?: PeriodShare,
+): HeatingLabelDescriptor =>
+  co2TierRangeLabel(co2Tier(emissionsKgPerSqm, periodShare), "", (limit) =>
+    formatNumber(limit, 0),
+  );
+
+/**
+ * Dieselbe Stufe mit den anteilig gekürzten Grenzwerten eines kurzen
+ * Abrechnungszeitraums. Die zwei Nachkommastellen sind nur Anzeige:
+ * Eingestuft wird mit dem genauen Bruch, nicht mit dem gerundeten Wert.
+ */
+export const co2ShortenedTierLabel = (
+  emissionsKgPerSqmPeriod: number,
+  periodShare: PeriodShare,
+): HeatingLabelDescriptor =>
+  co2TierRangeLabel(
+    co2Tier(emissionsKgPerSqmPeriod, periodShare),
+    "Period",
+    (limit) =>
+      formatNumber(
+        Math.round(
+          (limit * periodShare.numerator * 100) / periodShare.denominator,
+        ) / 100,
+        2,
+      ),
+  );
 
 /**
  * Satz an Stelle des Vorperiodenvergleichs, wenn er entfällt, weil die

@@ -318,7 +318,14 @@ export const heatingDetailSchema = z.object({
     .object({
       totalCostCents: z.number().int(),
       totalAmountGrams: z.number().int(),
-      emissionsKgPerSqmYear: z.number(),
+      emissionsKgPerSqmYear: z.number().optional(),
+      emissionsKgPerSqmPeriod: z.number().optional(),
+      periodShare: z
+        .object({
+          numerator: z.number().int().positive(),
+          denominator: z.number().int().positive(),
+        })
+        .optional(),
       landlordSharePercent: z.number().int().min(0).max(100),
       landlordDeductionCents: z.number().int(),
       livingAreaSqm: z.number(),
@@ -339,6 +346,15 @@ export const heatingDetailSchema = z.object({
         )
         .optional(),
     })
+    // Eingestuft wird entweder mit dem Jahreswert oder mit dem Wert des
+    // kurzen Zeitraums samt Anteil am Jahr, nie mit beidem.
+    .refine(
+      (co2) =>
+        (co2.emissionsKgPerSqmYear === undefined) !==
+          (co2.emissionsKgPerSqmPeriod === undefined) &&
+        (co2.emissionsKgPerSqmPeriod === undefined) ===
+          (co2.periodShare === undefined),
+    )
     .optional(),
   /**
    * Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV). Gesetzt, wenn der
