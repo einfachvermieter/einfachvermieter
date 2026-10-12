@@ -39,7 +39,7 @@
   },
   "overrides": {
     "zod": "^4.3.6",
-    "multer": "^2.3.0"
+    "multer": "^2.4.0"
   },
   "engines": {
     "node": ">=24.11.0"
