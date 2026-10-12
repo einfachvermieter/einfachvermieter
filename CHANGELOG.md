@@ -5,6 +5,9 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Sicherheit:** Zwei Bibliotheken des Servers sind aktualisiert. Behoben
+  sind eine Lücke bei der Erkennung der Absenderadresse hinter einem
+  Reverse-Proxy und eine Lücke bei abgebrochenen Datei-Uploads.
 - **Neu:** Schlägt eine Aktualisierung fehl, zeigt die App eine Seite mit
   dem Weg zurück, statt nicht mehr zu starten.
 - **Geändert:** Die Datenbank wird vor jeder Aktualisierung, die sie

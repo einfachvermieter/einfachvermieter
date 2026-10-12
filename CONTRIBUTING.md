@@ -1,7 +1,7 @@
 # Mitwirken
 
 Danke für Ihr Interesse. Das Projekt ist eine private Hausverwaltungs-App
-für deutsche Nebenkostenabrechnungen und wird nebenberuflich gepflegt.
+für deutsche Nebenkostenabrechnungen und wird in der Freizeit gepflegt.
 Fehlerberichte, Fragen zur Fachlichkeit und kleine, klar umrissene Pull
 Requests sind willkommen. Größere Änderungen bitte vorher in einem Issue
 besprechen, damit keine Arbeit ins Leere läuft.
