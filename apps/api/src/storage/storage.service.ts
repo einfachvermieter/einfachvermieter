@@ -123,8 +123,13 @@ export class StorageService {
     // Windows trennt `resolve` mit Backspaces, ein fest verdrahteter
     // Schrägstrich weist dort jeden gültigen Key ab.
     const inside = relative(this.baseDir, target);
+    // Ein leerer relativer Pfad ist das Basisverzeichnis selbst. Als Ziel
+    // von `deleteDirectory` würde es den gesamten Store entfernen.
     const escapes =
-      inside === ".." || inside.startsWith(`..${sep}`) || isAbsolute(inside);
+      inside === "" ||
+      inside === ".." ||
+      inside.startsWith(`..${sep}`) ||
+      isAbsolute(inside);
     if (escapes) {
       throw new Error(`Storage key escapes base directory: ${key}`);
     }

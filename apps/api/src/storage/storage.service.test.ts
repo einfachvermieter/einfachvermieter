@@ -45,4 +45,19 @@ describe("StorageService", () => {
       /escapes base directory/u,
     );
   });
+
+  it("weist Keys ab, die auf das Basisverzeichnis selbst zeigen", async () => {
+    const { base, service } = storage();
+    await service.write("cost-entries/abc/beleg.pdf", Buffer.from("x"));
+
+    for (const key of ["", ".", "cost-entries/.."]) {
+      await expect(service.deleteDirectory(key)).rejects.toThrow(
+        /escapes base directory/u,
+      );
+    }
+
+    expect(
+      readFileSync(join(base, "cost-entries", "abc", "beleg.pdf")).toString(),
+    ).toBe("x");
+  });
 });
