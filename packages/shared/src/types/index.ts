@@ -649,7 +649,9 @@ export type HeatingDetail = {
      */
     periodShare?: PeriodShare;
     /**
-     * Vermieteranteil (%) aus dem 10-Stufen-Modell.
+     * Angewendeter Vermieteranteil (%), mit dem der Abzug gerechnet ist:
+     * der Anteil aus dem 10-Stufen-Modell, mit einer Beschränkung nach § 9
+     * CO2KostAufG dessen Hälfte (auch halbe Prozent) oder 0.
      */
     landlordSharePercent: number;
     /**
@@ -672,6 +674,20 @@ export type HeatingDetail = {
       amountGrams: number | null;
       costCents: number | null;
     }>;
+    /**
+     * Vermieteranteil (%) laut Stufe. Nur zusammen mit `restriction`
+     * gesetzt.
+     */
+    tableLandlordSharePercent?: number;
+    /**
+     * Angaben des Vermieters zur Beschränkung nach § 9 CO2KostAufG. Nur
+     * gesetzt, wenn Vorgaben dem Gebäude oder der Versorgung entgegenstehen.
+     */
+    restriction?: {
+      building: boolean;
+      supply: boolean;
+      evidenceNote: string;
+    };
   };
   /**
    * Warmwasser-Abspaltung nach § 9 Abs. 2 HeizkostenV. Gesetzt bei zentraler

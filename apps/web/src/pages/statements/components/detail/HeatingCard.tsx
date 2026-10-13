@@ -1,6 +1,7 @@
 import {
   co2AreaIsPartial,
   co2FuelTable,
+  co2RestrictionNote,
   co2TableRows,
   consumptionUnitLabel,
   formatEur,
@@ -122,6 +123,7 @@ export const HeatingCard = ({
     (ownHeatingUnit?.totalCents ?? 0) + (ownHotWaterUnit?.totalCents ?? 0),
   );
   const fuelTable = co2FuelTable(co2);
+  const restrictionNote = co2RestrictionNote(co2);
   // Kopf-Kennzahl über die volle Breite: Gesamt-Heizkosten der Wohnung,
   // aufgeschlüsselt nach Heizung und Warmwasser.
   const heatingKpi =
@@ -318,6 +320,17 @@ export const HeatingCard = ({
               ))}
             </tbody>
           </table>
+          {restrictionNote ? (
+            <div className="mt-4 text-sm">
+              <h4 className="font-medium">
+                {t("statements.pdf.heating.co2.restrictionNoteTitle")}
+              </h4>
+              <p className="mt-1">{t(restrictionNote.sentence.key)}</p>
+              <p className="mt-1 whitespace-pre-line">
+                {restrictionNote.evidenceNote}
+              </p>
+            </div>
+          ) : null}
           {co2AreaIsPartial(detail) ? (
             <p className="mt-3 text-xs text-muted-foreground">
               {t("statements.pdf.heating.co2.areaBasisPartialNote")}

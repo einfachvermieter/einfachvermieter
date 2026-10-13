@@ -35,6 +35,7 @@ import {
   calculateExternalHeating,
   calculateHeating,
   calculateStatement,
+  co2RestrictionInPeriod,
   consumptionBetween,
   type DifferenceConfigInput,
   daysBetween,
@@ -2157,6 +2158,8 @@ export class StatementsService {
         consumptionMethod,
       );
 
+    const co2 = await this.buildCo2Input(input, heatingAggregation);
+
     try {
       heatingDetail = calculateHeating({
         totalHeatingCostsCents,
@@ -2173,12 +2176,7 @@ export class StatementsService {
         targetUnitId,
         prorationMethod: heatingSettings.prorationMethod,
         ...(hotWater ? { hotWater } : {}),
-        co2: {
-          enabled: heatingSettings.co2CostShareEnabled,
-          totalCostCents: heatingAggregation.totalCo2CostCents,
-          totalAmountGrams: heatingAggregation.totalCo2AmountGrams,
-          fuelBasis: co2FuelBasis(heatingAggregation, heatingCostEntries),
-        },
+        ...(co2.input ? { co2: co2.input } : {}),
         ...substitutionInputs,
         ...supplyInput(supplyExclusions, unitsRaw, (unitId) =>
           unitId === targetUnitId
@@ -2202,7 +2200,11 @@ export class StatementsService {
       if (!heatingDetail.warnings) {
         heatingDetail.warnings = [];
       }
-      heatingDetail.warnings.push(...hotWaterWarnings, ...substitutionWarnings);
+      heatingDetail.warnings.push(
+        ...hotWaterWarnings,
+        ...substitutionWarnings,
+        ...co2.warnings,
+      );
       if (heatingPeriodValueRelevance(heatingSettings).districtHeat) {
         attachDistrictHeatInfo(heatingDetail, periodValues);
       }
@@ -2211,6 +2213,51 @@ export class StatementsService {
     }
 
     return heatingDetail;
+  }
+
+  /**
+   * CO2KostAufG-Eingaben der Heizkostenberechnung. Gelten im Zeitraum
+   * unterschiedliche Angaben nach § 9 CO2KostAufG, regelt das Gesetz die
+   * Aufteilung nicht. Sie wird dann nicht gerechnet (`input` fehlt) und
+   * die Abrechnung mit einer Warnung gesperrt.
+   */
+  private async buildCo2Input(
+    input: {
+      buildingId: string;
+      heatingSettings: Awaited<ReturnType<HeatingService["getForBuildingAt"]>>;
+      heatingCostEntries: Parameters<typeof co2FuelBasis>[1];
+      statementPeriod: { start: string; end: string };
+    },
+    heatingAggregation: ReturnType<typeof aggregateHeatingCosts>,
+  ) {
+    const { heatingSettings } = input;
+    const { conflict, evidenceNote } = co2RestrictionInPeriod(
+      await this.heatingService.listForBuilding(input.buildingId),
+      input.statementPeriod,
+    );
+
+    if (conflict) {
+      return {
+        input: undefined,
+        warnings: [{ code: "co2RestrictionConflictInPeriod" }],
+      };
+    }
+
+    return {
+      warnings: [],
+      input: {
+        enabled: heatingSettings.co2CostShareEnabled,
+        totalCostCents: heatingAggregation.totalCo2CostCents,
+        totalAmountGrams: heatingAggregation.totalCo2AmountGrams,
+        fuelBasis: co2FuelBasis(heatingAggregation, input.heatingCostEntries),
+        restriction: {
+          building: heatingSettings.co2BuildingRestricted,
+          supply: heatingSettings.co2SupplyRestricted,
+          evidenceNote:
+            evidenceNote ?? heatingSettings.co2RestrictionEvidenceNote ?? "",
+        },
+      },
+    };
   }
 
   /**

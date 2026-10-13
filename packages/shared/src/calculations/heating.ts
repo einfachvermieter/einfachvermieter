@@ -451,6 +451,105 @@ export const co2LandlordSharePercent = (
 ): number => co2Tier(emissionsKgPerSqm, periodShare).landlordPercent;
 
 /**
+ * Angaben des Vermieters zu einer Beschränkung nach § 9 CO2KostAufG:
+ * welchem Bereich öffentlich-rechtliche Vorgaben entgegenstehen und sein
+ * Text zum Nachweis.
+ */
+export type Co2Restriction = {
+  building: boolean;
+  supply: boolean;
+  evidenceNote: string;
+};
+
+/**
+ * Von der Beschränkung betroffener Bereich, geschrieben wie die Endung der
+ * zugehörigen Textschlüssel.
+ */
+export type Co2RestrictionScope = "None" | "Building" | "Supply" | "Both";
+
+export const co2RestrictionScope = (
+  buildingRestricted: boolean,
+  supplyRestricted: boolean,
+): Co2RestrictionScope => {
+  if (buildingRestricted && supplyRestricted) {
+    return "Both";
+  }
+  if (buildingRestricted) {
+    return "Building";
+  }
+
+  return supplyRestricted ? "Supply" : "None";
+};
+
+/**
+ * Angewendeter Vermieteranteil (%) nach § 9 CO2KostAufG: Steht eine
+ * Beschränkung dem Gebäude oder der Versorgung entgegen, wird der Anteil
+ * laut Tabelle halbiert (Abs. 1), bei beiden entfällt er (Abs. 2). Der
+ * halbe Wert wird nicht gerundet, 95 % ergeben 47,5 %.
+ */
+export const co2AppliedLandlordSharePercent = (
+  tableLandlordSharePercent: number,
+  buildingRestricted: boolean,
+  supplyRestricted: boolean,
+): number => {
+  if (buildingRestricted && supplyRestricted) {
+    return 0;
+  }
+
+  return buildingRestricted || supplyRestricted
+    ? tableLandlordSharePercent / 2
+    : tableLandlordSharePercent;
+};
+
+/**
+ * Version der Heizkostenkonfiguration, soweit sie für die Prüfung der
+ * Beschränkung nach § 9 CO2KostAufG zählt.
+ */
+export type Co2RestrictionVersion = {
+  mode: "internal" | "external";
+  validFrom: string;
+  validTo: string | null;
+  co2CostShareEnabled: boolean;
+  co2BuildingRestricted: boolean;
+  co2SupplyRestricted: boolean;
+  co2RestrictionEvidenceNote: string | null;
+};
+
+/**
+ * Prüft die Angaben nach § 9 CO2KostAufG über einen Abrechnungszeitraum.
+ * Es zählen die intern gerechneten Versionen mit eingeschalteter
+ * Aufteilung, die an mindestens einem Tag des Zeitraums gelten. Weichen
+ * ihre Angaben zu Gebäude oder Versorgung voneinander ab, ist das ein
+ * Konflikt: Das Gesetz regelt nicht, wie dann aufzuteilen ist. Ein anderer
+ * Text allein ist kein Konflikt, `evidenceNote` ist der Text der letzten
+ * dieser Versionen.
+ */
+export const co2RestrictionInPeriod = (
+  versions: Co2RestrictionVersion[],
+  period: Period,
+): { conflict: boolean; evidenceNote: string | null } => {
+  const relevant = versions
+    .filter(
+      (version) =>
+        version.mode === "internal" &&
+        version.co2CostShareEnabled &&
+        version.validFrom <= period.end &&
+        (version.validTo === null || version.validTo >= period.start),
+    )
+    .sort((left, right) => left.validFrom.localeCompare(right.validFrom));
+  const [first] = relevant;
+
+  return {
+    conflict: relevant.some(
+      (version) =>
+        version.co2BuildingRestricted !== first?.co2BuildingRestricted ||
+        version.co2SupplyRestricted !== first?.co2SupplyRestricted,
+    ),
+    evidenceNote: relevant.at(-1)?.co2RestrictionEvidenceNote ?? null,
+  };
+};
+
+/**
  * Berechnungsgrundlage je Brennstoffgruppe, wie sie die Abrechnung nach
  * § 7 Abs. 3 CO2KostAufG ausweist. `label` ist der Name der Kostenart.
  */
@@ -493,6 +592,11 @@ export type Co2SplitInput = {
    * damit nicht.
    */
   fuelBasis?: Co2FuelBasisEntry[];
+  /**
+   * Beschränkung nach § 9 CO2KostAufG. Gesetzt, wenn Vorgaben dem Gebäude
+   * oder der Versorgung entgegenstehen.
+   */
+  restriction?: Co2Restriction;
 };
 
 export type Co2SplitResult = {
@@ -501,6 +605,11 @@ export type Co2SplitResult = {
   emissionsKgPerSqmYear?: number;
   emissionsKgPerSqmPeriod?: number;
   periodShare?: PeriodShare;
+  /**
+   * Angewendeter Vermieteranteil, mit dem der Abzug gerechnet ist. Mit
+   * einer Beschränkung nach § 9 CO2KostAufG die Hälfte des Anteils laut
+   * Tabelle (auch halbe Prozent) oder 0.
+   */
   landlordSharePercent: number;
   landlordDeductionCents: number;
   /**
@@ -509,6 +618,11 @@ export type Co2SplitResult = {
    */
   livingAreaSqm: number;
   fuelBasis?: Co2FuelBasisEntry[];
+  /**
+   * Vermieteranteil laut Stufe. Nur zusammen mit `restriction` gesetzt.
+   */
+  tableLandlordSharePercent?: number;
+  restriction?: Co2Restriction;
 };
 
 /**
@@ -519,6 +633,9 @@ export type Co2SplitResult = {
  * Bei einem Abrechnungszeitraum unter einem Jahr wird der Ausstoß nicht
  * hochgerechnet. Gekürzt werden die Grenzwerte der Stufen (§ 5 Abs. 1
  * Satz 4 CO2KostAufG).
+ *
+ * Eine Beschränkung nach § 9 CO2KostAufG ändert den Anteil laut Tabelle zum
+ * angewendeten Anteil. Die Stufe bleibt die aus dem Ausstoß.
  */
 export const calculateCo2Split = (input: Co2SplitInput): Co2SplitResult => {
   // § 5 Abs. 1 S. 3 CO2KostAufG: erst auf eine Nachkommastelle runden,
@@ -530,12 +647,23 @@ export const calculateCo2Split = (input: Co2SplitInput): Co2SplitResult => {
     periodShareOfYear({ start: input.periodStart, end: input.periodEnd }) ??
     undefined;
 
-  const landlordSharePercent = co2LandlordSharePercent(
+  const tableLandlordSharePercent = co2LandlordSharePercent(
     emissionsKgPerSqm,
     periodShare,
   );
+  const restriction =
+    input.restriction?.building || input.restriction?.supply
+      ? input.restriction
+      : undefined;
+  const landlordSharePercent = co2AppliedLandlordSharePercent(
+    tableLandlordSharePercent,
+    restriction?.building ?? false,
+    restriction?.supply ?? false,
+  );
+  // Einmal runden, in ganzen Zahlen: Der halbe Prozentsatz wird über den
+  // Nenner 200 gerechnet, nicht als vorher gerundeter Zwischenwert.
   const landlordDeductionCents = Math.round(
-    (input.totalCostCents * landlordSharePercent) / 100,
+    (input.totalCostCents * landlordSharePercent * 2) / 200,
   );
 
   return {
@@ -548,6 +676,7 @@ export const calculateCo2Split = (input: Co2SplitInput): Co2SplitResult => {
     landlordDeductionCents,
     livingAreaSqm: input.livingAreaSqm,
     ...(input.fuelBasis ? { fuelBasis: input.fuelBasis } : {}),
+    ...(restriction ? { tableLandlordSharePercent, restriction } : {}),
   };
 };
 
@@ -605,7 +734,6 @@ type HeatingCalculationInput = {
    * - "degree_days": Gradtagsgewichtet (Flächen-Gradtage = qm x Summe
    *                  Gradtag-Promille der belegten Tage).
    */
-
   prorationMethod?: HeatingProrationMethod;
 
   /**
@@ -728,34 +856,6 @@ export const hotWaterCorrectionFactor = (settings: {
 
   return factor;
 };
-
-/**
- * Interne Heizkostenberechnung nach HeizkostenV.
- *
- * 1. **Verbrauchsanteil** (consumptionShareBps, typ. 70 %):
- *    - Topf = `totalHeatingCostsCents x consumptionFactor` - **ungekürzt**
- *      (Jahres-Topf). Die zeitliche Zuordnung zum Mieter ergibt sich
- *      automatisch aus dem Zähler-Delta.
- *    - Verteilung anhand der Zählerwerte: Ziel-Wohnung liest über die
- *      Mietzeit (Zwischenablesung), andere Wohnungen über die volle
- *      Statement-Periode. Der Nenner enthält zusätzlich den Verbrauch der
- *      Ziel-Wohnung außerhalb der Mietzeit (Vor-/Nachmieter, Leerstand);
- *      dieser Anteil fällt auf den Vermieter und wird über das Statement
- *      des anderen Mieters wieder eingesammelt.
- *
- * 2. **Grundkostenanteil** (1 − consumptionShareBps, typ. 30 %):
- *    - Topf = `totalHeatingCostsCents x (1 − consumptionFactor)` -
- *      **ungekürzt** (Jahres-Topf).
- *    - Verteilung nach Flächentagen über alle Wohnungen (qm x belegte
- *      Tage). Bei `prorationMethod = "degree_days"` werden die Tage mit
- *      den Gradtagszahlen gewichtet (Flächen-Gradtage statt
- *      Flächentage). Leerstand fällt jeweils auf den Vermieter.
- *
- * Der Wärmemengenzähler misst kWh direkt; bei Heizkostenverteilern werden
- * die abgelesenen Anzeigewerte pro HKV mit dem heizkörperspezifischen
- * Bewertungsfaktor (KGesamt) multipliziert und über alle HKV der Wohnung
- * summiert.
- */
 
 /**
  * Faktor der Schätzformel aus § 9 Abs. 2 HeizkostenV: Q_WW [kWh] =
@@ -2407,6 +2507,33 @@ export const measureHotWaterUnits = (params: {
   return { unitHotWaterM3, landlordM3 };
 };
 
+/**
+ * Interne Heizkostenberechnung nach HeizkostenV.
+ *
+ * 1. **Verbrauchsanteil** (consumptionShareBps, typ. 70 %):
+ *    - Topf = `totalHeatingCostsCents x consumptionFactor` - **ungekürzt**
+ *      (Jahres-Topf). Die zeitliche Zuordnung zum Mieter ergibt sich
+ *      automatisch aus dem Zähler-Delta.
+ *    - Verteilung anhand der Zählerwerte: Ziel-Wohnung liest über die
+ *      Mietzeit (Zwischenablesung), andere Wohnungen über die volle
+ *      Statement-Periode. Der Nenner enthält zusätzlich den Verbrauch der
+ *      Ziel-Wohnung außerhalb der Mietzeit (Vor-/Nachmieter, Leerstand);
+ *      dieser Anteil fällt auf den Vermieter und wird über das Statement
+ *      des anderen Mieters wieder eingesammelt.
+ *
+ * 2. **Grundkostenanteil** (1 − consumptionShareBps, typ. 30 %):
+ *    - Topf = `totalHeatingCostsCents x (1 − consumptionFactor)` -
+ *      **ungekürzt** (Jahres-Topf).
+ *    - Verteilung nach Flächentagen über alle Wohnungen (qm x belegte
+ *      Tage). Bei `prorationMethod = "degree_days"` werden die Tage mit
+ *      den Gradtagszahlen gewichtet (Flächen-Gradtage statt
+ *      Flächentage). Leerstand fällt jeweils auf den Vermieter.
+ *
+ * Der Wärmemengenzähler misst kWh direkt; bei Heizkostenverteilern werden
+ * die abgelesenen Anzeigewerte pro HKV mit dem heizkörperspezifischen
+ * Bewertungsfaktor (KGesamt) multipliziert und über alle HKV der Wohnung
+ * summiert.
+ */
 export const calculateHeating = (
   input: HeatingCalculationInput,
 ): HeatingDetail => {

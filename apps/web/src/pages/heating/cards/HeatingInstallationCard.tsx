@@ -1,4 +1,7 @@
-import type { HeatingSettings } from "@einfachvermieter/shared";
+import {
+  co2RestrictionScope,
+  type HeatingSettings,
+} from "@einfachvermieter/shared";
 import { RiFireLine, RiPencilLine } from "@remixicon/react";
 import type { ResultRow } from "@/components/common/ResultRows";
 import { ResultRows } from "@/components/common/ResultRows";
@@ -9,7 +12,7 @@ import type { Meter } from "../../../lib/meters";
 
 /**
  * View-Card der Heizungsanlage: Heizungsart, Brennstoff, Warmwasser und
- * die CO2-Kostenaufteilung
+ * die CO2-Kostenaufteilung samt Beschränkung nach § 9 CO2KostAufG
  */
 export const HeatingInstallationCard = ({
   version,
@@ -67,6 +70,24 @@ export const HeatingInstallationCard = ({
     label: t("ui.heating.fields.co2CostShareEnabled"),
     value: yesNo(version.co2CostShareEnabled),
   });
+
+  if (version.co2CostShareEnabled) {
+    const scope = co2RestrictionScope(
+      version.co2BuildingRestricted,
+      version.co2SupplyRestricted,
+    );
+
+    rows.push({
+      label: t("ui.heating.fields.co2Restriction"),
+      value: t(`ui.heating.fields.co2Restriction${scope}`),
+    });
+    if (version.co2RestrictionEvidenceNote) {
+      rows.push({
+        label: t("ui.heating.fields.co2RestrictionEvidenceNote"),
+        value: version.co2RestrictionEvidenceNote,
+      });
+    }
+  }
 
   return (
     <SectionCard

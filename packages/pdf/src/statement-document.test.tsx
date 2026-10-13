@@ -318,3 +318,57 @@ describe("StatementDocument", () => {
     expect(buffer.subarray(0, 5).toString()).toBe("%PDF-");
   });
 });
+
+describe("Beschränkung nach § 9 CO2KostAufG", () => {
+  const stored = statementResultSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL(
+          "../../shared/src/schemas/fixtures/statement-result/v2-internal-co2-restriction.json",
+          import.meta.url,
+        ),
+        "utf-8",
+      ),
+    ),
+  );
+  const evidenceNote = "Die Fassade darf nicht gedämmt werden. ".repeat(51);
+  const withLongNote = statementResultSchema.parse({
+    ...stored,
+    heatingDetail: {
+      ...stored.heatingDetail,
+      co2Detail: {
+        ...stored.heatingDetail?.co2Detail,
+        restriction: { building: true, supply: false, evidenceNote },
+      },
+    },
+  });
+  const documentFor = (snapshot: typeof stored) => (
+    <StatementDocument result={snapshot} meta={meta} />
+  );
+  const co2 = (key: string) => t(`statements.pdf.heating.co2.${key}`);
+
+  it("zeigt die Kette bis zum angewendeten Anteil und die Angaben des Vermieters", () => {
+    const text = renderToStaticMarkup(documentFor(withLongNote)).replace(
+      /<[^>]+>/gu,
+      "",
+    );
+
+    expect(text).toContain(co2("sharePairTable"));
+    expect(text).toContain("5\u00a0% / 95\u00a0%");
+    expect(text).toContain(co2("restrictionHalf"));
+    expect(text).toContain(co2("sharePairApplied"));
+    expect(text).toContain("52,5\u00a0% / 47,5\u00a0%");
+    expect(text).toContain(co2("restrictionNoteTitle"));
+    expect(text).toContain(co2("restrictionBuilding"));
+    expect(text).toContain(evidenceNote);
+  });
+
+  it("erzeugt das PDF auch mit einem Text von 2000 Zeichen", async () => {
+    const buffer = await renderToBuffer(
+      documentFor(withLongNote) as unknown as ReactElement<DocumentProps>,
+    );
+
+    expect(evidenceNote.length).toBeGreaterThan(1950);
+    expect(buffer.subarray(0, 5).toString()).toBe("%PDF-");
+  }, 30_000);
+});

@@ -821,6 +821,57 @@ describe("Happy Path", () => {
     expect(
       await api(`${valuesPath}?${yearQuery}`, { expect: 200 }),
     ).toMatchObject(noValues);
+
+    // ── Beschränkung nach § 9 CO2KostAufG ───────────────────────────────
+    const heatingPath = `/buildings/${building.id}/heating`;
+    const patchHeating = (body: Record<string, unknown>, status: number) =>
+      api(`${heatingPath}/${heatingVersionId}`, {
+        method: "PATCH",
+        body: { ...heatingDto, ...body },
+        expect: status,
+      });
+    const restricted = {
+      co2CostShareEnabled: true,
+      co2BuildingRestricted: true,
+      co2RestrictionEvidenceNote: "  Denkmalschutz  ",
+    };
+
+    // Ohne Aufteilung werden die Angaben nicht gespeichert.
+    expect(
+      await patchHeating({ ...restricted, co2CostShareEnabled: false }, 200),
+    ).toMatchObject({
+      co2BuildingRestricted: false,
+      co2SupplyRestricted: false,
+      co2RestrictionEvidenceNote: null,
+    });
+    await patchHeating(
+      { ...restricted, co2RestrictionEvidenceNote: null },
+      400,
+    );
+    expect(await patchHeating(restricted, 200)).toMatchObject({
+      co2BuildingRestricted: true,
+      co2RestrictionEvidenceNote: "Denkmalschutz",
+    });
+    expect(warningCodes(await calculatePreview())).not.toContain(
+      "co2RestrictionConflictInPeriod",
+    );
+
+    // Fällt die Beschränkung im Zeitraum weg, wird nicht aufgeteilt.
+    await patchHeating({ ...restricted, validTo: "2025-06-30" }, 200);
+    await api(heatingPath, {
+      method: "POST",
+      body: {
+        ...heatingDto,
+        validFrom: "2025-07-01",
+        co2CostShareEnabled: true,
+      },
+      expect: 201,
+    });
+    const conflicting = await calculatePreview();
+    expect(warningCodes(conflicting)).toContain(
+      "co2RestrictionConflictInPeriod",
+    );
+    expect(conflicting.heatingDetail.co2Detail).toBeUndefined();
   }, 120_000);
 
   it("löscht ein Gebäude samt Werten eines Zeitraums ohne Abrechnung", async () => {

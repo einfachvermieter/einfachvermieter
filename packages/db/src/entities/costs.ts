@@ -292,6 +292,23 @@ export type HeatingSetting = {
    */
   includeBillingInfo: Opt<boolean>;
   co2CostShareEnabled: boolean;
+  /**
+   * § 9 CO2KostAufG: Öffentlich-rechtliche Vorgaben stehen einer
+   * wesentlichen energetischen Verbesserung des Gebäudes entgegen.
+   */
+  co2BuildingRestricted: Opt<boolean>;
+  /**
+   * § 9 CO2KostAufG: Öffentlich-rechtliche Vorgaben stehen einer
+   * wesentlichen Verbesserung der Wärme- und Warmwasserversorgung entgegen.
+   * Eine Angabe halbiert den Vermieteranteil, beide heben die Aufteilung
+   * auf.
+   */
+  co2SupplyRestricted: Opt<boolean>;
+  /**
+   * Angaben des Vermieters zum Nachweis der Beschränkung, wie sie die
+   * Abrechnung druckt. NULL ohne Beschränkung.
+   */
+  co2RestrictionEvidenceNote: Opt<string | null>;
   validFrom: string;
   validTo: string | null;
   createdAt: Opt<string>;
@@ -364,6 +381,21 @@ export const HeatingSettingSchema = new EntitySchema<HeatingSetting>({
       type: "boolean",
       fieldName: "co2_cost_share_enabled",
       default: true,
+    },
+    co2BuildingRestricted: {
+      type: "boolean",
+      fieldName: "co2_building_restricted",
+      default: false,
+    },
+    co2SupplyRestricted: {
+      type: "boolean",
+      fieldName: "co2_supply_restricted",
+      default: false,
+    },
+    co2RestrictionEvidenceNote: {
+      type: "text",
+      fieldName: "co2_restriction_evidence_note",
+      nullable: true,
     },
     validFrom: {
       type: "string",

@@ -61,6 +61,9 @@ const defaultSettings = (buildingId: string): HeatingSettings => ({
   mandatorySeventyPercent: false,
   includeBillingInfo: true,
   co2CostShareEnabled: true,
+  co2BuildingRestricted: false,
+  co2SupplyRestricted: false,
+  co2RestrictionEvidenceNote: null,
   validFrom: "1900-01-01",
   validTo: null,
   createdAt: "",
@@ -325,8 +328,17 @@ export class HeatingService {
         mandatorySeventyPercent: false,
         includeBillingInfo: dto.includeBillingInfo,
         co2CostShareEnabled: true,
+        co2BuildingRestricted: false,
+        co2SupplyRestricted: false,
+        co2RestrictionEvidenceNote: null,
       };
     }
+    // Angaben nach § 9 CO2KostAufG gibt es nur bei eingeschalteter
+    // Aufteilung, den Text nur zu einer gesetzten Angabe.
+    const co2BuildingRestricted =
+      dto.co2CostShareEnabled && dto.co2BuildingRestricted;
+    const co2SupplyRestricted =
+      dto.co2CostShareEnabled && dto.co2SupplyRestricted;
     return {
       buildingId,
       mode: dto.mode,
@@ -348,6 +360,12 @@ export class HeatingService {
       // intern ist die App die einzige Quelle der Angaben.
       includeBillingInfo: true,
       co2CostShareEnabled: dto.co2CostShareEnabled,
+      co2BuildingRestricted,
+      co2SupplyRestricted,
+      co2RestrictionEvidenceNote:
+        co2BuildingRestricted || co2SupplyRestricted
+          ? (dto.co2RestrictionEvidenceNote?.trim() ?? null)
+          : null,
     };
   }
 

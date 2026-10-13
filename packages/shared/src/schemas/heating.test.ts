@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { heatingSettingsWriteSchema } from "./heating.js";
+import {
+  emptyHeatingFormValues,
+  heatingFormSchema,
+  heatingSettingsWriteSchema,
+} from "./heating.js";
 import {
   heatingPeriodValueRelevance,
   heatingPeriodValuesFormToDto,
@@ -175,5 +179,67 @@ describe("Werte je Abrechnungszeitraum", () => {
         fuelType: "district_heat",
       }),
     ).toEqual({ totalHeatEnergy: false, districtHeat: false });
+  });
+});
+
+describe("Angaben zum Nachweis einer Beschränkung nach § 9 CO2KostAufG", () => {
+  const write = (fields: Record<string, unknown>) =>
+    heatingSettingsWriteSchema.safeParse({
+      ...internalBase,
+      consumptionSharePercent: 70,
+      baseSharePercent: 30,
+      ...fields,
+    });
+
+  it("belegt die Angaben vor, wenn der Aufrufer sie weglässt", () => {
+    expect(write({}).data).toMatchObject({
+      co2BuildingRestricted: false,
+      co2SupplyRestricted: false,
+      co2RestrictionEvidenceNote: null,
+    });
+  });
+
+  it("verlangt den Text, sobald eine Angabe gesetzt ist", () => {
+    expect(write({ co2BuildingRestricted: true }).success).toBe(false);
+    expect(
+      write({ co2SupplyRestricted: true, co2RestrictionEvidenceNote: "   " })
+        .success,
+    ).toBe(false);
+    expect(
+      write({
+        co2SupplyRestricted: true,
+        co2RestrictionEvidenceNote: "Fernwärmesatzung",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("verlangt keinen Text bei ausgeschalteter Aufteilung", () => {
+    expect(
+      write({ co2CostShareEnabled: false, co2BuildingRestricted: true })
+        .success,
+    ).toBe(true);
+  });
+
+  it("lehnt einen Text über 2000 Zeichen ab", () => {
+    expect(
+      write({
+        co2BuildingRestricted: true,
+        co2RestrictionEvidenceNote: "x".repeat(2001),
+      }).success,
+    ).toBe(false);
+  });
+
+  it("meldet den fehlenden Text im Formular am Textfeld", () => {
+    const result = heatingFormSchema.safeParse({
+      ...emptyHeatingFormValues(
+        "3f2b8c1e-9d4a-4e6f-8b7a-1c2d3e4f5a6b",
+        "2026-01-01",
+      ),
+      co2BuildingRestricted: true,
+    });
+
+    expect(result.error?.issues.map((issue) => issue.path)).toEqual([
+      ["co2RestrictionEvidenceNote"],
+    ]);
   });
 });

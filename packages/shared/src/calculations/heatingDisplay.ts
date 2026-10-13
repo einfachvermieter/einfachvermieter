@@ -19,6 +19,7 @@ import type {
   PeriodShare,
 } from "../types/index.js";
 import {
+  co2RestrictionScope,
   co2Tier,
   DEGREE_DAYS_PROMILLE_PER_MONTH,
   degreeDaysMonthlyBreakdown,
@@ -54,7 +55,6 @@ export const landlordShareRow = (detail: {
  * Anzeige als "Bewertungspunkte" (/ 1.000) lohnt sich
  * bei sehr großen Roh-Summen
  */
-
 export const HEATING_VALUATION_POINTS_THRESHOLD = 10_000_000;
 
 /**
@@ -385,6 +385,40 @@ const co2CostValue = (
   costCents === null ? CO2_VALUE_MISSING : formatEur(costCents);
 
 /**
+ * Anteile von Mieter und Vermieter. Ganze Prozent ohne Nachkommastelle,
+ * halbe (nach § 9 Abs. 1 CO2KostAufG halbierter Anteil) mit einer.
+ */
+const co2SharePairValue = (
+  landlordSharePercent: number,
+): HeatingLabelDescriptor => ({
+  key: "statements.pdf.heating.co2.sharePairValue",
+  params: {
+    tenant: formatNumberLoose(100 - landlordSharePercent, 1),
+    landlord: formatNumberLoose(landlordSharePercent, 1),
+  },
+});
+
+/**
+ * Absatz unter der CO2-Tabelle mit den Angaben des Vermieters zur
+ * Beschränkung nach § 9 CO2KostAufG: ein fester Satz je Fall und sein Text,
+ * unverändert. `null` ohne Beschränkung.
+ */
+export const co2RestrictionNote = (
+  co2: HeatingDetail["co2Detail"],
+): { sentence: HeatingLabelDescriptor; evidenceNote: string } | null => {
+  const restriction = co2?.restriction;
+  if (!restriction) {
+    return null;
+  }
+  const scope = co2RestrictionScope(restriction.building, restriction.supply);
+
+  return {
+    sentence: { key: `statements.pdf.heating.co2.restriction${scope}` },
+    evidenceNote: restriction.evidenceNote,
+  };
+};
+
+/**
  * Ob die maßgebliche Wohnfläche der CO2-Einstufung kleiner ist als die des
  * Gebäudes, weil nicht alle Wohnungen die ganze Periode aus der zentralen
  * Anlage beheizt werden. Snapshots ohne `supply` gelten als ganz versorgt.
@@ -410,6 +444,9 @@ export type Co2TableRow = {
     | "tier"
     | "tierShortened"
     | "sharePair"
+    | "sharePairTable"
+    | "restriction"
+    | "sharePairApplied"
     | "landlordDeduction"
     | "tenantSideCost"
     | "potShare"
@@ -433,6 +470,10 @@ export type Co2TableRow = {
  * Bei einem Abrechnungszeitraum unter einem Jahr (`periodShare`) steht der
  * Ausstoß des Zeitraums ohne Jahresbezug da, und unter der Stufe der Anlage
  * folgen die anteilig gekürzten Grenzwerte.
+ *
+ * Mit einer Beschränkung nach § 9 CO2KostAufG (`restriction`) steht statt
+ * der einen Anteilszeile die Kette vom Anteil laut Stufe über die
+ * Beschränkung zum angewendeten Anteil.
  */
 export const co2TableRows = (
   detail: HeatingDetail,
@@ -545,17 +586,36 @@ export const co2TableRows = (
             value: co2TierLabel(co2.emissionsKgPerSqmYear ?? 0),
           },
         ] satisfies Co2TableRow[])),
-    {
-      key: "sharePair",
-      label: label("sharePair"),
-      value: {
-        key: "statements.pdf.heating.co2.sharePairValue",
-        params: {
-          tenant: formatNumber(100 - co2.landlordSharePercent, 0),
-          landlord: formatNumber(co2.landlordSharePercent, 0),
-        },
-      },
-    },
+    ...(co2.restriction && co2.tableLandlordSharePercent !== undefined
+      ? ([
+          {
+            key: "sharePairTable",
+            label: label("sharePairTable"),
+            value: co2SharePairValue(co2.tableLandlordSharePercent),
+          },
+          {
+            key: "restriction",
+            label: label("restriction"),
+            value: {
+              key:
+                co2.restriction.building && co2.restriction.supply
+                  ? "statements.pdf.heating.co2.restrictionFull"
+                  : "statements.pdf.heating.co2.restrictionHalf",
+            },
+          },
+          {
+            key: "sharePairApplied",
+            label: label("sharePairApplied"),
+            value: co2SharePairValue(co2.landlordSharePercent),
+          },
+        ] satisfies Co2TableRow[])
+      : ([
+          {
+            key: "sharePair",
+            label: label("sharePair"),
+            value: co2SharePairValue(co2.landlordSharePercent),
+          },
+        ] satisfies Co2TableRow[])),
     {
       key: "landlordDeduction",
       label: label("landlordDeduction"),

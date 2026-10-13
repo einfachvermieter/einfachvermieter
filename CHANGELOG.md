@@ -5,6 +5,9 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Neu:** Die Heizkostenkonfiguration nimmt Beschränkungen nach § 9
+  CO2KostAufG auf, etwa durch Denkmalschutz oder Anschlusszwang. Der
+  Anteil des Vermieters an den CO₂-Kosten wird dann halbiert oder entfällt.
 - **Sicherheit:** Zwei Bibliotheken des Servers sind aktualisiert. Behoben
   sind eine Lücke bei der Erkennung der Absenderadresse hinter einem
   Reverse-Proxy und eine Lücke bei abgebrochenen Datei-Uploads.

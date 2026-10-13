@@ -3,6 +3,7 @@ import {
   type Co2TableRow,
   co2AreaIsPartial,
   co2FuelTable,
+  co2RestrictionNote,
   co2TableRows,
   consumptionUnitLabel,
   formatEur,
@@ -349,6 +350,7 @@ export const HeatingAppendix = ({
     (ownHeatingUnit?.totalCents ?? 0) + (ownHotWaterUnit?.totalCents ?? 0),
   );
   const fuelTable = co2FuelTable(co2);
+  const restrictionNote = co2RestrictionNote(co2);
   const yourHeatingIntro =
     hw && ownHeatingUnit && ownHotWaterUnit
       ? t("statements.pdf.heating.yourHeatingIntro", {
@@ -685,6 +687,17 @@ export const HeatingAppendix = ({
           {infoSection}
         </View>
       )}
+      {restrictionNote ? (
+        <View>
+          <Text style={styles.appendixSubheading}>
+            {t("statements.pdf.heating.co2.restrictionNoteTitle")}
+          </Text>
+          <Text style={styles.paragraph}>
+            {t(restrictionNote.sentence.key)}
+          </Text>
+          <Text style={styles.paragraph}>{restrictionNote.evidenceNote}</Text>
+        </View>
+      ) : null}
       {co2AreaIsPartial(detail) ? (
         <Text style={styles.footnote}>
           {t("statements.pdf.heating.co2.areaBasisPartialNote")}

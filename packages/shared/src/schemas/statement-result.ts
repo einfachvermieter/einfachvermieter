@@ -326,7 +326,11 @@ export const heatingDetailSchema = z.object({
           denominator: z.number().int().positive(),
         })
         .optional(),
-      landlordSharePercent: z.number().int().min(0).max(100),
+      /**
+       * Angewendeter Anteil. Halbe Prozent entstehen bei einer
+       * Beschränkung nach § 9 Abs. 1 CO2KostAufG (95 % werden 47,5 %).
+       */
+      landlordSharePercent: z.number().multipleOf(0.5).min(0).max(100),
       landlordDeductionCents: z.number().int(),
       livingAreaSqm: z.number(),
       /**
@@ -345,6 +349,35 @@ export const heatingDetailSchema = z.object({
           }),
         )
         .optional(),
+      /**
+       * Anteil laut Stufe und Angaben zur Beschränkung nach § 9
+       * CO2KostAufG. Beide nur gesetzt, wenn eine Beschränkung angegeben
+       * ist.
+       */
+      tableLandlordSharePercent: z.number().int().min(0).max(100).optional(),
+      restriction: z
+        .object({
+          building: z.boolean(),
+          supply: z.boolean(),
+          evidenceNote: z.string(),
+        })
+        .optional(),
+    })
+    // Die Angaben zur Beschränkung stehen zusammen da oder gar nicht, und
+    // der angewendete Anteil passt zu Tabellenanteil und Angaben.
+    .refine((co2) => {
+      const { restriction, tableLandlordSharePercent: tableShare } = co2;
+      if (restriction === undefined || tableShare === undefined) {
+        return restriction === undefined && tableShare === undefined;
+      }
+      if (!restriction.building && !restriction.supply) {
+        return false;
+      }
+
+      return (
+        co2.landlordSharePercent ===
+        (restriction.building && restriction.supply ? 0 : tableShare / 2)
+      );
     })
     // Eingestuft wird entweder mit dem Jahreswert oder mit dem Wert des
     // kurzen Zeitraums samt Anteil am Jahr, nie mit beidem.

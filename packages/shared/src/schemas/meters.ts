@@ -107,12 +107,6 @@ export const isRemoteReadableRelevantType = (type: MeterType): boolean =>
   type === "water_hot";
 
 /**
- * Eine Periode des Gas-Umrechnungsfaktors. Gehört zu einem Gaszähler.
- * Mehrere Perioden je Zähler sind erlaubt. Der Umrechnungsfaktor selbst
- * ist optional - fehlt er, kann der Zähler weiterhin als reine m3-Quelle
- * verteilt werden.
- */
-/**
  * Konfiguration eines Differenzzählers. `baseMeterId` ist der Ausgangs-
  * zähler (z. B. Hauptwasserzähler), `subtractedMeterIds` sind die davon
  * abzuziehenden Zähler (z. B. Wohnung A, Waschmaschine A).
@@ -127,6 +121,12 @@ export type MeterDifferenceConfigDto = z.infer<
   typeof meterDifferenceConfigSchema
 >;
 
+/**
+ * Eine Periode des Gas-Umrechnungsfaktors. Gehört zu einem Gaszähler.
+ * Mehrere Perioden je Zähler sind erlaubt. Der Umrechnungsfaktor selbst
+ * ist optional - fehlt er, kann der Zähler weiterhin als reine m3-Quelle
+ * verteilt werden.
+ */
 export const gasFactorCreateSchema = z.object({
   id: z.guid().optional(),
   validFrom: isoDate(),

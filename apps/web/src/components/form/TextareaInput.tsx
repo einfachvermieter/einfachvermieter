@@ -5,6 +5,7 @@ import {
   type FieldPath,
   type FieldValues,
 } from "react-hook-form";
+import { HelpHint } from "@/components/help/HelpHint";
 import {
   Field,
   FieldDescription,
@@ -31,6 +32,7 @@ type TextareaInputProps<T extends FieldValues> = TextareaProps & {
   name: FieldPath<T>;
   label: string;
   description?: ReactNode;
+  labelHelp?: ReactNode;
   optional?: boolean;
   fieldClassName?: string;
   textareaClassName?: string;
@@ -41,6 +43,7 @@ export const TextareaInput = <T extends FieldValues>({
   name,
   label,
   description,
+  labelHelp,
   optional = false,
   fieldClassName,
   textareaClassName,
@@ -61,6 +64,7 @@ export const TextareaInput = <T extends FieldValues>({
                 {t("ui.common.forms.optionalSuffix")}
               </span>
             ) : null}
+            {labelHelp ? <HelpHint>{labelHelp}</HelpHint> : null}
           </FieldLabel>
           {description ? (
             <FieldDescription id={descriptionId}>

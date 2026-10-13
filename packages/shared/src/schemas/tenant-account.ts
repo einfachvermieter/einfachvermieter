@@ -2,17 +2,15 @@ import { messageKey } from "@einfachvermieter/i18n";
 import { z } from "zod";
 import { isoDate } from "./common.js";
 
-/**
- * Mieterkonto-Schemas + Domain-Typen
- *
- * Saldo-Modell:
- * - Vier Zahlungszwecke (`month`, `statement`, `deposit`, `fee`)
- * - Pro Zweck hat jeder Topf einen Sollwert und einen Istwert.
- * - Status pro Topf: `open` (Mieter schuldet noch), `balanced` (Ist = Soll)
- *   oder `credit` (Mieter hat überzahlt bzw. Vermieter hat zu viel erstattet)
- *
- * Kaution wird im Mieter-Gesamtsaldo getrennt geführt (Sondervermögen)
- */
+// Mieterkonto-Schemas + Domain-Typen
+//
+// Saldo-Modell:
+// - Vier Zahlungszwecke (`month`, `statement`, `deposit`, `fee`)
+// - Pro Zweck hat jeder Topf einen Sollwert und einen Istwert.
+// - Status pro Topf: `open` (Mieter schuldet noch), `balanced` (Ist = Soll)
+//   oder `credit` (Mieter hat überzahlt bzw. Vermieter hat zu viel erstattet)
+//
+// Kaution wird im Mieter-Gesamtsaldo getrennt geführt (Sondervermögen)
 
 export const accountFeeCreateSchema = z
   .object({

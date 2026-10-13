@@ -12,23 +12,21 @@ import { calculateStatement, type StatementCalculationInput } from "./index.js";
 
 const translate = createTranslate(createI18nSync());
 
-/**
- * End-to-End-Szenario:
- * - Beispielhaus, 3 Parteien
- * - EG (Mieter1): 80 qm, 1 Bewohner, ohne eigene Wasserzähler (Differenzzähler)
- * - OG/DG (Mieter2): 120 qm, 2 Bewohner, eigener Wasserzähler, Gartenwasser (Allgemeinzähler)
- * - Gas-Zentralheizung mit Wärmemengenzähler (WMZ) in jeder Wohnung
- * - Hilfsstrom Therme
- * - Abrechnungsperiode: Kalenderjahr 2025
- * - Gas-Rechnung 01.08.2024 - 31.07.2025 (überläuft Abrechnungsjahr)
- *
- * Der Test stellt sicher, dass:
- * 1. Die Gas-Rechnung tagesgenau anteilig auf 2025 zugeordnet wird
- * 2. Die 70/30-Verteilung der HeizkostenV mit WMZ korrekt arbeitet
- * 3. Der Wasser-Differenzzähler in der EG-Wohnung korrekt berechnet wird
- * 4. Schmutzwasser analog zum Frischwasser verteilt wird
- * 5. Die Summe aller Tenant-Abrechnungen den Gesamtkosten entspricht (Rundung)
- */
+// End-to-End-Szenario:
+// - Beispielhaus, 3 Parteien
+// - EG (Mieter1): 80 qm, 1 Bewohner, ohne eigene Wasserzähler (Differenzzähler)
+// - OG/DG (Mieter2): 120 qm, 2 Bewohner, eigener Wasserzähler, Gartenwasser (Allgemeinzähler)
+// - Gas-Zentralheizung mit Wärmemengenzähler (WMZ) in jeder Wohnung
+// - Hilfsstrom Therme
+// - Abrechnungsperiode: Kalenderjahr 2025
+// - Gas-Rechnung 01.08.2024 - 31.07.2025 (überläuft Abrechnungsjahr)
+//
+// Der Test stellt sicher, dass:
+// 1. Die Gas-Rechnung tagesgenau anteilig auf 2025 zugeordnet wird
+// 2. Die 70/30-Verteilung der HeizkostenV mit WMZ korrekt arbeitet
+// 3. Der Wasser-Differenzzähler in der EG-Wohnung korrekt berechnet wird
+// 4. Schmutzwasser analog zum Frischwasser verteilt wird
+// 5. Die Summe aller Tenant-Abrechnungen den Gesamtkosten entspricht (Rundung)
 
 const PERIOD_DAYS_2025 = 365;
 

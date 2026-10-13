@@ -1,4 +1,5 @@
 import {
+  CO2_RESTRICTION_EVIDENCE_NOTE_MAX_LENGTH,
   type HeatingFormValues,
   HOT_WATER_METER_NONE,
   heatingFuelTypes,
@@ -10,6 +11,7 @@ import type { UseFormReturn } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
 import { SelectInput } from "@/components/form/SelectInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
+import { TextareaInput } from "@/components/form/TextareaInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
@@ -18,7 +20,7 @@ import type { Meter } from "../../../../lib/meters";
 
 /**
  * Felder der Heizungsanlage: Heizungsart, Brennstoff, Warmwasser-Details
- * und die CO2-Kostenaufteilung
+ * und die CO2-Kostenaufteilung samt Beschränkungen nach § 9 CO2KostAufG
  */
 export const HeatingInstallationFields = ({
   form,
@@ -31,6 +33,8 @@ export const HeatingInstallationFields = ({
   const buildingId = form.watch("buildingId");
   const fuelType = form.watch("fuelType");
   const co2CostShareEnabled = form.watch("co2CostShareEnabled");
+  const co2Restricted =
+    form.watch("co2BuildingRestricted") || form.watch("co2SupplyRestricted");
 
   // Warnung: CO2-Aufteilung eingeschaltet, obwohl der Energieträger
   // keinem CO2-Preis nach CO2KostAufG unterliegt (Biomasse/Strom).
@@ -171,6 +175,39 @@ export const HeatingInstallationFields = ({
           labelHelp={t("ui.heating.fields.co2CostShareEnabledHelp")}
         />
       </div>
+      {co2CostShareEnabled ? (
+        <>
+          <SwitchInput
+            control={form.control}
+            name="co2BuildingRestricted"
+            label={t("ui.heating.fields.co2BuildingRestricted")}
+            description={t(
+              "ui.heating.fields.co2BuildingRestrictedDescription",
+            )}
+            labelHelp={t("ui.heating.fields.co2RestrictedHelp")}
+          />
+          <SwitchInput
+            control={form.control}
+            name="co2SupplyRestricted"
+            label={t("ui.heating.fields.co2SupplyRestricted")}
+            description={t("ui.heating.fields.co2SupplyRestrictedDescription")}
+            labelHelp={t("ui.heating.fields.co2RestrictedHelp")}
+          />
+          {co2Restricted ? (
+            <TextareaInput
+              control={form.control}
+              name="co2RestrictionEvidenceNote"
+              label={t("ui.heating.fields.co2RestrictionEvidenceNote")}
+              description={t(
+                "ui.heating.fields.co2RestrictionEvidenceNoteDescription",
+              )}
+              labelHelp={t("ui.heating.fields.co2RestrictionEvidenceNoteHelp")}
+              maxLength={CO2_RESTRICTION_EVIDENCE_NOTE_MAX_LENGTH}
+              rows={4}
+            />
+          ) : null}
+        </>
+      ) : null}
       {co2FuelMismatch ? (
         <Alert variant="warning">
           <AlertDescription>

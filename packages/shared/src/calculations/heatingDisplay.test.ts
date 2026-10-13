@@ -8,6 +8,7 @@ import {
   billingInfoCostRows,
   billingInfoRows,
   co2FuelTable,
+  co2RestrictionNote,
   co2TableRows,
   co2TenantShareCents,
   co2TierLabel,
@@ -441,6 +442,78 @@ describe("co2TableRows bei Abrechnungszeitraum unter einem Jahr", () => {
       key: "statements.pdf.heating.co2.tierBelowPeriod",
       params: { max: "0,90" },
     });
+  });
+});
+
+describe("co2TableRows mit Beschränkung nach § 9 CO2KostAufG", () => {
+  const detail = (
+    tableLandlordSharePercent: number,
+    building: boolean,
+    supply: boolean,
+  ) =>
+    baseDetail({
+      totalHeatingCostsCents: 487_000,
+      co2Detail: {
+        totalCostCents: 43_500,
+        totalAmountGrams: 8_839_000,
+        emissionsKgPerSqmYear: 21,
+        landlordSharePercent:
+          building && supply ? 0 : tableLandlordSharePercent / 2,
+        landlordDeductionCents: 0,
+        livingAreaSqm: 420,
+        tableLandlordSharePercent,
+        restriction: { building, supply, evidenceNote: "Denkmalschutz" },
+      },
+    });
+  const values = (rows: ReturnType<typeof co2TableRows>) =>
+    Object.fromEntries(rows.map((row) => [row.key, row.value]));
+  const pair = (tenant: string, landlord: string) => ({
+    key: "statements.pdf.heating.co2.sharePairValue",
+    params: { tenant, landlord },
+  });
+
+  it("zeigt bei einer Beschränkung die Kette bis zum angewendeten Anteil", () => {
+    const rows = values(co2TableRows(detail(20, true, false), 0));
+
+    expect(rows.sharePair).toBeUndefined();
+    expect(rows.sharePairTable).toEqual(pair("80", "20"));
+    expect(rows.restriction).toEqual({
+      key: "statements.pdf.heating.co2.restrictionHalf",
+    });
+    expect(rows.sharePairApplied).toEqual(pair("90", "10"));
+  });
+
+  it("zeigt halbe Prozent mit einer Nachkommastelle", () => {
+    const rows = values(co2TableRows(detail(95, false, true), 0));
+
+    expect(rows.sharePairTable).toEqual(pair("5", "95"));
+    expect(rows.sharePairApplied).toEqual(pair("52,5", "47,5"));
+  });
+
+  it("zeigt bei beiden Beschränkungen Einstufung und Tabellenanteil weiter", () => {
+    const rows = values(co2TableRows(detail(20, true, true), 0));
+
+    expect(rows.tier).toBeDefined();
+    expect(rows.sharePairTable).toEqual(pair("80", "20"));
+    expect(rows.restriction).toEqual({
+      key: "statements.pdf.heating.co2.restrictionFull",
+    });
+    expect(rows.sharePairApplied).toEqual(pair("100", "0"));
+  });
+
+  it.each([
+    [true, false, "restrictionBuilding"],
+    [false, true, "restrictionSupply"],
+    [true, true, "restrictionBoth"],
+  ])("nennt zu Gebäude %s und Versorgung %s den Satz %s", (building, supply, key) => {
+    expect(co2RestrictionNote(detail(20, building, supply).co2Detail)).toEqual({
+      sentence: { key: `statements.pdf.heating.co2.${key}` },
+      evidenceNote: "Denkmalschutz",
+    });
+  });
+
+  it("liefert ohne Beschränkung keinen Absatz", () => {
+    expect(co2RestrictionNote(baseDetail({}).co2Detail)).toBeNull();
   });
 });
 

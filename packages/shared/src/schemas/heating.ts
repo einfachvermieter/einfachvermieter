@@ -85,6 +85,27 @@ export const isCo2SplitInapplicableFuel = (
 ): boolean => fuelType !== "other" && !CO2_PRICE_ELIGIBLE_FUELS.has(fuelType);
 
 /**
+ * Längste Angabe zum Nachweis einer Beschränkung nach § 9 CO2KostAufG
+ */
+export const CO2_RESTRICTION_EVIDENCE_NOTE_MAX_LENGTH = 2000;
+
+/**
+ * Ob zu den Angaben nach § 9 CO2KostAufG der Text zum Nachweis fehlt. Die
+ * App verlangt ihn, sobald eine Beschränkung angegeben ist, damit keine
+ * Abrechnung ohne Angaben dazu entsteht. Eine gesetzliche Form ist das
+ * nicht.
+ */
+export const isCo2RestrictionEvidenceNoteMissing = (value: {
+  co2CostShareEnabled: boolean;
+  co2BuildingRestricted: boolean;
+  co2SupplyRestricted: boolean;
+  co2RestrictionEvidenceNote: string | null;
+}): boolean =>
+  value.co2CostShareEnabled &&
+  (value.co2BuildingRestricted || value.co2SupplyRestricted) &&
+  (value.co2RestrictionEvidenceNote ?? "").trim().length === 0;
+
+/**
  * Write-Schema für die Heizkosten-Konfiguration. Wird sowohl beim
  * Anlegen einer neuen Version als auch beim Aktualisieren einer
  * bestehenden Version verwendet.
@@ -115,6 +136,13 @@ const internalSchema = z
     heatPumpMonovalent: z.boolean().default(false),
     mandatorySeventyPercent: z.boolean().default(false),
     co2CostShareEnabled: z.boolean(),
+    co2BuildingRestricted: z.boolean().default(false),
+    co2SupplyRestricted: z.boolean().default(false),
+    co2RestrictionEvidenceNote: z
+      .string()
+      .max(CO2_RESTRICTION_EVIDENCE_NOTE_MAX_LENGTH)
+      .nullable()
+      .default(null),
   })
   .strict();
 
@@ -165,6 +193,16 @@ export const heatingSettingsWriteSchema = z
     {
       path: ["consumptionSharePercent"],
       message: messageKey("ui.heating.validation.seventyPercentMandatory"),
+    },
+  )
+  .refine(
+    (value) =>
+      value.mode !== "internal" || !isCo2RestrictionEvidenceNoteMissing(value),
+    {
+      path: ["co2RestrictionEvidenceNote"],
+      message: messageKey(
+        "ui.heating.fields.co2RestrictionEvidenceNoteRequired",
+      ),
     },
   )
   .refine(
@@ -226,6 +264,21 @@ export type HeatingSettings = {
   includeBillingInfo: boolean;
   co2CostShareEnabled: boolean;
   /**
+   * § 9 CO2KostAufG: Öffentlich-rechtliche Vorgaben stehen einer
+   * wesentlichen energetischen Verbesserung des Gebäudes entgegen.
+   */
+  co2BuildingRestricted: boolean;
+  /**
+   * § 9 CO2KostAufG: Öffentlich-rechtliche Vorgaben stehen einer
+   * wesentlichen Verbesserung der Wärme- und Warmwasserversorgung entgegen.
+   */
+  co2SupplyRestricted: boolean;
+  /**
+   * Angaben des Vermieters zum Nachweis der Beschränkung, wie sie die
+   * Abrechnung druckt. NULL ohne Beschränkung.
+   */
+  co2RestrictionEvidenceNote: string | null;
+  /**
    * Inklusiver Start-Stichtag (YYYY-MM-DD).
    */
   validFrom: string;
@@ -238,17 +291,17 @@ export type HeatingSettings = {
 };
 
 /**
- * Formular-Werte. Verbrauchsanteil und Grundkostenanteil sind beide
- * Eingabefelder; das UI hält sie reziprok in Summe = 100. Der Grund-
- * kosten-Verteilschlüssel ist im MVP fest auf "area". Verbrauchs-
- * erfassung, Heizungsart und Brennstoff sind im internen Modus Pflicht.
- */
-/**
  * Sentinel für "kein Boiler-WMZ" im Form-Select.
  */
 export const HOT_WATER_METER_NONE = "__none__";
 export type HotWaterMeterNone = typeof HOT_WATER_METER_NONE;
 
+/**
+ * Formular-Werte. Verbrauchsanteil und Grundkostenanteil sind beide
+ * Eingabefelder; das UI hält sie reziprok in Summe = 100. Der Grund-
+ * kosten-Verteilschlüssel ist im MVP fest auf "area". Verbrauchs-
+ * erfassung, Heizungsart und Brennstoff sind im internen Modus Pflicht.
+ */
 export type HeatingFormValues = {
   /**
    * Gebäude, zu dem die Konfiguration gehört.
@@ -279,6 +332,12 @@ export type HeatingFormValues = {
    */
   includeBillingInfo: boolean;
   co2CostShareEnabled: boolean;
+  co2BuildingRestricted: boolean;
+  co2SupplyRestricted: boolean;
+  /**
+   * Leerer String ohne Angabe.
+   */
+  co2RestrictionEvidenceNote: string;
 };
 
 const percentIntRegex = /^\d{1,3}$/u;
@@ -339,6 +398,9 @@ export const heatingFormSchema = z
     mandatorySeventyPercent: z.boolean(),
     includeBillingInfo: z.boolean(),
     co2CostShareEnabled: z.boolean(),
+    co2BuildingRestricted: z.boolean(),
+    co2SupplyRestricted: z.boolean(),
+    co2RestrictionEvidenceNote: z.string(),
   })
   .superRefine((value, ctx) => {
     if (!isoDateRegex.test(value.validFrom)) {
@@ -368,6 +430,15 @@ export const heatingFormSchema = z
     }
     if (value.mode !== "internal") {
       return;
+    }
+    if (isCo2RestrictionEvidenceNoteMissing(value)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["co2RestrictionEvidenceNote"],
+        message: messageKey(
+          "ui.heating.fields.co2RestrictionEvidenceNoteRequired",
+        ),
+      });
     }
     const consumption = validatePercentField(
       value.consumptionSharePercent,
@@ -452,6 +523,9 @@ export const heatingFormToDto = (
     heatPumpMonovalent: values.heatPumpMonovalent,
     mandatorySeventyPercent: values.mandatorySeventyPercent,
     co2CostShareEnabled: values.co2CostShareEnabled,
+    co2BuildingRestricted: values.co2BuildingRestricted,
+    co2SupplyRestricted: values.co2SupplyRestricted,
+    co2RestrictionEvidenceNote: values.co2RestrictionEvidenceNote,
   };
 };
 
@@ -480,6 +554,9 @@ export const emptyHeatingFormValues = (
   mandatorySeventyPercent: false,
   includeBillingInfo: true,
   co2CostShareEnabled: true,
+  co2BuildingRestricted: false,
+  co2SupplyRestricted: false,
+  co2RestrictionEvidenceNote: "",
 });
 
 export const heatingSettingsToFormValues = (
@@ -504,6 +581,9 @@ export const heatingSettingsToFormValues = (
   mandatorySeventyPercent: settings.mandatorySeventyPercent,
   includeBillingInfo: settings.includeBillingInfo,
   co2CostShareEnabled: settings.co2CostShareEnabled,
+  co2BuildingRestricted: settings.co2BuildingRestricted,
+  co2SupplyRestricted: settings.co2SupplyRestricted,
+  co2RestrictionEvidenceNote: settings.co2RestrictionEvidenceNote ?? "",
 });
 
 /**
