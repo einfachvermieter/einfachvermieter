@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import logoUrl from "../img/logo/logo_light.svg";
 import { desktopPlatform } from "../lib/desktopShell";
 import { BetaNotice } from "./common/BetaNotice";
+import { UpdateMessages } from "./common/UpdateMessages";
 import { DocumentTitle } from "./DocumentTitle";
 import { DesktopTitleBar } from "./desktop/DesktopTitleBar";
 import { MainNavigation } from "./mainNavigation/MainNavigation";
@@ -13,6 +14,7 @@ export const AppShell = ({ children }: { children?: ReactNode }) => (
   <SidebarProvider>
     <DocumentTitle />
     <BetaNotice />
+    <UpdateMessages />
     {desktopPlatform ? <DesktopTitleBar /> : null}
     <MainNavigation />
 

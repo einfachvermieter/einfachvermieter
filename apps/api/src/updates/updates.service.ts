@@ -1,10 +1,17 @@
-import { APP_SETTINGS_ID, AppSettingsSchema } from "@einfachvermieter/db";
+import {
+  APP_SETTINGS_ID,
+  AppSettingsSchema,
+  detectDialect,
+} from "@einfachvermieter/db";
 import {
   type AppPlatform,
   compareVersions,
   isNewerVersion,
   isPrerelease,
+  type UpdateMessage,
+  type UpdateMessageConditions,
   type UpdateStatus,
+  updateMessageFeedSchema,
 } from "@einfachvermieter/shared";
 import { EntityManager } from "@mikro-orm/core";
 import { Injectable, Logger } from "@nestjs/common";
@@ -17,6 +24,9 @@ const DEFAULT_FEED_URL = "https://api.einfachvermieter.de/version.json";
 
 const FETCH_TIMEOUT_MS = 5000;
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const RETRY_AFTER_FAILURE_MS = 60 * 60 * 1000;
+const MAX_FEED_BYTES = 32 * 1024;
+const MAX_MESSAGES = 3;
 
 type FeedEntry = {
   version: string;
@@ -28,9 +38,9 @@ type UpdateChannel = "stable" | "beta";
 
 /**
  * Aufbau der Versionsdatei: je Build-Schlüssel ein Kanal-Paar, je Kanal ein
- * Eintrag.
+ * Eintrag. Daneben `messages` mit den Mitteilungen.
  */
-type Feed = Partial<Record<AppPlatform, unknown>>;
+type Feed = Partial<Record<AppPlatform, unknown>> & { messages?: unknown };
 
 /**
  * Nur `https:`-Adressen: Der Wert landet als Link in der Oberfläche und in
@@ -79,6 +89,73 @@ export const pickEntry = (
   );
 };
 
+/**
+ * Werte der Installation, gegen die die Bedingungen einer Mitteilung
+ * geprüft werden
+ */
+export type MessageContext = {
+  version: string;
+  platform: AppPlatform;
+  os: string;
+  dbDialect: string;
+};
+
+const matchesConditions = (
+  conditions: UpdateMessageConditions | undefined,
+  context: MessageContext,
+): boolean =>
+  !conditions ||
+  ((conditions.minVersion === undefined ||
+    compareVersions(context.version, conditions.minVersion) >= 0) &&
+    (conditions.belowVersion === undefined ||
+      compareVersions(context.version, conditions.belowVersion) < 0) &&
+    (conditions.platforms?.includes(context.platform) ?? true) &&
+    (conditions.os?.includes(context.os) ?? true) &&
+    (conditions.dbDialects?.includes(context.dbDialect) ?? true));
+
+/**
+ * Mitteilungen aus der Versionsdatei, die für diese Installation gelten.
+ */
+export const pickMessages = (
+  candidates: unknown,
+  context: MessageContext,
+): UpdateMessage[] =>
+  (Array.isArray(candidates) ? candidates : [])
+    .map((candidate) => updateMessageFeedSchema.safeParse(candidate).data)
+    .filter((message) => message !== undefined)
+    .filter((message) => matchesConditions(message.conditions, context))
+    .slice(0, MAX_MESSAGES)
+    .map(({ conditions: _conditions, ...message }) => message);
+
+/**
+ * Liest den Body bis zur Obergrenze und bricht darüber ab. Die Feldlängen
+ * im Schema greifen erst nach dem Parsen und ersetzen diese Grenze nicht.
+ */
+const readLimitedText = async (response: Response): Promise<string> => {
+  const reader = response.body?.getReader();
+  if (!reader) {
+    return "";
+  }
+
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      return Buffer.concat(chunks).toString("utf8");
+    }
+
+    size += value.byteLength;
+    if (size > MAX_FEED_BYTES) {
+      await reader.cancel();
+      throw new Error(`mehr als ${MAX_FEED_BYTES} Bytes`);
+    }
+    chunks.push(value);
+  }
+};
+
+type FeedState = { entry: FeedEntry | null; messages: UpdateMessage[] };
+
 @Injectable()
 export class UpdatesService {
   private readonly logger = new Logger(UpdatesService.name);
@@ -89,9 +166,12 @@ export class UpdatesService {
     : "stable";
   private readonly feedUrl = process.env.UPDATE_FEED_URL || DEFAULT_FEED_URL;
 
-  // In-Memory-Cache: ein Abruf pro Tag reicht. Fehlschläge werden ebenfalls
-  // gemerkt, damit ein nicht erreichbarer Server nicht jede Anfrage bremst.
-  private cached: { entry: FeedEntry | null; fetchedAt: number } | null = null;
+  // In-Memory-Cache: ein Abruf pro Tag reicht. Nach einem Fehlschlag bleibt
+  // der letzte gute Stand stehen, der nächste Versuch folgt nach einer
+  // Stunde, damit ein nicht erreichbarer Server nicht jede Anfrage bremst.
+  private cached: FeedState | null = null;
+  private succeededAt: number | null = null;
+  private failedAt: number | null = null;
   private etag: string | null = null;
 
   constructor(private readonly em: EntityManager) {}
@@ -109,23 +189,27 @@ export class UpdatesService {
       downloadUrl: null,
       releaseNotesUrl: null,
       availableFrom: null,
+      messages: [],
     };
 
+    // Ohne Einwilligung keine Anfrage und auch nichts aus dem Cache
     if (enabled !== true) {
       return base;
     }
 
-    const entry = await this.latestEntry();
+    const state = await this.feedState();
+    const entry = state?.entry;
+    const withMessages = { ...base, messages: state?.messages ?? [] };
     if (
       !entry ||
       !isNewerVersion(entry.version, this.currentVersion) ||
       !this.isAvailable(entry)
     ) {
-      return base;
+      return withMessages;
     }
 
     return {
-      ...base,
+      ...withMessages,
       latestVersion: entry.version,
       downloadUrl: entry.downloadUrl,
       releaseNotesUrl: entry.releaseNotesUrl,
@@ -154,36 +238,75 @@ export class UpdatesService {
     return availableFrom <= Date.now();
   }
 
-  private async latestEntry(): Promise<FeedEntry | null> {
-    if (this.cached && Date.now() - this.cached.fetchedAt < CACHE_TTL_MS) {
-      return this.cached.entry;
+  private async feedState(): Promise<FeedState | null> {
+    const now = Date.now();
+    const fresh =
+      this.cached !== null &&
+      this.succeededAt !== null &&
+      now - this.succeededAt < CACHE_TTL_MS;
+    const recentlyFailed =
+      this.failedAt !== null && now - this.failedAt < RETRY_AFTER_FAILURE_MS;
+
+    if (fresh || recentlyFailed) {
+      return this.cached;
     }
 
-    let entry: FeedEntry | null = null;
     try {
-      const response = await fetch(this.feedUrl, {
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-        headers: this.etag ? { "If-None-Match": this.etag } : undefined,
-      });
-
-      if (response.status === 304) {
-        entry = this.cached?.entry ?? null;
-      } else if (response.ok) {
-        const feed = (await response.json()) as Feed;
-        entry = pickEntry(feed[this.platform], this.channel);
-        this.etag = response.headers.get("etag");
-      } else {
-        this.logger.warn(
-          `Versionsdatei nicht abrufbar: HTTP ${response.status}`,
-        );
-      }
+      this.cached = await this.fetchFeed();
+      this.succeededAt = Date.now();
+      this.failedAt = null;
     } catch (error) {
+      this.failedAt = Date.now();
       this.logger.warn(
         `Versionsdatei nicht abrufbar: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
 
-    this.cached = { entry, fetchedAt: Date.now() };
-    return entry;
+    return this.cached;
+  }
+
+  /**
+   * Holt die Versionsdatei. Als Erfolg zählen nur 200 mit JSON und 304 mit
+   * einem Stand im Cache, alles andere wirft.
+   */
+  private async fetchFeed(): Promise<FeedState> {
+    const response = await fetch(this.feedUrl, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      redirect: "error",
+      headers: this.etag ? { "If-None-Match": this.etag } : undefined,
+    });
+
+    if (response.status === 304) {
+      if (this.cached) {
+        return this.cached;
+      }
+      // Ohne Stand nützt die Kurzantwort nichts: nächstes Mal ganz holen
+      this.etag = null;
+      throw new Error("HTTP 304 ohne Stand im Cache");
+    }
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const contentType = response.headers.get("content-type") ?? "";
+    if (
+      contentType.split(";")[0]?.trim().toLowerCase() !== "application/json"
+    ) {
+      throw new Error(`content-type "${contentType}"`);
+    }
+
+    const feed = JSON.parse(await readLimitedText(response)) as Feed | null;
+    this.etag = response.headers.get("etag");
+
+    return {
+      entry: pickEntry(feed?.[this.platform], this.channel),
+      messages: pickMessages(feed?.messages, {
+        version: this.currentVersion,
+        platform: this.platform,
+        os: process.platform,
+        dbDialect: detectDialect(),
+      }),
+    };
   }
 }

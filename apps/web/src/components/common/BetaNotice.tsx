@@ -13,29 +13,13 @@ import {
 import {
   BETA_NOTICE_OPEN_EVENT,
   ISSUES_URL,
+  isBetaNoticeSeen,
+  markBetaNoticeSeen,
   showBetaMarker,
 } from "@/lib/appVersion";
 import { t } from "@/lib/i18n";
 
 const REPORT_MAIL = "betatest@einfachvermieter.de";
-const SESSION_KEY = "betaNoticeSeen";
-
-const readSeen = (): boolean => {
-  try {
-    return sessionStorage.getItem(SESSION_KEY) === "1";
-  } catch {
-    return false;
-  }
-};
-
-const writeSeen = (): void => {
-  try {
-    sessionStorage.setItem(SESSION_KEY, "1");
-  } catch {
-    // ohne Speicher kein Merken
-  }
-};
-
 /**
  * Hinweis auf die Vorabversion, einmal je Sitzung. In der Desktop-App ist
  * das jeder Programmstart, im Browser jede neue Sitzung. Mit
@@ -44,7 +28,7 @@ const writeSeen = (): void => {
  */
 export const BetaNotice = ({ autoOpen = true }: { autoOpen?: boolean }) => {
   const [open, setOpen] = useState(
-    () => autoOpen && showBetaMarker && !readSeen(),
+    () => autoOpen && showBetaMarker && !isBetaNoticeSeen(),
   );
 
   useEffect(() => {
@@ -55,7 +39,7 @@ export const BetaNotice = ({ autoOpen = true }: { autoOpen?: boolean }) => {
 
   const handleOpenChange = (next: boolean) => {
     if (!next) {
-      writeSeen();
+      markBetaNoticeSeen();
     }
     setOpen(next);
   };

@@ -5,6 +5,12 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Neu:** Mit eingeschalteter Versionsprüfung zeigt die App wichtige
+  Mitteilungen zur installierten Version, etwa zu Sicherheitslücken oder
+  bekannten Fehlern.
+- **Geändert:** Ist der Projektserver kurz nicht erreichbar, bleibt der
+  Hinweis auf eine neue Version stehen, und die App fragt nach einer Stunde
+  erneut.
 - **Neu:** Die Heizkostenkonfiguration nimmt Beschränkungen nach § 9
   CO2KostAufG auf, etwa durch Denkmalschutz oder Anschlusszwang. Der
   Anteil des Vermieters an den CO₂-Kosten wird dann halbiert oder entfällt.

@@ -31,3 +31,28 @@ export const BETA_NOTICE_OPEN_EVENT = "betanotice:open";
 export const openBetaNotice = () => {
   window.dispatchEvent(new Event(BETA_NOTICE_OPEN_EVENT));
 };
+
+const BETA_NOTICE_SEEN_KEY = "betaNoticeSeen";
+
+export const BETA_NOTICE_SEEN_EVENT = "betanotice:seen";
+
+export const isBetaNoticeSeen = (): boolean => {
+  try {
+    return sessionStorage.getItem(BETA_NOTICE_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Merkt den Beta-Hinweis für diese Sitzung als gelesen und meldet es, damit
+ * Dialoge, die auf ihn warten, nachrücken.
+ */
+export const markBetaNoticeSeen = (): void => {
+  try {
+    sessionStorage.setItem(BETA_NOTICE_SEEN_KEY, "1");
+  } catch {
+    // ohne Speicher kein Merken
+  }
+  window.dispatchEvent(new Event(BETA_NOTICE_SEEN_EVENT));
+};

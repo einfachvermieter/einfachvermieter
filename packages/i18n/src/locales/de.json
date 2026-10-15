@@ -2003,9 +2003,9 @@
         "details": "Die App lädt die für die Nebenkostenabrechnung relevanten Klimafaktoren vom Server des Deutschen Wetterdienstes (opendata.dwd.de)."
       },
       "updateCheck": {
-        "label": "Auf neue Versionen hinweisen",
+        "label": "Auf neue Versionen und wichtige Mitteilungen hinweisen",
         "description": "Für Sicherheit, Stabilität und den aktuellen rechtlichen Stand der Abrechnung.",
-        "details": "Die App fragt regelmäßig bei api.einfachvermieter.de ab, ob eine neue Version vorliegt."
+        "details": "Die App fragt regelmäßig bei api.einfachvermieter.de ab, ob eine neue Version vorliegt und ob es wichtige Mitteilungen zur installierten Version gibt, etwa zu Sicherheitslücken oder bekannten Fehlern."
       },
       "telemetry": {
         "label": "Pseudonyme Nutzungsstatistik senden",
@@ -2053,7 +2053,7 @@
           },
           "updateCheck": {
             "title": "Versionshinweis",
-            "text": "Sie erfahren nicht, wenn eine neue Version erscheint. Mit neueren Versionen werden Fehler behoben, Funktionen ergänzt und die App an eine geänderte Rechtslage angepasst."
+            "text": "Sie erfahren nicht, wenn eine neue Version erscheint oder ein Fehler in Ihrer Version bekannt wird. Mit neueren Versionen werden Fehler behoben, Funktionen ergänzt und die App an eine geänderte Rechtslage angepasst."
           },
           "telemetry": {
             "title": "Nutzungsstatistik",
