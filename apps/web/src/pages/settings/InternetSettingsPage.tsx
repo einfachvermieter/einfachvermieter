@@ -69,7 +69,7 @@ const ConsentCard = ({
           </p>
           <p className="text-xs text-muted-foreground">{description}</p>
           {value === null ? (
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-3 text-xs text-muted-foreground">
               {undecidedNote}
             </p>
           ) : null}

@@ -2010,7 +2010,7 @@
       "telemetry": {
         "label": "Pseudonyme Nutzungsstatistik senden",
         "description": "Zeigt, welche Versionen und Betriebssysteme genutzt werden. So können Support und Entwicklung dort ansetzen, wo es am meisten hilft. Es werden keine Namen, Adressen oder Beträge übertragen, auch keine Zugangsdaten und keine Modell- oder Serveradressen.",
-        "details": "Die App übermittelt an api.einfachvermieter.de: eine zufällige Kennung dieser Installation, die Versionsnummer, die Plattform (Server, macOS, Windows), Betriebssystem und Prozessortyp, den Datenbank-Typ mit Version, das Alter der Installation sowie die Anzahl der Benutzerkonten, Gebäude, Wohnungen, Mieter, Zähler und Abrechnungen. Dazu kommen allgemeine Einstellungen zur Nutzung: Heizkostenabrechnung (intern oder extern), der gewählte KI-Anbieter, ob Klimafaktoren automatisch geladen werden und ob nach neuen Versionen gesucht wird. Es werden keine Namen, Adressen oder Beträge übertragen, auch keine Zugangsdaten und keine Modell- oder Serveradressen."
+        "details": "Die App sendet an api.einfachvermieter.de eine zufällige Kennung dieser Installation, technische Angaben wie Version, Plattform, Betriebssystem, allgemeine Kennzahlen sowie einige allgemeine Einstellungen. Es werden keine Namen, Adressen oder Beträge übertragen."
       }
     },
     "setup": {
