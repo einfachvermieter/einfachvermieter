@@ -5,6 +5,8 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Behoben:** Im PDF bleiben Tabellen und ihre Fußnoten auf derselben
+  Seite. Passt der Block nicht mehr, beginnt er auf der nächsten Seite.
 - **Neu:** Die Grundkosten der Heizung lassen sich nach Wohnfläche oder
   nach beheizter Fläche verteilen. Bestehende Konfigurationen rechnen wie
   bisher nach beheizter Fläche.

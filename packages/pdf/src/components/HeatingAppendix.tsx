@@ -463,6 +463,13 @@ export const HeatingAppendix = ({
         ))}
       </Table>
       <Table
+        footer={wwFootnotes.map((footnote) => (
+          <Text key={footnote.key} style={styles.footnote}>
+            {renderSuperscripts(
+              `${toSuperscript(footnote.index)} ${t(footnote.label.key, footnote.label.params)}`,
+            )}
+          </Text>
+        ))}
         head={
           <>
             <View style={[styles.cellLeft, wwUnitCol]}>
@@ -657,13 +664,6 @@ export const HeatingAppendix = ({
           )}
         </View>
       </Table>
-      {wwFootnotes.map((footnote) => (
-        <Text key={footnote.key} style={styles.footnote}>
-          {renderSuperscripts(
-            `${toSuperscript(footnote.index)} ${t(footnote.label.key, footnote.label.params)}`,
-          )}
-        </Text>
-      ))}
     </View>
   ) : null;
 
@@ -725,6 +725,13 @@ export const HeatingAppendix = ({
       ) : (
         <Table
           heading={perMeterHeading}
+          footer={
+            hasDerivedMeter ? (
+              <Text style={styles.footnote}>
+                {`${toSuperscript(1)} ${t("statements.pdf.heating.perMeterDerivedNote")}`}
+              </Text>
+            ) : null
+          }
           head={
             <>
               <View style={[styles.cellLeft, METER_COL_NAME]}>
@@ -814,14 +821,44 @@ export const HeatingAppendix = ({
           ))}
         </Table>
       )}
-      {hasDerivedMeter ? (
-        <Text style={styles.footnote}>
-          {`${toSuperscript(1)} ${t("statements.pdf.heating.perMeterDerivedNote")}`}
-        </Text>
-      ) : null}
 
       <Table
         heading={t("statements.pdf.heating.distributionPerUnit")}
+        footer={
+          <>
+            {/* Nummerierte Spalten-Fußnoten in Spalten-Reihenfolge (Heizfläche,
+                Bewertungspunkte, Summen-Anteil, Flächen-Fallback). Danach folgen
+                freischwebende Hinweise ohne Spalten-Marker. */}
+            {columnFootnotes.map((footnote) => (
+              <Text key={footnote.key} style={styles.footnote}>
+                {renderSuperscripts(
+                  `${toSuperscript(footnote.index)} ${t(footnote.label.key, footnote.label.params)}`,
+                )}
+              </Text>
+            ))}
+            {/* Hinweis zur zeitanteiligen Verteilung, nur bei unterjähriger
+                Nutzung (Mietzeit != Abrechnungsperiode) und nur bei interner
+                Berechnung (im external-Modus ist `prorationMethod` undefiniert,
+                dort hat der Dienstleister die Verteilung übernommen). Bei voller
+                Nutzung findet keine Abgrenzung statt. Dann entfällt der Hinweis. */}
+            {detail.prorationMethod !== undefined && isPartialPeriod ? (
+              <Text style={styles.footnote}>
+                {prorationNote(detail, tenantPeriod, t)}
+              </Text>
+            ) : null}
+            {/* Hinweise aus der Berechnung, v. a. die rechtlich gebotene
+                Kennzeichnung geschätzter Werte und der Ersatzverfahren.
+                Datenqualitäts-Hinweise an den Vermieter bleiben in der
+                Web-Oberfläche. */}
+            {groupCalcWarnings(
+              (detail.warnings ?? []).filter(isTenantWarning),
+            ).map((group) => (
+              <Text key={calcWarningKey(group)} style={styles.footnote}>
+                {formatCalcWarning(group)}
+              </Text>
+            ))}
+          </>
+        }
         head={
           <>
             <View style={[styles.cellLeft, DIST_COL_UNIT]}>
@@ -1056,37 +1093,6 @@ export const HeatingAppendix = ({
           )}
         </View>
       </Table>
-      {/* Nummerierte Spalten-Fußnoten in Spalten-Reihenfolge (Heizfläche,
-            Bewertungspunkte, Summen-Anteil, Flächen-Fallback). Danach folgen
-            freischwebende Hinweise ohne Spalten-Marker. */}
-      {columnFootnotes.map((footnote) => (
-        <Text key={footnote.key} style={styles.footnote}>
-          {renderSuperscripts(
-            `${toSuperscript(footnote.index)} ${t(footnote.label.key, footnote.label.params)}`,
-          )}
-        </Text>
-      ))}
-      {/* Hinweis zur zeitanteiligen Verteilung, nur bei unterjähriger
-            Nutzung (Mietzeit != Abrechnungsperiode) und nur bei interner
-            Berechnung (im external-Modus ist `prorationMethod` undefiniert,
-            dort hat der Dienstleister die Verteilung übernommen). Bei voller
-            Nutzung findet keine Abgrenzung statt. Dann entfällt der Hinweis. */}
-      {detail.prorationMethod !== undefined && isPartialPeriod ? (
-        <Text style={styles.footnote}>
-          {prorationNote(detail, tenantPeriod, t)}
-        </Text>
-      ) : null}
-      {/* Hinweise aus der Berechnung, v. a. die rechtlich gebotene
-            Kennzeichnung geschätzter Werte und der Ersatzverfahren.
-            Datenqualitäts-Hinweise an den Vermieter bleiben in der
-            Web-Oberfläche. */}
-      {groupCalcWarnings((detail.warnings ?? []).filter(isTenantWarning)).map(
-        (group) => (
-          <Text key={calcWarningKey(group)} style={styles.footnote}>
-            {formatCalcWarning(group)}
-          </Text>
-        ),
-      )}
 
       {hotWaterSection}
     </View>

@@ -6,7 +6,11 @@ import {
   isValidElement,
   type ReactNode,
 } from "react";
-import { HEADING_PRESENCE_AHEAD, styles } from "../styles.js";
+import {
+  FOOTNOTE_PRESENCE_AHEAD,
+  HEADING_PRESENCE_AHEAD,
+  styles,
+} from "../styles.js";
 
 /**
  * Bis einschließlich so vieler Datenzeilen bleibt eine Tabelle
@@ -33,6 +37,12 @@ type Props = {
    * solche Komponenten setzen `wrap={false}` selbst.
    */
   children: ReactNode;
+  /**
+   * Fußnoten und Hinweise unter der Tabelle. Sie stehen nie allein auf
+   * der Folgeseite, damit die Marker im Tabellenkopf nicht ins Leere
+   * zeigen.
+   */
+  footer?: ReactNode;
   /**
    * Variante ohne Außenrahmen und Innengitter.
    */
@@ -62,50 +72,104 @@ const flattenRows = (nodes: ReactNode): ReactNode[] =>
  * eine Zeile läuft nie über zwei Seiten, kurze Tabellen bleiben ganz
  * zusammen, lange Tabellen brechen um und wiederholen ihre Kopfzeile.
  */
-export const Table = ({ heading, head, children, plain }: Props) => {
+export const Table = ({ heading, head, children, footer, plain }: Props) => {
   const rows = flattenRows(children);
   const keepTogether = rows.length <= KEEP_TOGETHER_ROWS;
+  const hasFooter = flattenRows(footer).length > 0;
+  // react-pdf prüft den Platz nach einer Zeile nur gegen Geschwister und
+  // schaut nur in Container, die selbst über das Seitenende ragen. Damit
+  // die letzte Zeile mit den Fußnoten wandert, stehen Kopf, Zeilen und
+  // Fußnoten deshalb in einem gemeinsamen Container ohne Rahmen; den
+  // Außenrahmen tragen Kopf und Zeilen selbst.
+  const footerInFlow = hasFooter && !keepTogether;
+  const lastRowIndex = rows.length - 1;
+  const edges = footerInFlow && !plain;
+
+  const rowEdges = (index: number) => [
+    styles.tableEdgeSides,
+    ...(index === 0 && head === undefined ? [styles.tableEdgeTop] : []),
+    ...(index === lastRowIndex ? [styles.tableEdgeBottom] : []),
+  ];
 
   const table = (
-    <View style={plain ? styles.tablePlain : styles.table} wrap={!keepTogether}>
+    <View
+      style={
+        footerInFlow
+          ? styles.tableOpen
+          : plain
+            ? styles.tablePlain
+            : styles.table
+      }
+      wrap={!keepTogether}
+    >
       {head === undefined ? null : (
-        <View style={styles.rowHeader} fixed={!keepTogether}>
+        <View
+          style={
+            edges
+              ? [styles.rowHeader, styles.tableEdgeSides, styles.tableEdgeTop]
+              : styles.rowHeader
+          }
+          fixed={!keepTogether}
+        >
           {head}
         </View>
       )}
 
-      {rows.map((row) =>
-        isValidElement<{ wrap?: boolean }>(row)
-          ? cloneElement(row, { wrap: false })
+      {rows.map((row, index) =>
+        isValidElement<{
+          wrap?: boolean;
+          minPresenceAhead?: number;
+          style?: unknown;
+        }>(row)
+          ? cloneElement(row, {
+              wrap: false,
+              ...(edges
+                ? {
+                    style: [row.props.style ?? [], rowEdges(index)].flat(),
+                  }
+                : {}),
+              // Passt der Anfang der Fußnoten nicht mehr unter die letzte
+              // Zeile, wandert die Zeile mit auf die Folgeseite.
+              ...(footerInFlow && index === lastRowIndex
+                ? { minPresenceAhead: FOOTNOTE_PRESENCE_AHEAD }
+                : {}),
+            })
           : row,
       )}
+
+      {footerInFlow ? <View style={styles.tableFooter}>{footer}</View> : null}
     </View>
   );
 
-  if (!heading) {
+  if (!heading && !hasFooter) {
     return table;
   }
 
-  // Kurze Tabelle: Überschrift und Tabelle sind ein untrennbarer Block.
-  // Lange Tabelle: die Überschrift braucht nur genug Folgezeilen auf
-  // derselben Seite, umbrechen darf die Tabelle danach.
+  const headingText = !heading ? null : (
+    <Text
+      style={styles.sectionHeading}
+      minPresenceAhead={keepTogether ? undefined : HEADING_PRESENCE_AHEAD}
+    >
+      {heading}
+    </Text>
+  );
+
+  // Kurze Tabelle: Überschrift, Tabelle und Fußnoten sind ein
+  // untrennbarer Block. Lange Tabelle: die Überschrift braucht nur genug
+  // Folgezeilen auf derselben Seite, umbrechen darf die Tabelle danach.
   if (keepTogether) {
     return (
       <View wrap={false}>
-        <Text style={styles.sectionHeading}>{heading}</Text>
+        {headingText}
         {table}
+        {footer}
       </View>
     );
   }
 
   return (
     <>
-      <Text
-        style={styles.sectionHeading}
-        minPresenceAhead={HEADING_PRESENCE_AHEAD}
-      >
-        {heading}
-      </Text>
+      {headingText}
       {table}
     </>
   );

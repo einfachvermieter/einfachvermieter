@@ -39,6 +39,16 @@ const CELL_PAD_X = 4;
 export const HEADING_PRESENCE_AHEAD = 60;
 
 /**
+ * Freier Platz, der unter der letzten Zeile einer langen Tabelle noch
+ * auf die Seite passen muss: Tabellenabstand, Abstand der Fußnote und
+ * drei Fußnotenzeilen. react-pdf teilt Texte mit zwei oder drei Zeilen
+ * nie und längere nur mit mindestens zwei Zeilen je Seite; drei Zeilen
+ * decken deshalb jede erste Fußnote ab.
+ */
+export const FOOTNOTE_PRESENCE_AHEAD =
+  15 + 4 + 3 * SMALL_SIZE * LINE_HEIGHT_TIGHT;
+
+/**
  * Vertikales Zell-Padding bewusst asymmetrisch: Geist Font wirkt bei
  * vertikal zentrierter Ausrichtung leider optisch nicht mittig.
  * -> Deshalb entsprechend unterschiedliche Paddings oben und unten.
@@ -229,6 +239,21 @@ export const styles = StyleSheet.create({
     marginBottom: 15,
     fontFamily: "Geist Tnum",
   },
+
+  // Lange Tabelle mit Fußnoten: Container ohne Rahmen, Kopf und Zeilen
+  // tragen den Außenrahmen über die `tableEdge...`-Stile selbst.
+  tableOpen: {
+    width: "100%",
+    fontSize: SMALL_SIZE,
+    lineHeight: LINE_HEIGHT_TIGHT,
+    fontFamily: "Geist Tnum",
+  },
+  tableEdgeSides: { borderLeft: LINE, borderRight: LINE },
+  tableEdgeTop: { borderTop: LINE },
+  tableEdgeBottom: { borderBottom: LINE },
+  // Fußnoten im Tabellen-Container: Abstand wie `table.marginBottom`,
+  // Schrift wieder ohne Tabellenziffern.
+  tableFooter: { marginTop: 15, fontFamily: "Geist" },
 
   row: { flexDirection: "row" },
   rowDivider: { borderTop: LINE },

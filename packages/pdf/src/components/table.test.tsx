@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { describe, expect, it } from "vitest";
-import { styles } from "../styles.js";
+import { FOOTNOTE_PRESENCE_AHEAD, styles } from "../styles.js";
 import { Table } from "./Table.js";
 
 const ROW_LABEL = "Zeile";
@@ -41,7 +41,7 @@ const childrenOf = (element: ReactElement): ReactElement[] =>
 const childrenOfRaw = (element: ReactElement): ReactElement[] => {
   const { children } = element.props as { children: ReactNode[] };
 
-  return (children.at(-1) as ReactNode[]).filter(isValidElement);
+  return (children.find(Array.isArray) as ReactNode[]).filter(isValidElement);
 };
 
 describe("Table", () => {
@@ -109,5 +109,34 @@ describe("Table", () => {
     expect(
       (heading?.props as { minPresenceAhead?: number }).minPresenceAhead,
     ).toBeGreaterThan(0);
+  });
+
+  it("bindet die Fußnoten an eine kurze Tabelle", () => {
+    const footnote = <Text>Fußnote</Text>;
+    const block = render({ children: rows(3), footer: footnote });
+
+    expect((block.props as { wrap?: boolean }).wrap).toBe(false);
+    expect(childrenOf(block).at(-1)?.props).toEqual(footnote.props);
+  });
+
+  it("führt bei langer Tabelle die Fußnoten im selben Container wie die Zeilen", () => {
+    // react-pdf prüft den Platz nach der letzten Zeile nur gegen
+    // Geschwister im selben Container.
+    const [table] = childrenOf(
+      render({
+        head: <View />,
+        children: rows(11),
+        footer: <Text>Fußnote</Text>,
+      }),
+    );
+    const children = table ? childrenOf(table) : [];
+    const lastRow = children.at(-2);
+
+    expect(
+      (lastRow?.props as { minPresenceAhead?: number }).minPresenceAhead,
+    ).toBe(FOOTNOTE_PRESENCE_AHEAD);
+    expect((children.at(-1)?.props as { style?: unknown }).style).toBe(
+      styles.tableFooter,
+    );
   });
 });
