@@ -14,7 +14,7 @@ const internalBase = {
   mode: "internal" as const,
   validFrom: "2025-01-01",
   validTo: null,
-  baseMethod: "area" as const,
+  baseMethod: "heated_area" as const,
   consumptionMethod: "heat_meter" as const,
   prorationMethod: "linear" as const,
   heatingType: "central_without_hot_water" as const,

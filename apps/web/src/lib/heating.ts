@@ -2,6 +2,7 @@ import type {
   ExternalHeatingEntry,
   ExternalHeatingEntryCreateDto,
   ExternalHeatingEntryUpdateDto,
+  HeatingBaseMethod,
   HeatingSettings,
   HeatingSettingsWriteDto,
 } from "@einfachvermieter/shared";
@@ -79,6 +80,20 @@ export const heatingSettingsListQueryOptions = (buildingId: string) =>
     queryFn: () =>
       api.get<HeatingSettings[]>(`/buildings/${buildingId}/heating`),
   });
+
+/**
+ * Grundkostenmaßstab der Version, die vor `validFrom` beginnt, sofern sie
+ * intern abrechnet. Bei externer Abrechnung ist der gespeicherte Wert nur
+ * ein Füllwert. `versions` absteigend nach `validFrom`.
+ */
+export const previousBaseMethodOf = (
+  versions: HeatingSettings[],
+  validFrom: string,
+): HeatingBaseMethod | undefined => {
+  const previous = versions.find((version) => version.validFrom < validFrom);
+
+  return previous?.mode === "internal" ? previous.baseMethod : undefined;
+};
 
 export const heatingSettingsByIdQueryOptions = (id: string) =>
   queryOptions({

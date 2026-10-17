@@ -99,7 +99,7 @@ type Overrides = Partial<Parameters<typeof calculateHeating>[0]> & {
 const calc = ({ exclusions, occupied, readingsB, ...rest }: Overrides = {}) =>
   calculateHeating({
     totalHeatingCostsCents: 100_000,
-    config: { consumptionShareBps: 7000 },
+    config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
     units: [unit("A", 60), unit("B", 40)],
     consumptionMeters: [
       {

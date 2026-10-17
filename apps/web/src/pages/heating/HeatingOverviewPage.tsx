@@ -102,6 +102,22 @@ const heatingColumns = (
     meta: { cellClassName: "tabular-nums" },
   },
   {
+    id: "baseMethod",
+    enableSorting: false,
+    header: t("ui.heating.fields.baseMethod"),
+    cell: ({ row }) => {
+      const { settings } = row.original;
+      if (settings.mode !== "internal") {
+        return (
+          <span className="text-muted-foreground">
+            {t("ui.heating.summary.none")}
+          </span>
+        );
+      }
+      return t(`ui.heating.baseMethods.${settings.baseMethod}`);
+    },
+  },
+  {
     id: "heatingType",
     enableSorting: false,
     header: t("ui.heating.versions.columns.heatingType"),

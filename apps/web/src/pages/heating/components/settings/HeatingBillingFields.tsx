@@ -1,9 +1,14 @@
-import type { HeatingFormValues } from "@einfachvermieter/shared";
+import {
+  type HeatingBaseMethod,
+  type HeatingFormValues,
+  heatingBaseMethods,
+} from "@einfachvermieter/shared";
 import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { SplitBar } from "@/components/common/SplitBar";
 import { ChoiceTiles } from "@/components/form/ChoiceTiles";
 import { MonthInput } from "@/components/form/MonthInput";
+import { SelectInput } from "@/components/form/SelectInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { HelpHint } from "@/components/help/HelpHint";
@@ -57,14 +62,23 @@ const applyBillingType = (
   );
 };
 
+const baseMethodOptions = heatingBaseMethods.map((value) => ({
+  value,
+  label: t(`ui.heating.baseMethods.${value}`),
+}));
+
 /**
- * Felder der Abrechnung: Gültigkeit, Art der Heizkostenabrechnung, Anteile
- * und die Aufteilung bei Mieter- oder Leerstandswechsel
+ * Felder der Abrechnung: Gültigkeit, Art der Heizkostenabrechnung, Anteile,
+ * Grundkostenmaßstab und die Aufteilung bei Mieter- oder Leerstandswechsel.
+ * `previousBaseMethod` ist der Maßstab der vorherigen internen Version;
+ * weicht die Auswahl davon ab, erscheint der Hinweis zum Wechsel.
  */
 export const HeatingBillingFields = ({
   form,
+  previousBaseMethod,
 }: {
   form: UseFormReturn<HeatingFormValues>;
+  previousBaseMethod?: HeatingBaseMethod;
 }) => {
   const mode = form.watch("mode");
   const consumptionMethod = form.watch("consumptionMethod");
@@ -94,6 +108,7 @@ export const HeatingBillingFields = ({
   }, [form]);
 
   const basePercent = Number.parseInt(form.watch("baseSharePercent"), 10);
+  const baseMethod = form.watch("baseMethod");
 
   return (
     <FieldGroup className="gap-4">
@@ -166,13 +181,28 @@ export const HeatingBillingFields = ({
           {Number.isFinite(basePercent) ? (
             <SplitBar
               aPercent={basePercent}
-              aLabel={t("ui.heating.detail.splitBaseLegend", {
+              aLabel={t(`ui.heating.detail.splitBaseLegend.${baseMethod}`, {
                 percent: basePercent,
               })}
               bLabel={t("ui.heating.detail.splitConsumptionLegend", {
                 percent: 100 - basePercent,
               })}
             />
+          ) : null}
+          <SelectInput
+            control={form.control}
+            name="baseMethod"
+            label={t("ui.heating.fields.baseMethod")}
+            labelHelp={t("ui.heating.fields.baseMethodDescription")}
+            options={baseMethodOptions}
+          />
+          {previousBaseMethod !== undefined &&
+          baseMethod !== previousBaseMethod ? (
+            <Alert variant="warning">
+              <AlertDescription>
+                {t("ui.heating.fields.baseMethodChangeHint")}
+              </AlertDescription>
+            </Alert>
           ) : null}
           <SwitchInput
             control={form.control}

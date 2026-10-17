@@ -16,7 +16,7 @@ export type AllocationKey =
   | "fixed";
 export type LaborCostCategory = "craftsman" | "household_service";
 export type HeatingMode = "internal" | "external";
-export type HeatingBaseMethod = "area";
+export type HeatingBaseMethod = "living_area" | "heated_area";
 export type HeatingConsumptionMethod = "heat_meter" | "heat_cost_allocator";
 export type HeatingProrationMethod = "linear" | "degree_days";
 export type HeatingType =
@@ -332,7 +332,11 @@ export const HeatingSettingSchema = new EntitySchema<HeatingSetting>({
       fieldName: "consumption_share_percent",
       default: 70,
     },
-    baseMethod: { type: "string", fieldName: "base_method", default: "area" },
+    baseMethod: {
+      type: "string",
+      fieldName: "base_method",
+      default: "living_area",
+    },
     consumptionMethod: {
       type: "string",
       fieldName: "consumption_method",

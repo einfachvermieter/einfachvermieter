@@ -1,5 +1,6 @@
 import { type ContainedTaxKind, containedTaxKinds } from "../schemas/core.js";
 import type {
+  HeatingBaseMethod,
   HeatingFuelType,
   HeatingProrationMethod,
 } from "../schemas/heating.js";
@@ -1076,7 +1077,7 @@ const distributeHotWater = (
       unitName: unit.name,
       hotWaterM3: unitHotWaterM3.get(unit.id) ?? 0,
       consumptionCostCents,
-      areaSqm: baseCostAreaFor("hot_water", unit),
+      areaSqm: unit.areaSqm,
       basicCostCents,
       totalCents: consumptionCostCents + basicCostCents,
       ...(substitutedUnitIds?.has(unit.id)
@@ -1105,13 +1106,17 @@ const heatingAreaFor = (
 
 /**
  * Fläche einer Wohnung im Grundkostenmaßstab des Bereichs. Heizung nach
- * § 7 Abs. 1 Satz 5 HeizkostenV (auch die beheizte Fläche zulässig),
- * Warmwasser nach § 8 Abs. 1 nur nach Wohn- oder Nutzfläche.
+ * § 7 Abs. 1 Satz 5 HeizkostenV nach dem gewählten Maßstab, Warmwasser
+ * nach § 8 Abs. 1 immer nach Wohn- oder Nutzfläche.
  */
 export const baseCostAreaFor = (
   scope: "heating" | "hot_water",
   unit: Pick<UnitInfo, "areaSqm" | "heatingAreaSqm">,
-): number => (scope === "heating" ? heatingAreaFor(unit) : unit.areaSqm);
+  baseMethod: HeatingBaseMethod,
+): number =>
+  scope === "heating" && baseMethod === "heated_area"
+    ? heatingAreaFor(unit)
+    : unit.areaSqm;
 
 /**
  * Grundkosten-Gewichte des Warmwassers je Wohnung = Wohnfläche x belegte
@@ -1121,18 +1126,14 @@ export const baseCostAreaFor = (
 const computeHotWaterAreaWeights = (
   units: UnitInfo[],
 ): { areaWeightsWithLandlord: number[]; totalAreaDays: number } => {
-  const areaDayWeights = units.map(
-    (unit) => baseCostAreaFor("hot_water", unit) * unit.occupiedDays,
-  );
+  const areaDayWeights = units.map((unit) => unit.areaSqm * unit.occupiedDays);
   const totalAreaDays = units.some((unit) => unit.suppliedDays !== undefined)
     ? units.reduce(
         (acc, unit) =>
-          acc +
-          baseCostAreaFor("hot_water", unit) *
-            (unit.suppliedDays ?? unit.periodDays),
+          acc + unit.areaSqm * (unit.suppliedDays ?? unit.periodDays),
         0,
       )
-    : units.reduce((acc, unit) => acc + baseCostAreaFor("hot_water", unit), 0) *
+    : units.reduce((acc, unit) => acc + unit.areaSqm, 0) *
       (units[0]?.periodDays ?? 0);
   const sumAreaDayWeights = areaDayWeights.reduce((a, b) => a + b, 0);
 
@@ -1754,20 +1755,23 @@ const measureUnitConsumption = (params: {
 const computeAreaWeights = (
   units: UnitInfo[],
   prorationMethod: HeatingProrationMethod,
+  baseMethod: HeatingBaseMethod,
 ): {
   heatingAreaDiffersFromLivingArea: boolean;
   areaWeightsWithLandlord: number[];
   totalAreaDays: number;
 } => {
-  const heatingAreaDiffersFromLivingArea = units.some(
-    (u) =>
-      u.heatingAreaSqm !== null &&
-      u.heatingAreaSqm !== undefined &&
-      u.heatingAreaSqm !== u.areaSqm,
-  );
+  const heatingAreaDiffersFromLivingArea =
+    baseMethod === "heated_area" &&
+    units.some(
+      (u) =>
+        u.heatingAreaSqm !== null &&
+        u.heatingAreaSqm !== undefined &&
+        u.heatingAreaSqm !== u.areaSqm,
+    );
 
   const totalHeatingAreaSqm = units.reduce(
-    (acc, u) => acc + baseCostAreaFor("heating", u),
+    (acc, u) => acc + baseCostAreaFor("heating", u, baseMethod),
     0,
   );
 
@@ -1783,7 +1787,8 @@ const computeAreaWeights = (
     useDegreeDays ? (unit.occupiedDegreeDayPromille ?? 0) : unit.occupiedDays;
 
   const areaDayWeights = units.map(
-    (unit) => baseCostAreaFor("heating", unit) * unitTimeWeight(unit),
+    (unit) =>
+      baseCostAreaFor("heating", unit, baseMethod) * unitTimeWeight(unit),
   );
 
   // Gesamt nur über versorgte Zeit: Nicht versorgte Tage sind kein Leerstand.
@@ -1793,7 +1798,9 @@ const computeAreaWeights = (
   const totalAreaDays = units.some((unit) => unit.suppliedDays !== undefined)
     ? units.reduce(
         (acc, unit) =>
-          acc + baseCostAreaFor("heating", unit) * suppliedTimeWeight(unit),
+          acc +
+          baseCostAreaFor("heating", unit, baseMethod) *
+            suppliedTimeWeight(unit),
         0,
       )
     : totalHeatingAreaSqm * periodTimeWeight;
@@ -1808,6 +1815,13 @@ const computeAreaWeights = (
 };
 
 /**
+ * Codes, deren Text die Fläche der Heizung benennt, gibt es je Maßstab.
+ * Ohne Endung nennen sie die Heizfläche.
+ */
+const areaCodeSuffix = (baseMethod: HeatingBaseMethod): string =>
+  baseMethod === "living_area" ? "LivingArea" : "";
+
+/**
  * Verteilt den Verbrauchsanteil
  */
 const computeConsumptionShares = (params: {
@@ -1820,6 +1834,7 @@ const computeConsumptionShares = (params: {
   totalAreaDays: number;
   consumptionMeters: HeatingCalculationInput["consumptionMeters"];
   consumptionMethod: "heat_meter" | "heat_cost_allocator";
+  baseMethod: HeatingBaseMethod;
   warnings: CalcWarning[];
   substitutionLimitExceeded?: boolean;
 }): {
@@ -1837,6 +1852,7 @@ const computeConsumptionShares = (params: {
     totalAreaDays,
     consumptionMeters,
     consumptionMethod,
+    baseMethod,
     warnings,
     substitutionLimitExceeded,
   } = params;
@@ -1886,7 +1902,7 @@ const computeConsumptionShares = (params: {
           : "consumptionFallbackNoHeatMeters";
     }
 
-    warnings.push({ code });
+    warnings.push({ code: `${code}${areaCodeSuffix(baseMethod)}` });
   }
 
   return {
@@ -2057,7 +2073,10 @@ const evaluateHeatingScope = (params: {
     period,
     units: input.units,
     baseAreaByUnit: new Map(
-      input.units.map((unit) => [unit.id, baseCostAreaFor("heating", unit)]),
+      input.units.map((unit) => [
+        unit.id,
+        baseCostAreaFor("heating", unit, input.config.baseMethod),
+      ]),
     ),
     fullOccupiedDaysByUnit: input.fullOccupiedDaysByUnit,
     meters: heatingMeters,
@@ -2111,6 +2130,7 @@ const substitutionDetailFields = (params: {
   hotWater: ScopeResult | undefined;
   substitutions: SubstitutionInput[];
   targetUnitId: string | undefined;
+  baseMethod: HeatingBaseMethod;
   warnings: CalcWarning[];
 }): Pick<
   HeatingDetail,
@@ -2211,9 +2231,7 @@ const evaluateHotWaterScope = (params: {
     supply,
     period,
     units: input.units,
-    baseAreaByUnit: new Map(
-      input.units.map((unit) => [unit.id, baseCostAreaFor("hot_water", unit)]),
-    ),
+    baseAreaByUnit: new Map(input.units.map((unit) => [unit.id, unit.areaSqm])),
     fullOccupiedDaysByUnit: input.fullOccupiedDaysByUnit,
     meters,
     shareMethod: false,
@@ -2272,6 +2290,7 @@ const heatingPerUnit = (params: {
   basicShares: number[];
   unitConsumption: Map<string, number>;
   substitutedUnits: Set<string>;
+  baseMethod: HeatingBaseMethod;
 }): HeatingDetail["perUnit"] =>
   params.units.map((unit, idx) => {
     const consumptionCostCents = params.consumptionShares[idx] ?? 0;
@@ -2282,7 +2301,7 @@ const heatingPerUnit = (params: {
       unitName: unit.name,
       consumptionKwh: params.unitConsumption.get(unit.id) ?? 0,
       consumptionCostCents,
-      areaSqm: heatingAreaFor(unit),
+      areaSqm: baseCostAreaFor("heating", unit, params.baseMethod),
       basicCostCents,
       totalCents: consumptionCostCents + basicCostCents,
       ...(params.substitutedUnits.has(unit.id)
@@ -2363,6 +2382,7 @@ const pushSubstitutionNotices = (params: {
   compensations: NonNullable<HeatingDetail["compensations"]>;
   substitutions: SubstitutionInput[];
   targetUnitId: string | undefined;
+  baseMethod: HeatingBaseMethod;
   warnings: CalcWarning[];
 }): void => {
   const { scope, evaluation, compensations, targetUnitId, warnings } = params;
@@ -2370,7 +2390,11 @@ const pushSubstitutionNotices = (params: {
   const valid = evaluation.resolved.filter((entry) => entry.isValid);
 
   if (evaluation.limitExceeded) {
-    warnings.push({ code: `substitutionAreaDistribution${suffix}` });
+    const areaSuffix =
+      scope === "heating" ? areaCodeSuffix(params.baseMethod) : "";
+    warnings.push({
+      code: `substitutionAreaDistribution${suffix}${areaSuffix}`,
+    });
   } else {
     const own = valid.find((entry) => entry.unitId === targetUnitId);
     if (own) {
@@ -2606,7 +2630,7 @@ export const calculateHeating = (
     heatingAreaDiffersFromLivingArea,
     areaWeightsWithLandlord,
     totalAreaDays,
-  } = computeAreaWeights(units, prorationMethod);
+  } = computeAreaWeights(units, prorationMethod, config.baseMethod);
 
   const {
     consumptionDistributionMethod,
@@ -2622,6 +2646,7 @@ export const calculateHeating = (
     totalAreaDays,
     consumptionMeters: heatingMeters,
     consumptionMethod,
+    baseMethod: config.baseMethod,
     warnings,
     substitutionLimitExceeded: heatingEvaluation.limitExceeded,
   });
@@ -2635,13 +2660,8 @@ export const calculateHeating = (
     basicShares,
     unitConsumption,
     substitutedUnits: substitutedUnitIds(heatingEvaluation),
+    baseMethod: config.baseMethod,
   });
-
-  // Vermieter-Anteil = letzte Share-Array-Position: Leerstand bei den
-  // Grundkosten, Vor-/Nachmieter-/Leerstandsverbrauch der Ziel-Wohnung bei
-  // den Verbrauchskosten.
-  const landlordBasicCostCents = basicShares.at(-1) ?? 0;
-  const landlordConsumptionCostCents = consumptionShares.at(-1) ?? 0;
 
   const { hotWaterScope, hotWaterDetail } = computeHotWater({
     input,
@@ -2667,6 +2687,7 @@ export const calculateHeating = (
         : undefined,
     substitutions: input.substitutions ?? [],
     targetUnitId,
+    baseMethod: config.baseMethod,
     warnings,
   });
 
@@ -2686,6 +2707,7 @@ export const calculateHeating = (
     totalHeatingCostsCents: distributablePotCents,
     heatingPotCents,
     consumptionShareBps: config.consumptionShareBps,
+    baseMethod: config.baseMethod,
     consumptionPortionCents,
     basicPortionCents,
     consumptionMethod,
@@ -2694,8 +2716,11 @@ export const calculateHeating = (
     warnings,
     perMeter,
     perUnit,
-    landlordBasicCostCents,
-    landlordConsumptionCostCents,
+    // Vermieter-Anteil = letzte Share-Array-Position: Leerstand bei den
+    // Grundkosten, Vor-/Nachmieter-/Leerstandsverbrauch der Ziel-Wohnung bei
+    // den Verbrauchskosten.
+    landlordBasicCostCents: basicShares.at(-1) ?? 0,
+    landlordConsumptionCostCents: consumptionShares.at(-1) ?? 0,
     heatingAreaDiffersFromLivingArea,
     co2Detail,
     hotWaterDetail,

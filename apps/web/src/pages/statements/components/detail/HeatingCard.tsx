@@ -6,6 +6,8 @@ import {
   consumptionUnitLabel,
   formatEur,
   formatNumber,
+  heatingAreaColumnLabelKey,
+  heatingBaseMethodOf,
   heatingColumnFootnotes,
   hotWaterColumnFootnotes,
   hotWaterFactRows,
@@ -357,9 +359,10 @@ export const HeatingCard = ({
         <div className="mb-4">
           <SplitBar
             aPercent={basicPct}
-            aLabel={t("ui.heating.detail.splitBaseLegend", {
-              percent: formatNumber(basicPct, 0),
-            })}
+            aLabel={t(
+              `ui.heating.detail.splitBaseLegend.${heatingBaseMethodOf(detail)}`,
+              { percent: formatNumber(basicPct, 0) },
+            )}
             bLabel={t("ui.heating.detail.splitConsumptionLegend", {
               percent: formatNumber(consumptionPct, 0),
             })}
@@ -371,7 +374,7 @@ export const HeatingCard = ({
               <tr className={QUIET_TABLE_HEAD_ROW}>
                 <th className="py-2.5">{t("statements.pdf.heating.unit")}</th>
                 <th className="py-2.5 text-right">
-                  {t("statements.pdf.heating.heatingArea")}
+                  {t(heatingAreaColumnLabelKey(detail))}
                   {columnMarkers(heatingIndices("heatingArea"))}
                 </th>
                 <th className="whitespace-pre-line py-1.5 text-right">

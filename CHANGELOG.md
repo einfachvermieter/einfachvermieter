@@ -5,6 +5,11 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Neu:** Die Grundkosten der Heizung lassen sich nach Wohnfläche oder
+  nach beheizter Fläche verteilen. Bestehende Konfigurationen rechnen wie
+  bisher nach beheizter Fläche.
+- **Behoben:** Der Hinweis zum Warmwasser ohne erfassten Verbrauch nennt
+  die Wohnfläche, nach der auch gerechnet wird.
 - **Neu:** Mit eingeschalteter Versionsprüfung zeigt die App wichtige
   Mitteilungen zur installierten Version, etwa zu Sicherheitslücken oder
   bekannten Fehlern.

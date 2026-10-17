@@ -665,7 +665,7 @@ describe("Happy Path", () => {
         validTo: null,
         baseSharePercent: 30,
         consumptionSharePercent: 70,
-        baseMethod: "area",
+        baseMethod: "heated_area",
         consumptionMethod: "heat_meter",
         prorationMethod: "linear",
         heatingType: "central_with_hot_water",
@@ -747,6 +747,7 @@ describe("Happy Path", () => {
     const preview = await calculatePreview();
 
     expect(preview.heatingDetail).toBeTruthy();
+    expect(preview.heatingDetail.baseMethod).toBe("heated_area");
     // Warmwasser wurde abgespalten (eigener Topf existiert).
     expect(preview.heatingDetail.hotWaterDetail.totalHeatEnergyKwh).toBe(
       10_000,

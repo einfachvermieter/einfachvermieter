@@ -1,4 +1,5 @@
 import {
+  type HeatingBaseMethod,
   type HeatingFormValues,
   heatingFormSchema,
 } from "@einfachvermieter/shared";
@@ -15,10 +16,12 @@ import { HeatingBillingFields } from "../components/settings/HeatingBillingField
  */
 export const HeatingBillingSheet = ({
   defaultValues,
+  previousBaseMethod,
   onSubmit,
   onClose,
 }: {
   defaultValues: HeatingFormValues;
+  previousBaseMethod?: HeatingBaseMethod;
   onSubmit: (values: HeatingFormValues) => Promise<void>;
   onClose: () => void;
 }) => {
@@ -37,7 +40,10 @@ export const HeatingBillingSheet = ({
       onSubmit={onSubmit}
       onClose={onClose}
     >
-      <HeatingBillingFields form={form} />
+      <HeatingBillingFields
+        form={form}
+        previousBaseMethod={previousBaseMethod}
+      />
     </FormSheet>
   );
 };

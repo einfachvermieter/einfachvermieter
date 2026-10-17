@@ -10,6 +10,7 @@ import {
   formatNumber,
   groupCalcWarnings,
   type HeatingDetail,
+  heatingAreaColumnLabelKey,
   heatingColumnFootnotes,
   hotWaterColumnFootnotes,
   hotWaterFactRows,
@@ -828,7 +829,7 @@ export const HeatingAppendix = ({
             </View>
             <View style={[styles.cellRight, styles.cellDivider, DIST_COL_AREA]}>
               <Text>
-                {t("statements.pdf.heating.heatingArea")}
+                {t(heatingAreaColumnLabelKey(detail))}
                 {footnoteMarkers(heatingIndices("heatingArea"))}
               </Text>
             </View>

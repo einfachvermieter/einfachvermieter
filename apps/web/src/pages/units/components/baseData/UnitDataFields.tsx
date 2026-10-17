@@ -1,8 +1,10 @@
-import type { UnitFormValues } from "@einfachvermieter/shared";
+import { todayIso, type UnitFormValues } from "@einfachvermieter/shared";
+import { useQuery } from "@tanstack/react-query";
 import type { UseFormReturn } from "react-hook-form";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
+import { heatingSettingsListQueryOptions } from "../../../../lib/heating";
 import { t } from "../../../../lib/i18n";
 
 export const UnitDataFields = ({
@@ -14,6 +16,23 @@ export const UnitDataFields = ({
     Number.parseFloat(value.replace(",", "."));
   const area = toNumber(form.watch("areaSqm"));
   const heatingArea = toNumber(form.watch("heatingAreaSqm"));
+  const buildingId = form.watch("buildingId");
+
+  const { data: heatingVersions } = useQuery({
+    ...heatingSettingsListQueryOptions(buildingId),
+    enabled: buildingId.length > 0,
+  });
+  const today = todayIso();
+  const currentHeating = heatingVersions?.find(
+    (version) =>
+      version.validFrom <= today &&
+      (version.validTo === null || version.validTo >= today),
+  );
+  // Beim Maßstab Wohnfläche hätte eine Eingabe sonst ohne sichtbaren Grund
+  // keine Wirkung.
+  const heatingAreaUnused =
+    currentHeating?.mode === "internal" &&
+    currentHeating.baseMethod === "living_area";
 
   // Möglich (z.B. beheizter Keller), aber selten genug für einen Hinweis:
   // eine zu große Heizfläche verzerrt die Heizkostenverteilung still.
@@ -61,6 +80,13 @@ export const UnitDataFields = ({
           optional={true}
         />
       </div>
+      {heatingAreaUnused ? (
+        <Alert variant="info">
+          <AlertDescription>
+            {t("ui.units.fields.heatingAreaUnusedHint")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
       {heatingAreaLarger ? (
         <Alert variant="warning">
           <AlertDescription>

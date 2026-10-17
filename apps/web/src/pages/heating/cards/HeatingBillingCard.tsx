@@ -47,6 +47,10 @@ export const HeatingBillingCard = ({
         consumption: version.consumptionSharePercent,
       }),
     });
+    rows.splice(4, 0, {
+      label: t("ui.heating.fields.baseMethod"),
+      value: t(`ui.heating.baseMethods.${version.baseMethod}`),
+    });
     rows.push({
       label: t("ui.heating.fields.mandatorySeventyPercent"),
       value: yesNo(version.mandatorySeventyPercent),
@@ -75,9 +79,10 @@ export const HeatingBillingCard = ({
         <div className="mt-4">
           <SplitBar
             aPercent={version.baseSharePercent}
-            aLabel={t("ui.heating.detail.splitBaseLegend", {
-              percent: version.baseSharePercent,
-            })}
+            aLabel={t(
+              `ui.heating.detail.splitBaseLegend.${version.baseMethod}`,
+              { percent: version.baseSharePercent },
+            )}
             bLabel={t("ui.heating.detail.splitConsumptionLegend", {
               percent: version.consumptionSharePercent,
             })}

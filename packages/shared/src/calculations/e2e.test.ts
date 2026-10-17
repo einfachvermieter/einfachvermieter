@@ -237,7 +237,7 @@ describe("End-to-End Abrechnung 2025", () => {
     );
     const heatingDetail = calculateHeating({
       totalHeatingCostsCents,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units,
       consumptionMethod: "heat_meter",
       consumptionMeters,
@@ -488,7 +488,7 @@ describe("End-to-End Abrechnung 2025", () => {
     );
     const heatingDetail = calculateHeating({
       totalHeatingCostsCents,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: unitsApril,
       consumptionMethod: "heat_meter",
       consumptionMeters,
@@ -620,7 +620,7 @@ describe("End-to-End Abrechnung 2025", () => {
 
     const heatingDetail = calculateHeating({
       totalHeatingCostsCents: 0,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units,
       consumptionMethod: "heat_meter",
       consumptionMeters: [],
@@ -685,7 +685,7 @@ describe("End-to-End Abrechnung 2025", () => {
 
     const emptyHeating = calculateHeating({
       totalHeatingCostsCents: 0,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units,
       consumptionMethod: "heat_meter",
       consumptionMeters: [],
@@ -788,7 +788,7 @@ describe("End-to-End Abrechnung 2025", () => {
     const period = { start: periodStart, end: periodEnd };
     const emptyHeating = calculateHeating({
       totalHeatingCostsCents: 0,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units,
       consumptionMethod: "heat_meter",
       consumptionMeters: [],

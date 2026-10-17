@@ -6,7 +6,14 @@ import { isoDate } from "./common.js";
 export const heatingModes = ["internal", "external"] as const;
 export type HeatingMode = (typeof heatingModes)[number];
 
-export const heatingBaseMethods = ["area"] as const;
+/**
+ * Grundkostenmaßstab der Heizung nach § 7 Abs. 1 Satz 5 HeizkostenV, gilt
+ * für alle Wohnungen des Gebäudes:
+ * - "living_area": Wohn- oder Nutzfläche
+ * - "heated_area": Fläche der beheizten Räume (Heizfläche der Wohnung,
+ *                  ohne Angabe die Wohnfläche)
+ */
+export const heatingBaseMethods = ["living_area", "heated_area"] as const;
 export type HeatingBaseMethod = (typeof heatingBaseMethods)[number];
 
 /**
@@ -298,9 +305,9 @@ export type HotWaterMeterNone = typeof HOT_WATER_METER_NONE;
 
 /**
  * Formular-Werte. Verbrauchsanteil und Grundkostenanteil sind beide
- * Eingabefelder; das UI hält sie reziprok in Summe = 100. Der Grund-
- * kosten-Verteilschlüssel ist im MVP fest auf "area". Verbrauchs-
- * erfassung, Heizungsart und Brennstoff sind im internen Modus Pflicht.
+ * Eingabefelder; das UI hält sie reziprok in Summe = 100. Grundkosten-
+ * maßstab, Verbrauchserfassung, Heizungsart und Brennstoff sind im
+ * internen Modus Pflicht.
  */
 export type HeatingFormValues = {
   /**
@@ -318,6 +325,7 @@ export type HeatingFormValues = {
   validTo: string;
   consumptionSharePercent: string;
   baseSharePercent: string;
+  baseMethod: HeatingBaseMethod;
   consumptionMethod: HeatingConsumptionMethod;
   prorationMethod: HeatingProrationMethod;
   heatingType: HeatingType;
@@ -387,6 +395,7 @@ export const heatingFormSchema = z
     validTo: z.string(),
     consumptionSharePercent: z.string(),
     baseSharePercent: z.string(),
+    baseMethod: z.enum(heatingBaseMethods),
     consumptionMethod: z.enum(heatingConsumptionMethods),
     prorationMethod: z.enum(heatingProrationMethods),
     heatingType: z.enum(heatingTypes),
@@ -509,7 +518,7 @@ export const heatingFormToDto = (
     validTo,
     baseSharePercent: base,
     consumptionSharePercent: consumption,
-    baseMethod: "area",
+    baseMethod: values.baseMethod,
     consumptionMethod: values.consumptionMethod,
     prorationMethod: values.prorationMethod,
     heatingType: values.heatingType,
@@ -543,6 +552,7 @@ export const emptyHeatingFormValues = (
   validTo: "",
   consumptionSharePercent: "70",
   baseSharePercent: "30",
+  baseMethod: "living_area",
   consumptionMethod: "heat_meter",
   prorationMethod: "linear",
   heatingType: "central_without_hot_water",
@@ -568,6 +578,7 @@ export const heatingSettingsToFormValues = (
   validTo: settings.validTo ?? "",
   consumptionSharePercent: String(settings.consumptionSharePercent),
   baseSharePercent: String(settings.baseSharePercent),
+  baseMethod: settings.baseMethod,
   consumptionMethod: settings.consumptionMethod,
   prorationMethod: settings.prorationMethod,
   heatingType: settings.heatingType,

@@ -6,6 +6,7 @@ import {
 import {
   baseCostAreaFor,
   type ConsumptionSubstitutionWriteDto,
+  type HeatingBaseMethod,
   isReferencePeriodUsable,
   type Period,
   type ResolvedSubstitution,
@@ -184,7 +185,11 @@ export class ConsumptionSubstitutionsService {
   ): Promise<SubstitutionOptions> {
     await assertBuildingExists(this.em, buildingId);
     const unit = await this.assertUnit(buildingId, unitId);
-    const meterType = await this.meterTypeFor(buildingId, scope, period);
+    const { meterType, baseMethod } = await this.scopeSettingsFor(
+      buildingId,
+      scope,
+      period,
+    );
     const history = await this.contextService.loadHistory(buildingId, period);
     const current = await this.contextService.listForPeriod(buildingId, period);
     const evaluation = await this.contextService.evaluatePeriod(
@@ -274,7 +279,7 @@ export class ConsumptionSubstitutionsService {
         label: entry.label,
         isActive: entry.isActive,
       })),
-      wholeUnitAreaSqm: baseCostAreaFor(scope, unit),
+      wholeUnitAreaSqm: baseCostAreaFor(scope, unit, baseMethod),
       shareMethod,
       referenceYears: referenceYears.map((entry) => ({
         ...entry,
@@ -399,14 +404,17 @@ export class ConsumptionSubstitutionsService {
   }
 
   /**
-   * Zählertyp des Bereichs; wirft, wenn der Bereich in der Periode nicht
-   * nach HeizkostenV in der App gerechnet wird
+   * Zählertyp und Grundkostenmaßstab des Bereichs; wirft, wenn der Bereich
+   * in der Periode nicht nach HeizkostenV in der App gerechnet wird
    */
-  private async meterTypeFor(
+  private async scopeSettingsFor(
     buildingId: string,
     scope: SubstitutionScope,
     period: Period,
-  ): Promise<"heat_cost_allocator" | "heat_meter" | "water_hot"> {
+  ): Promise<{
+    meterType: "heat_cost_allocator" | "heat_meter" | "water_hot";
+    baseMethod: HeatingBaseMethod;
+  }> {
     const settings = await this.heatingService.getForBuildingAt(
       buildingId,
       period.start,
@@ -421,13 +429,18 @@ export class ConsumptionSubstitutionsService {
       );
     }
 
+    const { baseMethod } = settings;
     if (scope === "hot_water") {
-      return "water_hot";
+      return { meterType: "water_hot", baseMethod };
     }
 
-    return settings.consumptionMethod === "heat_cost_allocator"
-      ? "heat_cost_allocator"
-      : "heat_meter";
+    return {
+      meterType:
+        settings.consumptionMethod === "heat_cost_allocator"
+          ? "heat_cost_allocator"
+          : "heat_meter",
+      baseMethod,
+    };
   }
 
   /**
@@ -439,7 +452,11 @@ export class ConsumptionSubstitutionsService {
   ): Promise<void> {
     const unit = await this.assertUnit(buildingId, dto.unitId);
     const period = { start: dto.periodStart, end: dto.periodEnd };
-    const meterType = await this.meterTypeFor(buildingId, dto.scope, period);
+    const { meterType, baseMethod } = await this.scopeSettingsFor(
+      buildingId,
+      dto.scope,
+      period,
+    );
     const invalid = (key: string) =>
       new BadRequestException(getI18n().t(`errors.substitution.${key}`));
 
@@ -475,7 +492,7 @@ export class ConsumptionSubstitutionsService {
       if (
         !wholeUnit &&
         (dto.affectedAreaSqm === null ||
-          dto.affectedAreaSqm >= baseCostAreaFor("heating", unit))
+          dto.affectedAreaSqm >= baseCostAreaFor("heating", unit, baseMethod))
       ) {
         throw invalid("areaPartial");
       }

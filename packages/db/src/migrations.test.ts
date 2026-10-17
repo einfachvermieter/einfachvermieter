@@ -396,3 +396,41 @@ describe("Übernahme der Werte je Abrechnungszeitraum", () => {
     }
   });
 });
+
+describe("Grundkostenmaßstab der Heizung", () => {
+  it("stellt jeden Bestand auf die beheizte Fläche um, Neues beginnt mit der Wohnfläche", async () => {
+    await withDatabase(async (open) => {
+      const orm = await open();
+      const connection = orm.em.getConnection();
+      await orm.migrator.up({ to: "Migration20261013180000" });
+
+      await connection.execute(
+        "insert into buildings (id, name, address_street, address_postal_code, address_city) values ('with-area', 'Mit Heizfläche', 'Weg 1', '45127', 'Essen'), ('without-area', 'Ohne Heizfläche', 'Weg 2', '45127', 'Essen')",
+      );
+      // Ohne eingetragene Heizfläche: Die Migration schaut nicht auf die
+      // Wohnungen
+      await connection.execute(
+        "insert into units (id, building_id, name, area_sqm, heating_area_sqm) values ('unit-with', 'with-area', 'A', 80, 60), ('unit-without', 'without-area', 'B', 80, null)",
+      );
+      await connection.execute(
+        "insert into heating_settings (id, building_id, mode, valid_from) values ('internal-with', 'with-area', 'internal', '2024-01-01'), ('internal-without', 'without-area', 'internal', '2024-01-01'), ('external', 'without-area', 'external', '2025-01-01')",
+      );
+
+      await orm.migrator.up();
+
+      await connection.execute(
+        "insert into heating_settings (id, building_id, mode, valid_from) values ('new', 'with-area', 'internal', '2026-01-01')",
+      );
+      const rows: Array<{ id: string; base_method: string }> =
+        await connection.execute(
+          "select id, base_method from heating_settings order by id",
+        );
+      expect(rows.map((row) => [row.id, row.base_method])).toEqual([
+        ["external", "heated_area"],
+        ["internal-with", "heated_area"],
+        ["internal-without", "heated_area"],
+        ["new", "living_area"],
+      ]);
+    });
+  });
+});

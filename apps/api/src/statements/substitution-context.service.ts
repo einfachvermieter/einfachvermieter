@@ -496,7 +496,10 @@ export class SubstitutionContextService {
         period,
         units,
         baseAreaByUnit: new Map(
-          unitsRaw.map((unit) => [unit.id, baseCostAreaFor(scope, unit)]),
+          unitsRaw.map((unit) => [
+            unit.id,
+            baseCostAreaFor(scope, unit, settings.baseMethod),
+          ]),
         ),
         meters: scopeMeters,
         shareMethod:

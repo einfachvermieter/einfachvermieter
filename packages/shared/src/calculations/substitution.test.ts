@@ -144,7 +144,7 @@ describe("isSubstitutionLimitExceeded (§ 9a Abs. 2)", () => {
 
 /**
  * Rechenbeispiel der Spezifikation: vier Wohnungen, HKV, W1 mit
- * ausgefallenem HKV 3 in einem Raum mit 20 m².
+ * ausgefallenem HKV 3 in einem Raum mit 20 qm.
  */
 describe("§ 9a: Teilausfall eines HKV", () => {
   const units = [
@@ -201,7 +201,7 @@ describe("§ 9a: Teilausfall eines HKV", () => {
     const all = meters(overrides);
     return {
       totalHeatingCostsCents: 100_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units,
       consumptionMethod: "heat_cost_allocator" as const,
       consumptionMeters: withoutResetMeters(all),
@@ -352,6 +352,54 @@ describe("§ 9a: Teilausfall eines HKV", () => {
       warningCodes.some((code) => code.startsWith("consumptionFallback")),
     ).toBe(false);
     expect(warningCodes).not.toContain("substitutionOtherUnitsHeating");
+  });
+
+  it("misst die 25-%-Grenze in der Fläche des Grundkostenmaßstabs", () => {
+    // W4 hat 100 qm Wohnfläche, aber nur 40 qm Heizfläche. Ausfall W1
+    // (20 qm) und ganze W4: nach Wohnfläche 120 / 320, nach Heizfläche
+    // 60 / 260.
+    const scenario = (baseMethod: "living_area" | "heated_area") =>
+      calculateHeating({
+        ...input(
+          [
+            hkv3({}),
+            substitution({
+              id: "s-w4",
+              unitId: "W4",
+              affectedMeterIds: ["W4-HKV"],
+              method: "comparable_rooms",
+              comparisonUnitIds: ["W2", "W3"],
+            }),
+          ],
+          { "W4-HKV": null },
+        ),
+        config: { consumptionShareBps: 7000, baseMethod },
+        units: units.map((entry) =>
+          entry.id === "W4" ? { ...entry, heatingAreaSqm: 40 } : entry,
+        ),
+        targetUnitId: "W2",
+      });
+
+    const living = scenario("living_area");
+    expect(living.substitutionArea?.heating).toEqual({
+      affectedAreaSqm: 120,
+      totalAreaSqm: 320,
+      limitExceeded: true,
+    });
+    expect(codes(living.warnings)).toContain(
+      "substitutionAreaDistributionHeatingLivingArea",
+    );
+    // Verbrauchsanteil 70.000 nach Wohnfläche: W2 80 / 320
+    expect(
+      living.perUnit.find((row) => row.unitId === "W2")?.consumptionCostCents,
+    ).toBe(17_500);
+
+    const heated = scenario("heated_area");
+    expect(heated.substitutionArea?.heating).toEqual({
+      affectedAreaSqm: 60,
+      totalAreaSqm: 260,
+      limitExceeded: false,
+    });
   });
 
   it("genau 25 % (HKV 3 und ganze W3) bleibt bei Abs. 1", () => {
@@ -554,7 +602,7 @@ describe("§ 9a: Ausgleich im Folgejahr bei fortlaufenden Zählern", () => {
   ) =>
     calculateHeating({
       totalHeatingCostsCents: 100_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units,
       consumptionMethod: "heat_meter",
       consumptionMeters: [{ meter: wmzA, readings }, ...others(periodYear)],
@@ -847,7 +895,7 @@ describe("§ 9a: Ausgleich im Folgejahr bei fortlaufenden Zählern", () => {
     const second = meter("WMZ-A2", "A", "heat_meter");
     const result = calculateHeating({
       totalHeatingCostsCents: 100_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units,
       consumptionMethod: "heat_meter",
       consumptionMeters: [
@@ -868,7 +916,7 @@ describe("§ 9a: Ausgleich im Folgejahr bei fortlaufenden Zählern", () => {
       ],
     });
 
-    // Rate (5.000 + 6.000) / 180 m² x 20 m², gleichmäßig auf zwei Zähler
+    // Rate (5.000 + 6.000) / 180 qm x 20 qm, gleichmäßig auf zwei Zähler
     const expected = (11_000 / 180) * 20;
     expect(
       result.substitutions?.[0]?.perMeter.map(
@@ -907,7 +955,7 @@ describe("§ 9a: Warmwasser", () => {
   }) =>
     calculateHeating({
       totalHeatingCostsCents: 100_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units,
       consumptionMethod: "heat_meter",
       consumptionMeters: heatMeters,
@@ -981,7 +1029,7 @@ describe("§ 9a: Referenzmenge des Gebäudedurchschnitts", () => {
   ) =>
     calculateHeating({
       totalHeatingCostsCents: 100_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units,
       consumptionMethod: "heat_cost_allocator",
       consumptionMeters: [failed, ...meters],
@@ -1004,7 +1052,7 @@ describe("§ 9a: Referenzmenge des Gebäudedurchschnitts", () => {
     );
     const [entry] = result.substitutions ?? [];
 
-    // 2.000 Einheiten / 200 m², nicht 2.000 / 300 m²
+    // 2.000 Einheiten / 200 qm, nicht 2.000 / 300 qm
     expect(entry?.basis.ratePerSqm).toBe(10);
     expect(entry?.basis.comparisonUnitNames).toEqual(["B", "C"]);
     expect(entry?.substituteConsumption).toBe(1000);

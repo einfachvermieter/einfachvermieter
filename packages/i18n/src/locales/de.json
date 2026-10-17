@@ -359,9 +359,12 @@
     "co2AreaHotWaterOnly": "Wohnung {unit} erhält aus der zentralen Anlage ganz oder zeitweise nur Warmwasser. Das CO2KostAufG regelt diesen Fall nicht ausdrücklich. Für diese Zeit zählt die App die Wohnfläche bei der CO₂-Einstufung nicht mit.",
     "co2DataWithoutSplit": "CO₂-Kosten sind erfasst, die CO₂-Kostenaufteilung ist ausgeschaltet. Die Abrechnung enthält keine Angaben nach § 7 Abs. 3 CO2KostAufG.",
     "consumptionFallbackZeroDelta": "Die Verbrauchsmessungen liefern für die Periode eine Differenz von 0. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das Kürzungsrecht des Mieters von 15 % nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "consumptionFallbackZeroDeltaLivingArea": "Die Verbrauchsmessungen liefern für die Periode eine Differenz von 0. Der Verbrauchsanteil wird ersatzweise nach Wohnfläche verteilt. Das Kürzungsrecht des Mieters von 15 % nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
     "consumptionFallbackNoAllocators": "Es sind keine Heizkostenverteiler erfasst. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das Kürzungsrecht des Mieters von 15 % nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "consumptionFallbackNoAllocatorsLivingArea": "Es sind keine Heizkostenverteiler erfasst. Der Verbrauchsanteil wird ersatzweise nach Wohnfläche verteilt. Das Kürzungsrecht des Mieters von 15 % nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
     "consumptionFallbackNoHeatMeters": "Es sind keine Wärmemengenzähler erfasst. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das Kürzungsrecht des Mieters von 15 % nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
-    "hotWaterConsumptionFallbackArea": "Es ist kein Warmwasserverbrauch je Wohnung erfasst. Der Verbrauchsanteil der Warmwasserkosten wird ersatzweise nach Heizfläche verteilt. Das Kürzungsrecht des Mieters von 15 % nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "consumptionFallbackNoHeatMetersLivingArea": "Es sind keine Wärmemengenzähler erfasst. Der Verbrauchsanteil wird ersatzweise nach Wohnfläche verteilt. Das Kürzungsrecht des Mieters von 15 % nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
+    "hotWaterConsumptionFallbackArea": "Es ist kein Warmwasserverbrauch je Wohnung erfasst. Der Verbrauchsanteil der Warmwasserkosten wird ersatzweise nach Wohnfläche verteilt. Das Kürzungsrecht des Mieters von 15 % nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
     "aiNoCostTypes": "Keine Kostenarten hinterlegt: Bitte zuerst Kostenarten anlegen, danach kann die KI eindeutig zuordnen.",
     "aiUnknownCostType": "Position {position}: Die KI hat eine unbekannte Kostenart vorgeschlagen. Bitte manuell wählen.",
     "aiGrossMismatch": "Brutto-Validierung fehlgeschlagen: Die Summe der Positionen weicht um {diffCents} ct vom Brutto-Endbetrag ab. Bitte Beträge manuell prüfen.",
@@ -394,6 +397,7 @@
     "substitutionOtherUnitsHeating": "Für einzelne andere Wohnungen wurde der Heizverbrauch nach § 9a HeizkostenV ersatzweise ermittelt.",
     "substitutionOtherUnitsHotWater": "Für einzelne andere Wohnungen wurde der Warmwasserverbrauch nach § 9a HeizkostenV ersatzweise ermittelt.",
     "substitutionAreaDistributionHeating": "Für mehr als 25 % der Fläche konnte der Heizverbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Heizkosten daher vollständig nach der Heizfläche verteilt.",
+    "substitutionAreaDistributionHeatingLivingArea": "Für mehr als 25 % der Fläche konnte der Heizverbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Heizkosten daher vollständig nach der Wohnfläche verteilt.",
     "substitutionAreaDistributionHotWater": "Für mehr als 25 % der Fläche konnte der Warmwasserverbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Warmwasserkosten daher vollständig nach der Wohnfläche verteilt.",
     "substitutionCompensationHeating": "Der Heizverbrauch der Vorperiode wurde nach § 9a HeizkostenV ersatzweise ermittelt. Mit der aktuellen Ablesung wird die Abweichung zum tatsächlichen Verbrauch ausgeglichen.",
     "substitutionCompensationHotWater": "Der Warmwasserverbrauch der Vorperiode wurde nach § 9a HeizkostenV ersatzweise ermittelt. Mit der aktuellen Ablesung wird die Abweichung zum tatsächlichen Verbrauch ausgeglichen."
@@ -952,8 +956,9 @@
         "areaPlaceholder": "120,00",
         "heatingArea": "Heizfläche",
         "heatingAreaSqm": "Heizfläche (m², optional)",
-        "heatingAreaDescription": "Wird für die Verteilung der Heizkosten verwendet. Warmwasserkosten werden nach Wohnfläche verteilt. Ohne Angabe wird die Wohnfläche verwendet.",
+        "heatingAreaDescription": "Wird für die Verteilung der Heizkosten verwendet, wenn das Gebäude nach der Fläche der beheizten Räume verteilt. Warmwasserkosten werden nach Wohnfläche verteilt. Ohne Angabe wird die Wohnfläche verwendet.",
         "heatingAreaPlaceholder": "Wohnfläche wird verwendet",
+        "heatingAreaUnusedHint": "Das Gebäude verteilt die Grundkosten der Heizung nach Wohnfläche. Die Heizfläche wird dafür nicht verwendet.",
         "heatingAreaLargerWarning": "Die Heizfläche ist größer als die Wohnfläche. Das ist möglich (z. B. beheizter Keller), verzerrt aber die Heizkostenverteilung, wenn es ein Tippfehler ist. Bitte prüfen Sie den Wert."
       },
       "validation": {
@@ -1463,7 +1468,10 @@
         "installationSection": "Heizung",
         "hotWaterDisclose": "Warmwasser-Details",
         "prorationMethodRow": "Verfahren",
-        "splitBaseLegend": "{percent} % Grund · nach Heizfläche",
+        "splitBaseLegend": {
+          "living_area": "{percent} % Grund · nach Wohnfläche",
+          "heated_area": "{percent} % Grund · nach Heizfläche"
+        },
         "splitConsumptionLegend": "{percent} % Verbrauch · nach Zählern",
         "prorationChartLegendDegreeDays": "Gradtagszahlen",
         "prorationChartLegendLinear": "Linear",
@@ -1492,7 +1500,8 @@
         "external": "Externe Abrechnung"
       },
       "baseMethods": {
-        "area": "nach Fläche"
+        "living_area": "Wohnfläche",
+        "heated_area": "Fläche der beheizten Räume (Heizfläche)"
       },
       "consumptionMethods": {
         "heat_meter": "Wärmemengenzähler",
@@ -1518,6 +1527,9 @@
         "splitDescription": "Die Heizkostenverordnung schreibt zwischen 50 % und 70 % Verbrauchsanteil vor. Üblich und Voreinstellung: 70 %.",
         "baseSharePercent": "Grundkostenanteil",
         "baseShareDescription": "Wird nach Fläche verteilt. Verbrauchs- und Grundkostenanteil ergeben zusammen 100 %.",
+        "baseMethod": "Grundkosten verteilen nach",
+        "baseMethodDescription": "Gilt für alle Wohnungen des Gebäudes. Bei „Fläche der beheizten Räume“ zählt die Heizfläche der Wohnung; ist dort keine eingetragen, zählt die Wohnfläche. Warmwasserkosten werden immer nach Wohnfläche verteilt.",
+        "baseMethodChangeHint": "Den Maßstab dürfen Sie nach § 6 Abs. 4 HeizkostenV nur für künftige Abrechnungszeiträume und in den gesetzlich vorgesehenen Fällen ändern. Die Änderung müssen Sie den Mietern vorher erklären.",
         "prorationMethod": "Aufteilung bei Mieter-/Leerstandswechsel",
         "prorationMethodDescription": "Wie werden Heizkostenrechnungen aufgeteilt, deren Zeitraum nur teilweise in die Mietzeit fällt? Linear verteilt tagesproportional, ignoriert aber die Wintersaisonalität. Gradtagszahlen gewichten Wintertage stärker (Promille-Verteilung, Σ = 1.000). § 9b Abs. 2 HeizkostenV lässt diese Verteilung bei Mieterwechsel ausdrücklich zu.",
         "prorationMethodDescriptionExternal": "Betrifft nur den Verbrauchskostenanteil der externen Abrechnung bei Mieter-/Leerstandswechsel. Grundkosten bleiben immer tagesproportional. Linear verteilt tagesproportional, ignoriert aber die Wintersaisonalität. Gradtagszahlen gewichten Wintertage stärker. § 9b Abs. 2 HeizkostenV lässt diese Verteilung bei Mieterwechsel ausdrücklich zu.",
@@ -3072,6 +3084,7 @@
         "yourHeatingIntro": "Ihre Heizkosten von {total} setzen sich zusammen aus {heating} Heizung und {hotWater} Warmwasser.",
         "unit": "Wohnung",
         "heatingArea": "Heizfläche",
+        "livingArea": "Wohnfläche",
         "targetUnitLabel": "{unit} (Ihre Wohnung)",
         "otherUnitsPlural": "Übrige Wohnungen ({count})",
         "consumptionKwh": "Verbrauch (kWh)",
@@ -3104,6 +3117,7 @@
         },
         "totalShareNote": "Insgesamt {percent} % der Heizkosten",
         "consumptionDistributionHeatingArea": "Verbrauchsanteil ersatzweise nach Heizfläche verteilt (keine Verbrauchsmessung oder Differenz von 0).",
+        "consumptionDistributionLivingArea": "Verbrauchsanteil ersatzweise nach Wohnfläche verteilt (keine Verbrauchsmessung oder Differenz von 0).",
         "heatingAreaNote": "Die Heizfläche umfasst ausschließlich die beheizten Räume und kann von der Wohnfläche abweichen.",
         "prorationNoteLinearBase": "Da das Mietverhältnis nicht den gesamten Abrechnungszeitraum umfasste, wurde der Grundkostenanteil der Heizkosten zeitanteilig nach Nutzungstagen verteilt.",
         "prorationNoteDegreeDaysBase": "Da das Mietverhältnis nicht den gesamten Abrechnungszeitraum umfasste, wurde der Grundkostenanteil der Heizkosten zeitanteilig anhand der Gradtagszahlen verteilt: {months}.",
@@ -3120,7 +3134,8 @@
         "perMeterDerivedNote": "Rechnerisch ermittelt: Zum Ablesedatum lag keine eigene Ablesung vor, der Stand wurde aus den umliegenden Ablesungen berechnet.",
         "valuationPointsNote": "Bewertungspunkte = Verbrauchseinheiten ÷ 1.000. Die Skalierung erleichtert das Lesen großer Verbrauchssummen und beeinflusst die Kostenverteilung nicht.",
         "substitutedConsumptionNote": "Enthält Ersatzwerte nach § 9a HeizkostenV.",
-        "substitutionLimitHeatingArea": "Für mehr als 25 % der Fläche konnte der Verbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Heizkosten vollständig nach der Heizfläche verteilt."
+        "substitutionLimitHeatingArea": "Für mehr als 25 % der Fläche konnte der Verbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Heizkosten vollständig nach der Heizfläche verteilt.",
+        "substitutionLimitLivingArea": "Für mehr als 25 % der Fläche konnte der Verbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Heizkosten vollständig nach der Wohnfläche verteilt."
       },
       "water": {
         "title": "Wasserverbrauch im Detail",

@@ -65,7 +65,7 @@ describe("calculateHeating", () => {
     // OG: Verbrauch 7000 x 0,75 = 5250, Grund 3000 x 0,60 = 1800 = 7050
     const result = calculateHeating({
       totalHeatingCostsCents: 10_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_meter",
       consumptionMeters: [
@@ -102,7 +102,7 @@ describe("calculateHeating", () => {
   it("funktioniert bei 50/50-Verteilung", () => {
     const result = calculateHeating({
       totalHeatingCostsCents: 10_000,
-      config: { consumptionShareBps: 5000 },
+      config: { consumptionShareBps: 5000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_meter",
       consumptionMeters: [
@@ -138,7 +138,10 @@ describe("calculateHeating", () => {
     expect(() =>
       calculateHeating({
         totalHeatingCostsCents: 10_000,
-        config: { consumptionShareBps: 7000 },
+        config: {
+          consumptionShareBps: 7000,
+          baseMethod: "heated_area" as const,
+        },
         units: [unitEg, unitOg],
         consumptionMethod: "heat_meter",
         consumptionMeters: [
@@ -156,7 +159,7 @@ describe("calculateHeating", () => {
   it("Summe der Einzelbeträge = Gesamtkosten (keine Cent verloren)", () => {
     const result = calculateHeating({
       totalHeatingCostsCents: 123_457,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_meter",
       consumptionMeters: [
@@ -196,7 +199,7 @@ describe("calculateHeating", () => {
 
     const result = calculateHeating({
       totalHeatingCostsCents: 10_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_cost_allocator",
       consumptionMeters: [
@@ -250,7 +253,10 @@ describe("calculateHeating", () => {
     expect(() =>
       calculateHeating({
         totalHeatingCostsCents: 10_000,
-        config: { consumptionShareBps: 7000 },
+        config: {
+          consumptionShareBps: 7000,
+          baseMethod: "heated_area" as const,
+        },
         units: [unitEg, unitOg],
         consumptionMethod: "heat_cost_allocator",
         consumptionMeters: [
@@ -271,7 +277,7 @@ describe("calculateHeating", () => {
     // Anteile werden 40/60 verteilt, Gesamtsumme bleibt erhalten.
     const result = calculateHeating({
       totalHeatingCostsCents: 10_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_meter",
       consumptionMeters: [],
@@ -308,7 +314,7 @@ describe("calculateHeating", () => {
 
     const result = calculateHeating({
       totalHeatingCostsCents: 10_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_cost_allocator",
       consumptionMeters: [
@@ -336,7 +342,7 @@ describe("calculateHeating", () => {
   it("markiert Zähler ohne Ablesung am Stichtag als rechnerisch ermittelt", () => {
     const result = calculateHeating({
       totalHeatingCostsCents: 10_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_meter",
       consumptionMeters: [
@@ -365,7 +371,10 @@ describe("calculateHeating", () => {
     expect(() =>
       calculateHeating({
         totalHeatingCostsCents: 10_000,
-        config: { consumptionShareBps: 7000 },
+        config: {
+          consumptionShareBps: 7000,
+          baseMethod: "heated_area" as const,
+        },
         units: [unitEg],
         consumptionMethod: "heat_cost_allocator",
         consumptionMeters: [
@@ -404,7 +413,7 @@ describe("calculateHeating", () => {
     };
     const result = calculateHeating({
       totalHeatingCostsCents: 1_000_000, // 10.000 € - Jahres-Topf, ungekürzt
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [winterTenant, fullYearOther],
       consumptionMethod: "heat_meter",
       consumptionMeters: [
@@ -451,7 +460,7 @@ describe("calculateHeating", () => {
     // Gradtagszahlen (§ 9b Abs. 2 HeizkostenV) -> der Winter-Mieter trägt mehr.
     const baseInput = {
       totalHeatingCostsCents: 1_000_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_meter" as const,
       consumptionMeters: [
@@ -542,7 +551,7 @@ describe("calculateHeating", () => {
     ];
     const baseInput = {
       totalHeatingCostsCents: 1_000_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       consumptionMethod: "heat_meter" as const,
       consumptionMeters,
       periodStart: "2025-01-01",
@@ -598,7 +607,7 @@ describe("calculateHeating", () => {
     // Vermieter (Vor-/Nachmieter der Ziel-Wohnung) 10 m3.
     const result = calculateHeating({
       totalHeatingCostsCents: 1_000_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_meter",
       consumptionMeters: [
@@ -1146,7 +1155,7 @@ describe("calculateHeating - Zeitraum der CO2-Einstufung", () => {
   const run = (periodStart: string, periodEnd: string, kgPerSqm: number) =>
     calculateHeating({
       totalHeatingCostsCents: 100_000,
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_meter",
       consumptionMeters: [
@@ -1326,7 +1335,7 @@ describe("co2Tier mit gekürzten Grenzwerten", () => {
 
 describe("calculateHeating mit CO2KostAufG", () => {
   const baseInput = {
-    config: { consumptionShareBps: 7000 },
+    config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
     units: [unitEg, unitOg],
     consumptionMethod: "heat_meter" as const,
     consumptionMeters: [
@@ -1587,7 +1596,7 @@ describe("calculateHeating - Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV)", (
   // Gemeinsames Setup: 100.000 Cent Topf, WMZ EG 100 kWh / OG 300 kWh.
   const baseInput = () => ({
     totalHeatingCostsCents: 100_000,
-    config: { consumptionShareBps: 7000 },
+    config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
     units: [unitEg, unitOg],
     consumptionMethod: "heat_meter" as const,
     consumptionMeters: [
@@ -1895,7 +1904,7 @@ describe("calculateHeating - Warmwasser-Grundkosten nach Wohnfläche und zeitant
 
   const input = (units: UnitInfo[]) => ({
     totalHeatingCostsCents: 100_000,
-    config: { consumptionShareBps: 7000 },
+    config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
     units,
     consumptionMethod: "heat_meter" as const,
     consumptionMeters: [
@@ -2072,7 +2081,7 @@ describe("Beschränkungen nach § 9 CO2KostAufG", () => {
     [true, true, 100_000],
   ])("erhält die Cents: Abzug plus verteilter Topf ergibt die Gesamtkosten (Gebäude %s, Versorgung %s)", (building, supply, potCents) => {
     const result = calculateHeating({
-      config: { consumptionShareBps: 7000 },
+      config: { consumptionShareBps: 7000, baseMethod: "heated_area" as const },
       units: [unitEg, unitOg],
       consumptionMethod: "heat_meter",
       consumptionMeters: [],

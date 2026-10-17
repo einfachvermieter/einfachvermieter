@@ -12,6 +12,7 @@ import {
   formatNumber,
   formatNumberLoose,
 } from "../format.js";
+import type { HeatingBaseMethod } from "../schemas/heating.js";
 import type {
   EnergyComparison,
   HeatingDetail,
@@ -196,6 +197,42 @@ export const perMeterDisplayDigits = (
   };
 };
 
+/**
+ * Grundkostenmaßstab, mit dem der Snapshot gerechnet wurde. Alte Snapshots
+ * ohne Angabe entstanden mit der Heizfläche.
+ */
+export const heatingBaseMethodOf = (
+  detail: Pick<HeatingDetail, "baseMethod">,
+): HeatingBaseMethod => detail.baseMethod ?? "heated_area";
+
+/**
+ * Überschrift der Flächenspalte der Heizungstabelle
+ */
+export const heatingAreaColumnLabelKey = (
+  detail: Pick<HeatingDetail, "baseMethod">,
+): string =>
+  heatingBaseMethodOf(detail) === "living_area"
+    ? "statements.pdf.heating.livingArea"
+    : "statements.pdf.heating.heatingArea";
+
+/**
+ * Fußnote zur Verteilung des Verbrauchsanteils nach Fläche, je Maßstab
+ */
+const areaFallbackNoteKey = (
+  baseMethod: HeatingBaseMethod,
+  substitutionLimit: boolean,
+): string => {
+  if (baseMethod === "living_area") {
+    return substitutionLimit
+      ? "statements.pdf.heating.substitutionLimitLivingArea"
+      : "statements.pdf.heating.consumptionDistributionLivingArea";
+  }
+
+  return substitutionLimit
+    ? "statements.pdf.heating.substitutionLimitHeatingArea"
+    : "statements.pdf.heating.consumptionDistributionHeatingArea";
+};
+
 export type HeatingLabelDescriptor = {
   key: string;
   params?: Record<string, string>;
@@ -276,10 +313,10 @@ export const heatingColumnFootnotes = (
       key: "areaFallback",
       column: "total",
       label: {
-        key:
-          detail.areaDistributionReason === "substitution_limit_exceeded"
-            ? "statements.pdf.heating.substitutionLimitHeatingArea"
-            : "statements.pdf.heating.consumptionDistributionHeatingArea",
+        key: areaFallbackNoteKey(
+          heatingBaseMethodOf(detail),
+          detail.areaDistributionReason === "substitution_limit_exceeded",
+        ),
       },
     });
   }

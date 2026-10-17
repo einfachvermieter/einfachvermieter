@@ -372,3 +372,75 @@ describe("Beschränkung nach § 9 CO2KostAufG", () => {
     expect(buffer.subarray(0, 5).toString()).toBe("%PDF-");
   }, 30_000);
 });
+
+describe("Grundkostenmaßstab im Heiz-Anhang", () => {
+  // Alter Snapshot ohne Maßstab, mit abweichender Heizfläche
+  const stored = statementResultSchema.parse(
+    JSON.parse(
+      readFileSync(
+        new URL(
+          "../../shared/src/schemas/fixtures/statement-result/v2-internal-co2-short-period.json",
+          import.meta.url,
+        ),
+        "utf-8",
+      ),
+    ),
+  );
+  const variant = (changes: Partial<HeatingDetail>) =>
+    statementResultSchema.parse({
+      ...stored,
+      heatingDetail: { ...stored.heatingDetail, ...changes },
+    });
+  const byLivingArea = variant({
+    baseMethod: "living_area",
+    heatingAreaDiffersFromLivingArea: false,
+  });
+  const textOf = (snapshot: typeof stored): string =>
+    renderToStaticMarkup(
+      <StatementDocument result={snapshot} meta={meta} />,
+    ).replace(/<[^>]+>/gu, "");
+  const heating = (key: string) => t(`statements.pdf.heating.${key}`);
+  const fallback = {
+    consumptionDistributionMethod: "heating_area",
+    areaDistributionReason: "fallback",
+  } as const;
+  const limit = {
+    consumptionDistributionMethod: "heating_area",
+    areaDistributionReason: "substitution_limit_exceeded",
+  } as const;
+
+  it("zeigt einen alten Snapshot ohne Maßstab mit der Heizfläche", () => {
+    const text = textOf(stored);
+
+    expect(text).toContain(heating("heatingArea"));
+    expect(text).toContain(heating("heatingAreaNote"));
+    expect(textOf(variant(fallback))).toContain(
+      heating("consumptionDistributionHeatingArea"),
+    );
+    expect(textOf(variant(limit))).toContain(
+      heating("substitutionLimitHeatingArea"),
+    );
+  });
+
+  it("benennt beim Maßstab Wohnfläche überall die Wohnfläche", () => {
+    const text = textOf(byLivingArea);
+
+    expect(text).not.toContain(heating("heatingArea"));
+    expect(text).not.toContain(heating("heatingAreaNote"));
+    expect(text).toContain(heating("livingArea"));
+
+    const withFallback = textOf(
+      variant({ ...byLivingArea.heatingDetail, ...fallback }),
+    );
+    expect(withFallback).toContain(
+      heating("consumptionDistributionLivingArea"),
+    );
+    expect(withFallback).not.toContain(heating("heatingArea"));
+
+    const withLimit = textOf(
+      variant({ ...byLivingArea.heatingDetail, ...limit }),
+    );
+    expect(withLimit).toContain(heating("substitutionLimitLivingArea"));
+    expect(withLimit).not.toContain(heating("heatingArea"));
+  });
+});

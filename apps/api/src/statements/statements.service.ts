@@ -2068,7 +2068,6 @@ export class StatementsService {
       targetUnitId,
     } = input;
 
-    let heatingDetail: HeatingDetail;
     if (heatingSettings.mode === "external") {
       return await this.buildExternalHeatingDetail({
         buildingId,
@@ -2159,12 +2158,13 @@ export class StatementsService {
       );
 
     const co2 = await this.buildCo2Input(input, heatingAggregation);
-
+    let heatingDetail: HeatingDetail;
     try {
       heatingDetail = calculateHeating({
         totalHeatingCostsCents,
         config: {
           consumptionShareBps: heatingSettings.consumptionSharePercent * 100,
+          baseMethod: heatingSettings.baseMethod,
         },
         units: unitsForHeating,
         consumptionMeters,

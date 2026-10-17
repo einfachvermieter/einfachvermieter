@@ -11,6 +11,7 @@ import {
   substitutionScopes,
 } from "./consumption-substitutions.js";
 import { containedTaxKinds } from "./core.js";
+import { heatingBaseMethods } from "./heating.js";
 
 const periodSchema = z.object({
   start: isoDate(),
@@ -244,6 +245,10 @@ export const heatingDetailSchema = z.object({
    * die von der Wohnfläche abweicht -> Hinweit in Anlage
    */
   heatingAreaDiffersFromLivingArea: z.boolean().optional(),
+  /**
+   * Grundkostenmaßstab der Berechnung; fehlt in alten Snapshots
+   */
+  baseMethod: z.enum(heatingBaseMethods).optional(),
   /**
    * Aufschlüsselung der Heizkosten-Gesamtsumme nach Kostenarten. Wird im
    * Snapshot festgehalten, damit die PDF-Anlage die Zusammensetzung des

@@ -4,6 +4,7 @@ import type {
   SubstitutionReason,
   SubstitutionScope,
 } from "../schemas/consumption-substitutions.js";
+import type { HeatingBaseMethod } from "../schemas/heating.js";
 
 export type Period = {
   start: string; // YYYY-MM-DD inklusiv
@@ -133,6 +134,10 @@ export type HeatingConfig = {
    * Verbrauchsanteil in Basispunkten, 7000 = 70%.
    */
   consumptionShareBps: number;
+  /**
+   * Grundkostenmaßstab der maßgeblichen Version
+   */
+  baseMethod: HeatingBaseMethod;
 };
 
 /**
@@ -554,8 +559,13 @@ export type HeatingDetail = {
    */
   landlordConsumptionCostCents?: number;
   /**
-   * `true`, wenn eine Wohnung eine von `areaSqm` abweichende `heatingAreaSqm` hat.
-   * Steuert den erläuternden PDF-Hinweis.
+   * Grundkostenmaßstab, mit dem gerechnet wurde. Bestimmt jeden Text, der
+   * die Fläche benennt. Fehlt in alten Snapshots, dort gilt `heated_area`.
+   */
+  baseMethod?: HeatingBaseMethod;
+  /**
+   * `true`, wenn beim Maßstab `heated_area` eine Wohnung eine von `areaSqm`
+   * abweichende `heatingAreaSqm` hat. Steuert den erläuternden PDF-Hinweis.
    */
   heatingAreaDiffersFromLivingArea?: boolean;
   /**

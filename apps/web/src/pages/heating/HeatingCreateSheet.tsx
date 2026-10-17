@@ -1,5 +1,6 @@
 import {
   emptyHeatingFormValues,
+  type HeatingBaseMethod,
   type HeatingFormValues,
   heatingFormSchema,
   heatingFormToDto,
@@ -60,6 +61,9 @@ export const HeatingCreateSheet = ({ onClose }: { onClose: () => void }) => {
       buildingId={buildingId}
       defaultValues={defaultValues}
       hotWaterMeterCandidates={hotWaterMeterCandidatesOf(metersResult.items)}
+      previousBaseMethod={
+        latest?.mode === "internal" ? latest.baseMethod : undefined
+      }
       onClose={onClose}
     />
   );
@@ -69,11 +73,13 @@ const HeatingCreateForm = ({
   buildingId,
   defaultValues,
   hotWaterMeterCandidates,
+  previousBaseMethod,
   onClose,
 }: {
   buildingId: string;
   defaultValues: HeatingFormValues;
   hotWaterMeterCandidates: Meter[];
+  previousBaseMethod: HeatingBaseMethod | undefined;
   onClose: () => void;
 }) => {
   const navigate = useNavigate();
@@ -109,7 +115,10 @@ const HeatingCreateForm = ({
         title={t("ui.heating.cards.billing")}
         divider={false}
       >
-        <HeatingBillingFields form={form} />
+        <HeatingBillingFields
+          form={form}
+          previousBaseMethod={previousBaseMethod}
+        />
       </SheetSection>
       <SheetSection
         icon={RiCalendarLine}

@@ -29,6 +29,8 @@ import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import {
   heatingSettingsByIdQueryOptions,
+  heatingSettingsListQueryOptions,
+  previousBaseMethodOf,
   updateHeatingSettings,
 } from "../../lib/heating";
 import { t } from "../../lib/i18n";
@@ -108,6 +110,11 @@ export const HeatingVersionEditPage = () => {
     enabled: version !== undefined,
   });
 
+  const { data: versions } = useQuery({
+    ...heatingSettingsListQueryOptions(version?.buildingId ?? ""),
+    enabled: version !== undefined,
+  });
+
   const navigate = useNavigate();
   const router = useRouter();
   const [sheet, setSheet] = useState<
@@ -150,7 +157,7 @@ export const HeatingVersionEditPage = () => {
     );
   }
 
-  if (!(version && buildings && metersResult)) {
+  if (!(version && buildings && metersResult && versions)) {
     return (
       <div className="max-w-225 pb-6">
         <PageHeader
@@ -256,6 +263,7 @@ export const HeatingVersionEditPage = () => {
       {sheet === "billing" ? (
         <HeatingBillingSheet
           defaultValues={formValues}
+          previousBaseMethod={previousBaseMethodOf(versions, version.validFrom)}
           onSubmit={save}
           onClose={() => setSheet(null)}
         />

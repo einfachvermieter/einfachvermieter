@@ -2,6 +2,7 @@
  * Erfassungsausfall nach § 9a HeizkostenV über die echte HTTP-API gegen eine
  * Wegwerf-SQLite: offene Lücke blockiert das Finalisieren, Validierung und
  * Sperre der Erfassungsausfälle, Ausgleich im Folgejahr aus dem Snapshot.
+ * Dazu der Grundkostenmaßstab der Heizung über einen Jahreswechsel.
  */
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -249,7 +250,7 @@ describe("Erfassungsausfall nach § 9a HeizkostenV", () => {
         validTo: null,
         baseSharePercent: 30,
         consumptionSharePercent: 70,
-        baseMethod: "area",
+        baseMethod: "heated_area",
         consumptionMethod: "heat_meter",
         prorationMethod: "linear",
         heatingType: "central_without_hot_water",
@@ -501,5 +502,222 @@ describe("Erfassungsausfall nach § 9a HeizkostenV", () => {
       expect: 200,
     });
     expect(await api(supplyPath, { expect: 200 })).toEqual([]);
+  }, 120_000);
+});
+
+describe("Grundkostenmaßstab der Heizung über einen Jahreswechsel", () => {
+  it("rechnet jedes Jahr mit dem Maßstab seiner Version, der Snapshot bleibt", async () => {
+    const building = await api("/buildings", {
+      method: "POST",
+      body: {
+        name: "Maßstab-Haus",
+        addressStreet: "Flächenweg 2",
+        addressPostalCode: "45128",
+        addressCity: "Essen",
+      },
+      expect: 201,
+    });
+    // A: 80 qm Wohnfläche, 60 qm Heizfläche. B: 120 qm, keine Heizfläche.
+    const unitA = await api("/units", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        name: "A",
+        areaSqm: 80,
+        heatingAreaSqm: 60,
+      },
+      expect: 201,
+    });
+    const unitB = await api("/units", {
+      method: "POST",
+      body: { buildingId: building.id, name: "B", areaSqm: 120 },
+      expect: 201,
+    });
+    const tenant = await api("/tenants", {
+      method: "POST",
+      body: {
+        unitId: unitA.id,
+        kind: "private",
+        startDate: "2025-01-01",
+        endDate: null,
+        depositCents: 0,
+        residents: [
+          {
+            resident: { firstName: "Mia", lastName: "Maßstab" },
+            isContractParty: true,
+          },
+        ],
+        rents: [
+          {
+            startDate: null,
+            endDate: null,
+            monthlyBaseRentCents: 50_000,
+            monthlyAdvanceCents: 5000,
+          },
+        ],
+      },
+      expect: 201,
+    });
+    const tenantId: string = tenant.tenant.id;
+
+    for (const unit of [unitA, unitB]) {
+      const meter = await api("/meters", {
+        method: "POST",
+        body: {
+          buildingId: building.id,
+          unitId: unit.id,
+          type: "heat_meter",
+          role: "unit",
+          label: `WMZ ${unit.name}`,
+          measurementUnit: "kwh",
+          costAllocationMode: "heating_cost_bill",
+          validFrom: "2025-01-01",
+        },
+        expect: 201,
+      });
+      for (const [readingDate, value] of [
+        ["2025-01-01", 0],
+        ["2025-12-31", 5000],
+        ["2026-01-01", 5000],
+        ["2026-12-31", 10_000],
+      ] as const) {
+        await api("/meters/readings", {
+          method: "POST",
+          body: { meterId: meter.id, readingDate, value },
+          expect: 201,
+        });
+      }
+    }
+
+    const heatingCostType = await api("/costs/types", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        name: "Heizung",
+        category: "heating",
+        defaultAllocationKey: null,
+        laborCostCategory: null,
+      },
+      expect: 201,
+    });
+    for (const year of ["2025", "2026"]) {
+      await api("/costs", {
+        method: "POST",
+        body: {
+          buildingId: building.id,
+          invoiceDate: `${year}-03-01`,
+          vendor: "Stadtwerke",
+          items: [
+            {
+              costTypeId: heatingCostType.id,
+              amountCents: 100_000,
+              periodStart: `${year}-01-01`,
+              periodEnd: `${year}-12-31`,
+            },
+          ],
+        },
+        expect: 201,
+      });
+    }
+
+    const version = (
+      baseMethod: string,
+      validFrom: string,
+      validTo: string | null,
+    ) => ({
+      mode: "internal",
+      validFrom,
+      validTo,
+      baseSharePercent: 30,
+      consumptionSharePercent: 70,
+      baseMethod,
+      consumptionMethod: "heat_meter",
+      prorationMethod: "linear",
+      heatingType: "central_without_hot_water",
+      fuelType: "gas",
+      hotWaterMeterId: null,
+      hotWaterSupplyTemperatureCelsius: 60,
+      co2CostShareEnabled: false,
+    });
+    const heatingPath = `/buildings/${building.id}/heating`;
+    const version2025 = await api(heatingPath, {
+      method: "POST",
+      body: version("heated_area", "2025-01-01", "2025-12-31"),
+      expect: 201,
+    });
+    await api(heatingPath, {
+      method: "POST",
+      body: version("living_area", "2026-01-01", null),
+      expect: 201,
+    });
+
+    const preview = async (year: string) =>
+      (
+        await api(
+          `/statements/preview/calculate?buildingId=${building.id}&tenantId=${tenantId}&from=${year}-01-01&to=${year}-12-31`,
+          { expect: 200 },
+        )
+      ).heatingDetail;
+    const rowA = (detail: {
+      perUnit: Array<{
+        unitId: string;
+        areaSqm: number;
+        basicCostCents: number;
+      }>;
+    }) => detail.perUnit.find((row) => row.unitId === unitA.id);
+
+    // 30.000 Cent Grundkosten: 2025 nach Heizfläche 60 / 180, 2026 nach
+    // Wohnfläche 80 / 200
+    const detail2025 = await preview("2025");
+    expect(detail2025.baseMethod).toBe("heated_area");
+    expect(rowA(detail2025)).toMatchObject({
+      areaSqm: 60,
+      basicCostCents: 10_000,
+    });
+    const detail2026 = await preview("2026");
+    expect(detail2026.baseMethod).toBe("living_area");
+    expect(rowA(detail2026)).toMatchObject({
+      areaSqm: 80,
+      basicCostCents: 12_000,
+    });
+
+    // Erfassungsausfälle nehmen die Fläche aus derselben Version
+    const wholeUnitArea = async (year: string) =>
+      (
+        await api(
+          `/buildings/${building.id}/consumption-substitutions/options?unitId=${unitA.id}&scope=heating&periodStart=${year}-01-01&periodEnd=${year}-12-31&meterIds=`,
+          { expect: 200 },
+        )
+      ).wholeUnitAreaSqm;
+    expect(await wholeUnitArea("2025")).toBe(60);
+    expect(await wholeUnitArea("2026")).toBe(80);
+
+    // Finalisiert, danach wird der Maßstab der Version geändert: Der
+    // Snapshot behält seinen Maßstab und seine Flächen
+    const statement2025 = await api("/statements", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        tenantId,
+        periodStart: "2025-01-01",
+        periodEnd: "2025-12-31",
+      },
+      expect: 201,
+    });
+    await api(`/statements/${statement2025.id}/finalize`, {
+      method: "POST",
+      expect: 201,
+    });
+    await api(`${heatingPath}/${version2025.id}`, {
+      method: "PATCH",
+      body: version("living_area", "2025-01-01", "2025-12-31"),
+      expect: 200,
+    });
+    const stored = await api(`/statements/${statement2025.id}`, {
+      expect: 200,
+    });
+    expect(stored.snapshotData.heatingDetail.baseMethod).toBe("heated_area");
+    expect(rowA(stored.snapshotData.heatingDetail)?.areaSqm).toBe(60);
+    expect((await preview("2025")).baseMethod).toBe("living_area");
   }, 120_000);
 });
