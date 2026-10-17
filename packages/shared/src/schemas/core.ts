@@ -238,6 +238,31 @@ export const costEntryUpdateSchema = z
 
 export type CostEntryUpdateDto = z.infer<typeof costEntryUpdateSchema>;
 
+/**
+ * Abrechnungszeitraum: Beginn vor Ende, höchstens zwölf Monate. Gilt für
+ * das Anlegen und die Vorschau gleichermaßen.
+ */
+export const checkStatementPeriod = (
+  start: string,
+  end: string,
+  endPath: string,
+  ctx: z.RefinementCtx,
+): void => {
+  if (start >= end) {
+    ctx.addIssue({
+      code: "custom",
+      message: "periodStart muss < periodEnd sein",
+    });
+  }
+  if (end >= isoDatePlusOneYear(start)) {
+    ctx.addIssue({
+      code: "custom",
+      path: [endPath],
+      message: messageKey("ui.statements.validation.periodMax12Months"),
+    });
+  }
+};
+
 export const operatingCostStatementCreateSchema = z
   .object({
     buildingId: z.guid(),
@@ -248,13 +273,9 @@ export const operatingCostStatementCreateSchema = z
     notes: z.string().max(2000).optional().nullable(),
   })
   .strict()
-  .refine((d) => d.periodStart < d.periodEnd, {
-    message: "periodStart muss < periodEnd sein",
-  })
-  .refine((d) => d.periodEnd < isoDatePlusOneYear(d.periodStart), {
-    message: messageKey("ui.statements.validation.periodMax12Months"),
-    path: ["periodEnd"],
-  });
+  .superRefine((d, ctx) =>
+    checkStatementPeriod(d.periodStart, d.periodEnd, "periodEnd", ctx),
+  );
 
 export type OperatingCostStatementCreateDto = z.infer<
   typeof operatingCostStatementCreateSchema

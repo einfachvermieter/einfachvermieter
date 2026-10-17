@@ -1,4 +1,5 @@
 import {
+  checkStatementPeriod,
   isoDate,
   type OperatingCostStatementAdvanceAdjustmentDto,
   type OperatingCostStatementCancelDto,
@@ -38,12 +39,14 @@ import {
 import { PdfService } from "./pdf.service.js";
 import { StatementsService } from "./statements.service.js";
 
-const previewQuerySchema = z.object({
-  buildingId: z.string().min(1),
-  tenantId: z.string().min(1),
-  from: isoDate(),
-  to: isoDate(),
-});
+const previewQuerySchema = z
+  .object({
+    buildingId: z.string().min(1),
+    tenantId: z.string().min(1),
+    from: isoDate(),
+    to: isoDate(),
+  })
+  .superRefine((q, ctx) => checkStatementPeriod(q.from, q.to, "to", ctx));
 
 @Controller("statements")
 @UseGuards(SessionAuthGuard, RolesGuard)

@@ -275,6 +275,11 @@ describe("Happy Path", () => {
     );
 
     expect(preview.totalCostsCents).toBe(12_000);
+    // Wie beim Anlegen: höchstens zwölf Monate.
+    await api(
+      `/statements/preview/calculate?buildingId=${building.id}&tenantId=${tenantId}&from=2025-01-01&to=2026-01-01`,
+      { expect: 400 },
+    );
     // Geschätzter Endstand -> übersetzte readingEstimated-Warnung sichtbar.
     expect(JSON.stringify(preview.warnings)).toContain("geschätzt");
 

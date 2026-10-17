@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 import {
+  checkStatementPeriod,
   costEntryItemSchema,
   isLikelyNonAllocatableCostTypeName,
 } from "./core.js";
@@ -65,5 +67,31 @@ describe("costEntryItemSchema - Berechnungsgrundlagen CO2", () => {
     expect(accepts({ co2EmissionFactorKgPerKwh: 200.88 })).toBe(false);
     expect(accepts({ co2EmissionFactorKgPerKwh: -0.2 })).toBe(false);
     expect(accepts({ co2EnergyKwh: -1 })).toBe(false);
+  });
+});
+
+describe("checkStatementPeriod", () => {
+  const periodSchema = z
+    .object({ start: z.string(), end: z.string() })
+    .superRefine((p, ctx) => checkStatementPeriod(p.start, p.end, "end", ctx));
+  const isValid = (start: string, end: string) =>
+    periodSchema.safeParse({ start, end }).success;
+
+  it("lässt bis zu zwölf Monate einschließlich Enddatum zu", () => {
+    expect(isValid("2025-01-01", "2025-12-31")).toBe(true);
+    expect(isValid("2025-04-01", "2026-03-31")).toBe(true);
+    expect(isValid("2025-04-15", "2026-04-14")).toBe(true);
+    expect(isValid("2024-02-29", "2025-02-28")).toBe(true);
+  });
+
+  it("lehnt längere Zeiträume ab", () => {
+    expect(isValid("2025-01-01", "2026-01-01")).toBe(false);
+    expect(isValid("2025-01-01", "2026-01-31")).toBe(false);
+    expect(isValid("2024-02-29", "2025-03-01")).toBe(false);
+  });
+
+  it("lehnt Ende vor oder gleich Beginn ab", () => {
+    expect(isValid("2025-01-01", "2025-01-01")).toBe(false);
+    expect(isValid("2025-02-01", "2025-01-01")).toBe(false);
   });
 });
