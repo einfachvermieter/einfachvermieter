@@ -16,11 +16,13 @@ let routes: Record<
 >;
 let MigrationFailedPage: unknown;
 
+// Der Router lädt alle Seiten. Laufen die Tests aller Pakete parallel,
+// dauert das länger als die üblichen 10 s.
 beforeAll(async () => {
   const { router } = await import("./router");
   routes = router.routesById;
   ({ MigrationFailedPage } = await import("./pages/auth/MigrationFailedPage"));
-});
+}, 60_000);
 
 const LOCK_PATH = "/aktualisierung-fehlgeschlagen";
 
