@@ -1,11 +1,9 @@
-import { formatDate, formatEur } from "@einfachvermieter/shared";
-import { RiDeleteBinLine, RiMoreLine, RiPriceTag3Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { IconMore, IconTrash } from "@/lib/icons";
 import { DomainLink } from "../../components/common/DomainLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { MiniKpiRow } from "../../components/common/MiniKpiRow";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
@@ -27,7 +25,6 @@ import {
   costTypeEntriesQueryOptions,
   costTypeQueryOptions,
 } from "../../lib/costs";
-import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   type Meter,
@@ -91,7 +88,7 @@ const metersOfCostType = (
         meterRoleLabel(meter.role),
       ]
         .filter(Boolean)
-        .join(t("ui.common.separators.bullet")),
+        .join(t("ui.common.separators.comma")),
     }));
 
 /**
@@ -136,7 +133,8 @@ export const CostTypeEditPage = () => {
     invalidateKeys: [["costTypes"], ["stats"]],
     title: t("ui.costs.confirmDeleteType"),
     describe: (target) =>
-      t("ui.costs.confirmDeleteTypeMessage", { name: target.name }),
+      t("ui.costs.confirmDeleteTypeQuestion", { name: target.name }),
+    hint: t("ui.costs.confirmDeleteTypeHint"),
     onDeleted: () =>
       navigate({
         to: "/kostenarten",
@@ -161,7 +159,7 @@ export const CostTypeEditPage = () => {
     return (
       <div className="max-w-225 pb-6">
         <PageHeader
-          tile={<PageHeaderIcon icon={RiPriceTag3Line} />}
+          tile={<PageHeaderIcon domain="costTypes" />}
           title=""
           loading={true}
         />
@@ -187,16 +185,12 @@ export const CostTypeEditPage = () => {
     <>
       <div className="max-w-225 pb-6">
         <PageHeader
-          tile={<PageHeaderIcon icon={costTypeVisual(costType).icon} />}
+          tile={<PageHeaderIcon domain="costTypes" />}
           title={costType.name}
           sub={
-            <span className="flex flex-wrap items-center gap-2">
-              <span>
-                {[
-                  costTypeCategoryLabel(costType.category),
-                  costTypeAllocationText(costType),
-                ].join(t("ui.common.separators.bullet"))}
-              </span>
+            <span className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
+              <span>{costTypeCategoryLabel(costType.category)}</span>
+              <span>{costTypeAllocationText(costType)}</span>
               {isHeating ? (
                 <DomainLink
                   to="/heizkosten"
@@ -215,7 +209,7 @@ export const CostTypeEditPage = () => {
                   size="icon"
                   aria-label={t("ui.common.a11y.more")}
                 >
-                  <RiMoreLine />
+                  <IconMore />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-56">
@@ -223,7 +217,7 @@ export const CostTypeEditPage = () => {
                   variant="destructive"
                   onSelect={() => deletion.request(costType)}
                 >
-                  <RiDeleteBinLine />
+                  <IconTrash />
                   {t("ui.costs.detail.deleteAction")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -232,33 +226,6 @@ export const CostTypeEditPage = () => {
         />
 
         <div className="space-y-5">
-          <MiniKpiRow
-            columns={showMeters ? 2 : 1}
-            items={[
-              {
-                label: t("ui.costs.detail.statsEntries", { year: stats.year }),
-                value: formatEur(stats.totalAmountCents),
-                hint:
-                  stats.entryCount > 0 && stats.lastEntry
-                    ? t("ui.costs.detail.entriesHint", {
-                        count: stats.entryCount,
-                        date: formatDate(stats.lastEntry.invoiceDate),
-                      })
-                    : t("ui.costs.detail.entriesEmptyYear"),
-              },
-              ...(showMeters
-                ? [
-                    {
-                      label: t("ui.costs.detail.metersSection"),
-                      value: t("ui.meters.sub.count", {
-                        count: stats.assignedMetersCount,
-                      }),
-                    },
-                  ]
-                : []),
-            ]}
-          />
-
           <div>
             <CostTypeBaseCard
               costType={costType}

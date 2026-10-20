@@ -9,7 +9,7 @@ export const BuildingDataFields = ({
 }: {
   form: UseFormReturn<BuildingCreateDto>;
 }) => (
-  <FieldGroup className="gap-4">
+  <FieldGroup>
     <TextInput
       control={form.control}
       name="name"

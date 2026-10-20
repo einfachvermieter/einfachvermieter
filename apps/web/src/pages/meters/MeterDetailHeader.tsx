@@ -24,7 +24,7 @@ export const MeterDetailHeader = ({
         }).catch(() => undefined);
       }}
     >
-      <TabsList variant="pills">
+      <TabsList>
         <TabsTrigger value="stammdaten">
           {t("ui.meters.tabs.master")}
         </TabsTrigger>

@@ -3,13 +3,14 @@ import type {
   ExternalHeatingEntryCreateDto,
 } from "@einfachvermieter/shared";
 import { formatDate, formatEur } from "@einfachvermieter/shared";
-import { RiAddLine, RiExternalLinkLine } from "@remixicon/react";
+import { RiExternalLinkLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { EmptyNote } from "@/components/common/EmptyNote";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
+import { TableFrame } from "@/components/common/TableFrame";
 import { RowActions } from "@/components/RowActions";
-import { Button } from "@/components/ui/Button";
 import {
   Table,
   TableBody,
@@ -111,23 +112,19 @@ export const ExternalHeatingEntriesCard = ({
       title={t("ui.heating.external.title")}
       description={t("ui.heating.external.description")}
       action={
-        <Button
-          type="button"
-          variant="addLink"
-          size="text"
-          disabled={buildingUnits.length === 0}
+        <SectionAction
+          kind="add"
+          label={t("ui.heating.external.add")}
           onClick={() => setSheetTarget("new")}
-        >
-          <RiAddLine />
-          {t("ui.heating.external.add")}
-        </Button>
+          disabled={buildingUnits.length === 0}
+        />
       }
     >
       {sorted.length === 0 ? (
         <EmptyNote>{t("ui.heating.external.empty")}</EmptyNote>
       ) : (
         <>
-          <div className="-mx-3.5">
+          <TableFrame>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -195,7 +192,7 @@ export const ExternalHeatingEntriesCard = ({
                 </TableRow>
               </TableFooter>
             </Table>
-          </div>
+          </TableFrame>
           <p className="mt-3 text-xs text-muted-foreground">
             {t("ui.heating.external.coverage", {
               covered: coveredUnits,

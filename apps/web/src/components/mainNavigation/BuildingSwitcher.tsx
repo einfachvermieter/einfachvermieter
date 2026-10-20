@@ -1,4 +1,3 @@
-import { RiCheckLine, RiExpandUpDownLine } from "@remixicon/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +12,7 @@ import {
 import { useActiveBuilding } from "@/lib/activeBuilding";
 import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
+import { IconCheck, IconChevronDown } from "@/lib/icons";
 
 const BuildingIcon = domainVisuals.buildings.icon;
 
@@ -30,17 +30,17 @@ export const BuildingSwitcher = () => {
             tooltip={
               building?.name ?? t("ui.navigation.buildingSwitcher.empty")
             }
-            className="h-auto rounded-lg border border-sidebar-border bg-white/8 px-2.5 py-2 text-sidebar-accent-foreground hover:border-sidebar-foreground hover:bg-white/8 data-[state=open]:border-sidebar-foreground"
+            className="h-10 rounded-lg border border-edge bg-white px-3 text-sidebar-accent-foreground shadow-key hover:bg-schiefer-50 active:shadow-none data-[state=open]:bg-schiefer-50"
           >
             <DropdownMenuTrigger>
               <BuildingIcon
                 aria-hidden={true}
-                className="size-4.5 shrink-0 text-sidebar-foreground"
+                className="size-4.5 shrink-0 text-azur-700"
               />
               <span className="flex-1 truncate text-left text-sm font-semibold">
                 {building?.name ?? t("ui.navigation.buildingSwitcher.empty")}
               </span>
-              <RiExpandUpDownLine className="ml-auto size-4 shrink-0 text-sidebar-foreground" />
+              <IconChevronDown className="ml-auto size-4 shrink-0 text-azur-700" />
             </DropdownMenuTrigger>
           </SidebarMenuButton>
           <DropdownMenuContent
@@ -54,10 +54,10 @@ export const BuildingSwitcher = () => {
                 key={item.id}
                 onSelect={() => setBuildingId(item.id)}
               >
-                <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold">
                   {item.name}
                 </span>
-                <RiCheckLine
+                <IconCheck
                   className={
                     item.id === buildingId ? "text-limette-700" : "invisible"
                   }

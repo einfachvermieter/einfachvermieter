@@ -1,9 +1,10 @@
 import { formatDate, hasResetBetween } from "@einfachvermieter/shared";
-import { RiListOrdered2, RiPencilLine } from "@remixicon/react";
+import { RiListOrdered2 } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { EmptyNote } from "@/components/common/EmptyNote";
 import { SectionCard } from "@/components/common/SectionCard";
+import { TableFrame } from "@/components/common/TableFrame";
 import { RowActionButton, RowActions } from "@/components/RowActions";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -15,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
+import { IconPen } from "@/lib/icons";
 import { t } from "../../../../lib/i18n";
 import {
   type MeasurementUnit,
@@ -84,7 +86,7 @@ const ReadingRow = ({
           extraActions={
             <RowActionButton
               label={t("ui.common.action.edit")}
-              icon={<RiPencilLine />}
+              icon={<IconPen />}
               onSelect={() => onEdit(reading)}
             />
           }
@@ -190,13 +192,13 @@ export const MeterReadingsTab = ({
     invalidateKeys: [["readings", meterId]],
     title: t("ui.reading.confirmDelete"),
     describe: (reading) =>
+      t("ui.reading.confirmDeleteMessage", {
+        date: formatDate(reading.readingDate),
+      }),
+    consequence: (reading) =>
       isSettled(reading.readingDate)
-        ? t("ui.reading.confirmDeleteSettledMessage", {
-            date: formatDate(reading.readingDate),
-          })
-        : t("ui.reading.confirmDeleteMessage", {
-            date: formatDate(reading.readingDate),
-          }),
+        ? t("ui.reading.confirmDeleteSettledConsequence")
+        : null,
   });
 
   const renderBody = () => {
@@ -212,75 +214,77 @@ export const MeterReadingsTab = ({
     const showEstimated = sorted.some((reading) => reading.isEstimated);
     const showNotes = sorted.some((reading) => reading.notes?.trim());
     return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="px-4" />
-            <TableHead className="px-4">
-              {t("ui.common.columns.date")}
-            </TableHead>
-            <TableHead className="px-4 text-right">
-              {t("ui.reading.fields.valueWithUnit", {
-                unit: measurementUnitLabel(measurementUnit),
-              })}
-            </TableHead>
-            {showConsumption ? (
+      <TableFrame>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="px-4" />
+              <TableHead className="px-4">
+                {t("ui.common.columns.date")}
+              </TableHead>
               <TableHead className="px-4 text-right">
-                {t("ui.reading.fields.consumptionWithUnit", {
+                {t("ui.reading.fields.valueWithUnit", {
                   unit: measurementUnitLabel(measurementUnit),
                 })}
               </TableHead>
-            ) : null}
-            <TableHead className="px-4">
-              {t("ui.reading.fields.readBy")}
-            </TableHead>
-            {showEstimated ? (
+              {showConsumption ? (
+                <TableHead className="px-4 text-right">
+                  {t("ui.reading.fields.consumptionWithUnit", {
+                    unit: measurementUnitLabel(measurementUnit),
+                  })}
+                </TableHead>
+              ) : null}
               <TableHead className="px-4">
-                {t("ui.common.columns.estimated")}
+                {t("ui.reading.fields.readBy")}
               </TableHead>
-            ) : null}
-            {showNotes ? (
-              <TableHead className="px-4">
-                {t("ui.reading.fields.note")}
-              </TableHead>
-            ) : null}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isPending
-            ? skeletonRowKeys.map((rowKey) => (
-                <TableRow key={rowKey}>
-                  <TableCell className="px-4 py-3">
-                    <Skeleton className="h-4 w-6" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <Skeleton className="h-4 w-[70%]" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <Skeleton className="ml-auto h-4 w-[60%]" />
-                  </TableCell>
-                  <TableCell className="px-4 py-3">
-                    <Skeleton className="h-4 w-[60%]" />
-                  </TableCell>
-                </TableRow>
-              ))
-            : sorted.map((reading, index) => (
-                <ReadingRow
-                  key={reading.id}
-                  reading={reading}
-                  settled={isSettled(reading.readingDate)}
-                  previous={sorted[index + 1]}
-                  resetDay={resetDay}
-                  valueDecimals={valueDecimals}
-                  showConsumption={showConsumption}
-                  showEstimated={showEstimated}
-                  showNotes={showNotes}
-                  deletion={deletion}
-                  onEdit={onEditReading}
-                />
-              ))}
-        </TableBody>
-      </Table>
+              {showEstimated ? (
+                <TableHead className="px-4">
+                  {t("ui.common.columns.estimated")}
+                </TableHead>
+              ) : null}
+              {showNotes ? (
+                <TableHead className="px-4">
+                  {t("ui.reading.fields.note")}
+                </TableHead>
+              ) : null}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isPending
+              ? skeletonRowKeys.map((rowKey) => (
+                  <TableRow key={rowKey}>
+                    <TableCell className="px-4 py-3">
+                      <Skeleton className="h-4 w-6" />
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      <Skeleton className="h-4 w-[70%]" />
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      <Skeleton className="ml-auto h-4 w-[60%]" />
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      <Skeleton className="h-4 w-[60%]" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              : sorted.map((reading, index) => (
+                  <ReadingRow
+                    key={reading.id}
+                    reading={reading}
+                    settled={isSettled(reading.readingDate)}
+                    previous={sorted[index + 1]}
+                    resetDay={resetDay}
+                    valueDecimals={valueDecimals}
+                    showConsumption={showConsumption}
+                    showEstimated={showEstimated}
+                    showNotes={showNotes}
+                    deletion={deletion}
+                    onEdit={onEditReading}
+                  />
+                ))}
+          </TableBody>
+        </Table>
+      </TableFrame>
     );
   };
 
@@ -290,7 +294,7 @@ export const MeterReadingsTab = ({
       title={t("ui.meters.readingsTitle")}
       description={t("ui.meters.readingsDescription")}
     >
-      <div className="-mx-2">{renderBody()}</div>
+      {renderBody()}
       {deletion.dialog}
     </SectionCard>
   );

@@ -1,8 +1,8 @@
-import { type RemixiconComponentType, RiPencilLine } from "@remixicon/react";
+import type { RemixiconComponentType } from "@remixicon/react";
 import type { ReactNode } from "react";
 import { ResultRows } from "@/components/common/ResultRows";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Button } from "@/components/ui/Button";
 import { t } from "../../../lib/i18n";
 
 /**
@@ -31,10 +31,11 @@ export const MeterViewCard = ({
     titleExtra={titleHelp}
     description={description}
     action={
-      <Button type="button" variant="addLink" size="text" onClick={onEdit}>
-        <RiPencilLine />
-        {t("ui.common.action.edit")}
-      </Button>
+      <SectionAction
+        kind="edit"
+        label={t("ui.common.action.edit")}
+        onClick={onEdit}
+      />
     }
   >
     <ResultRows rows={rows} />

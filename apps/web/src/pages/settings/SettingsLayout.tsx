@@ -2,15 +2,14 @@ import {
   RiContactsBook2Line,
   RiGlobalLine,
   RiInformationLine,
-  RiSparkling2Line,
 } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { PageHeaderIcon } from "@/components/common/PageHeaderIcon";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
+import { IconSparkle } from "@/lib/icons";
 
 type SettingsTab = "sender" | "ai" | "internet" | "about";
 
@@ -43,7 +42,7 @@ export const SettingsLayout = ({
     <div className="max-w-225 space-y-6 pb-24">
       <div className="space-y-4">
         <PageHeader
-          tile={<PageHeaderIcon icon={domainVisuals.configuration.icon} />}
+          tile={<PageHeaderIcon domain="configuration" />}
           title={title}
           sub={description}
           breadcrumb={false}
@@ -56,13 +55,13 @@ export const SettingsLayout = ({
             );
           }}
         >
-          <TabsList variant="pills">
+          <TabsList>
             <TabsTrigger value="sender">
               <RiContactsBook2Line />
               {t("ui.settings.nav.sender")}
             </TabsTrigger>
             <TabsTrigger value="ai">
-              <RiSparkling2Line />
+              <IconSparkle />
               {t("ui.settings.nav.ai")}
             </TabsTrigger>
             <TabsTrigger value="internet">

@@ -1,16 +1,16 @@
-import {
-  type RemixiconComponentType,
-  RiArrowDownSLine,
-} from "@remixicon/react";
+import type { RemixiconComponentType } from "@remixicon/react";
 import { type ReactNode, useId, useState } from "react";
+import { HelpScope } from "@/components/help/HelpScope";
+import { HelpSlot } from "@/components/help/HelpSlot";
+import { IconChevronDown } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 /**
- * Abschnitt-Card mit Kopfzeile: kleines Akzent-Icon, Titel, optionale
- * Beschreibung und Aktion rechts
+ * Abschnitt einer Detailseite, ohne Card: Überschrift, rechts davon eine
+ * kräftige Linie bis zu den Buttons, darunter der Inhalt. Die dünnen Linien
+ * gehören den Zeilen. Die Kopfzeile ist mit und ohne Button gleich hoch
  */
 export const SectionCard = ({
-  icon: Icon,
   title,
   titleExtra,
   description,
@@ -19,7 +19,10 @@ export const SectionCard = ({
   defaultOpen = false,
   children,
 }: {
-  icon: RemixiconComponentType;
+  /**
+   * Wird nicht mehr angezeigt; Abschnitte tragen kein Icon
+   */
+  icon?: RemixiconComponentType;
   title: string;
   /** Zusatz neben dem Titel, z. B. ein HelpHint */
   titleExtra?: ReactNode;
@@ -31,16 +34,18 @@ export const SectionCard = ({
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   const contentId = useId();
+  const sectionId = useId();
   const showBody = !collapsible || open;
 
   return (
-    <section className="mb-4 rounded-xl border border-border bg-card px-5.5 py-4.5">
-      <div
-        className={cn("relative flex items-center gap-2.5", showBody && "mb-4")}
+    <HelpScope>
+      <section
+        id={sectionId}
+        data-toc-title={title}
+        className="max-w-205 scroll-mt-32 pt-4.5 pb-5.5"
       >
-        <Icon aria-hidden={true} className="size-5 shrink-0 text-azur-700" />
-        <div className="min-w-0 flex-1">
-          <h2 className="flex items-center gap-1 text-lg font-semibold">
+        <div className="relative flex min-h-7.5 flex-wrap items-center gap-x-3">
+          <h2 className="flex items-center gap-1 font-heading text-lg leading-none font-semibold">
             {collapsible ? (
               // Klickfläche per Pseudo-Element über die ganze Kopfzeile
               // strecken; HelpHint und Aktion liegen als positionierte
@@ -50,7 +55,7 @@ export const SectionCard = ({
                 aria-expanded={open}
                 aria-controls={contentId}
                 onClick={() => setOpen((value) => !value)}
-                className="cursor-pointer text-left after:absolute after:inset-0"
+                className="text-left after:absolute after:inset-0"
               >
                 {title}
               </button>
@@ -58,29 +63,33 @@ export const SectionCard = ({
               title
             )}
             {titleExtra ? (
-              <span className="relative shrink-0 translate-y-px">
-                {titleExtra}
-              </span>
+              <span className="relative shrink-0">{titleExtra}</span>
             ) : null}
           </h2>
-          {description ? (
-            <p className="text-xs text-muted-foreground">{description}</p>
+          <span aria-hidden={true} className="h-0.5 min-w-6 flex-1 bg-border" />
+          {showBody && action ? (
+            <span className="relative flex shrink-0 gap-1.5">{action}</span>
+          ) : null}
+          {collapsible ? (
+            <IconChevronDown
+              aria-hidden={true}
+              className={cn(
+                "pointer-events-none size-4.5 shrink-0 text-azur-700 transition-transform",
+                open && "rotate-180",
+              )}
+            />
           ) : null}
         </div>
-        {showBody && action ? (
-          <span className="relative shrink-0">{action}</span>
+        <HelpSlot className="mt-1.5" />
+        {description ? (
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         ) : null}
-        {collapsible ? (
-          <RiArrowDownSLine
-            aria-hidden={true}
-            className={cn(
-              "pointer-events-none size-4.5 shrink-0 text-muted-foreground transition-transform",
-              open && "rotate-180",
-            )}
-          />
+        {showBody ? (
+          <div id={contentId} className="mt-1.5">
+            {children}
+          </div>
         ) : null}
-      </div>
-      {showBody ? <div id={contentId}>{children}</div> : null}
-    </section>
+      </section>
+    </HelpScope>
   );
 };

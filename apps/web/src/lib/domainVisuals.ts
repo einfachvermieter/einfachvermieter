@@ -1,19 +1,34 @@
 import type { MeterType } from "@einfachvermieter/shared";
 import {
   type RemixiconComponentType,
-  RiCommunityLine,
-  RiDashboard2Line,
-  RiDashboardLine,
   RiDropLine,
-  RiFileList3Line,
-  RiFireLine,
   RiFlashlightLine,
-  RiGroupLine,
-  RiHome6Line,
-  RiPriceTag3Line,
-  RiReceiptLine,
-  RiSettings3Line,
 } from "@remixicon/react";
+import type { ComponentType } from "react";
+import {
+  IconBuilding,
+  IconDoc,
+  IconDoor,
+  IconFlame,
+  IconGauge,
+  IconGear,
+  IconHome,
+  IconReceipt,
+  IconTag,
+  IconUsers,
+} from "@/lib/icons";
+import {
+  ArtBuildings,
+  ArtCostTypes,
+  ArtDashboard,
+  ArtHeating,
+  ArtInvoices,
+  ArtMeters,
+  ArtSettings,
+  ArtStatements,
+  ArtTenants,
+  ArtUnits,
+} from "./illustrations";
 
 export type DomainKey =
   | "dashboard"
@@ -29,22 +44,23 @@ export type DomainKey =
 
 export type DomainVisual = {
   icon: RemixiconComponentType;
+  art: ComponentType<{ className?: string }>;
 };
 
 /**
  * Feste Zuordnung Domäne -> Icon für Sidebar, Seitenköpfe und Abschnitte
  */
 export const domainVisuals: Record<DomainKey, DomainVisual> = {
-  dashboard: { icon: RiDashboardLine },
-  configuration: { icon: RiSettings3Line },
-  buildings: { icon: RiCommunityLine },
-  units: { icon: RiHome6Line },
-  meters: { icon: RiDashboard2Line },
-  tenants: { icon: RiGroupLine },
-  costTypes: { icon: RiPriceTag3Line },
-  invoices: { icon: RiReceiptLine },
-  heating: { icon: RiFireLine },
-  statements: { icon: RiFileList3Line },
+  dashboard: { icon: IconHome, art: ArtDashboard },
+  configuration: { icon: IconGear, art: ArtSettings },
+  buildings: { icon: IconBuilding, art: ArtBuildings },
+  units: { icon: IconDoor, art: ArtUnits },
+  meters: { icon: IconGauge, art: ArtMeters },
+  tenants: { icon: IconUsers, art: ArtTenants },
+  costTypes: { icon: IconTag, art: ArtCostTypes },
+  invoices: { icon: IconReceipt, art: ArtInvoices },
+  heating: { icon: IconFlame, art: ArtHeating },
+  statements: { icon: IconDoc, art: ArtStatements },
 };
 
 /**
@@ -56,7 +72,7 @@ export const costTypeVisual = (costType: {
   defaultAllocationKey: string | null;
 }): { icon: RemixiconComponentType } => {
   if (costType.category === "heating") {
-    return { icon: RiFireLine };
+    return { icon: IconFlame };
   }
 
   if (costType.defaultAllocationKey === "per_consumption_m3") {
@@ -67,7 +83,7 @@ export const costTypeVisual = (costType: {
     return { icon: RiFlashlightLine };
   }
 
-  return { icon: RiPriceTag3Line };
+  return { icon: IconTag };
 };
 
 /**
@@ -85,6 +101,6 @@ export const meterTypeVisual = (
       return { icon: RiFlashlightLine };
 
     default:
-      return { icon: RiFireLine };
+      return { icon: IconFlame };
   }
 };

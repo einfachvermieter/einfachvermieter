@@ -49,7 +49,11 @@ export const useBreadcrumbTrail = (): CrumbEntry[] => {
   );
 
   if (isBuildingScoped && building) {
-    entries.push({ label: building.name, to: `/gebaeude/${building.id}` });
+    entries.push({
+      label: building.name,
+      to: `/gebaeude/${building.id}`,
+      building: true,
+    });
   }
 
   for (const match of matches) {

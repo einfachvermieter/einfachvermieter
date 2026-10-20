@@ -73,17 +73,17 @@
     --color-azur-900: oklch(30% 0.060 248);
     --color-azur-1000: oklch(22% 0.045 248);
 
-    /* Geist für alles, Bricolage Grotesque nur für Seitentitel und große Kennzahlen */
+    /* Geist für Inhalt, Bricolage Grotesque für alles, was man anklickt oder was etwas benennt (Buttons, Tabs, Navigation, Überschriften) */
     --font-sans: "Geist Variable", system-ui, sans-serif;
     --font-heading: "Bricolage Grotesque Variable", "Geist Variable", sans-serif;
     --tracking-heading: -0.015em;
 
-    /* Formular-Sheet: 512px bis 1700px Fensterbreite, dann bis 720px bei 1920px */
-    --container-sheet-form: clamp(32rem, calc(94.55vw - 1095.3px), 45rem);
+    /* Formular-Sheet: immer 640px. Breiter wird es nicht, Komplexität wird mit SubSheets aufgelöst */
+    --container-sheet-form: 40rem;
 
-    /* Schriftgrößen: Basis 14px, Tabellen/Navigation 13.5px, Labels 12.5px, Tabellenköpfe 11.5px */
-    --text-2xs: 0.71875rem;
-    --text-2xs--line-height: 1rem;
+    /* Vier Schriftgrößen: 12,5px Nebensächliches (xs), 14px Lesetext (sm und base), 18px Abschnitte und Sheets (lg), 24px Seitentitel (2xl).
+       Ausnahme sind nur 3xs und 4xs für die maßstäbliche Briefkopf-Vorschau */
+    --text-*: initial;
     /* 10px: Briefkopf-Vorschau, maßstäblich zum 10-pt-Text des PDFs */
     --text-3xs: 0.625rem;
     --text-3xs--line-height: 0.875rem;
@@ -92,22 +92,33 @@
     --text-4xs--line-height: 0.75rem;
     --text-xs: 0.78125rem;
     --text-xs--line-height: 1rem;
-    --text-sm: 0.84375rem;
+    --text-sm: 0.875rem;
     --text-sm--line-height: 1.25rem;
     --text-base: 0.875rem;
     --text-base--line-height: 1.5;
-    --text-lg: 1rem;
+    --text-lg: 1.125rem;
     --text-lg--line-height: 1.5rem;
-    --text-2xl: 1.4375rem;
-    --text-2xl--line-height: 1.2;
-    --text-3xl: 1.9375rem;
-    --text-3xl--line-height: 1.15;
+    --text-2xl: 1.5rem;
+    --text-2xl--line-height: 1.15;
 
-    /* Radien: Felder/Buttons 8px, Titel-Kachel 10px, Cards 12px */
+    /* Zwei Schriftstärken: normal und kräftig. Medium und Bold gibt es nicht */
+    --font-weight-medium: initial;
+    --font-weight-bold: initial;
+
+    /* Die Kante: Rahmen und 2px Unterkante in derselben Farbe, nur an Dingen, die man anklicken kann */
+    --color-edge: var(--color-schiefer-300);
+    --shadow-key: 0 2px 0 var(--color-schiefer-300);
+    --shadow-key-limette: 0 2px 0 var(--color-limette-600);
+    --shadow-key-azur: 0 2px 0 var(--color-azur-900);
+    --shadow-key-himbeere: 0 2px 0 var(--color-himbeere-800);
+    --shadow-sheet: -16px 0 48px oklch(25% 0.021 251 / 0.16);
+    --shadow-dialog: 0 16px 48px oklch(25% 0.021 251 / 0.2);
+
+    /* Radien: Felder und kleine Buttons 8px (md), Buttons und Rahmen von Tabellen 10px (lg), Flächen und Sheets 14px (xl) */
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius-lg: 0.625rem;
-    --radius-xl: 0.75rem;
+    --radius-xl: 0.875rem;
     --radius-2xl: 1rem;
     --radius-3xl: 1.25rem;
     --radius-4xl: 2rem;
@@ -162,14 +173,16 @@
     --input: var(--color-schiefer-200);
     --ring: var(--color-azur-800);
     --radius: 0.5rem;
-    --sidebar: var(--color-schiefer-900);
-    --sidebar-foreground: var(--color-schiefer-400);
-    --sidebar-primary: var(--color-limette-400);
+    /* Grund der App: Fensterleiste und Sidebar liegen auf Azur 50, der Inhalt
+       auf einer weißen Fläche darüber */
+    --sidebar: var(--color-azur-50);
+    --sidebar-foreground: var(--color-schiefer-900);
+    --sidebar-primary: var(--color-schiefer-900);
     --sidebar-primary-foreground: var(--color-schiefer-900);
-    --sidebar-accent: color-mix(in srgb, var(--color-limette-400) 17%, transparent);
-    --sidebar-accent-foreground: var(--color-schiefer-50);
-    --sidebar-border: var(--color-schiefer-800);
-    --sidebar-ring: var(--color-limette-400);
+    --sidebar-accent: var(--color-limette-100);
+    --sidebar-accent-foreground: var(--color-schiefer-900);
+    --sidebar-border: var(--color-schiefer-200);
+    --sidebar-ring: var(--color-azur-500);
 }
 
 @layer base {
@@ -192,6 +205,18 @@
       animation: none !important;
       }
     }
+}
+
+/*
+ * iOS vergrößert die Seite beim Antippen eines Felds mit weniger als 16px
+ * Schrift. Auf Touch-Geräten haben Felder deshalb 16px, die einzige Ausnahme
+ * von den vier Schriftgrößen. Außerhalb der Layer, damit die Regel die
+ * Schriftgrößen-Utilities der Felder schlägt.
+ */
+@media (pointer: coarse) {
+  :is(input, select, textarea, [contenteditable="true"]) {
+    font-size: 16px;
+  }
 }
 
 /*
@@ -222,65 +247,81 @@
 }
 
 /*
- * Fensterrahmen der Desktop-App. `data-desktop` am <html> setzt main.tsx nur
- * in der Desktop-App; im Browser und auf dem Server greift nichts hiervon.
+ * Fensterleiste über Sidebar und Inhalt, in Web und Desktop-App gleich. Alles
+ * beginnt unter ihr: Sidebar, Inhalt, Sheets, Dialoge und Toasts.
  */
-[data-desktop] {
-  /* Höhe der Titelleiste, unter der Sidebar, Inhalt, Sheets, Dialoge und
-     Toasts beginnen */
-  --desktop-bar-height: calc(var(--spacing) * 10);
+:root {
+  /* Außenseiten (Anmeldung, Einrichtung) haben keine Fensterleiste */
+  --app-bar-height: 0px;
   /* Wie SIDEBAR_WIDTH in components/ui/Sidebar.tsx; Sheets liegen im Portal
      außerhalb der Sidebar und sehen deren --sidebar-width nicht */
-  --desktop-sidebar-width: 15.25rem;
+  --app-sidebar-width: 14.5rem;
 }
 
-/* Ziehflächen des Fensters; alles Klickbare darin bleibt klickbar */
+:root:has([data-slot="sidebar-wrapper"]) {
+  --app-bar-height: calc(var(--spacing) * 12);
+}
+
+[data-slot="sidebar-wrapper"] {
+  padding-top: var(--app-bar-height);
+}
+
+:is([data-slot="sidebar-container"], [data-slot="sidebar"][data-mobile], [data-slot="dialog-overlay"], [data-slot="alert-dialog-overlay"]) {
+  top: var(--app-bar-height);
+  height: auto;
+}
+
+:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) {
+  top: calc(50% + var(--app-bar-height) / 2);
+  max-height: calc(100dvh - 2rem - var(--app-bar-height));
+}
+
+/* Sheets überdecken nur den Inhalt, nicht Sidebar und Leiste. Klicks
+   daneben fängt der Dialog weiterhin ab (modal). */
+:is([data-slot="sheet-overlay"], [data-slot="sheet-content"][data-side="right"]) {
+  top: var(--app-bar-height);
+  height: auto;
+}
+
+[data-slot="sheet-content"][data-side="right"] {
+  bottom: 0;
+}
+
+:root:has([data-slot="sidebar"][data-state="expanded"]) [data-slot="sheet-overlay"] {
+  @media (width >= 64rem) {
+    left: var(--app-sidebar-width);
+  }
+}
+
+/* SubSheet: das zweite Sheet fährt herein, das erste rückt im selben
+   Takt nach links und wird etwas dunkler. Der Hintergrund wird nicht ein
+   zweites Mal abgedunkelt */
+[data-slot="sheet-content"]:not([data-sub]) {
+  transition: translate 240ms ease-out, filter 240ms ease-out;
+}
+
+:root:has([data-slot="sheet-content"][data-sub]) [data-slot="sheet-content"]:not([data-sub]) {
+  translate: -3.5rem 0;
+  filter: brightness(0.92);
+}
+
+[data-slot="sheet-overlay"]:has(+ [data-sub]) {
+  background: transparent;
+}
+
+/* Sonner fügt seine Styles nach unseren ein; `:root` davor gewinnt die
+   Reihenfolge, damit der Toast unter der Fensterleiste steht */
+:root [data-sonner-toaster][data-y-position="top"] {
+  top: calc(var(--offset-top) + var(--app-bar-height));
+}
+
+/* Desktop-App: die Fensterleiste ist zugleich Ziehfläche des Fensters; alles
+   Klickbare darin bleibt klickbar. `data-desktop` am <html> setzt main.tsx nur
+   in der Desktop-App */
 [data-desktop] [data-drag-region] {
   -webkit-app-region: drag;
 }
 
 [data-desktop] [data-drag-region] :is(a, button, input, select, textarea, [role="button"]) {
   -webkit-app-region: no-drag;
-}
-
-/* Die ausgeklappte Sidebar bei schmalem Fenster ist so breit wie die
-   angedockte (sonst 17rem für Telefone) */
-[data-desktop] [data-slot="sidebar"][data-mobile] {
-  --sidebar-width: var(--desktop-sidebar-width) !important;
-}
-
-/* Menüzeile bzw. Pfad beginnen immer über der Inhaltsspalte, bündig mit dem
-   Seiteninhalt neben der angedockten Sidebar */
-[data-desktop] [data-slot="desktop-brand"] {
-  min-width: calc(var(--desktop-sidebar-width) - var(--spacing) * 1.5);
-}
-
-/* Alles beginnt unter der Titelleiste */
-[data-desktop] [data-slot="sidebar-wrapper"] {
-  padding-top: var(--desktop-bar-height);
-}
-
-[data-desktop] :is([data-slot="sidebar-container"], [data-slot="sidebar"][data-mobile], [data-slot="dialog-overlay"], [data-slot="alert-dialog-overlay"]) {
-  top: var(--desktop-bar-height);
-  height: auto;
-}
-
-[data-desktop] :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) {
-  top: calc(50% + var(--desktop-bar-height) / 2);
-  max-height: calc(100dvh - 2rem - var(--desktop-bar-height));
-}
-
-/* Sheets überdecken nur den Inhalt, nicht Sidebar und Leiste. Klicks
-   daneben fängt der Dialog weiterhin ab (modal). */
-[data-desktop] :is([data-slot="sheet-overlay"], [data-slot="sheet-content"][data-side="right"]) {
-  top: var(--desktop-bar-height);
-  height: auto;
-}
-
-[data-desktop]:has([data-slot="sidebar"][data-state="expanded"]) [data-slot="sheet-overlay"] {
-  left: var(--desktop-sidebar-width);
-}
-
-[data-desktop] [data-sonner-toaster][data-y-position="top"] {
-  top: calc(var(--offset-top) + var(--desktop-bar-height));
 }

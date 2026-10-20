@@ -1,8 +1,8 @@
 import { formatEur } from "@einfachvermieter/shared";
-import { RiKey2Line, RiPencilLine } from "@remixicon/react";
+import { RiKey2Line } from "@remixicon/react";
 import { ResultRows } from "@/components/common/ResultRows";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Button } from "@/components/ui/Button";
 import { formatPeriod } from "../../../lib/format";
 import { t } from "../../../lib/i18n";
 import { type Tenant, tenantKindLabel } from "../../../lib/tenants";
@@ -24,10 +24,11 @@ export const TenantContractCard = ({
     icon={RiKey2Line}
     title={t("ui.tenant.sections.contract.title")}
     action={
-      <Button type="button" variant="addLink" size="text" onClick={onEdit}>
-        <RiPencilLine />
-        {t("ui.common.action.edit")}
-      </Button>
+      <SectionAction
+        kind="edit"
+        label={t("ui.common.action.edit")}
+        onClick={onEdit}
+      />
     }
   >
     <ResultRows

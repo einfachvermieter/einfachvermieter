@@ -58,7 +58,7 @@ function PopoverTitle({ className, ...props }: ComponentProps<"h2">) {
   return (
     <div
       data-slot="popover-title"
-      className={cn("font-medium", className)}
+      className={cn("font-semibold", className)}
       {...props}
     />
   );

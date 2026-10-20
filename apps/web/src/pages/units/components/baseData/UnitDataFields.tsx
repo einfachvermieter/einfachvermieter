@@ -43,7 +43,7 @@ export const UnitDataFields = ({
     heatingArea > area;
 
   return (
-    <FieldGroup className="gap-5">
+    <FieldGroup>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <TextInput
           control={form.control}

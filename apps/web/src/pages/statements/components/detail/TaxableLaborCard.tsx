@@ -1,12 +1,18 @@
 import type { TaxableLaborCosts } from "@einfachvermieter/shared";
 import { formatEur } from "@einfachvermieter/shared";
 import { RiGovernmentLine } from "@remixicon/react";
+import { TableFrame } from "@/components/common/TableFrame";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
 import { EmptyNote } from "../../../../components/common/EmptyNote";
 import { SectionCard } from "../../../../components/common/SectionCard";
-import {
-  QUIET_TABLE_GROUP_HEAD,
-  QUIET_TABLE_HEAD_ROW,
-} from "../../../../components/common/tableStyles";
+import { QUIET_TABLE_GROUP_HEAD } from "../../../../components/common/tableStyles";
 import { t } from "../../../../lib/i18n";
 
 type Category = "household_service" | "craftsman";
@@ -39,43 +45,40 @@ export const TaxableLaborCard = ({ detail }: { detail: TaxableLaborCosts }) => {
                 {categoryTitle(category)}
               </h3>
               {group ? (
-                <div className="scroll-shadow-x overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className={QUIET_TABLE_HEAD_ROW}>
-                        <th className="py-2.5">
+                <TableFrame>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>
                           {t("statements.pdf.taxableLabor.position")}
-                        </th>
-                        <th className="py-2.5 text-right">
+                        </TableHead>
+                        <TableHead className="text-right">
                           {t("statements.pdf.taxableLabor.tenantAmount")}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {group.lines.map((line) => (
-                        <tr
-                          key={line.costTypeId}
-                          className="border-b border-border"
-                        >
-                          <td className="py-2.5 font-semibold text-foreground">
+                        <TableRow key={line.costTypeId}>
+                          <TableCell className="font-semibold text-foreground">
                             {line.costTypeName}
-                          </td>
-                          <td className="py-2.5 text-right tabular-nums">
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
                             {formatEur(line.tenantAmountCents)}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                      <tr className="border-t-2 border-foreground">
-                        <td className="py-2.5 font-semibold">
+                      <TableRow>
+                        <TableCell className="font-semibold">
                           {t("statements.pdf.taxableLabor.subtotal")}
-                        </td>
-                        <td className="py-2.5 text-right font-semibold tabular-nums">
+                        </TableCell>
+                        <TableCell className="text-right font-semibold tabular-nums">
                           {formatEur(group.tenantTotalCents)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableFrame>
               ) : (
                 <EmptyNote>
                   {t("ui.statements.detail.taxableLaborEmptyGroup")}

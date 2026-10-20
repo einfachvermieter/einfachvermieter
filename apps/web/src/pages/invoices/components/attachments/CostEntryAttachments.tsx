@@ -1,21 +1,18 @@
 import { formatBytes, formatDate } from "@einfachvermieter/shared";
 import {
   RiAttachment2,
-  RiBardFill,
-  RiDeleteBinLine,
-  RiEyeLine,
-  RiFileLine,
   RiFilePdf2Line,
   RiImageLine,
   RiLoader4Line,
 } from "@remixicon/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
 import { FileDropZone } from "@/components/common/FileDropZone";
 import { SectionCard } from "@/components/common/SectionCard";
 import { DestructiveConfirmDialog } from "@/components/DestructiveConfirmDialog";
-import { Button } from "@/components/ui/Button";
+import { RowActionButton, RowActions } from "@/components/RowActions";
+import { IconDownload, IconEye, IconFile, IconSparkle } from "@/lib/icons";
 import { isMistralSupported } from "../../../../lib/aiExtraction";
 import { ApiError } from "../../../../lib/api";
 import {
@@ -32,7 +29,7 @@ import {
 import { t } from "../../../../lib/i18n";
 
 /**
- * Getönte 36-px-Kachel nach Dateityp: PDF himbeere, Bild azur,
+ * Farbige 36-px-Kachel nach Dateityp: PDF himbeere, Bild azur,
  * sonst schiefer.
  */
 const AttachmentTile = ({ att }: { att: CostEntryAttachment }) => {
@@ -52,7 +49,7 @@ const AttachmentTile = ({ att }: { att: CostEntryAttachment }) => {
   }
   return (
     <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
-      <RiFileLine className="size-4.5" aria-hidden={true} />
+      <IconFile className="size-4.5" aria-hidden={true} />
     </div>
   );
 };
@@ -63,6 +60,7 @@ export const CostEntryAttachments = ({
   onExtract,
   onUploaded,
   extractingAttachmentId,
+  notice,
 }: {
   costEntryId: string;
   onExtract?: (attachmentId: string) => void;
@@ -71,6 +69,10 @@ export const CostEntryAttachments = ({
    */
   onUploaded?: (attachment: CostEntryAttachment) => void;
   extractingAttachmentId?: string | null;
+  /**
+   * Meldung zur KI-Auswertung, steht unter den Belegen
+   */
+  notice?: ReactNode;
 }) => {
   const queryClient = useQueryClient();
   const [previewId, setPreviewId] = useState<string | null>(null);
@@ -149,6 +151,107 @@ export const CostEntryAttachments = ({
       title={t("ui.invoices.attachments.title")}
     >
       <div className="space-y-4">
+        {attachments.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t("ui.invoices.attachments.empty")}
+          </p>
+        ) : (
+          <ul>
+            {attachments.map((att) => {
+              const isOpen = previewId === att.id;
+              const isExtracting = extractingAttachmentId === att.id;
+              return (
+                <li
+                  key={att.id}
+                  className="group/row flex flex-col border-t border-border first:border-t-0"
+                >
+                  <div className="flex items-center gap-3 py-3">
+                    <AttachmentTile att={att} />
+                    <div className="min-w-0 flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewId(isOpen ? null : att.id)}
+                        className="block w-full truncate text-left text-sm font-semibold hover:underline"
+                        title={att.originalFilename}
+                      >
+                        {att.originalFilename}
+                      </button>
+                      <div className="mt-0.5 text-xs text-muted-foreground">
+                        {t("ui.invoices.attachments.fileMeta", {
+                          size: formatBytes(att.sizeBytes),
+                          date: formatDate(att.createdAt.slice(0, 10)),
+                        })}
+                      </div>
+                    </div>
+                    <RowActions
+                      isDeleting={
+                        deleteMutation.isPending &&
+                        deleteMutation.variables?.id === att.id
+                      }
+                      extraActions={
+                        <>
+                          {onExtract && isMistralSupported(att.mimeType) ? (
+                            <RowActionButton
+                              label={
+                                isExtracting
+                                  ? t("ui.invoices.aiExtract.extracting")
+                                  : t("ui.invoices.aiExtract.button")
+                              }
+                              icon={
+                                isExtracting ? (
+                                  <RiLoader4Line className="animate-spin" />
+                                ) : (
+                                  <IconSparkle />
+                                )
+                              }
+                              onSelect={
+                                extractingAttachmentId
+                                  ? undefined
+                                  : () => onExtract(att.id)
+                              }
+                            />
+                          ) : null}
+                          <RowActionButton
+                            label={t("ui.invoices.attachments.preview")}
+                            icon={<IconEye />}
+                            onSelect={() =>
+                              setPreviewId(isOpen ? null : att.id)
+                            }
+                          />
+                          <RowActionButton
+                            label={t("ui.invoices.attachments.download")}
+                          >
+                            <a
+                              href={attachmentFileUrl(costEntryId, att.id)}
+                              download={att.originalFilename}
+                            >
+                              <IconDownload />
+                            </a>
+                          </RowActionButton>
+                        </>
+                      }
+                      onDelete={() => setPendingDelete(att)}
+                      deleteLabel={t("ui.invoices.attachments.delete")}
+                    />
+                  </div>
+                  {isOpen ? (
+                    <AttachmentPreview
+                      costEntryId={costEntryId}
+                      attachment={att}
+                    />
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {notice}
+
+        {errorMessage ? (
+          <p className="text-sm text-destructive">{errorMessage}</p>
+        ) : null}
+
         <FileDropZone
           accept={ATTACHMENT_ACCEPT_ATTR}
           buttonLabel={
@@ -171,102 +274,6 @@ export const CostEntryAttachments = ({
           }
           onFiles={onFilesSelected}
         />
-
-        {errorMessage ? (
-          <p className="text-sm text-destructive">{errorMessage}</p>
-        ) : null}
-
-        {attachments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t("ui.invoices.attachments.empty")}
-          </p>
-        ) : (
-          <ul>
-            {attachments.map((att) => {
-              const isOpen = previewId === att.id;
-              return (
-                <li
-                  key={att.id}
-                  className="flex flex-col border-t border-border first:border-t-0"
-                >
-                  <div className="flex items-center gap-3 py-3">
-                    <AttachmentTile att={att} />
-                    <div className="min-w-0 flex-1">
-                      <button
-                        type="button"
-                        onClick={() => setPreviewId(isOpen ? null : att.id)}
-                        className="block w-full truncate text-left text-sm font-semibold hover:underline"
-                        title={att.originalFilename}
-                      >
-                        {att.originalFilename}
-                      </button>
-                      <div className="mt-0.5 text-xs text-muted-foreground">
-                        {t("ui.invoices.attachments.fileMeta", {
-                          size: formatBytes(att.sizeBytes),
-                          date: formatDate(att.createdAt.slice(0, 10)),
-                        })}
-                      </div>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-0.5">
-                      {onExtract && isMistralSupported(att.mimeType) ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onExtract(att.id)}
-                          disabled={Boolean(extractingAttachmentId)}
-                        >
-                          {extractingAttachmentId === att.id ? (
-                            <RiLoader4Line
-                              aria-hidden={true}
-                              className="animate-spin"
-                            />
-                          ) : (
-                            <RiBardFill aria-hidden={true} />
-                          )}
-                          {extractingAttachmentId === att.id
-                            ? t("ui.invoices.aiExtract.extracting")
-                            : t("ui.invoices.aiExtract.button")}
-                        </Button>
-                      ) : null}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setPreviewId(isOpen ? null : att.id)}
-                        aria-label={t("ui.invoices.attachments.preview")}
-                      >
-                        <RiEyeLine aria-hidden={true} />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setPendingDelete(att)}
-                        disabled={
-                          deleteMutation.isPending &&
-                          deleteMutation.variables?.id === att.id
-                        }
-                        aria-label={t("ui.invoices.attachments.delete")}
-                      >
-                        <RiDeleteBinLine
-                          aria-hidden={true}
-                          className="text-destructive"
-                        />
-                      </Button>
-                    </div>
-                  </div>
-                  {isOpen ? (
-                    <AttachmentPreview
-                      costEntryId={costEntryId}
-                      attachment={att}
-                    />
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-        )}
       </div>
 
       <DestructiveConfirmDialog
@@ -284,7 +291,7 @@ export const CostEntryAttachments = ({
               })
             : undefined
         }
-        confirmLabel={t("ui.common.action.delete")}
+        confirmLabel={t("ui.common.action.confirmRemove")}
         onConfirm={() => {
           if (pendingDelete) {
             deleteMutation.mutate(pendingDelete);

@@ -2,12 +2,12 @@ import type {
   SenderLogoAlignment,
   SenderLogoMode,
 } from "@einfachvermieter/shared";
-import { RiDeleteBinLine, RiUploadCloud2Line } from "@remixicon/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import appLogoUrl from "@/img/logo/logo_light.svg";
 import { ApiError } from "@/lib/api";
 import { t } from "@/lib/i18n";
+import { IconTrash, IconUpload } from "@/lib/icons";
 import {
   type PendingLogo,
   previewSenderLogoPdf,
@@ -164,7 +164,7 @@ export const SenderLogoSection = ({
   const missingLogoNote = (
     <div className="relative h-full w-full">
       <span
-        className="absolute flex items-center text-2xs text-muted-foreground"
+        className="absolute flex items-center text-xs text-muted-foreground"
         style={logoBox(logoAlignment, logoScalePercent)}
       >
         {t("ui.settings.sender.logo.fallback")}
@@ -214,7 +214,7 @@ export const SenderLogoSection = ({
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
           >
-            <RiUploadCloud2Line aria-hidden={true} />
+            <IconUpload aria-hidden={true} />
             {hasVisibleLogo
               ? t("ui.settings.sender.logo.replaceAction")
               : t("ui.settings.sender.logo.uploadAction")}
@@ -225,7 +225,7 @@ export const SenderLogoSection = ({
               variant="ghostDestructive"
               onClick={() => onPendingLogoChange({ kind: "delete" })}
             >
-              <RiDeleteBinLine aria-hidden={true} />
+              <IconTrash aria-hidden={true} />
               {t("ui.settings.sender.logo.removeAction")}
             </Button>
           ) : null}

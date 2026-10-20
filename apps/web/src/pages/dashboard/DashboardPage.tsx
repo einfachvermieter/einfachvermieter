@@ -4,7 +4,6 @@ import { useState } from "react";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
-import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { dashboardQueryOptions, statsQueryOptions } from "../../lib/stats";
 import { PaymentSheet } from "../payments/PaymentSheet";
@@ -67,11 +66,9 @@ export const DashboardPage = () => {
   return (
     <div className="space-y-5 pb-6">
       <PageHeader
-        tile={<PageHeaderIcon icon={domainVisuals.dashboard.icon} />}
+        tile={<PageHeaderIcon domain="dashboard" />}
         title={t("ui.dashboard.greeting")}
-        sub={[formatDateLong(today), headline()]
-          .filter(Boolean)
-          .join(t("ui.common.separators.bullet"))}
+        sub={[formatDateLong(today), headline()].filter(Boolean)}
         subLoading={!dashboard}
         breadcrumb={false}
       />

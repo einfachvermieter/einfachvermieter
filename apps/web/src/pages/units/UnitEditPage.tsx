@@ -4,10 +4,11 @@ import {
   formatNumber,
   type UnitCreateDto,
 } from "@einfachvermieter/shared";
-import { RiDeleteBinLine, RiMoreLine, RiPencilLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { SectionAction } from "@/components/common/SectionAction";
+import { IconMore, IconTrash } from "@/lib/icons";
 import { DomainLink } from "../../components/common/DomainLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -24,7 +25,6 @@ import {
 } from "../../components/ui/DropdownMenu";
 import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
-import { buildingsQueryOptions } from "../../lib/buildings";
 import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
@@ -60,7 +60,6 @@ export const UnitEditPage = () => {
 
   // Beim Direkteinstieg das Gebäude des Objekts übernehmen
   useAdoptBuilding(unit?.buildingId);
-  const { data: buildings } = useQuery(buildingsQueryOptions);
   const navigate = useNavigate();
   const router = useRouter();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -85,7 +84,8 @@ export const UnitEditPage = () => {
     invalidateKeys: [["units"]],
     title: t("ui.units.confirmDelete"),
     describe: (target) =>
-      t("ui.units.confirmDeleteMessage", { name: target.name }),
+      t("ui.units.confirmDeleteQuestion", { name: target.name }),
+    hint: t("ui.units.confirmDeleteHint"),
     onDeleted: () =>
       navigate({ to: "/wohnungen", search: { buildingId: unit?.buildingId } }),
   });
@@ -100,7 +100,6 @@ export const UnitEditPage = () => {
     );
   }
 
-  const building = buildings?.find((entry) => entry.id === unit.buildingId);
   const current = currentTenantOf(tenants?.items, unit.id);
 
   let statusLabel = t("ui.units.status.vacant");
@@ -122,23 +121,18 @@ export const UnitEditPage = () => {
     <>
       <div className="max-w-225 pb-6">
         <PageHeader
-          tile={<PageHeaderIcon icon={domainVisuals.units.icon} />}
+          tile={<PageHeaderIcon domain="units" />}
           title={unit.name}
-          titleExtra={
-            <Badge variant={current ? "ok" : "neutral"}>{statusLabel}</Badge>
-          }
           sub={
-            <span className="flex flex-wrap items-center gap-2">
-              <span>
-                {[
-                  building?.name,
-                  unit.unitNumber
-                    ? t("ui.units.unitNumberMeta", { number: unit.unitNumber })
-                    : undefined,
-                ]
-                  .filter(Boolean)
-                  .join(t("ui.common.separators.bullet"))}
-              </span>
+            <span className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
+              <Badge appearance="dot" variant={current ? "ok" : "neutral"}>
+                {statusLabel}
+              </Badge>
+              {unit.unitNumber ? (
+                <span>
+                  {t("ui.units.unitNumberMeta", { number: unit.unitNumber })}
+                </span>
+              ) : null}
               {current && tenantNames ? (
                 <DomainLink
                   to="/mieter/$tenantId"
@@ -167,7 +161,7 @@ export const UnitEditPage = () => {
                   size="icon"
                   aria-label={t("ui.common.a11y.more")}
                 >
-                  <RiMoreLine />
+                  <IconMore />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-56">
@@ -175,7 +169,7 @@ export const UnitEditPage = () => {
                   variant="destructive"
                   onSelect={() => deletion.request(unit)}
                 >
-                  <RiDeleteBinLine />
+                  <IconTrash />
                   {t("ui.units.actions.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -187,15 +181,11 @@ export const UnitEditPage = () => {
           icon={domainVisuals.units.icon}
           title={t("ui.units.sections.baseData.title")}
           action={
-            <Button
-              type="button"
-              variant="addLink"
-              size="text"
+            <SectionAction
+              kind="edit"
+              label={t("ui.common.action.edit")}
               onClick={() => setSheetOpen(true)}
-            >
-              <RiPencilLine />
-              {t("ui.common.action.edit")}
-            </Button>
+            />
           }
         >
           <ResultRows

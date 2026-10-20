@@ -1,8 +1,9 @@
 import { formatDate } from "@einfachvermieter/shared";
-import { RiPencilLine, RiReceiptLine } from "@remixicon/react";
+import type { ReactNode } from "react";
 import { ResultRows } from "@/components/common/ResultRows";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Button } from "@/components/ui/Button";
+import { IconReceipt } from "@/lib/icons";
 import type { CostEntryDetail } from "../../../lib/costs";
 import { t } from "../../../lib/i18n";
 
@@ -11,22 +12,30 @@ import { t } from "../../../lib/i18n";
  */
 export const CostEntryBaseCard = ({
   entry,
+  statements,
   onEdit,
 }: {
   entry: CostEntryDetail;
+
+  /**
+   * Abrechnungen, in die die Rechnung einfließt (Links), oder ein Hinweis,
+   * dass es noch keine gibt
+   */
+  statements: ReactNode;
   onEdit: () => void;
 }) => {
   const dash = t("ui.common.emptyValue");
 
   return (
     <SectionCard
-      icon={RiReceiptLine}
+      icon={IconReceipt}
       title={t("ui.invoices.detail.basicsSection")}
       action={
-        <Button type="button" variant="addLink" size="text" onClick={onEdit}>
-          <RiPencilLine />
-          {t("ui.common.action.edit")}
-        </Button>
+        <SectionAction
+          kind="edit"
+          label={t("ui.common.action.edit")}
+          onClick={onEdit}
+        />
       }
     >
       <ResultRows
@@ -42,6 +51,10 @@ export const CostEntryBaseCard = ({
           {
             label: t("ui.costs.entryFields.invoiceNumber"),
             value: entry.invoiceNumber ?? dash,
+          },
+          {
+            label: t("ui.invoices.detail.statementsHint"),
+            value: statements,
           },
         ]}
       />

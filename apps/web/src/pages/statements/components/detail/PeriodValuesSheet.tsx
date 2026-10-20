@@ -68,7 +68,7 @@ export const PeriodValuesSheet = ({
       }}
       onClose={onClose}
     >
-      <FieldGroup className="gap-4">
+      <FieldGroup>
         {values.relevance.totalHeatEnergy ? (
           <TextInput
             control={form.control}

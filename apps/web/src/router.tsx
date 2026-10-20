@@ -3,7 +3,6 @@ import {
   meterTypes,
   type SetupStatus,
 } from "@einfachvermieter/shared";
-import { RiHome6Line } from "@remixicon/react";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
@@ -33,7 +32,6 @@ import {
   costTypeQueryOptions,
 } from "./lib/costs";
 import { useDocumentTitle } from "./lib/documentTitle";
-import { domainVisuals } from "./lib/domainVisuals";
 import {
   type HeatingSettings,
   heatingIdentityLabel,
@@ -331,7 +329,7 @@ const buildingEditRoute = createRoute({
   component: BuildingEditPage,
   pendingComponent: () => (
     <DetailPending
-      tile={<PageHeaderIcon icon={domainVisuals.buildings.icon} />}
+      tile={<PageHeaderIcon domain="buildings" />}
       statsSkeleton={3}
       rows={4}
     />
@@ -385,7 +383,7 @@ const unitEditRoute = createRoute({
   component: UnitEditPage,
   pendingComponent: () => (
     <DetailPending
-      tile={<PageHeaderIcon icon={RiHome6Line} />}
+      tile={<PageHeaderIcon domain="units" />}
       statsSkeleton={3}
       rows={3}
       aside={true}
@@ -436,7 +434,7 @@ const tenantEditRoute = createRoute({
   pendingComponent: () => (
     <div className="max-w-225">
       <DetailPending
-        tile={<PageHeaderIcon icon={domainVisuals.tenants.icon} />}
+        tile={<PageHeaderIcon domain="tenants" />}
         rows={6}
         tabs="pills"
         kpis={3}
@@ -557,7 +555,7 @@ const meterEditRoute = createRoute({
   component: MeterDetailPage,
   pendingComponent: () => (
     <DetailPending
-      tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
+      tile={<PageHeaderIcon domain="meters" />}
       statsSkeleton={3}
       rows={4}
       aside={true}
@@ -599,7 +597,7 @@ const meterReadingsRoute = createRoute({
   component: MeterReadingsPage,
   pendingComponent: () => (
     <DetailPending
-      tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
+      tile={<PageHeaderIcon domain="meters" />}
       statsSkeleton={3}
       rows={4}
       tabs="default"
@@ -857,7 +855,7 @@ const statementDetailRoute = createRoute({
   pendingComponent: () => (
     <div className="max-w-225">
       <DetailPending
-        tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
+        tile={<PageHeaderIcon domain="statements" />}
         rows={8}
         kpis={3}
         tabs="pills"
@@ -1003,6 +1001,7 @@ export const router = createRouter({
 export type CrumbEntry = {
   label: string;
   to?: string;
+  building?: boolean;
 };
 
 export type CrumbContext = {

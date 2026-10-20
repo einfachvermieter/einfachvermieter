@@ -1,8 +1,9 @@
-import { RiAddLine, RiListOrdered2 } from "@remixicon/react";
+import { RiListOrdered2 } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { IconPlus } from "@/lib/icons";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -11,7 +12,7 @@ import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { RowActionButton } from "../../components/RowActions";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { domainVisuals, meterTypeVisual } from "../../lib/domainVisuals";
+import { meterTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   type Meter,
@@ -145,22 +146,20 @@ export const MetersOverview = () => {
   }
 
   const sub = data
-    ? [t("ui.meters.sub.count", { count: data.total }), building?.name]
-        .filter(Boolean)
-        .join(t("ui.common.separators.bullet"))
+    ? [t("ui.meters.sub.count", { count: data.total })].filter(Boolean)
     : undefined;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
+        tile={<PageHeaderIcon domain="meters" />}
         title={t("ui.meters.title")}
         sub={sub}
         subLoading={!data}
         action={
           canAddMeter ? (
             <Button type="button" onClick={() => setCreateOpen(true)}>
-              <RiAddLine />
+              <IconPlus />
               <span className="hidden sm:inline">{t("ui.meters.add")}</span>
             </Button>
           ) : undefined

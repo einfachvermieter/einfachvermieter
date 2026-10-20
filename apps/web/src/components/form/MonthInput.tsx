@@ -180,9 +180,7 @@ export const MonthInput = <T extends FieldValues>({
                 >
                   <RiArrowLeftSLine />
                 </Button>
-                <span className="text-sm font-medium tabular-nums">
-                  {pickerYear}
-                </span>
+                <span className="text-sm tabular-nums">{pickerYear}</span>
                 <Button
                   type="button"
                   variant="ghost"

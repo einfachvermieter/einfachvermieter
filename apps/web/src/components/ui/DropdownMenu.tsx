@@ -1,6 +1,7 @@
-import { RiArrowRightSLine, RiCheckLine } from "@remixicon/react";
+import { RiArrowRightSLine } from "@remixicon/react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
+import { IconCheck } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 const DropdownMenu = ({
@@ -92,7 +93,7 @@ const DropdownMenuCheckboxItem = ({
       data-slot="dropdown-menu-checkbox-item-indicator"
     >
       <DropdownMenuPrimitive.ItemIndicator>
-        <RiCheckLine />
+        <IconCheck />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -130,7 +131,7 @@ const DropdownMenuRadioItem = ({
       data-slot="dropdown-menu-radio-item-indicator"
     >
       <DropdownMenuPrimitive.ItemIndicator>
-        <RiCheckLine />
+        <IconCheck />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}

@@ -6,17 +6,15 @@ import {
 } from "@einfachvermieter/shared";
 import {
   RiBankCardLine,
-  RiDeleteBinLine,
-  RiGroupLine,
   RiMapPinLine,
   RiMoneyEuroCircleLine,
-  RiMoreLine,
 } from "@remixicon/react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { RowListSection } from "@/components/common/RowListSection";
 import { HelpHint } from "@/components/help/HelpHint";
+import { IconMore, IconTrash, IconUsers } from "@/lib/icons";
 import { Button } from "../../components/ui/Button";
 import {
   DropdownMenu,
@@ -123,15 +121,17 @@ export const TenantEditPage = () => {
     title: t("ui.tenants.confirmDeleteTenant"),
     describe: () =>
       contractParties
-        ? t("ui.tenants.confirmDeleteTenantMessage", {
+        ? t("ui.tenants.confirmDeleteTenantQuestion", {
             residents: contractParties,
             unit: unit?.name ?? "",
             period: formatPeriod(tenant.startDate, tenant.endDate),
           })
-        : t("ui.tenants.confirmDeleteTenantMessageNoResidents", {
+        : t("ui.tenants.confirmDeleteTenantQuestionNoResidents", {
             unit: unit?.name ?? "",
             period: formatPeriod(tenant.startDate, tenant.endDate),
           }),
+    consequence: t("ui.tenants.confirmDeleteTenantConsequence"),
+    hint: t("ui.tenants.confirmDeleteTenantHint"),
     onDeleted: () =>
       navigate({ to: "/mieter", search: { buildingId: undefined } }),
   });
@@ -179,7 +179,7 @@ export const TenantEditPage = () => {
                 size="icon"
                 aria-label={t("ui.common.a11y.more")}
               >
-                <RiMoreLine />
+                <IconMore />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-56">
@@ -187,7 +187,7 @@ export const TenantEditPage = () => {
                 variant="destructive"
                 onSelect={() => deletion.request({ id: tenantId })}
               >
-                <RiDeleteBinLine />
+                <IconTrash />
                 {t("ui.tenant.actions.delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -202,7 +202,7 @@ export const TenantEditPage = () => {
           />
 
           <RowListSection
-            icon={RiGroupLine}
+            icon={IconUsers}
             title={t("ui.tenant.fields.residents")}
             titleHelp={<HelpHint>{t("ui.tenant.residentsHelp")}</HelpHint>}
             addLabel={t("ui.tenant.addResident")}

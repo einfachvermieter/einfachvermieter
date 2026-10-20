@@ -1,7 +1,16 @@
 import { formatEur, type StatementResult } from "@einfachvermieter/shared";
-import { RiCoinsLine } from "@remixicon/react";
+import { TableFrame } from "@/components/common/TableFrame";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
+import { IconCoins } from "@/lib/icons";
 import { SectionCard } from "../../../../components/common/SectionCard";
-import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
 import { Button } from "../../../../components/ui/Button";
 import { t } from "../../../../lib/i18n";
 import { ALLOCATION_BY_LABEL_KEY } from "../../../../lib/statements";
@@ -27,7 +36,7 @@ export const OverviewCard = ({
   );
   return (
     <SectionCard
-      icon={RiCoinsLine}
+      icon={IconCoins}
       title={t("ui.statements.detail.overviewCosts.title")}
       action={
         onShowDetails ? (
@@ -37,48 +46,46 @@ export const OverviewCard = ({
         ) : undefined
       }
     >
-      <div className="scroll-shadow-x overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className={QUIET_TABLE_HEAD_ROW}>
-              <th className="py-2.5">
-                {t("ui.statements.detail.columnCostType")}
-              </th>
-              <th className="py-2.5">
+      <TableFrame>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t("ui.statements.detail.columnCostType")}</TableHead>
+              <TableHead>
                 {t("ui.statements.detail.overviewCosts.columnDistribution")}
-              </th>
-              <th className="py-2.5 text-right">
+              </TableHead>
+              <TableHead className="text-right">
                 {t("ui.statements.detail.columnYourShare")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {result.lines.map((line) => (
-              <tr key={line.costTypeName} className="border-b border-border">
-                <td className="py-2.5 font-semibold text-foreground">
+              <TableRow key={line.costTypeName}>
+                <TableCell className="font-semibold text-foreground">
                   {line.costTypeName}
-                </td>
-                <td className="py-2.5 text-muted-foreground">
+                </TableCell>
+                <TableCell className="text-muted-foreground">
                   {t(ALLOCATION_BY_LABEL_KEY[line.allocationKey])}
-                </td>
-                <td className="py-2.5 text-right tabular-nums">
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
                   {formatEur(line.tenantAmountCents)}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-          <tfoot>
-            <tr className="border-t-2 border-foreground">
-              <td className="py-2 font-semibold" colSpan={2}>
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell className="font-semibold" colSpan={2}>
                 {t("ui.statements.detail.sum")}
-              </td>
-              <td className="py-2 text-right font-semibold tabular-nums">
+              </TableCell>
+              <TableCell className="text-right font-semibold tabular-nums">
                 {formatEur(totalCents)}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </TableFrame>
     </SectionCard>
   );
 };

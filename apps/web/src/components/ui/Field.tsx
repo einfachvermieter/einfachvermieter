@@ -1,5 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { type ComponentProps, type ReactNode, useMemo } from "react";
+import { HelpScope } from "@/components/help/HelpScope";
+import { HelpSlot } from "@/components/help/HelpSlot";
 import { Label } from "@/components/ui/Label";
 import { Separator } from "@/components/ui/Separator";
 import { translateKey } from "@/lib/i18n";
@@ -25,7 +27,7 @@ const FieldLegend = ({
     data-slot="field-legend"
     data-variant={variant}
     className={cn(
-      "mb-3 font-medium data-[variant=label]:text-xs data-[variant=legend]:text-base data-[variant=legend]:font-semibold",
+      "mb-3 data-[variant=label]:text-xs data-[variant=legend]:text-base data-[variant=legend]:font-semibold",
       className,
     )}
     {...props}
@@ -36,7 +38,7 @@ const FieldGroup = ({ className, ...props }: ComponentProps<"div">) => (
   <div
     data-slot="field-group"
     className={cn(
-      "group/field-group flex w-full flex-col gap-7 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
+      "group/field-group flex w-full flex-col gap-6 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-6",
       className,
     )}
     {...props}
@@ -44,11 +46,12 @@ const FieldGroup = ({ className, ...props }: ComponentProps<"div">) => (
 );
 
 const fieldVariants = cva(
-  "group/field flex w-full gap-2 data-[invalid=true]:text-destructive",
+  "group/field flex w-full gap-1.5 data-[invalid=true]:*:data-[slot=field-label]:text-himbeere-700 data-[invalid=true]:*:data-[slot=field-error]:text-himbeere-700",
   {
     variants: {
       orientation: {
-        vertical: "flex-col *:w-full [&>.sr-only]:w-auto",
+        vertical:
+          "flex-col *:not-data-unit:w-full *:data-[slot=field-label]:-order-2 [&>.sr-only]:w-auto",
         horizontal:
           "flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px",
         responsive:
@@ -64,9 +67,10 @@ const fieldVariants = cva(
 const Field = ({
   className,
   orientation = "vertical",
+  children,
   ...props
 }: ComponentProps<"div"> & VariantProps<typeof fieldVariants>) => {
-  return (
+  const field = (
     // biome-ignore lint/a11y/useSemanticElements: fieldset's default styling conflicts with this layout primitive
     <div
       role="group"
@@ -74,8 +78,13 @@ const Field = ({
       data-orientation={orientation}
       className={cn(fieldVariants({ orientation }), className)}
       {...props}
-    />
+    >
+      {children}
+      {/* Hilfetext der Beschriftung klappt direkt unter ihr auf */}
+      {orientation === "vertical" ? <HelpSlot className="-order-1" /> : null}
+    </div>
   );
+  return orientation === "vertical" ? <HelpScope>{field}</HelpScope> : field;
 };
 
 const FieldContent = ({ className, ...props }: ComponentProps<"div">) => (
@@ -93,7 +102,7 @@ const FieldLabel = ({ className, ...props }: ComponentProps<typeof Label>) => (
   <Label
     data-slot="field-label"
     className={cn(
-      "text-xs font-medium text-foreground",
+      "text-sm text-foreground",
       "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-3",
       "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
       "has-[[data-state=unchecked]:disabled]:cursor-not-allowed has-[[data-state=unchecked]:disabled]:opacity-50",
@@ -107,7 +116,7 @@ const FieldTitle = ({ className, ...props }: ComponentProps<"div">) => (
   <div
     data-slot="field-label"
     className={cn(
-      "flex w-fit items-center gap-2 text-sm font-medium group-data-[disabled=true]/field:opacity-50",
+      "flex w-fit items-center gap-2 text-sm group-data-[disabled=true]/field:opacity-50",
       className,
     )}
     {...props}
@@ -201,7 +210,7 @@ const FieldError = ({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn("text-xs font-normal text-himbeere-500", className)}
+      className={cn("text-xs font-normal text-himbeere-700", className)}
       {...props}
     >
       {content}

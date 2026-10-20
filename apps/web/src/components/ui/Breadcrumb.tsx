@@ -1,7 +1,8 @@
-import { RiArrowRightSLine, RiMoreLine } from "@remixicon/react";
+import { RiArrowRightSLine } from "@remixicon/react";
 import { Slot } from "radix-ui";
 import type { ComponentProps } from "react";
 import { t } from "@/lib/i18n";
+import { IconMore } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 const Breadcrumb = ({ className, ...props }: ComponentProps<"nav">) => (
@@ -90,7 +91,7 @@ const BreadcrumbEllipsis = ({
     )}
     {...props}
   >
-    <RiMoreLine />
+    <IconMore />
     <span className="sr-only">{t("ui.common.a11y.more")}</span>
   </span>
 );

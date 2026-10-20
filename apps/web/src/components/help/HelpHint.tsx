@@ -1,5 +1,5 @@
-import { RiQuestionLine } from "@remixicon/react";
-import type { ReactNode } from "react";
+import { type ReactNode, useContext, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import {
   Popover,
@@ -11,21 +11,19 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/Tooltip";
+import { IconHelp } from "@/lib/icons";
 import { t } from "../../lib/i18n";
+import { HelpSlotContext } from "./helpSlotContext";
 
 /**
- * Kleines Fragezeichen-Icon mit zwei Stufen:
- * - Hover: Tooltip "Hilfe anzeigen"
- * - Klick/Touch: Popover mit dem eigentlichen Hilfetext
+ * Kleines Fragezeichen an Überschrift oder Beschriftung. Ein Klick klappt den
+ * Hilfetext als Kasten (Azur 50) im zugehörigen HelpSlot auf und schiebt den
+ * Inhalt darunter nach unten, statt ihn zu verdecken. Ohne HelpScope (z. B.
+ * in Tabellenköpfen) erscheint der Text als Popover.
  *
  * Wird ein String mit doppelten Zeilenumbrüchen (`\n\n`) übergeben,
  * werden die Teile als separate Absätze gerendert. Sonst werden die
  * Children unverändert angezeigt.
- *
- * Beispiel:
- *   <CardTitle>
- *     Mietsätze <HelpHint>{t("ui.tenant.rentsHelp")}</HelpHint>
- *   </CardTitle>
  */
 export const HelpHint = ({
   children,
@@ -41,21 +39,46 @@ export const HelpHint = ({
   const label = ariaLabel ?? t("ui.common.help");
   const content =
     typeof children === "string" ? renderParagraphs(children) : children;
+  const scope = useContext(HelpSlotContext);
+  const [open, setOpen] = useState(false);
+
+  const button = (
+    <Button
+      type="button"
+      variant="helpHint"
+      size="icon-hint"
+      aria-label={label}
+      aria-expanded={scope ? open : undefined}
+      onClick={scope ? () => setOpen((value) => !value) : undefined}
+    >
+      <IconHelp />
+    </Button>
+  );
+
+  if (scope) {
+    return (
+      <>
+        <Tooltip>
+          <TooltipTrigger asChild={true}>{button}</TooltipTrigger>
+          <TooltipContent>{label}</TooltipContent>
+        </Tooltip>
+        {open && scope.slot
+          ? createPortal(
+              <div className="space-y-2 rounded-lg bg-azur-50 px-3.5 py-3 text-sm leading-relaxed font-normal text-azur-900">
+                {content}
+              </div>,
+              scope.slot,
+            )
+          : null}
+      </>
+    );
+  }
 
   return (
     <Popover>
       <Tooltip>
         <TooltipTrigger asChild={true}>
-          <PopoverTrigger asChild={true}>
-            <Button
-              type="button"
-              variant="helpHint"
-              size="icon-hint"
-              aria-label={label}
-            >
-              <RiQuestionLine />
-            </Button>
-          </PopoverTrigger>
+          <PopoverTrigger asChild={true}>{button}</PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent>{label}</TooltipContent>
       </Tooltip>

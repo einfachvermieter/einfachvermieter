@@ -46,6 +46,13 @@ type TextInputProps<T extends FieldValues> = InputProps & {
   inputClassName?: string;
 };
 
+/**
+ * Felder mit Einheit sind Zahlenfelder und bekommen eine feste Breite; lange
+ * Einheiten wie "kg CO2/kWh" etwas mehr
+ */
+const unitWidth = (suffix: ReactNode) =>
+  typeof suffix === "string" && suffix.length > 4 ? "unitLong" : "unit";
+
 export const TextInput = <T extends FieldValues>({
   control,
   name,
@@ -90,7 +97,7 @@ export const TextInput = <T extends FieldValues>({
           ) : null}
 
           {suffix ? (
-            <InputGroup className={inputClassName}>
+            <InputGroup width={unitWidth(suffix)} className={inputClassName}>
               <InputGroupInput
                 {...inputProps}
                 {...field}

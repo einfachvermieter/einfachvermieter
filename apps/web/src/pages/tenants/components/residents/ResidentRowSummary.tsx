@@ -36,7 +36,7 @@ export const ResidentRowSummary = ({
             : t("ui.tenant.residentIndex", { index: index + 1 })}
         </p>
         {row.isContractParty ? (
-          <Badge variant="info">{t("ui.tenant.fields.isContractParty")}</Badge>
+          <Badge variant="tag">{t("ui.tenant.fields.isContractParty")}</Badge>
         ) : null}
         {periodStatus === "active" ? (
           <Badge variant="ok">{t("ui.tenant.active")}</Badge>

@@ -1,5 +1,5 @@
-import { RiArrowDownSLine } from "@remixicon/react";
 import { type ReactNode, useId, useState } from "react";
+import { IconChevronDown } from "@/lib/icons";
 
 /**
  * Aufklapp-Bereich für selten gebrauchte Felder oder Detailtabellen
@@ -22,15 +22,17 @@ export const Disclose = ({
         aria-expanded={open}
         aria-controls={contentId}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex items-center gap-1.25 text-sm font-semibold text-azur-700"
+        className="flex w-full items-center gap-2.5 text-left font-heading text-sm font-semibold text-foreground"
       >
-        <RiArrowDownSLine
-          className={`size-3.75 transition-transform ${open ? "rotate-180" : ""}`}
-        />
         {label}
+        <span aria-hidden={true} className="h-0.5 flex-1 bg-border" />
+        <IconChevronDown
+          aria-hidden={true}
+          className={`size-4.5 text-azur-700 transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
       {open ? (
-        <div id={contentId} className="mt-3.5">
+        <div id={contentId} className="mt-6">
           {children}
         </div>
       ) : null}

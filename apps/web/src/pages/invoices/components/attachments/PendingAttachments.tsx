@@ -1,13 +1,9 @@
 import { formatBytes } from "@einfachvermieter/shared";
-import {
-  RiDeleteBinLine,
-  RiFileLine,
-  RiFilePdf2Line,
-  RiImageLine,
-} from "@remixicon/react";
+import { RiFilePdf2Line, RiImageLine } from "@remixicon/react";
 import { useState } from "react";
 import { FileDropZone } from "@/components/common/FileDropZone";
 import { Button } from "@/components/ui/Button";
+import { IconFile, IconTrash } from "@/lib/icons";
 import {
   ALLOWED_ATTACHMENT_MIME_TYPES,
   ATTACHMENT_ACCEPT_ATTR,
@@ -25,7 +21,7 @@ const fileIcon = (file: File) => {
     return <RiImageLine className="size-5 text-azur-700" aria-hidden={true} />;
   }
   return (
-    <RiFileLine className="size-5 text-muted-foreground" aria-hidden={true} />
+    <IconFile className="size-5 text-muted-foreground" aria-hidden={true} />
   );
 };
 
@@ -110,7 +106,7 @@ export const PendingAttachments = ({
             >
               {fileIcon(file)}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium" title={file.name}>
+                <p className="truncate text-sm font-semibold" title={file.name}>
                   {file.name}
                 </p>
                 <p className="text-xs text-muted-foreground tabular-nums">
@@ -125,7 +121,7 @@ export const PendingAttachments = ({
                 onClick={() => onChange(files.filter((_, i) => i !== index))}
                 aria-label={t("ui.invoices.attachments.delete")}
               >
-                <RiDeleteBinLine aria-hidden={true} />
+                <IconTrash aria-hidden={true} />
               </Button>
             </li>
           ))}

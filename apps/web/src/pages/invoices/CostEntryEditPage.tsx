@@ -1,11 +1,10 @@
-import { formatDate, formatEur, formatName } from "@einfachvermieter/shared";
-import { RiDeleteBinLine, RiMoreLine, RiReceiptLine } from "@remixicon/react";
+import { formatDate, formatName } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { IconMore, IconTrash } from "@/lib/icons";
 import { DomainLink } from "../../components/common/DomainLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { MiniKpiRow } from "../../components/common/MiniKpiRow";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { DestructiveConfirmDialog } from "../../components/DestructiveConfirmDialog";
@@ -65,25 +64,6 @@ const costTypesOfEntryBuilding = (
   (allCostTypes ?? []).filter(
     (costType) => costType.buildingId === entry?.buildingId,
   );
-
-/**
- * Zeitraum der Rechnung als Jahr bzw. Jahresspanne über alle Positionen
- */
-const periodLabelOf = (entry: CostEntryDetail): string => {
-  const years = entry.items.flatMap((item) => [
-    item.periodStart.slice(0, 4),
-    item.periodEnd.slice(0, 4),
-  ]);
-  if (years.length === 0) {
-    return t("ui.common.emptyValue");
-  }
-
-  const minYear = years.reduce((a, b) => (a < b ? a : b));
-  const maxYear = years.reduce((a, b) => (a > b ? a : b));
-  return minYear === maxYear
-    ? minYear
-    : t("ui.common.yearRangeLabel", { start: minYear, end: maxYear });
-};
 
 /**
  * Rechnungs-Ansicht: Kopf, Kennzahlen, Basisdaten und Positionen als
@@ -234,7 +214,7 @@ export const CostEntryEditPage = () => {
     return (
       <div className="max-w-225 pb-6">
         <PageHeader
-          tile={<PageHeaderIcon icon={RiReceiptLine} />}
+          tile={<PageHeaderIcon domain="invoices" />}
           title=""
           loading={true}
         />
@@ -244,10 +224,6 @@ export const CostEntryEditPage = () => {
   }
 
   const values: CostEntryFormValues = costEntryToFormValues(entry, costTypes);
-  const totalCents = entry.items.reduce(
-    (sum, item) => sum + item.amountCents,
-    0,
-  );
 
   // Abrechnungen, deren Zeitraum sich mit dieser Rechnung überschneidet
   // (gleiches Gebäude, aktive Abrechnungen).
@@ -272,20 +248,18 @@ export const CostEntryEditPage = () => {
     <>
       <div className="max-w-225 pb-6">
         <PageHeader
-          tile={<PageHeaderIcon icon={RiReceiptLine} />}
+          tile={<PageHeaderIcon domain="invoices" />}
           title={entry.vendor ?? costEntryIdentityLabel(entry)}
           sub={
-            <span>
-              {[
-                costEntryIdentityLabel(entry),
-                entry.invoiceNumber
-                  ? t("ui.invoices.detail.invoiceNumberMeta", {
-                      number: entry.invoiceNumber,
-                    })
-                  : undefined,
-              ]
-                .filter(Boolean)
-                .join(t("ui.common.separators.bullet"))}
+            <span className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
+              <span>{costEntryIdentityLabel(entry)}</span>
+              {entry.invoiceNumber ? (
+                <span>
+                  {t("ui.invoices.detail.invoiceNumberMeta", {
+                    number: entry.invoiceNumber,
+                  })}
+                </span>
+              ) : null}
             </span>
           }
           action={
@@ -296,7 +270,7 @@ export const CostEntryEditPage = () => {
                   size="icon"
                   aria-label={t("ui.common.a11y.more")}
                 >
-                  <RiMoreLine />
+                  <IconMore />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-56">
@@ -304,7 +278,7 @@ export const CostEntryEditPage = () => {
                   variant="destructive"
                   onSelect={() => deletion.request(entry)}
                 >
-                  <RiDeleteBinLine />
+                  <IconTrash />
                   {t("ui.invoices.detail.deleteAction")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -313,84 +287,52 @@ export const CostEntryEditPage = () => {
         />
 
         <div className="space-y-5">
-          {extractingAttachmentId ? (
-            <Alert variant="info">
-              <AlertTitle>{t("ui.invoices.aiExtract.running")}</AlertTitle>
-              <AlertDescription>
-                {t("ui.invoices.aiExtract.runningHint")}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-          {extractError ? (
-            <Alert variant="error">
-              <AlertTitle>{t("ui.invoices.aiExtract.failedTitle")}</AlertTitle>
-              <AlertDescription>{extractError}</AlertDescription>
-            </Alert>
-          ) : null}
-          {extractWarnings.length > 0 ? (
-            <Alert variant="warning">
-              <AlertTitle>
-                {t("ui.invoices.aiExtract.warnings.title")}
-              </AlertTitle>
-              <AlertDescription>
-                <ul className="list-disc pl-5">
-                  {extractWarnings.map((warning) => (
-                    <li key={warning}>{warning}</li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          <MiniKpiRow
-            columns={2}
-            items={[
-              {
-                label: t("ui.invoices.detail.statAmount"),
-                value: formatEur(totalCents),
-                hint: t("ui.invoices.itemCount", { count: entry.items.length }),
-              },
-              {
-                label: t("ui.invoices.detail.statPeriod"),
-                value: periodLabelOf(entry),
-                hint:
-                  periodStatements.length > 0 ? (
-                    <span className="flex flex-wrap items-center gap-x-2">
-                      {periodStatements.map((statement, index) => (
-                        <Fragment key={statement.id}>
-                          {index > 0
-                            ? t("ui.common.separators.bullet")
-                            : t("ui.invoices.detail.statementsHint")}
-                          <DomainLink
-                            to="/abrechnungen/$statementId"
-                            params={{ statementId: statement.id }}
-                          >
-                            {statement.contractResidents
-                              .map((resident) =>
-                                formatName(
-                                  resident.firstName,
-                                  resident.lastName,
-                                ),
-                              )
-                              .join(t("ui.common.separators.comma"))}
-                          </DomainLink>
-                        </Fragment>
-                      ))}
-                    </span>
-                  ) : (
-                    t("ui.invoices.detail.noStatementsHint")
-                  ),
-              },
-            ]}
-          />
-
           <div>
             <CostEntryBaseCard
               entry={entry}
+              statements={
+                periodStatements.length > 0 ? (
+                  <span className="flex flex-col items-end gap-0.5">
+                    {periodStatements.map((statement) => (
+                      <DomainLink
+                        key={statement.id}
+                        to="/abrechnungen/$statementId"
+                        params={{ statementId: statement.id }}
+                      >
+                        {statement.contractResidents
+                          .map((resident) =>
+                            formatName(resident.firstName, resident.lastName),
+                          )
+                          .join(t("ui.common.separators.comma"))}
+                      </DomainLink>
+                    ))}
+                  </span>
+                ) : (
+                  <span className="font-normal text-muted-foreground">
+                    {t("ui.invoices.detail.noStatementsHint")}
+                  </span>
+                )
+              }
               onEdit={() => setSheet({ kind: "base" })}
             />
 
             <CostEntryItemsCard
+              notice={
+                extractWarnings.length > 0 ? (
+                  <Alert variant="warning">
+                    <AlertTitle>
+                      {t("ui.invoices.aiExtract.warnings.title")}
+                    </AlertTitle>
+                    <AlertDescription>
+                      <ul className="list-disc pl-5">
+                        {extractWarnings.map((warning) => (
+                          <li key={warning}>{warning}</li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                ) : null
+              }
               items={entry.items}
               costTypes={costTypes}
               units={units}
@@ -421,6 +363,28 @@ export const CostEntryEditPage = () => {
                 }
               }}
               extractingAttachmentId={extractingAttachmentId}
+              notice={
+                <>
+                  {extractingAttachmentId ? (
+                    <Alert variant="info">
+                      <AlertTitle>
+                        {t("ui.invoices.aiExtract.running")}
+                      </AlertTitle>
+                      <AlertDescription>
+                        {t("ui.invoices.aiExtract.runningHint")}
+                      </AlertDescription>
+                    </Alert>
+                  ) : null}
+                  {extractError ? (
+                    <Alert variant="error">
+                      <AlertTitle>
+                        {t("ui.invoices.aiExtract.failedTitle")}
+                      </AlertTitle>
+                      <AlertDescription>{extractError}</AlertDescription>
+                    </Alert>
+                  ) : null}
+                </>
+              }
             />
           </div>
         </div>

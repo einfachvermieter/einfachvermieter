@@ -92,6 +92,48 @@ export const isCo2SplitInapplicableFuel = (
 ): boolean => fuelType !== "other" && !CO2_PRICE_ELIGIBLE_FUELS.has(fuelType);
 
 /**
+ * Antwort auf eine Tatsachenfrage hinter einem Schalter. "Weiß ich nicht"
+ * ist eine eigene Antwort und nicht dasselbe wie "Nein".
+ */
+export const heatingFactAnswers = ["yes", "no", "unknown"] as const;
+export type HeatingFactAnswer = (typeof heatingFactAnswers)[number];
+
+/**
+ * Brennstoffe, bei denen § 7 Abs. 1 Satz 2 HeizkostenV 70 % nach Verbrauch
+ * vorschreiben kann
+ */
+export const isSeventyPercentFuel = (fuelType: HeatingFuelType): boolean =>
+  fuelType === "oil" || fuelType === "gas";
+
+/**
+ * Schluss aus den Antworten zu § 7 Abs. 1 Satz 2 HeizkostenV: Pflicht nur,
+ * wenn der Wärmeschutz von 1994 nicht erfüllt ist und die Leitungen
+ * gedämmt sind. Offene Fragen zählen wie "Weiß ich nicht".
+ */
+export const seventyPercentOutcome = (
+  insulation: HeatingFactAnswer | null,
+  pipes: HeatingFactAnswer | null,
+): "must" | "free" | "unclear" => {
+  if (insulation === "yes" || pipes === "no") {
+    return "free";
+  }
+  if (insulation === "no" && pipes === "yes") {
+    return "must";
+  }
+  return "unclear";
+};
+
+/**
+ * Ob eine Antwort zur Beschränkung zum Schalter passt: nur "Ja" setzt ihn,
+ * "Nein" und "Weiß ich nicht" rechnen ohne Beschränkung. Ohne Antwort
+ * (noch nicht gefragt) passt jeder Schalter.
+ */
+const restrictionAnswerFits = (
+  answer: HeatingFactAnswer | null,
+  restricted: boolean,
+): boolean => answer === null || (answer === "yes") === restricted;
+
+/**
  * Längste Angabe zum Nachweis einer Beschränkung nach § 9 CO2KostAufG
  */
 export const CO2_RESTRICTION_EVIDENCE_NOTE_MAX_LENGTH = 2000;
@@ -150,6 +192,19 @@ const internalSchema = z
       .max(CO2_RESTRICTION_EVIDENCE_NOTE_MAX_LENGTH)
       .nullable()
       .default(null),
+    seventyInsulationAnswer: z
+      .enum(heatingFactAnswers)
+      .nullable()
+      .default(null),
+    seventyPipesAnswer: z.enum(heatingFactAnswers).nullable().default(null),
+    co2BuildingRestrictionAnswer: z
+      .enum(heatingFactAnswers)
+      .nullable()
+      .default(null),
+    co2SupplyRestrictionAnswer: z
+      .enum(heatingFactAnswers)
+      .nullable()
+      .default(null),
   })
   .strict();
 
@@ -200,6 +255,47 @@ export const heatingSettingsWriteSchema = z
     {
       path: ["consumptionSharePercent"],
       message: messageKey("ui.heating.validation.seventyPercentMandatory"),
+    },
+  )
+  .refine(
+    // Antworten und Schalter dürfen sich nicht widersprechen: Folgt aus den
+    // Antworten die Pflicht, muss der Schalter gesetzt sein, und umgekehrt.
+    // Bei unklarer Lage entscheidet der Nutzer.
+    (value) => {
+      // Bei anderen Brennstoffen gilt die Frage nicht; die Antworten
+      // verwirft der Server dann beim Speichern
+      if (value.mode !== "internal" || !isSeventyPercentFuel(value.fuelType)) {
+        return true;
+      }
+      const outcome = seventyPercentOutcome(
+        value.seventyInsulationAnswer,
+        value.seventyPipesAnswer,
+      );
+      return (
+        outcome === "unclear" ||
+        value.mandatorySeventyPercent === (outcome === "must")
+      );
+    },
+    {
+      path: ["mandatorySeventyPercent"],
+      message: messageKey("ui.heating.validation.answersMismatch"),
+    },
+  )
+  .refine(
+    (value) =>
+      value.mode !== "internal" ||
+      !value.co2CostShareEnabled ||
+      (restrictionAnswerFits(
+        value.co2BuildingRestrictionAnswer,
+        value.co2BuildingRestricted,
+      ) &&
+        restrictionAnswerFits(
+          value.co2SupplyRestrictionAnswer,
+          value.co2SupplyRestricted,
+        )),
+    {
+      path: ["co2BuildingRestricted"],
+      message: messageKey("ui.heating.validation.answersMismatch"),
     },
   )
   .refine(
@@ -286,6 +382,15 @@ export type HeatingSettings = {
    */
   co2RestrictionEvidenceNote: string | null;
   /**
+   * Antworten auf die Fragen hinter den Schaltern, NULL solange nicht
+   * gefragt. Sie dokumentieren die Angaben, gerechnet wird mit den
+   * Schaltern.
+   */
+  seventyInsulationAnswer: HeatingFactAnswer | null;
+  seventyPipesAnswer: HeatingFactAnswer | null;
+  co2BuildingRestrictionAnswer: HeatingFactAnswer | null;
+  co2SupplyRestrictionAnswer: HeatingFactAnswer | null;
+  /**
    * Inklusiver Start-Stichtag (YYYY-MM-DD).
    */
   validFrom: string;
@@ -346,6 +451,10 @@ export type HeatingFormValues = {
    * Leerer String ohne Angabe.
    */
   co2RestrictionEvidenceNote: string;
+  seventyInsulationAnswer: HeatingFactAnswer | null;
+  seventyPipesAnswer: HeatingFactAnswer | null;
+  co2BuildingRestrictionAnswer: HeatingFactAnswer | null;
+  co2SupplyRestrictionAnswer: HeatingFactAnswer | null;
 };
 
 const percentIntRegex = /^\d{1,3}$/u;
@@ -410,6 +519,10 @@ export const heatingFormSchema = z
     co2BuildingRestricted: z.boolean(),
     co2SupplyRestricted: z.boolean(),
     co2RestrictionEvidenceNote: z.string(),
+    seventyInsulationAnswer: z.enum(heatingFactAnswers).nullable(),
+    seventyPipesAnswer: z.enum(heatingFactAnswers).nullable(),
+    co2BuildingRestrictionAnswer: z.enum(heatingFactAnswers).nullable(),
+    co2SupplyRestrictionAnswer: z.enum(heatingFactAnswers).nullable(),
   })
   .superRefine((value, ctx) => {
     if (!isoDateRegex.test(value.validFrom)) {
@@ -535,6 +648,10 @@ export const heatingFormToDto = (
     co2BuildingRestricted: values.co2BuildingRestricted,
     co2SupplyRestricted: values.co2SupplyRestricted,
     co2RestrictionEvidenceNote: values.co2RestrictionEvidenceNote,
+    seventyInsulationAnswer: values.seventyInsulationAnswer,
+    seventyPipesAnswer: values.seventyPipesAnswer,
+    co2BuildingRestrictionAnswer: values.co2BuildingRestrictionAnswer,
+    co2SupplyRestrictionAnswer: values.co2SupplyRestrictionAnswer,
   };
 };
 
@@ -567,6 +684,10 @@ export const emptyHeatingFormValues = (
   co2BuildingRestricted: false,
   co2SupplyRestricted: false,
   co2RestrictionEvidenceNote: "",
+  seventyInsulationAnswer: null,
+  seventyPipesAnswer: null,
+  co2BuildingRestrictionAnswer: null,
+  co2SupplyRestrictionAnswer: null,
 });
 
 export const heatingSettingsToFormValues = (
@@ -595,6 +716,10 @@ export const heatingSettingsToFormValues = (
   co2BuildingRestricted: settings.co2BuildingRestricted,
   co2SupplyRestricted: settings.co2SupplyRestricted,
   co2RestrictionEvidenceNote: settings.co2RestrictionEvidenceNote ?? "",
+  seventyInsulationAnswer: settings.seventyInsulationAnswer,
+  seventyPipesAnswer: settings.seventyPipesAnswer,
+  co2BuildingRestrictionAnswer: settings.co2BuildingRestrictionAnswer,
+  co2SupplyRestrictionAnswer: settings.co2SupplyRestrictionAnswer,
 });
 
 /**

@@ -1,12 +1,12 @@
-import {
-  type RemixiconComponentType,
-  RiBuilding2Line,
-  RiGroupLine,
-  RiHome6Line,
-  RiPriceTag3Line,
-  RiReceiptLine,
-} from "@remixicon/react";
+import type { RemixiconComponentType } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
+import {
+  IconBuilding,
+  IconDoor,
+  IconReceipt,
+  IconTag,
+  IconUsers,
+} from "@/lib/icons";
 import { useActiveBuilding } from "./activeBuilding";
 import {
   costEntriesOverviewQueryOptions,
@@ -25,11 +25,11 @@ type Prerequisite = "building" | "units" | "costTypes" | "tenants" | "invoices";
  * dieser Entität, damit der Nutzer sie anlegen kann.
  */
 export const NEEDS_META = {
-  building: { linkTo: "/gebaeude", icon: RiBuilding2Line },
-  units: { linkTo: "/wohnungen", icon: RiHome6Line },
-  costTypes: { linkTo: "/kostenarten", icon: RiPriceTag3Line },
-  tenants: { linkTo: "/mieter", icon: RiGroupLine },
-  invoices: { linkTo: "/rechnungen", icon: RiReceiptLine },
+  building: { linkTo: "/gebaeude", icon: IconBuilding },
+  units: { linkTo: "/wohnungen", icon: IconDoor },
+  costTypes: { linkTo: "/kostenarten", icon: IconTag },
+  tenants: { linkTo: "/mieter", icon: IconUsers },
+  invoices: { linkTo: "/rechnungen", icon: IconReceipt },
 } as const satisfies Record<
   Prerequisite,
   { linkTo: string; icon: RemixiconComponentType }

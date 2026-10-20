@@ -1,6 +1,5 @@
 import { formatEur } from "@einfachvermieter/shared";
 import { DomainLink } from "@/components/common/DomainLink";
-import { IconTile } from "@/components/common/IconTile";
 import { SectionCard } from "@/components/common/SectionCard";
 import { domainVisuals } from "@/lib/domainVisuals";
 import { t } from "@/lib/i18n";
@@ -62,7 +61,6 @@ export const DashboardBuildings = ({ data }: { data: DashboardResult }) => {
           key={building.id}
           className="flex items-center gap-3.25 border-t border-border py-3 first:border-t-0"
         >
-          <IconTile icon={domainVisuals.buildings.icon} size={36} />
           <span className="min-w-0 flex-1">
             <span className="block truncate font-semibold">
               <DomainLink
@@ -72,7 +70,7 @@ export const DashboardBuildings = ({ data }: { data: DashboardResult }) => {
                 {building.name}
               </DomainLink>
             </span>
-            <span className="block text-sm text-muted-foreground">
+            <span className="flex flex-wrap gap-x-4 text-sm text-muted-foreground">
               {building.unitsCount === 0 ? (
                 t("ui.dashboard.buildingsCard.noUnits")
               ) : (
@@ -86,7 +84,6 @@ export const DashboardBuildings = ({ data }: { data: DashboardResult }) => {
                       count: building.unitsCount,
                     })}
                   </DomainLink>
-                  {t("ui.common.separators.bullet")}
                   <DomainLink
                     to="/mieter"
                     search={{ buildingId: building.id }}

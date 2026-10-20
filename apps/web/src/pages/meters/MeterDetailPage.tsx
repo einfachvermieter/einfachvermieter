@@ -1,14 +1,9 @@
 import { formatNumber, UNIT_NONE } from "@einfachvermieter/shared";
-import {
-  RiDashboard2Line,
-  RiDeleteBinLine,
-  RiFireLine,
-  RiMoreLine,
-  RiSubtractLine,
-} from "@remixicon/react";
+import { RiSubtractLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
+import { IconFlame, IconGauge, IconMore, IconTrash } from "@/lib/icons";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { RowListSection } from "../../components/common/RowListSection";
 import { FormSkeleton } from "../../components/FormSkeleton";
@@ -79,7 +74,8 @@ export const MeterDetailPage = () => {
     invalidateKeys: [["meters"]],
     title: t("ui.meters.confirmDelete"),
     describe: (target) =>
-      t("ui.meters.confirmDeleteMessage", { label: target.label }),
+      t("ui.meters.confirmDeleteQuestion", { label: target.label }),
+    hint: t("ui.meters.confirmDeleteHint"),
     onDeleted: goBack,
   });
 
@@ -110,7 +106,7 @@ export const MeterDetailPage = () => {
                   size="icon"
                   aria-label={t("ui.common.a11y.more")}
                 >
-                  <RiMoreLine />
+                  <IconMore />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-56">
@@ -118,7 +114,7 @@ export const MeterDetailPage = () => {
                   variant="destructive"
                   onSelect={() => deletion.request(meter)}
                 >
-                  <RiDeleteBinLine />
+                  <IconTrash />
                   {t("ui.meters.detail.deleteAction")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -265,7 +261,7 @@ const MeterCards = ({
   return (
     <div>
       <MeterViewCard
-        icon={RiDashboard2Line}
+        icon={IconGauge}
         title={t("ui.meters.detail.baseSection")}
         rows={[
           { label: t("ui.meters.fields.label"), value: meter.label },
@@ -295,7 +291,7 @@ const MeterCards = ({
 
       {isHkv ? (
         <MeterViewCard
-          icon={RiFireLine}
+          icon={IconFlame}
           title={t("ui.meters.detail.hkvSection")}
           rows={[
             {
@@ -352,7 +348,7 @@ const MeterCards = ({
 
       {meter.type === "gas" ? (
         <RowListSection<GasFactorRowValues>
-          icon={RiFireLine}
+          icon={IconFlame}
           title={t("ui.meters.gasFactors.title")}
           addLabel={t("ui.meters.gasFactors.addPeriod")}
           emptyHint={t("ui.meters.gasFactors.emptyHint")}

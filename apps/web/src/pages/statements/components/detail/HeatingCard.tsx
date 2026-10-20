@@ -18,18 +18,22 @@ import {
   prorationNote,
   type StatementResult,
 } from "@einfachvermieter/shared";
+import { RiDropLine, RiLeafLine, RiPieChart2Line } from "@remixicon/react";
+import { TableFrame } from "@/components/common/TableFrame";
 import {
-  RiDropLine,
-  RiFireLine,
-  RiLeafLine,
-  RiPieChart2Line,
-} from "@remixicon/react";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
+import { IconFlame } from "@/lib/icons";
 import { Disclose } from "../../../../components/common/Disclose";
 import { MiniKpiRow } from "../../../../components/common/MiniKpiRow";
 import { ResultRows } from "../../../../components/common/ResultRows";
 import { SectionCard } from "../../../../components/common/SectionCard";
 import { SplitBar } from "../../../../components/common/SplitBar";
-import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
 import { t } from "../../../../lib/i18n";
 
 /**
@@ -45,20 +49,22 @@ const distributionValueCells = (
   emphasizeTotal: boolean,
 ) => {
   const totalClass = emphasizeTotal
-    ? "py-2.5 text-right font-semibold tabular-nums"
-    : "py-2.5 text-right tabular-nums";
+    ? "text-right font-semibold tabular-nums"
+    : "text-right tabular-nums";
   if (merged) {
-    return <td className={totalClass}>{formatEur(totalCents)}</td>;
+    return (
+      <TableCell className={totalClass}>{formatEur(totalCents)}</TableCell>
+    );
   }
   return (
     <>
-      <td className="py-2.5 text-right tabular-nums">
+      <TableCell className="text-right tabular-nums">
         {formatEur(consumptionCents)}
-      </td>
-      <td className="py-2.5 text-right tabular-nums">
+      </TableCell>
+      <TableCell className="text-right tabular-nums">
         {formatEur(basicCents)}
-      </td>
-      <td className={totalClass}>{formatEur(totalCents)}</td>
+      </TableCell>
+      <TableCell className={totalClass}>{formatEur(totalCents)}</TableCell>
     </>
   );
 };
@@ -197,7 +203,7 @@ export const HeatingCard = ({
       ) : null}
       {hasBreakdown ? (
         <SectionCard
-          icon={RiFireLine}
+          icon={IconFlame}
           title={t("statements.pdf.heating.breakdown.title")}
         >
           <ResultRows
@@ -238,93 +244,80 @@ export const HeatingCard = ({
         >
           {fuelTable ? (
             <div className="mb-4">
-              <h4 className="mb-1 text-sm font-medium">
+              <h4 className="mb-1 text-sm font-semibold">
                 {t("statements.pdf.heating.co2.fuelTableTitle")}
               </h4>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-muted-foreground">
-                    <th scope="col" className="py-2.5 text-left font-medium">
-                      {t("statements.pdf.heating.co2.fuelColumn")}
-                    </th>
-                    <th scope="col" className="py-2.5 text-right font-medium">
-                      {t("statements.pdf.heating.co2.fuelEnergyColumn")}
-                    </th>
-                    <th scope="col" className="py-2.5 text-right font-medium">
-                      {t("statements.pdf.heating.co2.emissionFactor")}
-                    </th>
-                    <th scope="col" className="py-2.5 text-right font-medium">
-                      {t("statements.pdf.heating.co2.amount")}
-                    </th>
-                    <th scope="col" className="py-2.5 text-right font-medium">
-                      {t("statements.pdf.heating.co2.fuelCostColumn")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fuelTable.rows.map((row) => (
-                    <tr key={row.key} className="border-b border-border">
-                      <td className="py-2.5 text-left">{row.label}</td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {t(row.energy.key, row.energy.params)}
-                      </td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {t(row.factor.key, row.factor.params)}
-                      </td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {t(row.amount.key, row.amount.params)}
-                      </td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {typeof row.cost === "string"
-                          ? row.cost
-                          : t(row.cost.key, row.cost.params)}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="font-medium">
-                    <td className="py-2.5 text-left" colSpan={3}>
-                      {t("statements.pdf.heating.co2.fuelSum")}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {t(fuelTable.sumAmount.key, fuelTable.sumAmount.params)}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {typeof fuelTable.sumCost === "string"
-                        ? fuelTable.sumCost
-                        : t(fuelTable.sumCost.key, fuelTable.sumCost.params)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <TableFrame>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead scope="col">
+                        {t("statements.pdf.heating.co2.fuelColumn")}
+                      </TableHead>
+                      <TableHead scope="col" className="text-right">
+                        {t("statements.pdf.heating.co2.fuelEnergyColumn")}
+                      </TableHead>
+                      <TableHead scope="col" className="text-right">
+                        {t("statements.pdf.heating.co2.emissionFactor")}
+                      </TableHead>
+                      <TableHead scope="col" className="text-right">
+                        {t("statements.pdf.heating.co2.amount")}
+                      </TableHead>
+                      <TableHead scope="col" className="text-right">
+                        {t("statements.pdf.heating.co2.fuelCostColumn")}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {fuelTable.rows.map((row) => (
+                      <TableRow key={row.key}>
+                        <TableCell>{row.label}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {t(row.energy.key, row.energy.params)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {t(row.factor.key, row.factor.params)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {t(row.amount.key, row.amount.params)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {typeof row.cost === "string"
+                            ? row.cost
+                            : t(row.cost.key, row.cost.params)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="font-semibold">
+                      <TableCell colSpan={3}>
+                        {t("statements.pdf.heating.co2.fuelSum")}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {t(fuelTable.sumAmount.key, fuelTable.sumAmount.params)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {typeof fuelTable.sumCost === "string"
+                          ? fuelTable.sumCost
+                          : t(fuelTable.sumCost.key, fuelTable.sumCost.params)}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableFrame>
             </div>
           ) : null}
-          <table className="w-full text-sm">
-            <tbody>
-              {co2Rows.map((row) => (
-                <tr
-                  key={row.key}
-                  className={
-                    co2Rows.length > 1 ? "border-b border-border" : undefined
-                  }
-                >
-                  <th
-                    scope="row"
-                    className="py-2.5 text-left font-medium text-muted-foreground"
-                  >
-                    {t(row.label.key, row.label.params)}
-                  </th>
-                  <td className="py-2.5 text-right tabular-nums">
-                    {typeof row.value === "string"
-                      ? row.value
-                      : t(row.value.key, row.value.params)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResultRows
+            rows={co2Rows.map((row) => ({
+              label: t(row.label.key, row.label.params),
+              value:
+                typeof row.value === "string"
+                  ? row.value
+                  : t(row.value.key, row.value.params),
+            }))}
+          />
           {restrictionNote ? (
             <div className="mt-4 text-sm">
-              <h4 className="font-medium">
+              <h4 className="font-semibold">
                 {t("statements.pdf.heating.co2.restrictionNoteTitle")}
               </h4>
               <p className="mt-1">{t(restrictionNote.sentence.key)}</p>
@@ -368,16 +361,16 @@ export const HeatingCard = ({
             })}
           />
         </div>
-        <div className="scroll-shadow-x overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className={QUIET_TABLE_HEAD_ROW}>
-                <th className="py-2.5">{t("statements.pdf.heating.unit")}</th>
-                <th className="py-2.5 text-right">
+        <TableFrame>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("statements.pdf.heating.unit")}</TableHead>
+                <TableHead className="text-right">
                   {t(heatingAreaColumnLabelKey(detail))}
                   {columnMarkers(heatingIndices("heatingArea"))}
-                </th>
-                <th className="whitespace-pre-line py-1.5 text-right">
+                </TableHead>
+                <TableHead className="whitespace-pre-line text-right">
                   {t(
                     consumptionUnitLabel(
                       detail.consumptionMethod,
@@ -385,38 +378,38 @@ export const HeatingCard = ({
                     ).key,
                   )}
                   {columnMarkers(heatingIndices("consumption"))}
-                </th>
+                </TableHead>
                 {heatingMerged ? (
-                  <th className="whitespace-pre-line py-1.5 text-right">
+                  <TableHead className="whitespace-pre-line text-right">
                     {t("statements.pdf.heating.mergedAreaHeader")}
                     {columnMarkers(heatingIndices("total"))}
-                  </th>
+                  </TableHead>
                 ) : (
                   <>
-                    <th className="whitespace-pre-line py-1.5 text-right">
+                    <TableHead className="whitespace-pre-line text-right">
                       {t("statements.pdf.heating.consumptionShareHeader", {
                         percent: formatNumber(consumptionPct, 0),
                       })}
-                    </th>
-                    <th className="whitespace-pre-line py-1.5 text-right">
+                    </TableHead>
+                    <TableHead className="whitespace-pre-line text-right">
                       {t("statements.pdf.heating.basicShareHeader", {
                         percent: formatNumber(basicPct, 0),
                       })}
-                    </th>
-                    <th className="py-2.5 text-right">
+                    </TableHead>
+                    <TableHead className="text-right">
                       {t("statements.pdf.heating.total")}
                       {columnMarkers(heatingIndices("total"))}
-                    </th>
+                    </TableHead>
                   </>
                 )}
-              </tr>
-            </thead>
-            <tbody>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {detail.perUnit.map((unit) => {
                 const isTarget = unit.unitId === targetUnitId;
                 return (
-                  <tr key={unit.unitId} className="border-b border-border">
-                    <td
+                  <TableRow key={unit.unitId}>
+                    <TableCell
                       className={
                         isTarget
                           ? "py-2.5 font-semibold text-foreground"
@@ -424,15 +417,15 @@ export const HeatingCard = ({
                       }
                     >
                       {unit.unitName}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
                       {t("ui.common.measures.sqm", {
                         value: formatNumber(unit.areaSqm, 2),
                       })}
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
                       {formatAggregatedConsumption(unit.consumptionKwh)}
-                    </td>
+                    </TableCell>
                     {distributionValueCells(
                       unit.consumptionCostCents,
                       unit.basicCostCents,
@@ -440,20 +433,20 @@ export const HeatingCard = ({
                       heatingMerged,
                       isTarget,
                     )}
-                  </tr>
+                  </TableRow>
                 );
               })}
               {landlordRow ? (
-                <tr className="border-b border-border">
-                  <td className="py-2.5">
+                <TableRow>
+                  <TableCell>
                     {t("statements.pdf.heating.landlordShare")}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
                     {t("ui.common.emptyValue")}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
                     {t("ui.common.emptyValue")}
-                  </td>
+                  </TableCell>
                   {distributionValueCells(
                     landlordRow.consumptionCostCents,
                     landlordRow.basicCostCents,
@@ -461,23 +454,21 @@ export const HeatingCard = ({
                     heatingMerged,
                     true,
                   )}
-                </tr>
+                </TableRow>
               ) : null}
               {/* "Haus gesamt": Summenzeile (vormals die separate
                   Übersichtstabelle). EUR-Werte aus den maßgeblichen
                   Gesamtsummen, nicht aus den gerundeten Zeilenwerten. */}
-              <tr className="border-t-2 border-foreground font-semibold">
-                <td className="py-2.5">
-                  {t("statements.pdf.heating.totalHouse")}
-                </td>
-                <td className="py-2.5 text-right tabular-nums">
+              <TableRow className="font-semibold">
+                <TableCell>{t("statements.pdf.heating.totalHouse")}</TableCell>
+                <TableCell className="text-right tabular-nums">
                   {t("ui.common.measures.sqm", {
                     value: formatNumber(totalArea, 2),
                   })}
-                </td>
-                <td className="py-2.5 text-right tabular-nums">
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
                   {formatAggregatedConsumption(totalConsumption)}
-                </td>
+                </TableCell>
                 {distributionValueCells(
                   detail.consumptionPortionCents,
                   detail.basicPortionCents,
@@ -485,10 +476,10 @@ export const HeatingCard = ({
                   heatingMerged,
                   false,
                 )}
-              </tr>
-            </tbody>
-          </table>
-        </div>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableFrame>
         {columnFootnotes.map((footnote) => (
           <p key={footnote.key} className="mt-2 text-xs text-muted-foreground">
             <sup>{footnote.index}</sup>{" "}
@@ -512,49 +503,49 @@ export const HeatingCard = ({
         ) : (
           <div className="mt-4">
             <Disclose label={t("ui.statements.detail.showMeters")}>
-              <div className="scroll-shadow-x overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className={QUIET_TABLE_HEAD_ROW}>
-                      <th className="py-2.5">
+              <TableFrame>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
                         {t("statements.pdf.heating.perMeterMeter")}
-                      </th>
-                      <th className="py-2.5">
+                      </TableHead>
+                      <TableHead>
                         {t("ui.statements.detail.occupancyMeterUnitColumn")}
-                      </th>
-                      <th className="py-2.5">
+                      </TableHead>
+                      <TableHead>
                         {t("statements.pdf.heating.perMeterSerial")}
-                      </th>
-                      <th className="py-2.5 text-right">
+                      </TableHead>
+                      <TableHead className="text-right">
                         {t("statements.pdf.heating.perMeterDelta")}
-                      </th>
+                      </TableHead>
                       {isHkv ? (
-                        <th className="py-2.5 text-right">
+                        <TableHead className="text-right">
                           {t("statements.pdf.heating.perMeterKTotal")}
-                        </th>
+                        </TableHead>
                       ) : null}
-                      <th className="whitespace-pre-line py-1.5 text-right">
+                      <TableHead className="whitespace-pre-line text-right">
                         {t("statements.pdf.heating.perMeterWeighted")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {perMeter.map((row) => (
-                      <tr key={row.meterId} className="border-b border-border">
-                        <td className="py-2.5 font-semibold text-foreground">
+                      <TableRow key={row.meterId}>
+                        <TableCell className="font-semibold text-foreground">
                           {isHkv
                             ? row.meterLabel
                                 .replace(/^Heizkostenverteiler\s*/u, "")
                                 .trim() || row.meterLabel
                             : row.meterLabel}
-                        </td>
-                        <td className="py-2.5 text-muted-foreground">
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
                           {row.unitName ?? t("ui.common.emptyValue")}
-                        </td>
-                        <td className="py-2.5 text-muted-foreground">
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
                           {row.serialNumber ?? t("ui.common.emptyValue")}
-                        </td>
-                        <td className="py-2.5 text-right tabular-nums">
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
                           {formatNumber(
                             row.consumptionRaw,
                             consumptionRawDigits,
@@ -567,28 +558,28 @@ export const HeatingCard = ({
                               {t("statements.pdf.costTable.operatorMultiply")}
                             </span>
                           ) : null}
-                        </td>
+                        </TableCell>
                         {isHkv ? (
-                          <td className="py-2.5 text-right tabular-nums">
+                          <TableCell className="text-right tabular-nums">
                             {row.kTotal === null || row.kTotal === undefined
                               ? t("ui.common.emptyValue")
                               : formatNumber(row.kTotal, kTotalDigits)}
                             <span className="ml-1 text-muted-foreground">
                               {t("statements.pdf.costTable.operatorEquals")}
                             </span>
-                          </td>
+                          </TableCell>
                         ) : null}
-                        <td className="py-2.5 text-right tabular-nums">
+                        <TableCell className="text-right tabular-nums">
                           {formatNumber(
                             row.consumptionWeighted,
                             consumptionWeightedDigits,
                           )}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </TableBody>
+                </Table>
+              </TableFrame>
               {hasDerivedMeter ? (
                 <p className="mt-2 text-xs text-muted-foreground">
                   {columnMarkers([1])}{" "}
@@ -606,66 +597,55 @@ export const HeatingCard = ({
           title={t("statements.pdf.heating.hotWater.title")}
           collapsible={true}
         >
-          <div className="scroll-shadow-x mb-4 overflow-x-auto">
-            <table className="w-full text-sm">
-              <tbody>
-                {hotWaterFactRows(hw).map((factRow) => (
-                  <tr key={factRow.key} className="border-b border-border">
-                    <th
-                      scope="row"
-                      className="py-2.5 text-left font-medium text-muted-foreground"
-                    >
-                      {t(factRow.label.key, factRow.label.params)}
-                    </th>
-                    <td className="py-2.5 text-right tabular-nums">
-                      {t(factRow.value.key, factRow.value.params)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="mb-4">
+            <ResultRows
+              rows={hotWaterFactRows(hw).map((factRow) => ({
+                label: t(factRow.label.key, factRow.label.params),
+                value: t(factRow.value.key, factRow.value.params),
+              }))}
+            />
           </div>
-          <div className="scroll-shadow-x overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className={QUIET_TABLE_HEAD_ROW}>
-                  <th className="py-2.5">{t("statements.pdf.heating.unit")}</th>
+          <TableFrame>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("statements.pdf.heating.unit")}</TableHead>
                   {showHotWaterM3 ? (
-                    <th className="py-2.5 text-right">
+                    <TableHead className="text-right">
                       {t("statements.pdf.heating.hotWater.consumptionM3")}
-                    </th>
+                    </TableHead>
                   ) : null}
                   {wwMerged ? (
-                    <th className="whitespace-pre-line py-1.5 text-right">
+                    <TableHead className="whitespace-pre-line text-right">
                       {t("statements.pdf.heating.mergedAreaHeader")}
                       {columnMarkers(wwIndices())}
-                    </th>
+                    </TableHead>
                   ) : (
                     <>
-                      <th className="whitespace-pre-line py-1.5 text-right">
+                      <TableHead className="whitespace-pre-line text-right">
                         {t("statements.pdf.heating.consumptionShareHeader", {
                           percent: formatNumber(hotWaterConsumptionPct, 0),
                         })}
-                      </th>
-                      <th className="whitespace-pre-line py-1.5 text-right">
+                      </TableHead>
+                      <TableHead className="whitespace-pre-line text-right">
                         {t("statements.pdf.heating.basicShareHeader", {
                           percent: formatNumber(hotWaterBasicPct, 0),
                         })}
-                      </th>
-                      <th className="py-2.5 text-right">
+                      </TableHead>
+                      <TableHead className="text-right">
                         {t("statements.pdf.heating.total")}
                         {columnMarkers(wwIndices())}
-                      </th>
+                      </TableHead>
                     </>
                   )}
-                </tr>
-              </thead>
-              <tbody>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {hw.perUnit.map((unit) => {
                   const isTarget = unit.unitId === targetUnitId;
                   return (
-                    <tr key={unit.unitId} className="border-b border-border">
-                      <td
+                    <TableRow key={unit.unitId}>
+                      <TableCell
                         className={
                           isTarget
                             ? "py-2.5 font-semibold text-foreground"
@@ -673,11 +653,11 @@ export const HeatingCard = ({
                         }
                       >
                         {unit.unitName}
-                      </td>
+                      </TableCell>
                       {showHotWaterM3 ? (
-                        <td className="py-2.5 text-right tabular-nums">
+                        <TableCell className="text-right tabular-nums">
                           {`${formatNumber(unit.hotWaterM3, 2)}\u00A0m³`}
-                        </td>
+                        </TableCell>
                       ) : null}
                       {distributionValueCells(
                         unit.consumptionCostCents,
@@ -686,18 +666,18 @@ export const HeatingCard = ({
                         wwMerged,
                         isTarget,
                       )}
-                    </tr>
+                    </TableRow>
                   );
                 })}
                 {hwLandlordRow ? (
-                  <tr className="border-b border-border">
-                    <td className="py-2.5">
+                  <TableRow>
+                    <TableCell>
                       {t("statements.pdf.heating.landlordShare")}
-                    </td>
+                    </TableCell>
                     {showHotWaterM3 ? (
-                      <td className="py-2.5 text-right tabular-nums">
+                      <TableCell className="text-right tabular-nums">
                         {t("ui.common.emptyValue")}
-                      </td>
+                      </TableCell>
                     ) : null}
                     {distributionValueCells(
                       hwLandlordRow.consumptionCostCents,
@@ -706,19 +686,19 @@ export const HeatingCard = ({
                       wwMerged,
                       true,
                     )}
-                  </tr>
+                  </TableRow>
                 ) : null}
-                <tr className="border-t-2 border-foreground font-semibold">
-                  <td className="py-2.5">
+                <TableRow className="font-semibold">
+                  <TableCell>
                     {t("statements.pdf.heating.totalHouse")}
-                  </td>
+                  </TableCell>
                   {showHotWaterM3 ? (
-                    <td className="py-2.5 text-right tabular-nums">
+                    <TableCell className="text-right tabular-nums">
                       {`${formatNumber(
                         hw.perUnit.reduce((acc, u) => acc + u.hotWaterM3, 0),
                         2,
                       )}\u00A0m³`}
-                    </td>
+                    </TableCell>
                   ) : null}
                   {distributionValueCells(
                     hw.consumptionPortionCents,
@@ -727,10 +707,10 @@ export const HeatingCard = ({
                     wwMerged,
                     false,
                   )}
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableFrame>
           {wwFootnotes.map((footnote) => (
             <p
               key={footnote.key}

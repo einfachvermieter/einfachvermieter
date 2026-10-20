@@ -2,10 +2,10 @@ import type {
   SubstitutionScope,
   UnitSupplyExclusion,
 } from "@einfachvermieter/shared";
-import { RiFireLine } from "@remixicon/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { RowListSection } from "@/components/common/RowListSection";
+import { IconFlame } from "@/lib/icons";
 import { heatingSettingsListQueryOptions } from "../../../../lib/heating";
 import { t } from "../../../../lib/i18n";
 import {
@@ -48,7 +48,7 @@ export const UnitSupplySection = ({
   return (
     <>
       <RowListSection
-        icon={RiFireLine}
+        icon={IconFlame}
         title={t("ui.units.supply.title")}
         addLabel={t("ui.units.supply.add")}
         emptyHint={t(
@@ -59,7 +59,9 @@ export const UnitSupplySection = ({
         rows={list}
         renderRow={(row) => (
           <>
-            <div className="text-sm font-medium">{unitSupplyRowLabel(row)}</div>
+            <div className="text-sm font-semibold">
+              {unitSupplyRowLabel(row)}
+            </div>
             {row.notes ? (
               <div className="text-sm text-muted-foreground">{row.notes}</div>
             ) : null}

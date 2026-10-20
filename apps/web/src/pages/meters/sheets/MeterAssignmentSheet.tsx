@@ -4,9 +4,9 @@ import {
   supportsCostTypeAssignment,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiPriceTag3Line } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { FormSheet } from "@/components/form/FormSheet";
+import { IconTag } from "@/lib/icons";
 import type { CostType } from "../../../lib/costs";
 import { t } from "../../../lib/i18n";
 import { CostAllocationModeField } from "../components/costAssignment/CostAllocationModeField";
@@ -44,7 +44,7 @@ export const MeterAssignmentSheet = ({
   return (
     <FormSheet
       form={form}
-      icon={RiPriceTag3Line}
+      icon={IconTag}
       title={t("ui.meters.detail.assignmentSection")}
       description={t("ui.meters.detail.assignmentDescription")}
       submitLabel={t("ui.common.action.save")}

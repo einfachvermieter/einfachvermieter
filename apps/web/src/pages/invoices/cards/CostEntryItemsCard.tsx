@@ -3,14 +3,15 @@ import {
   formatEur,
   formatNumberLoose,
 } from "@einfachvermieter/shared";
-import { RiAddLine, RiListCheck2 } from "@remixicon/react";
-import { Fragment, useState } from "react";
+import { RiListCheck2 } from "@remixicon/react";
+import { Fragment, type ReactNode, useState } from "react";
 import { toast } from "sonner";
 import { EmptyNote } from "@/components/common/EmptyNote";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
+import { TableFrame } from "@/components/common/TableFrame";
 import { DestructiveConfirmDialog } from "@/components/DestructiveConfirmDialog";
 import { RowActions } from "@/components/RowActions";
-import { Button } from "@/components/ui/Button";
 import {
   Table,
   TableBody,
@@ -130,6 +131,7 @@ export const CostEntryItemsCard = ({
   onAdd,
   onEdit,
   onDelete,
+  notice,
 }: {
   items: CostEntryItem[];
   costTypes: CostType[];
@@ -137,6 +139,7 @@ export const CostEntryItemsCard = ({
   onAdd: () => void;
   onEdit: (index: number) => void;
   onDelete: (index: number) => Promise<void>;
+  notice?: ReactNode;
 }) => {
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const totalCents = items.reduce((sum, item) => sum + item.amountCents, 0);
@@ -150,16 +153,18 @@ export const CostEntryItemsCard = ({
       title={t("ui.invoices.items.title")}
       description={t("ui.invoices.items.description")}
       action={
-        <Button type="button" variant="addLink" size="text" onClick={onAdd}>
-          <RiAddLine />
-          {t("ui.invoices.items.add")}
-        </Button>
+        <SectionAction
+          kind="add"
+          label={t("ui.invoices.items.add")}
+          onClick={onAdd}
+        />
       }
     >
+      {notice ? <div className="mb-4">{notice}</div> : null}
       {items.length === 0 ? (
         <EmptyNote>{t("ui.invoices.items.empty")}</EmptyNote>
       ) : (
-        <div className="-mx-3.5">
+        <TableFrame>
           <Table>
             <TableHeader>
               <TableRow>
@@ -182,13 +187,13 @@ export const CostEntryItemsCard = ({
                     <TableCell className="whitespace-normal">
                       <span className="font-semibold">{item.costTypeName}</span>
                       {extras.length > 0 ? (
-                        <span className="mt-0.5 block text-sm text-muted-foreground">
-                          {extras.map((extra, extraIndex) => (
+                        // Zusatzangaben als kleines Raster aus Beschriftung und Wert
+                        <span className="mt-1.5 grid grid-cols-[max-content_auto] gap-x-4 gap-y-0.5 text-xs whitespace-normal">
+                          {extras.map((extra) => (
                             <Fragment key={extra.label}>
-                              {extraIndex > 0
-                                ? t("ui.common.separators.bullet")
-                                : null}
-                              {extra.label}{" "}
+                              <span className="text-muted-foreground">
+                                {extra.label}
+                              </span>
                               <span className="tabular-nums">
                                 {extra.value}
                               </span>
@@ -215,18 +220,21 @@ export const CostEntryItemsCard = ({
                 );
               })}
             </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell>{t("ui.invoices.items.sum")}</TableCell>
-                <TableCell />
-                <TableCell className="text-right tabular-nums">
-                  {formatEur(totalCents)}
-                </TableCell>
-                <TableCell />
-              </TableRow>
-            </TableFooter>
+            {/* Die Summe erscheint erst ab zwei Positionen, sonst wiederholt sie nur den Betrag */}
+            {items.length > 1 ? (
+              <TableFooter>
+                <TableRow>
+                  <TableCell>{t("ui.invoices.items.sum")}</TableCell>
+                  <TableCell />
+                  <TableCell className="text-right tabular-nums">
+                    {formatEur(totalCents)}
+                  </TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableFooter>
+            ) : null}
           </Table>
-        </div>
+        </TableFrame>
       )}
 
       <DestructiveConfirmDialog
@@ -237,7 +245,7 @@ export const CostEntryItemsCard = ({
           }
         }}
         title={t("ui.invoices.items.confirmRemove")}
-        confirmLabel={t("ui.common.action.delete")}
+        confirmLabel={t("ui.common.action.confirmRemove")}
         onConfirm={() => {
           const index = deleteIndex;
           setDeleteIndex(null);

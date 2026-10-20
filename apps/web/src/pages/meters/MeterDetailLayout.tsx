@@ -6,14 +6,13 @@ import {
 } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Fragment, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { MiniKpiRow } from "../../components/common/MiniKpiRow";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { Badge } from "../../components/ui/Badge";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { useAdoptBuilding } from "../../lib/activeBuilding";
-import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import {
   measurementUnitLabel,
@@ -136,31 +135,25 @@ export const MeterDetailLayout = ({
     <div className={className ? `max-w-225 ${className}` : "max-w-225"}>
       {meter ? (
         <PageHeader
-          tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
+          tile={<PageHeaderIcon domain="meters" />}
           title={meter.label}
-          titleExtra={
-            <Badge variant={meter.isActive ? "ok" : "neutral"}>
+          sub={[
+            ...subItems,
+            <Badge
+              key="status"
+              appearance="dot"
+              variant={meter.isActive ? "ok" : "neutral"}
+            >
               {meter.isActive
                 ? t("ui.meters.detail.statusActive")
                 : t("ui.meters.detail.statusInactive")}
-            </Badge>
-          }
-          sub={
-            <span>
-              {subItems.map((item, index) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: statische Liste
-                <Fragment key={index}>
-                  {index > 0 ? t("ui.common.separators.bullet") : null}
-                  {item}
-                </Fragment>
-              ))}
-            </span>
-          }
+            </Badge>,
+          ]}
           action={action}
         />
       ) : (
         <PageHeader
-          tile={<PageHeaderIcon icon={domainVisuals.meters.icon} />}
+          tile={<PageHeaderIcon domain="meters" />}
           title=""
           loading={true}
         />

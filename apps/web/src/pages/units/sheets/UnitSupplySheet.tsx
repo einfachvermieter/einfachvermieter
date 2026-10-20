@@ -3,13 +3,13 @@ import type {
   UnitSupplyExclusion,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiFireLine } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { DateInput } from "@/components/form/DateInput";
 import { FormSheet } from "@/components/form/FormSheet";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextareaInput } from "@/components/form/TextareaInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
+import { IconFlame } from "@/lib/icons";
 import { t } from "../../../lib/i18n";
 import {
   saveUnitSupplyExclusion,
@@ -59,7 +59,7 @@ export const UnitSupplySheet = ({
   return (
     <FormSheet
       form={form}
-      icon={RiFireLine}
+      icon={IconFlame}
       title={t(
         existing
           ? "ui.units.supply.sheet.titleEdit"

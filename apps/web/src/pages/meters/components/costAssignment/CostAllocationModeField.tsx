@@ -1,7 +1,8 @@
 import type { MeterFormValues } from "@einfachvermieter/shared";
-import { RiFireLine, RiPieChart2Line } from "@remixicon/react";
+import { RiPieChart2Line } from "@remixicon/react";
 import type { UseFormReturn } from "react-hook-form";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
+import { IconFlame } from "@/lib/icons";
 import { t } from "../../../../lib/i18n";
 
 export const CostAllocationModeField = ({
@@ -29,7 +30,7 @@ export const CostAllocationModeField = ({
           },
           {
             value: "heating_cost_bill",
-            icon: RiFireLine,
+            icon: IconFlame,
             title: t("ui.meters.costAllocationMode.heatingCostBill.title"),
             description: t(
               "ui.meters.costAllocationMode.heatingCostBill.description",

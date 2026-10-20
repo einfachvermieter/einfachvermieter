@@ -288,7 +288,7 @@ export const StatementFinalizeDialog = ({
 
         <div
           className={cn(
-            "rounded-lg px-4 py-3 text-sm font-medium",
+            "rounded-lg px-4 py-3 text-sm",
             isRefund
               ? "bg-limette-50 text-limette-700"
               : "bg-himbeere-50 text-himbeere-500",

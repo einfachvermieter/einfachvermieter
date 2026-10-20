@@ -1,9 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
+import { RiEyeOffLine } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
 import { type ComponentProps, type FormEvent, useId, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { IconEye } from "@/lib/icons";
 import { CheckboxInput } from "../../components/form/CheckboxInput";
 import { Button } from "../../components/ui/Button";
 import {
@@ -114,7 +115,7 @@ export const LoginForm = ({
                     aria-pressed={showPassword}
                     onClick={() => setShowPassword((shown) => !shown)}
                   >
-                    {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
+                    {showPassword ? <RiEyeOffLine /> : <IconEye />}
                   </InputGroupButton>
                 </InputGroupAddon>
               </InputGroup>

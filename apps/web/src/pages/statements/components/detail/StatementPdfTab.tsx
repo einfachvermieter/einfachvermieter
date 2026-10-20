@@ -1,4 +1,3 @@
-import { RiDownloadLine } from "@remixicon/react";
 import { Description } from "@/components/common/Description";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +11,7 @@ import {
 import { TabsContent } from "@/components/ui/Tabs";
 import { ApiError } from "@/lib/api";
 import { t } from "@/lib/i18n";
+import { IconDownload } from "@/lib/icons";
 import {
   downloadStatementPdf,
   useStatementPdfPreview,
@@ -49,7 +49,7 @@ export const StatementPdfTab = ({
               variant="outline"
               onClick={() => downloadStatementPdf(downloadSrc, filename)}
             >
-              <RiDownloadLine data-icon="inline-start" />
+              <IconDownload data-icon="inline-start" />
               {t("ui.statements.detail.downloadPdf")}
             </Button>
           </CardAction>

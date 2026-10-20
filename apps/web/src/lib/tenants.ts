@@ -67,6 +67,22 @@ export const contractPartyNames = (residents: TenantResidentLink[]): string =>
     .join(t("ui.common.separators.comma"));
 
 /**
+ * Vertragspartner mit abgekürzten Vornamen ("A. Becker, T. Müller") für
+ * schmale Fenster
+ */
+export const contractPartyNamesShort = (
+  residents: TenantResidentLink[],
+): string =>
+  contractPartyNames(
+    residents.map((resident) => ({
+      ...resident,
+      firstName: resident.firstName
+        ? t("ui.tenant.hero.initial", { letter: resident.firstName.charAt(0) })
+        : resident.firstName,
+    })),
+  );
+
+/**
  * Identifizierende Bezeichnung eines Mietvertrags für Überschrift,
  * Breadcrumb und Tab-Titel: Vertragspartner und Wohnung. Ohne das Wort
  * "Mietvertrag". Der Typ steht bereits im Breadcrumb-Pfad ("Mieter").

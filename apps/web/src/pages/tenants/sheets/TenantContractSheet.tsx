@@ -85,7 +85,7 @@ export const TenantContractSheet = ({
       onSubmit={onSubmit}
       onClose={onClose}
     >
-      <FieldGroup className="gap-4">
+      <FieldGroup>
         <ContractFields
           control={form.control}
           units={units}

@@ -1,13 +1,9 @@
 import { supportsCostTypeAssignment } from "@einfachvermieter/shared";
-import {
-  RiFireLine,
-  RiPencilLine,
-  RiPieChart2Line,
-  RiPriceTag3Line,
-} from "@remixicon/react";
+import { RiPieChart2Line } from "@remixicon/react";
 import { ResultRows } from "@/components/common/ResultRows";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Button } from "@/components/ui/Button";
+import { IconFlame, IconTag } from "@/lib/icons";
 import { t } from "../../../lib/i18n";
 import type { Meter } from "../../../lib/meters";
 
@@ -24,19 +20,20 @@ export const MeterAssignmentCard = ({
   onEdit: () => void;
 }) => {
   const isHeatingBill = meter.costAllocationMode === "heating_cost_bill";
-  const ModeIcon = isHeatingBill ? RiFireLine : RiPieChart2Line;
+  const ModeIcon = isHeatingBill ? IconFlame : RiPieChart2Line;
   const modeKey = isHeatingBill ? "heatingCostBill" : "costTypes";
 
   return (
     <SectionCard
-      icon={RiPriceTag3Line}
+      icon={IconTag}
       title={t("ui.meters.detail.assignmentSection")}
       description={t("ui.meters.detail.assignmentDescription")}
       action={
-        <Button type="button" variant="addLink" size="text" onClick={onEdit}>
-          <RiPencilLine />
-          {t("ui.common.action.edit")}
-        </Button>
+        <SectionAction
+          kind="edit"
+          label={t("ui.common.action.edit")}
+          onClick={onEdit}
+        />
       }
     >
       <ResultRows

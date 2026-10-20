@@ -6,7 +6,7 @@ import {
   type FieldValues,
 } from "react-hook-form";
 import { HelpHint } from "@/components/help/HelpHint";
-import { Field, FieldLabel } from "@/components/ui/Field";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/Field";
 import { Switch } from "@/components/ui/Switch";
 
 type SwitchInputProps<T extends FieldValues> = {
@@ -52,18 +52,25 @@ export const SwitchInput = <T extends FieldValues>({
             onCheckedChange={(checked) => field.onChange(checked === true)}
             disabled={disabled}
           />
-          <div className="min-w-0">
+          {/* FieldContent richtet den Schalter an der ersten Zeile aus */}
+          <FieldContent className="min-w-0">
             <FieldLabel htmlFor={id}>
-              {label}
-              {labelBadge}
-              {labelHelp ? <HelpHint>{labelHelp}</HelpHint> : null}
+              {/* Bei langer Beschriftung rutschen Marke und Fragezeichen
+                  unter den Text, statt rechts daneben zu stehen */}
+              <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                {label}
+                {labelBadge || labelHelp ? (
+                  <span className="flex items-center gap-2">
+                    {labelBadge}
+                    {labelHelp ? <HelpHint>{labelHelp}</HelpHint> : null}
+                  </span>
+                ) : null}
+              </span>
             </FieldLabel>
             {description ? (
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {description}
-              </p>
+              <p className="text-xs text-muted-foreground">{description}</p>
             ) : null}
-          </div>
+          </FieldContent>
         </Field>
       )}
     />

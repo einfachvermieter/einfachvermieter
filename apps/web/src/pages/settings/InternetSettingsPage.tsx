@@ -57,7 +57,7 @@ const ConsentCard = ({
           onCheckedChange={(checked) => onChange(checked === true)}
         />
         <div>
-          <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
+          <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
             {label}
             <Badge variant="ok">{t("ui.internetAccess.recommended")}</Badge>
             {value === null ? (

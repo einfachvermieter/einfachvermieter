@@ -138,7 +138,7 @@ export const StatementCreateSheet = ({ onClose }: { onClose: () => void }) => {
         </Alert>
       ) : null}
 
-      <FieldGroup className="gap-4">
+      <FieldGroup>
         <SelectInput
           control={form.control}
           name="tenantId"

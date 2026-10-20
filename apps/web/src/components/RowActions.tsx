@@ -1,13 +1,13 @@
-import { RiDeleteBin6Line, RiPencilLine } from "@remixicon/react";
 import type { ReactNode } from "react";
 import { t } from "@/lib/i18n";
+import { IconPen, IconTrash } from "@/lib/icons";
 import { Spinner } from "./common/Spinner";
 import { Button } from "./ui/Button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/Tooltip";
 
 type RowActionButtonProps = {
   label: string;
-  variant?: "ghostMuted" | "ghostDestructive";
+  variant?: "row" | "rowDestructive";
   icon?: ReactNode;
   onSelect?: () => void;
   children?: ReactNode;
@@ -15,7 +15,7 @@ type RowActionButtonProps = {
 
 export const RowActionButton = ({
   label,
-  variant = "ghostMuted",
+  variant = "row",
   icon,
   onSelect,
   children,
@@ -66,27 +66,28 @@ export const RowActions = ({
   deleteLabel = t("ui.common.action.delete"),
 }: RowActionsProps) => {
   const deleteAction = isDeleting ? (
-    <span className="flex size-8 items-center justify-center">
+    <span className="flex h-7 w-7.5 items-center justify-center">
       <Spinner className="text-muted-foreground" />
     </span>
   ) : (
     <RowActionButton
       label={deleteLabel}
-      variant="ghostDestructive"
-      icon={<RiDeleteBin6Line />}
+      variant="rowDestructive"
+      icon={<IconTrash />}
       onSelect={onDelete}
     />
   );
 
   return (
-    <div className="flex items-center justify-start gap-0.5">
+    // Bearbeiten und Löschen stehen als verbundenes Paar
+    <div className="flex items-center justify-start *:rounded-none *:not-first:-ml-px *:first:rounded-l-md *:last:rounded-r-md">
       {editLink ? (
         <RowActionButton label={editLabel}>{editLink}</RowActionButton>
       ) : null}
       {onEdit ? (
         <RowActionButton
           label={editLabel}
-          icon={<RiPencilLine />}
+          icon={<IconPen />}
           onSelect={onEdit}
         />
       ) : null}

@@ -5,24 +5,20 @@ import {
   senderLogoScalePercents,
   type senderSettingsUpdateSchema,
 } from "@einfachvermieter/shared";
-import {
-  RiImageLine,
-  RiProhibitedLine,
-  RiRoadMapLine,
-  RiUpload2Line,
-} from "@remixicon/react";
+import { RiImageLine, RiProhibitedLine, RiRoadMapLine } from "@remixicon/react";
 import type { UseFormReturn } from "react-hook-form";
 import type { z } from "zod";
 import { SectionCard } from "@/components/common/SectionCard";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { SelectInput } from "@/components/form/SelectInput";
 import { t } from "@/lib/i18n";
+import { IconUpload } from "@/lib/icons";
 import type { PendingLogo, SenderSettings } from "@/lib/senderSettings";
 import type { SenderLetterValues } from "./SenderLetterPreview";
 import { SenderLogoSection } from "./SenderLogoSection";
 
 const LOGO_MODE_ICONS = {
-  own: RiUpload2Line,
+  own: IconUpload,
   app: RiRoadMapLine,
   none: RiProhibitedLine,
 } as const;

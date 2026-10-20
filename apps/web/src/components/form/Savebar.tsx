@@ -1,7 +1,7 @@
-import { RiCheckLine, RiEditLine } from "@remixicon/react";
 import { Spinner } from "@/components/common/Spinner";
 import { Button } from "@/components/ui/Button";
 import { t } from "@/lib/i18n";
+import { IconCheck, IconPen } from "@/lib/icons";
 
 /**
  * Fixe Speicherleiste am unteren Rand der Formularseiten: links der
@@ -22,19 +22,19 @@ export const Savebar = ({
   onCancel: () => void;
   submitLabel?: string;
 }) => (
-  <div className="fixed right-0 bottom-0 left-(--sidebar-width,0px) z-10 border-t border-border bg-background/70 py-3.5 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))] backdrop-blur-lg max-md:left-0 sm:pl-[max(2rem,env(safe-area-inset-left))] sm:pr-[max(2rem,env(safe-area-inset-right))]">
+  <div className="fixed right-3 bottom-3 left-[calc(var(--sidebar-width,0px)+1px)] z-10 rounded-b-xl border-t border-border bg-azur-50 py-3.5 pr-5 pl-5 max-md:right-0 max-md:bottom-0 max-md:left-0 max-md:rounded-none">
     {/* Linksbündig auf Formularbreite (max-w-225, gleiches Padding wie
         die AppShell), damit Status und Buttons mit dem Formular fluchten */}
     <div className="flex w-full max-w-225 items-center gap-3.5">
       {dirty ? (
         <span className="flex items-center gap-1.75 text-sm text-muted-foreground">
-          <RiEditLine aria-hidden={true} className="size-3.75 text-honig-500" />
+          <IconPen aria-hidden={true} className="size-3.75 text-honig-500" />
           {t("ui.common.savebar.unsavedChanges")}
         </span>
       ) : null}
       {savedAt && !dirty ? (
         <span className="flex items-center gap-1.75 text-sm text-muted-foreground">
-          <RiCheckLine
+          <IconCheck
             aria-hidden={true}
             className="size-3.75 text-limette-500"
           />

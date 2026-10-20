@@ -1,47 +1,21 @@
-import {
-  type RemixiconComponentType,
-  RiAddLine,
-  RiArrowRightSLine,
-  RiBuildingLine,
-  RiDashboard2Line,
-  RiFileAddLine,
-  RiGroupLine,
-  RiHome6Line,
-  RiMoneyEuroCircleLine,
-  RiReceiptLine,
-} from "@remixicon/react";
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { IconTile } from "@/components/common/IconTile";
 import { SectionCard } from "@/components/common/SectionCard";
+import { Button } from "@/components/ui/Button";
 import { t } from "@/lib/i18n";
+import {
+  IconBuilding,
+  IconCoins,
+  IconDoc,
+  IconDoor,
+  IconGauge,
+  IconPlus,
+  IconReceipt,
+  IconUsers,
+} from "@/lib/icons";
 import type { StatsResult } from "@/lib/stats";
 
-const TILE_CLASS =
-  "flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted";
-
 /**
- * Kachel: Icon, Beschriftung, Chevron
- */
-const TileContent = ({
-  icon,
-  children,
-}: {
-  icon: RemixiconComponentType;
-  children: ReactNode;
-}) => (
-  <>
-    <IconTile icon={icon} size={30} />
-    <span className="min-w-0 flex-1">{children}</span>
-    <RiArrowRightSLine
-      aria-hidden={true}
-      className="size-4 shrink-0 text-schiefer-400"
-    />
-  </>
-);
-
-/**
- * Häufige Aufgaben. Welche Kacheln erscheinen, hängt am Stand der
+ * Häufige Aufgaben als Buttons. Welche erscheinen, hängt am Stand der
  * Einrichtung
  */
 export const QuickStartCard = ({
@@ -59,83 +33,69 @@ export const QuickStartCard = ({
 
   return (
     <SectionCard
-      icon={RiAddLine}
+      icon={IconPlus}
       title={t("ui.dashboard.quickstart.title")}
       description={t("ui.dashboard.quickstart.description")}
     >
-      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
+      <div className="flex flex-wrap gap-2.5">
         {stats.buildings === 0 ? (
-          <Link to="/gebaeude" className={TILE_CLASS}>
-            <TileContent icon={RiBuildingLine}>
+          <Button asChild={true} variant="outline">
+            <Link to="/gebaeude">
+              <IconBuilding data-icon="inline-start" />
               {t("ui.dashboard.quickstart.addBuilding")}
-            </TileContent>
-          </Link>
+            </Link>
+          </Button>
         ) : null}
         {stats.buildings > 0 && stats.units === 0 ? (
-          <Link
-            to="/wohnungen"
-            search={{ buildingId: undefined }}
-            className={TILE_CLASS}
-          >
-            <TileContent icon={RiHome6Line}>
+          <Button asChild={true} variant="outline">
+            <Link to="/wohnungen" search={{ buildingId: undefined }}>
+              <IconDoor data-icon="inline-start" />
               {t("ui.dashboard.quickstart.addUnit")}
-            </TileContent>
-          </Link>
+            </Link>
+          </Button>
         ) : null}
         {stats.units > 0 && stats.tenants === 0 ? (
-          <button type="button" className={TILE_CLASS} onClick={onAddTenant}>
-            <TileContent icon={RiGroupLine}>
-              {t("ui.dashboard.quickstart.addTenant")}
-            </TileContent>
-          </button>
+          <Button variant="outline" onClick={onAddTenant}>
+            <IconUsers data-icon="inline-start" />
+            {t("ui.dashboard.quickstart.addTenant")}
+          </Button>
         ) : null}
         {stats.tenants > 0 ? (
-          <Link
-            to="/abrechnungen"
-            search={{ buildingId: undefined }}
-            className={TILE_CLASS}
-          >
-            <TileContent icon={RiFileAddLine}>
+          <Button asChild={true} variant="outline">
+            <Link to="/abrechnungen" search={{ buildingId: undefined }}>
+              <IconDoc data-icon="inline-start" />
               {t("ui.dashboard.quickstart.newStatement")}
-            </TileContent>
-          </Link>
+            </Link>
+          </Button>
         ) : null}
         {stats.buildings > 0 ? (
-          <Link
-            to="/rechnungen"
-            search={{ buildingId: undefined }}
-            className={TILE_CLASS}
-          >
-            <TileContent icon={RiReceiptLine}>
+          <Button asChild={true} variant="outline">
+            <Link to="/rechnungen" search={{ buildingId: undefined }}>
+              <IconReceipt data-icon="inline-start" />
               {t("ui.dashboard.quickstart.recordCost")}
-            </TileContent>
-          </Link>
+            </Link>
+          </Button>
         ) : null}
         {stats.meters > 0 ? (
-          <Link
-            to="/zaehler"
-            search={{
-              buildingId: undefined,
-              type: undefined,
-              unitId: undefined,
-            }}
-            className={TILE_CLASS}
-          >
-            <TileContent icon={RiDashboard2Line}>
+          <Button asChild={true} variant="outline">
+            <Link
+              to="/zaehler"
+              search={{
+                buildingId: undefined,
+                type: undefined,
+                unitId: undefined,
+              }}
+            >
+              <IconGauge data-icon="inline-start" />
               {t("ui.dashboard.quickstart.recordReading")}
-            </TileContent>
-          </Link>
+            </Link>
+          </Button>
         ) : null}
         {stats.tenants > 0 ? (
-          <button
-            type="button"
-            className={TILE_CLASS}
-            onClick={onRecordPayment}
-          >
-            <TileContent icon={RiMoneyEuroCircleLine}>
-              {t("ui.dashboard.quickstart.recordPayment")}
-            </TileContent>
-          </button>
+          <Button variant="outline" onClick={onRecordPayment}>
+            <IconCoins data-icon="inline-start" />
+            {t("ui.dashboard.quickstart.recordPayment")}
+          </Button>
         ) : null}
       </div>
     </SectionCard>

@@ -1,10 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiFireLine } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { DateInput } from "@/components/form/DateInput";
 import { FormSheet } from "@/components/form/FormSheet";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
+import { IconFlame } from "@/lib/icons";
 import { t } from "../../../lib/i18n";
 import {
   type GasFactorRowValues,
@@ -39,13 +39,13 @@ export const MeterGasFactorSheet = ({
   return (
     <FormSheet
       form={form}
-      icon={RiFireLine}
+      icon={IconFlame}
       title={title}
       submitLabel={t("ui.common.action.save")}
       onSubmit={onSubmit}
       onClose={onClose}
     >
-      <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
         <DateInput
           control={form.control}
           name="validFrom"

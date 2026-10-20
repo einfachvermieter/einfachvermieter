@@ -22,7 +22,7 @@ export const TenantDetailHeader = ({
         }).catch(() => undefined);
       }}
     >
-      <TabsList variant="pills">
+      <TabsList>
         <TabsTrigger value="stammdaten">
           {t("ui.tenants.tabs.master")}
         </TabsTrigger>

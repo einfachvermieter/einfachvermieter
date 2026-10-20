@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiGroupLine } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { FormSheet } from "@/components/form/FormSheet";
+import { IconUsers } from "@/lib/icons";
 import { t } from "../../../lib/i18n";
 import {
   type ResidentRowValues,
@@ -38,7 +38,7 @@ export const TenantResidentSheet = ({
   return (
     <FormSheet
       form={form}
-      icon={RiGroupLine}
+      icon={IconUsers}
       title={title}
       submitLabel={t("ui.common.action.save")}
       onSubmit={onSubmit}

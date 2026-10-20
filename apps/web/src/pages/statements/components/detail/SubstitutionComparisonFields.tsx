@@ -1,5 +1,6 @@
 import type { UseFormReturn } from "react-hook-form";
 import { CheckboxGroupInput } from "@/components/form/CheckboxGroupInput";
+import { DependentFields } from "@/components/form/DependentFields";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { t } from "../../../../lib/i18n";
@@ -67,13 +68,15 @@ export const SubstitutionComparisonFields = ({
         label={t("ui.substitutions.fields.useGroup")}
       />
       {values.useGroup ? (
-        <CheckboxGroupInput
-          control={form.control}
-          name="comparisonUnitIds"
-          label={t("ui.substitutions.fields.groupUnits")}
-          emptyMessage={t("ui.substitutions.fields.comparisonUnitsEmpty")}
-          options={comparisonOptions}
-        />
+        <DependentFields>
+          <CheckboxGroupInput
+            control={form.control}
+            name="comparisonUnitIds"
+            label={t("ui.substitutions.fields.groupUnits")}
+            emptyMessage={t("ui.substitutions.fields.comparisonUnitsEmpty")}
+            options={comparisonOptions}
+          />{" "}
+        </DependentFields>
       ) : null}
     </>
   );

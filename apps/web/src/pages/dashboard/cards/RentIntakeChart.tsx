@@ -58,14 +58,14 @@ export const RentIntakeChart = ({ data }: { data: DashboardResult }) => {
       <div className="mt-4 flex gap-3">
         {data.months.map((month) => (
           <div key={month.month} className="flex-1 text-center">
-            <span className="block text-2xs font-semibold text-muted-foreground">
+            <span className="block text-xs font-semibold text-muted-foreground">
               {monthLabelShort(month.month)}
             </span>
-            <span className="block text-2xs text-muted-foreground tabular-nums">
+            <span className="block text-xs text-muted-foreground tabular-nums">
               {formatEur(month.receivedCents)}
             </span>
             {month.targetCents > month.receivedCents ? (
-              <span className="block text-2xs text-schiefer-400 tabular-nums">
+              <span className="block text-xs text-schiefer-400 tabular-nums">
                 {t("ui.dashboard.intake.ofTarget", {
                   amount: formatEur(month.targetCents),
                 })}

@@ -1,8 +1,8 @@
 import type { HeatingSettings } from "@einfachvermieter/shared";
-import { RiCalendarLine, RiPencilLine } from "@remixicon/react";
+import { RiCalendarLine } from "@remixicon/react";
 import { ResultRows } from "@/components/common/ResultRows";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Button } from "@/components/ui/Button";
 import { t } from "../../../lib/i18n";
 import { HeatingProrationChart } from "../components/settings/HeatingProrationChart";
 
@@ -21,10 +21,11 @@ export const HeatingProrationCard = ({
     icon={RiCalendarLine}
     title={t("ui.heating.cards.proration")}
     action={
-      <Button type="button" variant="addLink" size="text" onClick={onEdit}>
-        <RiPencilLine />
-        {t("ui.common.action.edit")}
-      </Button>
+      <SectionAction
+        kind="edit"
+        label={t("ui.common.action.edit")}
+        onClick={onEdit}
+      />
     }
   >
     <ResultRows

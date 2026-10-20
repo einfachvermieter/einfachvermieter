@@ -1,10 +1,8 @@
 import type { ReactNode } from "react";
 
 /**
- * Leerer Zustand in Karten
+ * Leerer Abschnitt: nur ein Satz, was hineingehört
  */
 export const EmptyNote = ({ children }: { children: ReactNode }) => (
-  <p className="rounded-lg bg-muted px-3.5 py-3 text-sm leading-normal text-muted-foreground">
-    {children}
-  </p>
+  <p className="text-sm leading-normal text-muted-foreground">{children}</p>
 );

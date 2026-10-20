@@ -1,8 +1,4 @@
-import {
-  RiArrowDownSLine,
-  RiArrowLeftSLine,
-  RiArrowRightSLine,
-} from "@remixicon/react";
+import { RiArrowLeftSLine, RiArrowRightSLine } from "@remixicon/react";
 import { Select as SelectPrimitive } from "radix-ui";
 import {
   type ChangeEvent,
@@ -18,6 +14,7 @@ import {
   type Locale,
 } from "react-day-picker";
 import { Button, buttonVariants } from "@/components/ui/Button";
+import { IconChevronDown } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 function Calendar({
@@ -77,7 +74,7 @@ function Calendar({
           defaultClassNames.month_caption,
         ),
         dropdowns: cn(
-          "flex h-(--cell-size) w-full items-center justify-center gap-1.5 text-sm font-medium",
+          "flex h-(--cell-size) w-full items-center justify-center gap-1.5 text-sm",
           defaultClassNames.dropdowns,
         ),
         dropdown_root: cn(
@@ -85,7 +82,7 @@ function Calendar({
           defaultClassNames.dropdown_root,
         ),
         caption_label: cn(
-          "font-medium select-none text-sm",
+          "select-none text-sm",
           defaultClassNames.caption_label,
         ),
         table: "w-full border-collapse",
@@ -163,7 +160,7 @@ function Calendar({
           }
 
           return (
-            <RiArrowDownSLine className={cn("size-4", className)} {...props} />
+            <IconChevronDown className={cn("size-4", className)} {...props} />
           );
         },
         DayButton: ({ ...props }) => (
@@ -251,10 +248,10 @@ function CalendarDropdown({
     >
       <SelectPrimitive.Trigger
         aria-label={ariaLabel}
-        className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-sm font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-disabled:pointer-events-none data-disabled:opacity-50"
+        className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-disabled:pointer-events-none data-disabled:opacity-50"
       >
         <span>{selectedLabel}</span>
-        <RiArrowDownSLine className="size-4 opacity-50" aria-hidden={true} />
+        <IconChevronDown className="size-4 opacity-50" aria-hidden={true} />
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Content
         position="popper"
@@ -262,7 +259,7 @@ function CalendarDropdown({
         className="relative z-50 max-h-72 min-w-32 overflow-hidden rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10"
       >
         <SelectPrimitive.ScrollUpButton className="flex h-6 cursor-default items-center justify-center bg-popover">
-          <RiArrowDownSLine className="size-4 rotate-180" />
+          <IconChevronDown className="size-4 rotate-180" />
         </SelectPrimitive.ScrollUpButton>
         <SelectPrimitive.Viewport className="p-1">
           {options?.map((option) => (
@@ -270,7 +267,7 @@ function CalendarDropdown({
               key={option.value}
               value={String(option.value)}
               disabled={option.disabled}
-              className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50"
+              className="relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50"
             >
               <SelectPrimitive.ItemText>
                 {option.label}
@@ -279,7 +276,7 @@ function CalendarDropdown({
           ))}
         </SelectPrimitive.Viewport>
         <SelectPrimitive.ScrollDownButton className="flex h-6 cursor-default items-center justify-center bg-popover">
-          <RiArrowDownSLine className="size-4" />
+          <IconChevronDown className="size-4" />
         </SelectPrimitive.ScrollDownButton>
       </SelectPrimitive.Content>
     </SelectPrimitive.Root>

@@ -1,9 +1,9 @@
 import { formatNumber, pad2 } from "@einfachvermieter/shared";
-import { RiAddLine, RiHome6Line } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { IconPlus } from "@/lib/icons";
 import { DataTable } from "../../components/common/DataTable";
 import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
@@ -149,24 +149,21 @@ export const UnitsOverview = () => {
   const sub = data
     ? [
         t("ui.units.sub.count", { count: data.total }),
-        building?.name,
         t("ui.units.sub.rented", { count: data.rentedCount }),
-      ]
-        .filter(Boolean)
-        .join(t("ui.common.separators.bullet"))
+      ].filter(Boolean)
     : undefined;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={<PageHeaderIcon icon={RiHome6Line} />}
+        tile={<PageHeaderIcon domain="units" />}
         title={t("ui.units.title")}
         sub={sub}
         subLoading={!data}
         action={
           canAddUnit ? (
             <Button type="button" onClick={() => setCreateOpen(true)}>
-              <RiAddLine />
+              <IconPlus />
               <span className="hidden sm:inline">{t("ui.units.add")}</span>
             </Button>
           ) : undefined

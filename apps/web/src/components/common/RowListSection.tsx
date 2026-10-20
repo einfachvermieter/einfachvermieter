@@ -1,25 +1,16 @@
-import {
-  type RemixiconComponentType,
-  RiAddLine,
-  RiDeleteBin5Line,
-  RiPencilLine,
-} from "@remixicon/react";
+import type { RemixiconComponentType } from "@remixicon/react";
 import { Fragment, type ReactNode, useState } from "react";
 import { toast } from "sonner";
 import { EmptyNote } from "@/components/common/EmptyNote";
-import { IconTile } from "@/components/common/IconTile";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
 import { DestructiveConfirmDialog } from "@/components/DestructiveConfirmDialog";
-import { Button } from "@/components/ui/Button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/Tooltip";
+import { RowActions } from "@/components/RowActions";
 import { t } from "../../lib/i18n";
 
 /**
- * View-Card einer 1:n-Liste (Bewohner, Mietsätze, Brennwerte)
+ * Abschnitt mit einer 1:n-Liste (Bewohner, Mietsätze, Brennwerte): je
+ * Eintrag eine Zeile mit blassem Bearbeiten und Löschen am Ende
  */
 export const RowListSection = <T,>({
   icon,
@@ -65,12 +56,7 @@ export const RowListSection = <T,>({
       titleExtra={titleHelp}
       collapsible={collapsible}
       defaultOpen={defaultOpen}
-      action={
-        <Button type="button" variant="addLink" size="text" onClick={onAdd}>
-          <RiAddLine />
-          {addLabel}
-        </Button>
-      }
+      action={<SectionAction kind="add" label={addLabel} onClick={onAdd} />}
     >
       {rows.length === 0 ? <EmptyNote>{emptyHint}</EmptyNote> : null}
 
@@ -81,41 +67,12 @@ export const RowListSection = <T,>({
         }
         return (
           <Fragment key={index}>
-            <div className="flex items-center gap-3.25 border-t border-border px-0.5 py-3.25 first:border-t-0">
-              <IconTile icon={icon} size={36} />
+            <div className="group/row flex items-center gap-4 border-t border-border py-2.5 first:border-t-0">
               <div className="min-w-0 flex-1">{renderRow(row, index)}</div>
-              <div className="flex shrink-0 gap-0.5">
-                <Tooltip>
-                  <TooltipTrigger asChild={true}>
-                    <Button
-                      type="button"
-                      variant="ghostMuted"
-                      size="icon-sm"
-                      onClick={() => onEditRow(index)}
-                      aria-label={t("ui.common.action.edit")}
-                    >
-                      <RiPencilLine />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("ui.common.action.edit")}</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild={true}>
-                    <Button
-                      type="button"
-                      variant="ghostDestructive"
-                      size="icon-sm"
-                      onClick={() => setDeleteIndex(index)}
-                      aria-label={t("ui.common.action.delete")}
-                    >
-                      <RiDeleteBin5Line />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {t("ui.common.action.delete")}
-                  </TooltipContent>
-                </Tooltip>
-              </div>
+              <RowActions
+                onEdit={() => onEditRow(index)}
+                onDelete={() => setDeleteIndex(index)}
+              />
             </div>
           </Fragment>
         );
@@ -129,7 +86,7 @@ export const RowListSection = <T,>({
           }
         }}
         title={confirmDeleteTitle}
-        confirmLabel={t("ui.common.action.delete")}
+        confirmLabel={t("ui.common.action.confirmRemove")}
         onConfirm={() => {
           const index = deleteIndex;
           setDeleteIndex(null);

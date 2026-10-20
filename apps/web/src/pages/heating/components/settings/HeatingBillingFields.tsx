@@ -9,7 +9,6 @@ import { SplitBar } from "@/components/common/SplitBar";
 import { ChoiceTiles } from "@/components/form/ChoiceTiles";
 import { MonthInput } from "@/components/form/MonthInput";
 import { SelectInput } from "@/components/form/SelectInput";
-import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { HelpHint } from "@/components/help/HelpHint";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
@@ -22,6 +21,7 @@ import {
   toBillingType,
 } from "../../billingType";
 import { ExternalBillingInfoToggle } from "./ExternalBillingInfoToggle";
+import { SeventyPercentSection } from "./SeventyPercentSection";
 
 /**
  * Setzt das ergänzende Anteilsfeld (Grund-/Verbrauchsanteil, Summe = 100 %)
@@ -111,7 +111,7 @@ export const HeatingBillingFields = ({
   const baseMethod = form.watch("baseMethod");
 
   return (
-    <FieldGroup className="gap-4">
+    <FieldGroup>
       <div className="grid grid-cols-2 gap-4">
         <MonthInput
           control={form.control}
@@ -204,14 +204,7 @@ export const HeatingBillingFields = ({
               </AlertDescription>
             </Alert>
           ) : null}
-          <SwitchInput
-            control={form.control}
-            name="mandatorySeventyPercent"
-            label={t("ui.heating.fields.mandatorySeventyPercent")}
-            description={t(
-              "ui.heating.fields.mandatorySeventyPercentDescription",
-            )}
-          />
+          <SeventyPercentSection form={form} />
         </>
       )}
 

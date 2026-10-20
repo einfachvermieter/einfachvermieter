@@ -4,10 +4,11 @@ import {
   formatDate,
   formatEur,
 } from "@einfachvermieter/shared";
-import { RiCalendarScheduleLine, RiPencilLine } from "@remixicon/react";
+import { RiCalendarScheduleLine } from "@remixicon/react";
 import { useState } from "react";
+import { ResultRows } from "@/components/common/ResultRows";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Button } from "@/components/ui/Button";
 import { t } from "../../../lib/i18n";
 import { AdvanceAdjustmentSheet } from "./AdvanceAdjustmentSheet";
 import { resolveSuggestedApplyCents } from "./advanceAdjustment";
@@ -54,68 +55,52 @@ export const AdvanceAdjustmentCard = ({
         description={t("ui.statements.advanceAdjustment.description")}
         action={
           isDraft ? (
-            <Button
-              type="button"
-              variant="addLink"
-              size="text"
+            <SectionAction
+              kind="edit"
+              label={t("ui.common.action.edit")}
               onClick={() => setSheetOpen(true)}
-            >
-              <RiPencilLine />
-              {t("ui.common.action.edit")}
-            </Button>
+            />
           ) : undefined
         }
       >
-        <table className="w-full text-sm">
-          <tbody>
-            <tr>
-              <td className="py-1 text-muted-foreground">
-                {t("ui.statements.advanceAdjustment.currentLabel")}
-              </td>
-              <td className="py-1 text-right tabular-nums">
-                {formatEur(currentCents)}
-              </td>
-            </tr>
-            <tr>
-              <td className="py-1 text-muted-foreground">
-                {t("ui.statements.advanceAdjustment.suggestedLabel")}
-              </td>
-              <td className="py-1 text-right tabular-nums">
-                {formatEur(suggestedCents)}
-              </td>
-            </tr>
-            {showWithTariffs ? (
-              <tr>
-                <td className="py-1 text-muted-foreground">
-                  {t(
-                    "ui.statements.advanceAdjustment.suggestedWithTariffsLabel",
-                  )}
-                </td>
-                <td className="py-1 text-right tabular-nums">
-                  {formatEur(suggestedApplyCents)}
-                </td>
-              </tr>
-            ) : null}
-            {hasAdjustment ? (
-              <tr className="border-t border-border font-semibold">
-                <td className="py-1.5">
-                  {t("ui.statements.advanceAdjustment.adjustedLabel", {
-                    date: formatDate(adjustedValidFrom),
-                  })}
-                </td>
-                <td className="py-1.5 text-right tabular-nums">
-                  {formatEur(adjustedCents)}
-                </td>
-              </tr>
-            ) : (
-              <tr className="border-t border-border text-muted-foreground">
-                <td className="py-1.5" colSpan={2}>
-                  {t("ui.statements.advanceAdjustment.noAdjustment")}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <ResultRows
+          rows={[
+            {
+              label: t("ui.statements.advanceAdjustment.currentLabel"),
+              value: formatEur(currentCents),
+            },
+            {
+              label: t("ui.statements.advanceAdjustment.suggestedLabel"),
+              value: formatEur(suggestedCents),
+            },
+            ...(showWithTariffs
+              ? [
+                  {
+                    label: t(
+                      "ui.statements.advanceAdjustment.suggestedWithTariffsLabel",
+                    ),
+                    value: formatEur(suggestedApplyCents),
+                  },
+                ]
+              : []),
+            ...(hasAdjustment
+              ? [
+                  {
+                    label: t("ui.statements.advanceAdjustment.adjustedLabel", {
+                      date: formatDate(adjustedValidFrom),
+                    }),
+                    value: formatEur(adjustedCents),
+                    kind: "sum" as const,
+                  },
+                ]
+              : []),
+          ]}
+        />
+        {hasAdjustment ? null : (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {t("ui.statements.advanceAdjustment.noAdjustment")}
+          </p>
+        )}
       </SectionCard>
 
       {sheetOpen ? (

@@ -9,11 +9,7 @@ import {
   unsignedAmountRegex,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  RiArrowDownCircleLine,
-  RiArrowUpCircleLine,
-  RiReceiptLine,
-} from "@remixicon/react";
+import { RiArrowDownCircleLine, RiArrowUpCircleLine } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
@@ -23,6 +19,7 @@ import { TextInput } from "@/components/form/TextInput";
 import { type FeeRow, feeIdentityLabel } from "@/lib/accounts";
 import { api } from "@/lib/api";
 import { t } from "@/lib/i18n";
+import { IconReceipt } from "@/lib/icons";
 import { useCrudMutation } from "@/lib/useCrudMutation";
 
 /**
@@ -96,7 +93,7 @@ export const FeeSheet = ({
   return (
     <FormSheet
       form={form}
-      icon={RiReceiptLine}
+      icon={IconReceipt}
       title={fee ? feeIdentityLabel(fee) : t("ui.account.fee.title")}
       submitLabel={
         fee ? t("ui.common.action.save") : t("ui.common.action.record")

@@ -1,6 +1,6 @@
-import { RiCheckLine } from "@remixicon/react";
 import { Checkbox as CheckboxPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
+import { IconCheck } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 function Checkbox({
@@ -11,7 +11,7 @@ function Checkbox({
     <CheckboxPrimitive.Root
       data-slot="checkbox"
       className={cn(
-        "peer relative flex size-4 shrink-0 items-center justify-center rounded-xs border border-input bg-background transition-shadow outline-none group-has-disabled/field:opacity-50 after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 aria-invalid:aria-checked:border-primary data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground",
+        "peer relative flex size-4.5 shrink-0 items-center justify-center rounded-sm border border-edge bg-white shadow-key outline-none group-has-disabled/field:opacity-50 after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azur-500 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-himbeere-500 data-checked:border-azur-900 data-checked:bg-azur-700 data-checked:text-white data-checked:shadow-key-azur",
         className,
       )}
       {...props}
@@ -20,7 +20,7 @@ function Checkbox({
         data-slot="checkbox-indicator"
         className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
       >
-        <RiCheckLine />
+        <IconCheck />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );

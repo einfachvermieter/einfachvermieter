@@ -36,11 +36,11 @@ const tileLeading = (option: ChoiceTileOption): ReactNode => {
       <span
         data-slot="tile-radio"
         aria-hidden={true}
-        className="flex size-4 shrink-0 items-center justify-center rounded-full border border-input bg-background transition"
+        className="flex size-4 shrink-0 items-center justify-center rounded-full border-[1.5px] border-schiefer-300 bg-white transition"
       >
         <span
           data-slot="tile-radio-dot"
-          className="size-2 rounded-full bg-white opacity-0"
+          className="size-2 rounded-full bg-azur-700 opacity-0"
         />
       </span>
     );
@@ -56,7 +56,7 @@ const tileLeading = (option: ChoiceTileOption): ReactNode => {
 };
 
 /**
- * Auswahl als getönte Radio-Kacheln (Icon, Titel, Beschreibung). Für
+ * Auswahl als farbige Radio-Kacheln (Icon, Titel, Beschreibung). Für
  * Formularfelder gibt es die Variante `ChoiceTilesInput`.
  */
 export const ChoiceTiles = ({
@@ -87,7 +87,7 @@ export const ChoiceTiles = ({
           <label
             key={option.value}
             htmlFor={optionId}
-            className="block cursor-pointer rounded-lg border-[1.5px] border-border bg-card px-4 py-3.5 transition has-data-checked:border-azur-700 has-data-checked:bg-azur-50 has-data-disabled:cursor-not-allowed has-data-disabled:opacity-60 has-data-checked:**:data-[slot=tile-icon]:text-azur-700 has-data-checked:**:data-[slot=tile-title]:text-foreground has-data-checked:**:data-[slot=tile-radio]:border-azur-700 has-data-checked:**:data-[slot=tile-radio]:bg-azur-700 has-data-checked:**:data-[slot=tile-radio-dot]:opacity-100"
+            className="block rounded-lg border border-edge bg-white px-3.5 py-3 shadow-key transition-[transform,box-shadow,background-color] duration-75 hover:bg-schiefer-50 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-azur-500 has-data-checked:translate-y-0.5 has-data-checked:border-azur-700 has-data-checked:bg-azur-50 has-data-checked:shadow-none has-data-disabled:cursor-not-allowed has-data-disabled:opacity-60 has-data-checked:**:data-[slot=tile-icon]:text-azur-700 has-data-checked:**:data-[slot=tile-title]:text-azur-900 has-data-checked:**:data-[slot=tile-description]:text-azur-900 has-data-checked:**:data-[slot=tile-radio]:border-azur-700 has-data-checked:**:data-[slot=tile-radio-dot]:opacity-100"
           >
             <RadioGroupItem
               id={optionId}
@@ -97,13 +97,16 @@ export const ChoiceTiles = ({
             />
             <span
               data-slot="tile-title"
-              className="flex items-center gap-2 text-sm font-semibold text-muted-foreground"
+              className="flex items-center gap-2 font-heading text-sm font-semibold text-foreground"
             >
               {tileLeading(option)}
               {option.title}
             </span>
             {option.description ? (
-              <span className="mt-1 block text-sm leading-normal text-muted-foreground">
+              <span
+                data-slot="tile-description"
+                className="mt-1 block text-sm leading-normal text-muted-foreground"
+              >
                 {option.description}
               </span>
             ) : null}

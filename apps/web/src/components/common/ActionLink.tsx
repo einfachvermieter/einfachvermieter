@@ -27,7 +27,7 @@ export const ActionLink = ({
   <button
     type="button"
     className={cn(
-      "mb-2 flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium transition-colors last:mb-0",
+      "mb-2 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm transition-colors last:mb-0",
       danger && "bg-himbeere-50 text-himbeere-500 hover:bg-himbeere-100",
       accent && "bg-azur-50 text-azur-800 hover:bg-azur-100",
       !danger &&

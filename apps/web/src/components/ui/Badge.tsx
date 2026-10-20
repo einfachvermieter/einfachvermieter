@@ -4,27 +4,34 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Status-Pills
+ * Status-Pills mit Punkt (im Seitenkopf ohne Punkt)
  */
 const badgeVariants = cva(
-  "inline-flex w-fit shrink-0 items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-xs leading-4 font-semibold whitespace-nowrap [&>svg]:pointer-events-none [&>svg]:size-3",
+  "inline-flex w-fit shrink-0 items-center justify-center gap-1.5 rounded-full border py-px pr-2.5 pl-2 text-xs leading-4.5 font-normal whitespace-nowrap before:size-2 before:shrink-0 before:rounded-full before:content-[''] [&>svg]:pointer-events-none [&>svg]:size-3",
   {
     variants: {
       variant: {
-        ok: "bg-limette-600 text-limette-50",
-        warn: "bg-honig-600 text-honig-50",
-        bad: "bg-himbeere-600 text-himbeere-50",
-        info: "bg-azur-600 text-azur-50",
-        neutral: "bg-schiefer-500 text-schiefer-50",
-        "ok-light": "bg-limette-100 text-limette-800",
-        "warn-light": "bg-honig-100 text-honig-800",
-        "bad-light": "bg-himbeere-100 text-himbeere-600",
-        "info-light": "bg-azur-100 text-azur-600",
-        "neutral-light": "bg-schiefer-100 text-schiefer-600",
+        ok: "border-limette-600 bg-limette-50 text-limette-900 before:bg-limette-600",
+        warn: "border-honig-500 bg-honig-50 text-honig-900 before:bg-honig-500",
+        bad: "border-himbeere-500 bg-himbeere-50 text-himbeere-900 before:bg-himbeere-500",
+        info: "border-azur-500 bg-azur-50 text-azur-900 before:bg-azur-500",
+        neutral:
+          "border-schiefer-300 bg-schiefer-50 text-schiefer-900 before:bg-schiefer-300",
+        tag: "border-schiefer-300 bg-schiefer-50 pl-2.5 text-schiefer-900 before:hidden",
+        /**
+         * Kennzeichen der Vorabversion an der Wortmarke: gefüllt, weiße
+         * Schrift, leicht gerundet, damit es nicht wie ein Status aussieht
+         */
+        beta: "rounded-sm border-0 bg-honig-700 px-1.5 font-semibold text-white before:hidden",
+      },
+      appearance: {
+        pill: "",
+        dot: "border-0 bg-transparent p-0 text-sm text-foreground",
       },
     },
     defaultVariants: {
       variant: "neutral",
+      appearance: "pill",
     },
   },
 );
@@ -32,6 +39,7 @@ const badgeVariants = cva(
 const Badge = ({
   className,
   variant = "neutral",
+  appearance = "pill",
   asChild = false,
   ...props
 }: ComponentProps<"span"> &
@@ -44,7 +52,7 @@ const Badge = ({
     <Comp
       data-slot="badge"
       data-variant={variant}
-      className={cn(badgeVariants({ variant }), className)}
+      className={cn(badgeVariants({ variant, appearance }), className)}
       {...props}
     />
   );

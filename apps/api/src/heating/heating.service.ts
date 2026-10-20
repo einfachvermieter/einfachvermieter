@@ -5,9 +5,10 @@ import {
   HeatingSettingSchema,
   MeterSchema,
 } from "@einfachvermieter/db";
-import type {
-  HeatingSettings,
-  HeatingSettingsWriteDto,
+import {
+  type HeatingSettings,
+  type HeatingSettingsWriteDto,
+  isSeventyPercentFuel,
 } from "@einfachvermieter/shared";
 import { EntityManager, type FilterQuery } from "@mikro-orm/core";
 import {
@@ -64,6 +65,10 @@ const defaultSettings = (buildingId: string): HeatingSettings => ({
   co2BuildingRestricted: false,
   co2SupplyRestricted: false,
   co2RestrictionEvidenceNote: null,
+  seventyInsulationAnswer: null,
+  seventyPipesAnswer: null,
+  co2BuildingRestrictionAnswer: null,
+  co2SupplyRestrictionAnswer: null,
   validFrom: "1900-01-01",
   validTo: null,
   createdAt: "",
@@ -331,6 +336,10 @@ export class HeatingService {
         co2BuildingRestricted: false,
         co2SupplyRestricted: false,
         co2RestrictionEvidenceNote: null,
+        seventyInsulationAnswer: null,
+        seventyPipesAnswer: null,
+        co2BuildingRestrictionAnswer: null,
+        co2SupplyRestrictionAnswer: null,
       };
     }
     // Angaben nach § 9 CO2KostAufG gibt es nur bei eingeschalteter
@@ -339,6 +348,7 @@ export class HeatingService {
       dto.co2CostShareEnabled && dto.co2BuildingRestricted;
     const co2SupplyRestricted =
       dto.co2CostShareEnabled && dto.co2SupplyRestricted;
+    const seventyApplies = isSeventyPercentFuel(dto.fuelType);
     return {
       buildingId,
       mode: dto.mode,
@@ -366,6 +376,17 @@ export class HeatingService {
         co2BuildingRestricted || co2SupplyRestricted
           ? (dto.co2RestrictionEvidenceNote?.trim() ?? null)
           : null,
+      // Eine Antwort wird nur gespeichert, solange die dazugehörige Frage gilt, sonst null
+      seventyInsulationAnswer: seventyApplies
+        ? dto.seventyInsulationAnswer
+        : null,
+      seventyPipesAnswer: seventyApplies ? dto.seventyPipesAnswer : null,
+      co2BuildingRestrictionAnswer: dto.co2CostShareEnabled
+        ? dto.co2BuildingRestrictionAnswer
+        : null,
+      co2SupplyRestrictionAnswer: dto.co2CostShareEnabled
+        ? dto.co2SupplyRestrictionAnswer
+        : null,
     };
   }
 

@@ -8,7 +8,6 @@ import {
   RiExternalLinkLine,
   RiKey2Line,
   RiProhibitedLine,
-  RiSparkling2Line,
 } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -22,6 +21,7 @@ import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { AI_PROVIDER_NONE, type AiSettings } from "@/lib/aiSettings";
 import { t } from "@/lib/i18n";
+import { IconSparkle } from "@/lib/icons";
 import { ApiKeyField } from "./ApiKeyField";
 import { ProviderLogo } from "./ProviderLogo";
 
@@ -119,7 +119,7 @@ export const AiSettingsForm = ({
       <fieldset disabled={submitting} className="contents">
         <div>
           <SectionCard
-            icon={RiSparkling2Line}
+            icon={IconSparkle}
             title={t("ui.settings.ai.sections.provider")}
             description={t("ui.settings.ai.sections.providerDescription")}
           >
