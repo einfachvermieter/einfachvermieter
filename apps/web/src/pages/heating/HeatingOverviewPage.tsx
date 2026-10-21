@@ -85,7 +85,9 @@ const heatingColumns = (
       if (settings.mode !== "internal") {
         return (
           <span className="text-muted-foreground">
-            {t("ui.heating.summary.externalNoConfig")}
+            {settings.mode === "external"
+              ? t("ui.heating.summary.externalNoConfig")
+              : t("ui.heating.summary.none")}
           </span>
         );
       }

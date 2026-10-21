@@ -48,8 +48,8 @@ const applyBillingType = (
   form: UseFormReturn<HeatingFormValues>,
   next: BillingType,
 ) => {
-  if (next === "external") {
-    form.setValue("mode", "external");
+  if (next === "external" || next === "none") {
+    form.setValue("mode", next);
     return;
   }
 
@@ -150,7 +150,7 @@ export const HeatingBillingFields = ({
         />
       </Field>
 
-      {mode === "external" ? null : (
+      {mode === "internal" ? (
         <>
           <div className="grid grid-cols-2 gap-4">
             <TextInput
@@ -213,7 +213,7 @@ export const HeatingBillingFields = ({
             )}
           />
         </>
-      )}
+      ) : null}
 
       <ExternalBillingInfoToggle form={form} mode={mode} />
       {mode === "external" ? (
@@ -221,6 +221,11 @@ export const HeatingBillingFields = ({
           <AlertDescription>
             {t("ui.heating.fields.co2ExternalHint")}
           </AlertDescription>
+        </Alert>
+      ) : null}
+      {mode === "none" ? (
+        <Alert variant="warning">
+          <AlertDescription>{t("ui.heating.fields.noneHint")}</AlertDescription>
         </Alert>
       ) : null}
     </FieldGroup>

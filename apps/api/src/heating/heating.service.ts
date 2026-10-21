@@ -303,12 +303,12 @@ export class HeatingService {
   }
 
   /**
-   * Im externen Modus sind die Verteilungs- und Anlagenfelder fachlich
-   * bedeutungslos. Wir schreiben trotzdem Defaults, damit die NOT-NULL-
-   * Spalten befüllt sind.
+   * Im externen Modus und ohne Heizkostenabrechnung sind die Verteilungs-
+   * und Anlagenfelder fachlich bedeutungslos. Wir schreiben trotzdem
+   * Defaults, damit die NOT-NULL-Spalten befüllt sind.
    */
   private toRowValues(buildingId: string, dto: HeatingSettingsWriteDto) {
-    if (dto.mode === "external") {
+    if (dto.mode !== "internal") {
       return {
         buildingId,
         mode: dto.mode,
@@ -326,7 +326,8 @@ export class HeatingService {
         gasBillingByCalorificValue: false,
         heatPumpMonovalent: false,
         mandatorySeventyPercent: false,
-        includeBillingInfo: dto.includeBillingInfo,
+        includeBillingInfo:
+          dto.mode === "external" ? dto.includeBillingInfo : true,
         co2CostShareEnabled: true,
         co2BuildingRestricted: false,
         co2SupplyRestricted: false,

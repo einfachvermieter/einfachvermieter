@@ -434,3 +434,52 @@ describe("Grundkostenmaßstab der Heizung", () => {
     });
   });
 });
+
+describe("Dezentrale Heizung", () => {
+  it("wird zur Konfiguration ohne Heizkostenabrechnung, alles andere bleibt", async () => {
+    await withDatabase(async (open) => {
+      const orm = await open();
+      const connection = orm.em.getConnection();
+      await orm.migrator.up({ to: "Migration20261016190129" });
+
+      await connection.execute(
+        "insert into buildings (id, name, address_street, address_postal_code, address_city) values ('house', 'Haus', 'Weg 1', '45127', 'Essen')",
+      );
+      await connection.execute(
+        "insert into units (id, building_id, name, area_sqm) values ('unit', 'house', 'A', 80)",
+      );
+      await connection.execute(
+        "insert into tenants (id, unit_id, start_date) values ('tenant', 'unit', '2024-01-01')",
+      );
+      await connection.execute(
+        "insert into heating_settings (id, building_id, mode, heating_type, fuel_type, valid_from, valid_to) values ('decentralized', 'house', 'internal', 'decentralized', 'oil', '2024-01-01', '2024-12-31'), ('central', 'house', 'internal', 'central_with_hot_water', 'gas', '2025-01-01', null)",
+      );
+      await connection.execute(
+        "insert into operating_cost_statements (id, building_id, tenant_id, period_start, period_end, status, snapshot_data) values ('statement', 'house', 'tenant', '2024-01-01', '2024-12-31', 'finalized', '{\"heatingDetail\":null}')",
+      );
+      const statementsBefore = await connection.execute(
+        "select * from operating_cost_statements",
+      );
+
+      await orm.migrator.up();
+
+      const rows: Array<{
+        id: string;
+        mode: string;
+        heating_type: string;
+        fuel_type: string;
+      }> = await connection.execute(
+        "select id, mode, heating_type, fuel_type from heating_settings order by id",
+      );
+      expect(
+        rows.map((row) => [row.id, row.mode, row.heating_type, row.fuel_type]),
+      ).toEqual([
+        ["central", "internal", "central_with_hot_water", "gas"],
+        ["decentralized", "none", "central_without_hot_water", "oil"],
+      ]);
+      expect(
+        await connection.execute("select * from operating_cost_statements"),
+      ).toEqual(statementsBefore);
+    });
+  });
+});

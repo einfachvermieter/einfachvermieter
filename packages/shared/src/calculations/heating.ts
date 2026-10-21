@@ -2,6 +2,7 @@ import { type ContainedTaxKind, containedTaxKinds } from "../schemas/core.js";
 import type {
   HeatingBaseMethod,
   HeatingFuelType,
+  HeatingMode,
   HeatingProrationMethod,
 } from "../schemas/heating.js";
 import type {
@@ -507,7 +508,7 @@ export const co2AppliedLandlordSharePercent = (
  * Beschränkung nach § 9 CO2KostAufG zählt.
  */
 export type Co2RestrictionVersion = {
-  mode: "internal" | "external";
+  mode: HeatingMode;
   validFrom: string;
   validTo: string | null;
   co2CostShareEnabled: boolean;

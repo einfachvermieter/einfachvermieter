@@ -589,7 +589,7 @@ const attributeLaborItem = (
   item: LaborItemRaw,
   context: LaborAttributionContext,
 ): number | null => {
-  if (item.isHeating && context.mode === "external") {
+  if (item.isHeating && context.mode !== "internal") {
     return null;
   }
 
@@ -1099,8 +1099,16 @@ export class StatementsService {
       throw this.toCalcHttpError(err);
     }
 
+    // Ohne Heizkosten-Detail hängt der Konfigurationswechsel an keinem
+    // Detail und kommt direkt in die Liste.
+    const heatingWarnings =
+      result.heatingDetail?.warnings ??
+      (heatingSettings.mode === "none"
+        ? await this.heatingChangeWarnings(buildingId, statementPeriod)
+        : []);
+
     const warnings: string[] = [
-      ...groupCalcWarnings(result.heatingDetail?.warnings ?? []).map((group) =>
+      ...groupCalcWarnings(heatingWarnings).map((group) =>
         this.formatWarningGroup("heating", group),
       ),
       ...groupCalcWarnings(result.waterDetail?.warnings ?? []).map((group) =>
@@ -1150,6 +1158,9 @@ export class StatementsService {
    * Heizkosten-Detail nur, wenn für das Gebäude eine Konfiguration angelegt
    * ist; ohne sie rechnet der Vermieter keine Heizung ab. Heizkosten-
    * Rechnungen im Zeitraum bedeuten dann, dass die Konfiguration fehlt.
+   * Gleiches gilt, wenn zum Periodenbeginn keine Heizkostenabrechnung
+   * eingerichtet ist (dezentrale Versorgung): Erfasste Heizkosten werden
+   * dann weder verteilt noch still weggelassen.
    */
   private async buildConfiguredHeatingDetail(
     input: Parameters<StatementsService["buildHeatingDetail"]>[0],
@@ -1163,26 +1174,47 @@ export class StatementsService {
       return;
     }
 
-    const heatingDetail = await this.buildHeatingDetail(input);
+    if (input.heatingSettings.mode === "none") {
+      if (heatingCostEntries.length > 0) {
+        throw this.toCalcHttpError(new CalculationError("heatingNotCentral"));
+      }
 
-    // Gerechnet wird mit der Konfiguration vom Beginn der Periode. Beginnt
-    // mittendrin eine neue Version, weicht das Ergebnis von der Realität ab.
-    const heatingChangeDates = await this.heatingService.changeDatesWithin(
+      return;
+    }
+
+    const heatingDetail = await this.buildHeatingDetail(input);
+    const changeWarnings = await this.heatingChangeWarnings(
       buildingId,
       statementPeriod,
     );
 
-    if (heatingChangeDates.length > 0) {
+    if (changeWarnings.length > 0) {
       heatingDetail.warnings = heatingDetail.warnings ?? [];
-      heatingDetail.warnings.push(
-        ...heatingChangeDates.map((date) => ({
-          code: "heatingConfigChangedInPeriod",
-          params: { date },
-        })),
-      );
+      heatingDetail.warnings.push(...changeWarnings);
     }
 
     return heatingDetail;
+  }
+
+  /**
+   * Gerechnet wird mit der Heizkostenkonfiguration vom Beginn der Periode.
+   * Beginnt mittendrin eine neue Version, weicht das Ergebnis von der
+   * Realität ab, auch wenn zu Beginn keine Heizkostenabrechnung galt und
+   * noch keine Heizkosten erfasst sind.
+   */
+  private async heatingChangeWarnings(
+    buildingId: string,
+    statementPeriod: Period,
+  ): Promise<CalcWarning[]> {
+    const changeDates = await this.heatingService.changeDatesWithin(
+      buildingId,
+      statementPeriod,
+    );
+
+    return changeDates.map((date) => ({
+      code: "heatingConfigChangedInPeriod",
+      params: { date },
+    }));
   }
 
   /**

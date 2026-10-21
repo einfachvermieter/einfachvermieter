@@ -1,7 +1,8 @@
 /**
  * Abweisungen über die echte HTTP-API gegen eine Wegwerf-SQLite:
  * Abrechnungszeitraum über 12 Monate, zweite finalisierte Abrechnung für
- * denselben Mieter und Zeitraum, Anfrage-Limit für Login und Passwortwechsel.
+ * denselben Mieter und Zeitraum, Heizkosten bei einem Gebäude ohne
+ * Heizkostenabrechnung, Anfrage-Limit für Login und Passwortwechsel.
  */
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -262,6 +263,152 @@ describe("Zweite finalisierte Abrechnung für denselben Zeitraum", () => {
 
     const stillDraft = await api(`/statements/${second.id}`, { expect: 200 });
     expect(stillDraft.status).toBe("draft");
+  }, 60_000);
+});
+
+describe("Keine Heizkostenabrechnung", () => {
+  /**
+   * Vorschau der Abrechnung für ein Kalenderjahr
+   */
+  const previewOf = (
+    tenant: { buildingId: string; tenantId: string },
+    year: number,
+    expectStatus: number,
+  ) =>
+    api(
+      `/statements/preview/calculate?buildingId=${tenant.buildingId}&tenantId=${tenant.tenantId}&from=${year}-01-01&to=${year}-12-31`,
+      { expect: expectStatus },
+    );
+
+  /**
+   * Legt eine Heizkosten-Kostenart mit einer Jahresrechnung an
+   */
+  const addHeatingCosts = async (buildingId: string, year: number) => {
+    const costType = await api("/costs/types", {
+      method: "POST",
+      body: {
+        buildingId,
+        name: `Heizung ${year}`,
+        category: "heating",
+        defaultAllocationKey: null,
+        laborCostCategory: null,
+      },
+      expect: 201,
+    });
+    await api("/costs", {
+      method: "POST",
+      body: {
+        buildingId,
+        invoiceDate: `${year}-03-01`,
+        items: [
+          {
+            costTypeId: costType.id,
+            amountCents: 90_000,
+            periodStart: `${year}-01-01`,
+            periodEnd: `${year}-12-31`,
+          },
+        ],
+      },
+      expect: 201,
+    });
+  };
+
+  it("rechnet ohne Heizkosten-Detail und lässt sich finalisieren", async () => {
+    const tenant = await createBillableTenant("ohne-heizung");
+    await api(`/buildings/${tenant.buildingId}/heating`, {
+      method: "POST",
+      body: { mode: "none", validFrom: "2025-01-01", validTo: null },
+      expect: 201,
+    });
+
+    const preview = await previewOf(tenant, 2025, 200);
+    expect(preview.heatingDetail).toBeUndefined();
+    expect(preview.totalCostsCents).toBe(12_000);
+    expect(preview.warnings).toEqual([]);
+
+    const statement = await api("/statements", {
+      method: "POST",
+      body: { ...tenant, periodStart: "2025-01-01", periodEnd: "2025-12-31" },
+      expect: 201,
+    });
+    await api(`/statements/${statement.id}/finalize`, {
+      method: "POST",
+      expect: 201,
+    });
+  }, 60_000);
+
+  it("bricht mit erfassten Heizkosten ab", async () => {
+    const tenant = await createBillableTenant("heizkosten-dezentral");
+    await api(`/buildings/${tenant.buildingId}/heating`, {
+      method: "POST",
+      body: { mode: "none", validFrom: "2025-01-01", validTo: null },
+      expect: 201,
+    });
+    await addHeatingCosts(tenant.buildingId, 2025);
+
+    const rejected = await previewOf(tenant, 2025, 400);
+    expect(rejected.message).toContain(
+      "keine Heizkostenabrechnung eingerichtet, es sind aber Heizkosten erfasst",
+    );
+  }, 60_000);
+
+  /**
+   * Legt eine zentrale Heizkostenkonfiguration ab dem Stichtag an
+   */
+  const addCentralHeating = (buildingId: string, validFrom: string) =>
+    api(`/buildings/${buildingId}/heating`, {
+      method: "POST",
+      body: {
+        mode: "internal",
+        validFrom,
+        validTo: null,
+        baseSharePercent: 30,
+        consumptionSharePercent: 70,
+        baseMethod: "living_area",
+        consumptionMethod: "heat_meter",
+        prorationMethod: "linear",
+        heatingType: "central_without_hot_water",
+        fuelType: "gas",
+        hotWaterMeterId: null,
+        hotWaterSupplyTemperatureCelsius: 60,
+        co2CostShareEnabled: false,
+      },
+      expect: 201,
+    });
+
+  it("rechnet nach der Umrüstung auf eine Zentralheizung wieder Heizkosten ab", async () => {
+    const tenant = await createBillableTenant("umruestung");
+    await api(`/buildings/${tenant.buildingId}/heating`, {
+      method: "POST",
+      body: { mode: "none", validFrom: "2025-01-01", validTo: "2025-12-31" },
+      expect: 201,
+    });
+    await addCentralHeating(tenant.buildingId, "2026-01-01");
+    await addHeatingCosts(tenant.buildingId, 2026);
+
+    const before = await previewOf(tenant, 2025, 200);
+    expect(before.heatingDetail).toBeUndefined();
+
+    const after = await previewOf(tenant, 2026, 200);
+    expect(after.heatingDetail.mode).toBe("internal");
+    expect(after.heatingDetail.totalHeatingCostsCents).toBe(90_000);
+  }, 60_000);
+
+  it("warnt bei einer Umrüstung mitten im Zeitraum, auch ohne erfasste Heizkosten", async () => {
+    const tenant = await createBillableTenant("umruestung-mitte");
+    await api(`/buildings/${tenant.buildingId}/heating`, {
+      method: "POST",
+      body: { mode: "none", validFrom: "2025-01-01", validTo: "2025-06-30" },
+      expect: 201,
+    });
+    await addCentralHeating(tenant.buildingId, "2025-07-01");
+
+    const preview = await previewOf(tenant, 2025, 200);
+    expect(preview.heatingDetail).toBeUndefined();
+    expect(preview.warnings).toHaveLength(1);
+    expect(preview.warnings[0]).toContain(
+      "beginnt eine neue Heizkostenkonfiguration",
+    );
   }, 60_000);
 });
 

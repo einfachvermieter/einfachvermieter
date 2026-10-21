@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   emptyHeatingFormValues,
   heatingFormSchema,
+  heatingFormToDto,
   heatingSettingsWriteSchema,
 } from "./heating.js";
 import {
@@ -241,5 +242,53 @@ describe("Angaben zum Nachweis einer Beschränkung nach § 9 CO2KostAufG", () =>
     expect(result.error?.issues.map((issue) => issue.path)).toEqual([
       ["co2RestrictionEvidenceNote"],
     ]);
+  });
+});
+
+describe("Keine Heizkostenabrechnung", () => {
+  const none = { mode: "none", validFrom: "2025-01-01", validTo: null };
+
+  it("nimmt nur die Gültigkeit an", () => {
+    expect(heatingSettingsWriteSchema.safeParse(none).success).toBe(true);
+    expect(
+      heatingSettingsWriteSchema.safeParse({
+        ...none,
+        heatingType: "central_with_hot_water",
+        hotWaterSupplyTemperatureCelsius: 60,
+      }).success,
+    ).toBe(false);
+    expect(
+      heatingSettingsWriteSchema.safeParse({
+        ...none,
+        validTo: "2024-12-31",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("kennt dezentrale Heizung nicht mehr als Heizungsart", () => {
+    expect(
+      heatingSettingsWriteSchema.safeParse({
+        ...internalBase,
+        heatingType: "decentralized",
+        consumptionSharePercent: 70,
+        baseSharePercent: 30,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("übergibt aus dem Formular nur die Gültigkeit, ohne die übrigen Felder zu prüfen", () => {
+    const values = {
+      ...emptyHeatingFormValues(crypto.randomUUID(), "2025-01-01"),
+      mode: "none" as const,
+      consumptionSharePercent: "",
+      validTo: "2025-12-31",
+    };
+
+    expect(heatingFormSchema.safeParse(values).success).toBe(true);
+    expect(heatingFormToDto(values)).toEqual({
+      mode: "none",
+      validFrom: "2025-01-01",
+      validTo: "2025-12-31",
+    });
   });
 });

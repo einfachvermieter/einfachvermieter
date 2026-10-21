@@ -3,7 +3,7 @@ import { z } from "zod";
 import { centsToEurInputOrEmpty, parseEurToCents } from "../format.js";
 import { isoDate } from "./common.js";
 
-export const heatingModes = ["internal", "external"] as const;
+export const heatingModes = ["internal", "external", "none"] as const;
 export type HeatingMode = (typeof heatingModes)[number];
 
 /**
@@ -44,12 +44,12 @@ export type HeatingConsumptionMethod =
 
 /**
  * Bauliche Heizungsart eines Gebäudes. Entscheidend für die spätere
- * Aufteilung Heizung vs. Warmwasser bei zentraler Versorgung.
+ * Aufteilung Heizung vs. Warmwasser bei zentraler Versorgung. Dezentrale
+ * Versorgung ist der Modus "none".
  */
 export const heatingTypes = [
   "central_with_hot_water",
   "central_without_hot_water",
-  "decentralized",
 ] as const;
 export type HeatingType = (typeof heatingTypes)[number];
 
@@ -122,6 +122,7 @@ export const isCo2RestrictionEvidenceNoteMissing = (value: {
  * - Im Modus "internal" sind alle Verteilungs- und Anlagenfelder Pflicht.
  * - Im Modus "external" sind die Verteilungsfelder bedeutungslos;
  *   Endbeträge werden über externalHeatingEntries erfasst.
+ * - Im Modus "none" zählt nur die Gültigkeit.
  */
 const internalSchema = z
   .object({
@@ -164,8 +165,16 @@ const externalSchema = z
   })
   .strict();
 
+const noneSchema = z
+  .object({
+    mode: z.literal("none"),
+    validFrom: isoDate(),
+    validTo: isoDate().nullable(),
+  })
+  .strict();
+
 export const heatingSettingsWriteSchema = z
-  .discriminatedUnion("mode", [internalSchema, externalSchema])
+  .discriminatedUnion("mode", [internalSchema, externalSchema, noneSchema])
   .refine(
     (value) =>
       value.mode !== "internal" ||
@@ -500,6 +509,9 @@ export const heatingFormToDto = (
   values: HeatingFormValues,
 ): HeatingSettingsWriteDto => {
   const validTo = values.validTo.length === 0 ? null : values.validTo;
+  if (values.mode === "none") {
+    return { mode: "none", validFrom: values.validFrom, validTo };
+  }
   if (values.mode === "external") {
     return {
       mode: "external",

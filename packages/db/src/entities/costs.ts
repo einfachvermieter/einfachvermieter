@@ -15,14 +15,13 @@ export type AllocationKey =
   | "per_consumption_kwh"
   | "fixed";
 export type LaborCostCategory = "craftsman" | "household_service";
-export type HeatingMode = "internal" | "external";
+export type HeatingMode = "internal" | "external" | "none";
 export type HeatingBaseMethod = "living_area" | "heated_area";
 export type HeatingConsumptionMethod = "heat_meter" | "heat_cost_allocator";
 export type HeatingProrationMethod = "linear" | "degree_days";
 export type HeatingType =
   | "central_with_hot_water"
-  | "central_without_hot_water"
-  | "decentralized";
+  | "central_without_hot_water";
 export type FuelType =
   | "gas"
   | "oil"

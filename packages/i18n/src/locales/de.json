@@ -282,6 +282,7 @@
       "allocationKwhNoMeters": "Die Kostenart „{costTypeName}“ wird nach Verbrauch (kWh) verteilt, aber ihr ist kein Zähler zugeordnet. Bitte ordnen Sie den passenden Zählern unter „Verwendet für Kostenarten“ diese Kostenart zu.",
       "allocationKwhNoConsumption": "Für die Kostenart „{costTypeName}“ wurde kein Verbrauch gemessen (Summe 0 kWh). Bitte prüfen Sie die Zählerstände der zugeordneten Zähler.",
       "noCosts": "Für diesen Zeitraum sind keine Kosten erfasst. Bitte erfassen Sie zuerst die Rechnungen des Abrechnungszeitraums.",
+      "heatingNotCentral": "Für den Abrechnungszeitraum ist keine Heizkostenabrechnung eingerichtet, es sind aber Heizkosten erfasst. Bitte prüfen Sie die Heizkostenkonfiguration. Kosten für Geräte in den Wohnungen, z. B. die Wartung einer Etagenheizung, erfassen Sie als Betriebskosten mit dem vereinbarten Umlageschlüssel.",
       "heatingNoConfig": "Es sind Heizkosten erfasst, aber für das Gebäude ist keine Heizkostenabrechnung eingerichtet. Bitte richten Sie sie unter „Heizkosten“ ein.",
       "waterNoMainMeter": "Für die Wasserabrechnung ist kein Hauptzähler hinterlegt. Bitte legen Sie mindestens einen Hauptwasserzähler an.",
       "readingNoneAvailable": "Für mindestens einen Zähler sind keine Zählerstände erfasst, daher kann der Verbrauch zum {date} nicht ermittelt werden. Bitte erfassen Sie Zählerstände.",
@@ -1497,7 +1498,8 @@
       },
       "modes": {
         "internal": "Interne Abrechnung",
-        "external": "Externe Abrechnung"
+        "external": "Externe Abrechnung",
+        "none": "Keine Heizkostenabrechnung"
       },
       "baseMethods": {
         "living_area": "Wohnfläche",
@@ -1520,7 +1522,7 @@
         "mode": "Abrechnungsmodus",
         "modeDescription": "Interne Abrechnung: EinfachVermieter verteilt die Heizkosten selbst auf Basis von Zählern oder Heizkostenverteilern pro Wohnung. Externe Abrechnung: Ein Dienstleister oder eine externe Berechnung liefert Endbeträge pro Wohnung, die hier manuell erfasst werden.",
         "billingType": "Art der Heizkostenabrechnung",
-        "billingTypeDescription": "Wärmemengenzähler messen den Verbrauch direkt in kWh, Heizkostenverteiler erfassen Anzeigewerte je Heizkörper. Bei externer Abrechnung liefert ein Dienstleister Endbeträge pro Wohnung.",
+        "billingTypeDescription": "Wärmemengenzähler messen den Verbrauch direkt in kWh, Heizkostenverteiler erfassen Anzeigewerte je Heizkörper. Bei externer Abrechnung liefert ein Dienstleister Endbeträge pro Wohnung. Ohne zentrale Heizung und ohne zentrales Warmwasser gibt es keine Heizkostenabrechnung.",
         "consumptionMethod": "Verbrauchserfassung",
         "consumptionMethodDescription": "Wärmemengenzähler messen den Verbrauch direkt in kWh. Heizkostenverteiler erfassen Anzeigewerte je Heizkörper und werden mit dem Bewertungsfaktor (KGesamt) gewichtet.",
         "consumptionSharePercent": "Verbrauchsanteil",
@@ -1577,6 +1579,7 @@
         "co2RestrictionBuilding": "Gebäude",
         "co2RestrictionSupply": "Versorgung",
         "co2RestrictionBoth": "Gebäude und Versorgung",
+        "noneHint": "Wählen Sie dies nur, wenn weder Heizung noch Warmwasser zentral für mehrere Wohnungen bereitgestellt werden, z. B. bei Gasetagenheizung, Nachtspeicher oder Einzelöfen je Wohnung. Versorgt eine Therme mehrere Wohnungen, ist sie eine zentrale Anlage, auch wenn sie nur eine Etage beheizt. Dezentrale Heizung mit zentralem Warmwasser wird derzeit nicht unterstützt.",
         "co2ExternalHint": "Bei externer Abrechnung weist EinfachVermieter die CO₂-Kostenaufteilung nicht aus. Die Angaben nach § 7 Abs. 3 CO2KostAufG müssen in der Abrechnung Ihres Dienstleisters stehen. Legen Sie diese jeder Abrechnung bei. Fehlen die Angaben, können Mieter ihre Heizkosten um 3 % kürzen (§ 7 Abs. 4).",
         "co2FuelMismatchWarning": "Für den gewählten Energieträger {fuel} fällt kein CO₂-Preis nach CO2KostAufG an (nur fossile Brennstoffe und Fernwärme). Die CO₂-Kostenaufteilung ist hier in der Regel nicht zutreffend."
       },
@@ -1615,7 +1618,8 @@
       "billingTypes": {
         "internal_heat_meter": "Interne Abrechnung – Wärmemengenzähler",
         "internal_heat_cost_allocator": "Interne Abrechnung – Heizkostenverteiler",
-        "external": "Externe Abrechnung"
+        "external": "Externe Abrechnung",
+        "none": "Keine Heizkostenabrechnung"
       },
       "validation": {
         "percentRange": "Wert zwischen 0 und 100",
@@ -1657,6 +1661,10 @@
         "external": {
           "title": "Externe Abrechnung",
           "description": "Ein Dienstleister rechnet ab, Sie tragen nur die Endbeträge je Wohnung ein"
+        },
+        "none": {
+          "title": "Keine Heizkostenabrechnung",
+          "description": "Heizung und Warmwasser werden in jeder Wohnung selbst erzeugt"
         }
       },
       "versions": {
@@ -1699,8 +1707,7 @@
       },
       "heatingTypes": {
         "central_with_hot_water": "Zentralheizung mit Warmwasser",
-        "central_without_hot_water": "Zentralheizung ohne Warmwasser",
-        "decentralized": "Dezentrale Heizung"
+        "central_without_hot_water": "Zentralheizung ohne Warmwasser"
       },
       "fuelTypes": {
         "gas": "Erdgas",

@@ -86,7 +86,8 @@ const versionKpis = (version: HeatingSettings) => {
 
 /**
  * Heizkosten-Ansicht: Kopf, Kennzahlen, Abrechnung und Heizungsanlage als
- * Werte-Cards, im externen Modus zusätzlich die Endbeträge je Wohnung
+ * Werte-Cards, im externen Modus zusätzlich die Endbeträge je Wohnung. Ohne
+ * Heizkostenabrechnung bleibt nur die Card der Abrechnung.
  */
 export const HeatingVersionEditPage = () => {
   const { id } = routeApi.useParams();
@@ -200,7 +201,7 @@ export const HeatingVersionEditPage = () => {
             building?.name,
             isInternal
               ? t(`ui.heating.heatingTypes.${version.heatingType}`)
-              : t("ui.heating.modes.external"),
+              : t(`ui.heating.modes.${version.mode}`),
             isInternal
               ? t(`ui.heating.fuelTypes.${version.fuelType}`)
               : undefined,
@@ -232,7 +233,9 @@ export const HeatingVersionEditPage = () => {
         />
 
         <div className="space-y-5">
-          <MiniKpiRow columns={2} items={versionKpis(version)} />
+          {version.mode === "none" ? null : (
+            <MiniKpiRow columns={2} items={versionKpis(version)} />
+          )}
 
           <div>
             <HeatingBillingCard
@@ -240,10 +243,12 @@ export const HeatingVersionEditPage = () => {
               onEdit={() => setSheet("billing")}
             />
 
-            <HeatingProrationCard
-              version={version}
-              onEdit={() => setSheet("proration")}
-            />
+            {version.mode === "none" ? null : (
+              <HeatingProrationCard
+                version={version}
+                onEdit={() => setSheet("proration")}
+              />
+            )}
 
             {isInternal ? (
               <HeatingInstallationCard
@@ -253,9 +258,10 @@ export const HeatingVersionEditPage = () => {
                 )}
                 onEdit={() => setSheet("installation")}
               />
-            ) : (
+            ) : null}
+            {version.mode === "external" ? (
               <ExternalHeatingEntriesCard buildingId={version.buildingId} />
-            )}
+            ) : null}
           </div>
         </div>
       </div>

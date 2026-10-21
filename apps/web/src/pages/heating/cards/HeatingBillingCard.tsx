@@ -55,7 +55,7 @@ export const HeatingBillingCard = ({
       label: t("ui.heating.fields.mandatorySeventyPercent"),
       value: yesNo(version.mandatorySeventyPercent),
     });
-  } else {
+  } else if (version.mode === "external") {
     rows.push({
       label: t("ui.heating.fields.includeBillingInfo"),
       value: yesNo(version.includeBillingInfo),

@@ -5,6 +5,8 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Geändert:** Gebäude ohne zentrale Heizung und ohne zentrales
+  Warmwasser bekommen keine Heizkostenabrechnung mehr. Option „Dezentrale Heizung“ heißt jetzt „Keine Heizkostenabrechnung“.
 - **Behoben:** Im PDF bleiben Tabellen und ihre Fußnoten auf derselben
   Seite. Passt der Block nicht mehr, beginnt er auf der nächsten Seite.
 - **Neu:** Die Grundkosten der Heizung lassen sich nach Wohnfläche oder

@@ -95,7 +95,7 @@ const HeatingCreateForm = ({
     invalidateKeys: [["heating"]],
   });
 
-  const isExternal = form.watch("mode") === "external";
+  const mode = form.watch("mode");
 
   return (
     <FormSheet
@@ -120,13 +120,15 @@ const HeatingCreateForm = ({
           previousBaseMethod={previousBaseMethod}
         />
       </SheetSection>
-      <SheetSection
-        icon={RiCalendarLine}
-        title={t("ui.heating.cards.proration")}
-      >
-        <HeatingProrationFields form={form} />
-      </SheetSection>
-      {isExternal ? null : (
+      {mode === "none" ? null : (
+        <SheetSection
+          icon={RiCalendarLine}
+          title={t("ui.heating.cards.proration")}
+        >
+          <HeatingProrationFields form={form} />
+        </SheetSection>
+      )}
+      {mode === "internal" ? (
         <SheetSection
           icon={RiFireLine}
           title={t("ui.heating.installation.title")}
@@ -136,7 +138,7 @@ const HeatingCreateForm = ({
             hotWaterMeterCandidates={hotWaterMeterCandidates}
           />
         </SheetSection>
-      )}
+      ) : null}
     </FormSheet>
   );
 };
