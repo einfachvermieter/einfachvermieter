@@ -13,6 +13,16 @@ const issueText = (issue: SupplyIssue): string => {
     });
   }
 
+  if (issue.kind === "heatingAreaZeroWithConsumption") {
+    return t("ui.substitutions.heatingAreaZeroWithConsumption", {
+      unit: issue.unit,
+    });
+  }
+
+  if (issue.kind === "heatingAreaNoAllocationBase") {
+    return t("ui.substitutions.heatingAreaNoAllocationBase");
+  }
+
   if (issue.kind === "unsupportedCombination") {
     return t("ui.substitutions.unsupportedCombination", { unit: issue.unit });
   }
@@ -27,7 +37,8 @@ const issueText = (issue: SupplyIssue): string => {
 
 /**
  * Offene Punkte zur zentralen Versorgung: fehlender Zähler, fehlender Stand
- * zur Umstellung, nicht unterstützte Kombination.
+ * zur Umstellung, nicht unterstützte Kombination, widersprüchliche
+ * Heizfläche 0.
  */
 export const SupplyIssueList = ({
   issues,
@@ -65,14 +76,40 @@ export const SupplyIssueList = ({
                   {t("ui.substitutions.createMeter")}
                 </DomainLink>
               ) : null}
-              {issue.kind === "boundary" ? null : (
+              {issue.kind === "meterMissing" ||
+              issue.kind === "unsupportedCombination" ? (
                 <DomainLink
                   to="/wohnungen/$unitId"
                   params={{ unitId: issue.unitId }}
                 >
                   {t("ui.substitutions.editSupply")}
                 </DomainLink>
-              )}
+              ) : null}
+              {issue.kind === "heatingAreaZeroWithConsumption" ? (
+                <>
+                  <DomainLink
+                    to="/wohnungen/$unitId"
+                    params={{ unitId: issue.unitId }}
+                  >
+                    {t("ui.substitutions.editUnit")}
+                  </DomainLink>
+                  <DomainLink
+                    to="/zaehler"
+                    search={{
+                      buildingId,
+                      unitId: issue.unitId,
+                      type: undefined,
+                    }}
+                  >
+                    {t("ui.substitutions.showMeters")}
+                  </DomainLink>
+                </>
+              ) : null}
+              {issue.kind === "heatingAreaNoAllocationBase" ? (
+                <DomainLink to="/wohnungen" search={{ buildingId }}>
+                  {t("ui.substitutions.showUnits")}
+                </DomainLink>
+              ) : null}
             </div>
           ) : null}
         </AlertDescription>

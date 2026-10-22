@@ -2,7 +2,8 @@
  * Abweisungen über die echte HTTP-API gegen eine Wegwerf-SQLite:
  * Abrechnungszeitraum über 12 Monate, zweite finalisierte Abrechnung für
  * denselben Mieter und Zeitraum, Heizkosten bei einem Gebäude ohne
- * Heizkostenabrechnung, Anfrage-Limit für Login und Passwortwechsel.
+ * Heizkostenabrechnung, Betriebskosten ohne Verteilungsgrundlage,
+ * Anfrage-Limit für Login und Passwortwechsel.
  */
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -66,7 +67,13 @@ const login = (password: string) =>
  * Legt Gebäude, Wohnung, Mietvertrag und eine Rechnung für 2025 an und gibt
  * den Rumpf zum Anlegen einer Abrechnung zurück (Zeitraum fehlt noch).
  */
-const createBillableTenant = async (suffix: string) => {
+const createBillableTenant = async (
+  suffix: string,
+  options: {
+    heatingAreaSqm?: number;
+    allocationKey?: "per_living_area" | "per_heating_area";
+  } = {},
+) => {
   const building = await api("/buildings", {
     method: "POST",
     body: {
@@ -79,7 +86,12 @@ const createBillableTenant = async (suffix: string) => {
   });
   const unit = await api("/units", {
     method: "POST",
-    body: { buildingId: building.id, name: "EG", areaSqm: 60 },
+    body: {
+      buildingId: building.id,
+      name: "EG",
+      areaSqm: 60,
+      heatingAreaSqm: options.heatingAreaSqm ?? null,
+    },
     expect: 201,
   });
   const aggregate = await api("/tenants", {
@@ -113,7 +125,7 @@ const createBillableTenant = async (suffix: string) => {
       buildingId: building.id,
       name: "Grundsteuer",
       category: "operating",
-      defaultAllocationKey: "per_living_area",
+      defaultAllocationKey: options.allocationKey ?? "per_living_area",
       laborCostCategory: null,
     },
     expect: 201,
@@ -263,6 +275,42 @@ describe("Zweite finalisierte Abrechnung für denselben Zeitraum", () => {
 
     const stillDraft = await api(`/statements/${second.id}`, { expect: 200 });
     expect(stillDraft.status).toBe("draft");
+  }, 60_000);
+});
+
+describe("Betriebskosten ohne Verteilungsgrundlage", () => {
+  it("lässt Kosten nach Heizfläche 0 nicht still verschwinden und sperrt das Finalisieren", async () => {
+    const tenant = await createBillableTenant("ohne-flaeche", {
+      heatingAreaSqm: 0,
+      allocationKey: "per_heating_area",
+    });
+    await api(`/buildings/${tenant.buildingId}/heating`, {
+      method: "POST",
+      body: { mode: "none", validFrom: "2025-01-01", validTo: null },
+      expect: 201,
+    });
+
+    const preview = await api(
+      `/statements/preview/calculate?buildingId=${tenant.buildingId}&tenantId=${tenant.tenantId}&from=2025-01-01&to=2025-12-31`,
+      { expect: 200 },
+    );
+    expect(preview.totalCostsCents).toBe(0);
+    expect(preview.costWarnings).toEqual([
+      { code: "costAllocationBaseZero", params: { label: "Grundsteuer" } },
+    ]);
+    expect(preview.warnings).toHaveLength(1);
+    expect(preview.warnings[0]).toContain("Grundsteuer");
+
+    const statement = await api("/statements", {
+      method: "POST",
+      body: { ...tenant, periodStart: "2025-01-01", periodEnd: "2025-12-31" },
+      expect: 201,
+    });
+    const blocked = await api(`/statements/${statement.id}/finalize`, {
+      method: "POST",
+      expect: 400,
+    });
+    expect(blocked.message).toContain("noch nicht finalisieren");
   }, 60_000);
 });
 

@@ -953,7 +953,7 @@ export class StatementsService {
    * hinter der Nachricht.
    */
   private formatWarningGroup(
-    source: "heating" | "water" | "kwh",
+    source: "heating" | "water" | "kwh" | "costs",
     group: CalcWarningGroup,
   ): string {
     const i18n = getI18n();
@@ -1116,6 +1116,9 @@ export class StatementsService {
       ),
       ...groupCalcWarnings(result.kwhWarnings ?? []).map((group) =>
         this.formatWarningGroup("kwh", group),
+      ),
+      ...groupCalcWarnings(result.costWarnings ?? []).map((group) =>
+        this.formatWarningGroup("costs", group),
       ),
     ];
 

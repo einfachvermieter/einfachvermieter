@@ -14,7 +14,8 @@ export const unitCreateSchema = z
       .nullable()
       .optional(),
     areaSqm: z.number().positive().max(10_000),
-    heatingAreaSqm: z.number().positive().max(10_000).nullable().optional(),
+    // 0 heißt: keine Heizkörper, keine Wärmeabgabe aus der zentralen Anlage.
+    heatingAreaSqm: z.number().nonnegative().max(10_000).nullable().optional(),
   })
   .strict();
 export type UnitCreateDto = z.infer<typeof unitCreateSchema>;
@@ -66,8 +67,8 @@ export const unitFormSchema = z.object({
       messageKey("ui.units.validation.areaInvalid"),
     )
     .refine(
-      (value) => value === "" || parseDecimal(value) > 0,
-      messageKey("ui.units.validation.areaPositive"),
+      (value) => value === "" || parseDecimal(value) >= 0,
+      messageKey("ui.units.validation.areaNonNegative"),
     )
     .refine(
       (value) => value === "" || parseDecimal(value) <= 10_000,

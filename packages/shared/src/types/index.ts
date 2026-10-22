@@ -293,6 +293,11 @@ export type StatementResult = {
    */
   kwhWarnings?: CalcWarning[];
   /**
+   * Betriebskosten, die sich mangels Verteilungsgrundlage auf niemanden
+   * verteilen (Summe der Fläche 0)
+   */
+  costWarnings?: CalcWarning[];
+  /**
    * Belegungs-Anhang (Personen-/Wohnungs-/Flächentage). Gesetzt bei Leerstand
    * oder wenn eine Personenumlage die Personentage-Gewichte erklären muss.
    */

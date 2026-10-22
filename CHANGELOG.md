@@ -5,6 +5,12 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Neu:** Die Heizfläche einer Wohnung darf 0 sein, wenn alle Heizkörper
+  dauerhaft ausgebaut sind und die Wohnung weiter an der zentralen Heizung
+  hängt. Sie braucht dann keinen Zähler für den Heizverbrauch.
+- **Behoben:** Betriebskosten, die sich mangels Fläche auf keine Wohnung
+  verteilen lassen, fallen nicht mehr still aus der Abrechnung, sondern
+  verhindern das Finalisieren.
 - **Geändert:** Gebäude ohne zentrale Heizung und ohne zentrales
   Warmwasser bekommen keine Heizkostenabrechnung mehr. Option „Dezentrale Heizung“ heißt jetzt „Keine Heizkostenabrechnung“.
 - **Behoben:** Im PDF bleiben Tabellen und ihre Fußnoten auf derselben

@@ -617,6 +617,21 @@ export const calculateStatement = (
       line.allocationKey === "per_consumption_m3" && line.totalBase <= 0,
   );
 
+  // Flächenschlüssel ohne Fläche (z. B. Heizfläche überall 0): Der Betrag
+  // verteilt sich auf niemanden. Keine stille Umstellung auf die Wohnfläche.
+  const costWarnings: CalcWarning[] = lines
+    .filter(
+      (line) =>
+        (line.allocationKey === "per_living_area" ||
+          line.allocationKey === "per_heating_area") &&
+        line.totalBase <= 0 &&
+        line.totalAmountCents !== 0,
+    )
+    .map((line) => ({
+      code: "costAllocationBaseZero",
+      params: { label: line.costTypeName },
+    }));
+
   if (lines.length === 0) {
     throw new CalculationError("noCosts");
   }
@@ -666,5 +681,6 @@ export const calculateStatement = (
     waterDetail,
     heatingDetail,
     ...(kwhWarnings.length > 0 ? { kwhWarnings } : {}),
+    ...(costWarnings.length > 0 ? { costWarnings } : {}),
   };
 };

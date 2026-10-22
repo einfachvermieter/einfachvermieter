@@ -1340,6 +1340,47 @@ const pushMissingMeterWarnings = (
 };
 
 /**
+ * Heizfläche 0 heißt: Die Wohnung gibt keine Wärme aus der zentralen Anlage
+ * ab. Verbrauch widerspricht dem. Beim Maßstab "beheizte Fläche" trägt sie
+ * keine Grundkosten, das erhöht den Anteil aller anderen; ist die Fläche
+ * insgesamt 0, lassen sich die Grundkosten nicht verteilen.
+ */
+const pushHeatingAreaWarnings = (params: {
+  units: UnitInfo[];
+  unitConsumption: Map<string, number>;
+  baseMethod: HeatingBaseMethod;
+  heatingPotCents: number;
+  warnings: CalcWarning[];
+}): void => {
+  const { units, unitConsumption, baseMethod, warnings } = params;
+
+  for (const unit of units) {
+    if (unit.heatingAreaSqm !== 0) {
+      continue;
+    }
+    const unitParams = { unit: unit.name, unitId: unit.id };
+
+    if ((unitConsumption.get(unit.id) ?? 0) > 0) {
+      warnings.push({
+        code: "heatingAreaZeroWithConsumption",
+        params: unitParams,
+      });
+    }
+    if (baseMethod === "heated_area") {
+      warnings.push({ code: "heatingAreaZero", params: unitParams });
+    }
+  }
+
+  const totalBaseArea = units.reduce(
+    (acc, unit) => acc + baseCostAreaFor("heating", unit, baseMethod),
+    0,
+  );
+  if (units.length > 0 && params.heatingPotCents > 0 && totalBaseArea <= 0) {
+    warnings.push({ code: "heatingAreaNoAllocationBase" });
+  }
+};
+
+/**
  * CO2KostAufG: Vermieter-CO2-Anteil ermitteln, der vor der Grund-/Verbrauchs-
  * Aufteilung aus dem Topf herausgerechnet wird.
  */
@@ -2092,9 +2133,10 @@ const evaluateHeatingScope = (params: {
         : undefined,
   });
   warnings.push(...heatingEvaluation.warnings);
+  // Heizfläche 0: keine Wärmeabgabe aus der Anlage, also auch kein Zähler.
   pushMissingMeterWarnings(
     "heating",
-    params.scoped.units,
+    params.scoped.units.filter((unit) => unit.heatingAreaSqm !== 0),
     heatingMeters,
     warnings,
   );
@@ -2632,6 +2674,13 @@ export const calculateHeating = (
     areaWeightsWithLandlord,
     totalAreaDays,
   } = computeAreaWeights(units, prorationMethod, config.baseMethod);
+  pushHeatingAreaWarnings({
+    units,
+    unitConsumption,
+    baseMethod: config.baseMethod,
+    heatingPotCents,
+    warnings,
+  });
 
   const {
     consumptionDistributionMethod,

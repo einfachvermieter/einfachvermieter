@@ -86,7 +86,12 @@ export const unitSupplyRowLabel = (row: UnitSupplyExclusion): string => {
 
 export type SupplyIssue = {
   key: string;
-  kind: "boundary" | "meterMissing" | "unsupportedCombination";
+  kind:
+    | "boundary"
+    | "meterMissing"
+    | "unsupportedCombination"
+    | "heatingAreaZeroWithConsumption"
+    | "heatingAreaNoAllocationBase";
   unitId: string;
   unit: string;
   scope: SubstitutionScope;
@@ -100,6 +105,8 @@ const ISSUE_KINDS: Record<string, SupplyIssue["kind"]> = {
   consumptionMeterMissingHeating: "meterMissing",
   consumptionMeterMissingHotWater: "meterMissing",
   supplyChangeWithSubstitution: "unsupportedCombination",
+  heatingAreaZeroWithConsumption: "heatingAreaZeroWithConsumption",
+  heatingAreaNoAllocationBase: "heatingAreaNoAllocationBase",
 };
 
 /**

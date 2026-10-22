@@ -327,7 +327,8 @@
     "category": {
       "heating": "Heizkosten",
       "water": "Wasser",
-      "kwh": "Verbrauch (kWh)"
+      "kwh": "Verbrauch (kWh)",
+      "costs": "Betriebskosten"
     },
     "detail": {
       "readingNonMonotonic": "{label} ({fromValue} auf {toValue})"
@@ -376,7 +377,7 @@
     "substitutionComparisonInvalid": "Erfassungsausfall in Wohnung {unit}: Die Vergleichswohnungen taugen nicht als Grundlage. Nötig sind mindestens zwei Wohnungen mit vollständig erfassten Werten und ohne eigenen Erfassungsausfall.",
     "substitutionShareInvalid": "Erfassungsausfall in Wohnung {unit}: Die Vergleichsanteile aller Erfassungsausfälle ergeben zusammen 100 % oder mehr. Bitte prüfen Sie die Vergleichsgrundlagen.",
     "substitutionBasisMissing": "Erfassungsausfall in Wohnung {unit}: Ein angegebener Zähler oder eine Wohnung passt nicht mehr zur Grundlage. Bitte prüfen Sie die Angaben.",
-    "consumptionMeterMissingHeating": "Für Wohnung {unit} ist kein Zähler für den Heizverbrauch erfasst, obwohl sie an die zentrale Heizung angeschlossen ist. Bitte legen Sie den Zähler an. Wird die Wohnung nicht aus der zentralen Anlage beheizt, tragen Sie das bei der Wohnung unter „Versorgung“ ein.",
+    "consumptionMeterMissingHeating": "Für Wohnung {unit} ist kein Zähler für den Heizverbrauch erfasst, obwohl sie an die zentrale Heizung angeschlossen ist. Bitte legen Sie den Zähler an. Wird die Wohnung nicht aus der zentralen Anlage beheizt, tragen Sie das bei der Wohnung unter „Versorgung“ ein. Hat die Wohnung keine Heizkörper mehr, tragen Sie bei der Wohnung die Heizfläche 0 ein.",
     "consumptionMeterMissingHotWater": "Für Wohnung {unit} ist kein Warmwasserzähler erfasst, obwohl sie zentral mit Warmwasser versorgt wird. Bitte legen Sie den Zähler an. Hat die Wohnung eine eigene Warmwasserbereitung, tragen Sie das bei der Wohnung unter „Versorgung“ ein.",
     "supplyBoundaryReadingMissing": "In Wohnung {unit} ändert sich die zentrale Versorgung. Der abgelesene Zählerstand zum {date} fehlt. Bitte erfassen Sie den Stand zur Umstellung, er wird nicht geschätzt.",
     "supplyChangeWithSubstitution": "Für Wohnung {unit} gibt es im Abrechnungszeitraum eine Änderung der zentralen Versorgung und einen Erfassungsausfall. Diese Kombination wird derzeit nicht unterstützt.",
@@ -401,7 +402,11 @@
     "substitutionAreaDistributionHeatingLivingArea": "Für mehr als 25 % der Fläche konnte der Heizverbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Heizkosten daher vollständig nach der Wohnfläche verteilt.",
     "substitutionAreaDistributionHotWater": "Für mehr als 25 % der Fläche konnte der Warmwasserverbrauch nicht ordnungsgemäß erfasst werden. Nach § 9a Abs. 2 HeizkostenV wurden die Warmwasserkosten daher vollständig nach der Wohnfläche verteilt.",
     "substitutionCompensationHeating": "Der Heizverbrauch der Vorperiode wurde nach § 9a HeizkostenV ersatzweise ermittelt. Mit der aktuellen Ablesung wird die Abweichung zum tatsächlichen Verbrauch ausgeglichen.",
-    "substitutionCompensationHotWater": "Der Warmwasserverbrauch der Vorperiode wurde nach § 9a HeizkostenV ersatzweise ermittelt. Mit der aktuellen Ablesung wird die Abweichung zum tatsächlichen Verbrauch ausgeglichen."
+    "substitutionCompensationHotWater": "Der Warmwasserverbrauch der Vorperiode wurde nach § 9a HeizkostenV ersatzweise ermittelt. Mit der aktuellen Ablesung wird die Abweichung zum tatsächlichen Verbrauch ausgeglichen.",
+    "heatingAreaZero": "Für Wohnung {unit} ist die Heizfläche 0 eingetragen. Sie trägt damit keine Grundkosten der Heizung. Das setzt voraus, dass die Wohnung keine Heizkörper mehr hat. Rechtlich ist das nicht abschließend geklärt.",
+    "heatingAreaZeroWithConsumption": "Für Wohnung {unit} ist die Heizfläche 0 eingetragen, es gibt aber einen Heizverbrauch. Heizfläche 0 heißt, dass die Wohnung keine Wärme aus der zentralen Heizung abnimmt. Korrigieren Sie die Heizfläche oder den Verbrauch.",
+    "heatingAreaNoAllocationBase": "Die Grundkosten der Heizung lassen sich nicht verteilen, weil alle versorgten Wohnungen die Heizfläche 0 haben. Prüfen Sie die Heizflächen der Wohnungen.",
+    "costAllocationBaseZero": "Die Kosten dieser Kostenart lassen sich nicht verteilen, weil die Fläche aller beteiligten Wohnungen zusammen 0 ist. Die Kosten tauchen deshalb weder beim Mieter noch beim Vermieter auf. Prüfen Sie den Umlageschlüssel oder die Flächen der Wohnungen."
   },
   "ui": {
     "updates": {
@@ -959,8 +964,11 @@
         "heatingAreaSqm": "Heizfläche (m², optional)",
         "heatingAreaDescription": "Wird für die Verteilung der Heizkosten verwendet, wenn das Gebäude nach der Fläche der beheizten Räume verteilt. Warmwasserkosten werden nach Wohnfläche verteilt. Ohne Angabe wird die Wohnfläche verwendet.",
         "heatingAreaPlaceholder": "Wohnfläche wird verwendet",
-        "heatingAreaUnusedHint": "Das Gebäude verteilt die Grundkosten der Heizung nach Wohnfläche. Die Heizfläche wird dafür nicht verwendet.",
-        "heatingAreaLargerWarning": "Die Heizfläche ist größer als die Wohnfläche. Das ist möglich (z. B. beheizter Keller), verzerrt aber die Heizkostenverteilung, wenn es ein Tippfehler ist. Bitte prüfen Sie den Wert."
+        "heatingAreaUnusedHint": "Das Gebäude verteilt die Grundkosten der Heizung nach Wohnfläche. Die Heizfläche wird dafür nicht verwendet. Auch hier heißt Heizfläche 0: Die Wohnung nimmt keine Wärme aus der zentralen Heizung ab und braucht keinen Zähler für den Heizverbrauch. Ihre Grundkosten werden weiter nach Wohnfläche verteilt.",
+        "heatingAreaLargerWarning": "Die Heizfläche ist größer als die Wohnfläche. Das ist möglich (z. B. beheizter Keller), verzerrt aber die Heizkostenverteilung, wenn es ein Tippfehler ist. Bitte prüfen Sie den Wert.",
+        "heatingAreaHelp": "Dauerhaft ausgebaute Heizkörper: Ziehen Sie die Fläche dieser Räume ab. Das gilt nicht, wenn ein Mieter Heizkörper ohne Ihre Zustimmung entfernt hat.\n\nZugedrehte oder nur vorübergehend abgebaute Heizkörper: Ziehen Sie nichts ab.\n\nRäume ohne eigenen Heizkörper, die von Nachbarräumen mitgeheizt werden (Flur, Abstellkammer): Ob sie mitzählen, wird unterschiedlich gesehen. Entscheiden Sie es für alle Wohnungen des Gebäudes gleich.\n\nTragen Sie 0 nur ein, wenn die Wohnung gar keine Heizkörper oder andere Heizflächen mehr hat, aber weiter an der zentralen Heizung hängt. Hat sie eine eigene Heizung oder ist sie von der Anlage getrennt, tragen Sie das unter „Versorgung“ ein.\n\nÄndern Sie die Heizfläche erst, wenn alle Abrechnungen für die Zeit vor dem Umbau finalisiert sind.",
+        "heatingAreaZeroHint": "Tragen Sie 0 nur ein, wenn die Wohnung keine Heizkörper mehr hat. Für die Wohnung darf dann kein Heizverbrauch anfallen.",
+        "heatingAreaChangedHint": "Die neue Heizfläche gilt auch für alle noch nicht finalisierten Abrechnungen früherer Zeiträume. Finalisieren Sie diese vorher."
       },
       "validation": {
         "buildingRequired": "Gebäude erforderlich",
@@ -968,7 +976,8 @@
         "areaRequired": "Wohnfläche erforderlich",
         "areaInvalid": "Fläche als Zahl, z. B. 120 oder 120,5",
         "areaPositive": "Fläche muss größer als 0 sein.",
-        "areaTooLarge": "Fläche darf höchstens 10.000 m² betragen."
+        "areaTooLarge": "Fläche darf höchstens 10.000 m² betragen.",
+        "areaNonNegative": "Fläche darf nicht negativ sein."
       },
       "notFound": {
         "title": "Wohnung nicht gefunden",
@@ -2688,7 +2697,7 @@
       "gapHeating": "Für Wohnung {unit} konnte kein vollständiger Heizverbrauch ermittelt werden. Der Zählerstand von {meter} zum {date} fehlt.",
       "gapHotWater": "Für Wohnung {unit} konnte kein vollständiger Warmwasserverbrauch ermittelt werden. Der Zählerstand von {meter} zum {date} fehlt.",
       "gapSupplyBoundary": "In Wohnung {unit} ändert sich die zentrale Versorgung. Für {meter} fehlt der abgelesene Stand zum {date}. Erfassen Sie den Stand zur Umstellung, er wird nicht geschätzt.",
-      "meterMissingHeating": "Für Wohnung {unit} ist kein Zähler für den Heizverbrauch erfasst.",
+      "meterMissingHeating": "Für Wohnung {unit} ist kein Zähler für den Heizverbrauch erfasst. Hat die Wohnung keine Heizkörper mehr, tragen Sie bei der Wohnung die Heizfläche 0 ein.",
       "meterMissingHotWater": "Für Wohnung {unit} ist kein Warmwasserzähler erfasst.",
       "unsupportedCombination": "Für Wohnung {unit} gibt es im Abrechnungszeitraum eine Änderung der zentralen Versorgung und einen Erfassungsausfall. Diese Kombination wird derzeit nicht unterstützt.",
       "createMeter": "Zähler anlegen",
@@ -2811,7 +2820,12 @@
         "reading_not_possible": "Nicht ablesbar",
         "implausible_value": "Unplausibel",
         "other": "Sonstiges"
-      }
+      },
+      "heatingAreaZeroWithConsumption": "Für Wohnung {unit} ist die Heizfläche 0 eingetragen, es gibt aber einen Heizverbrauch. Korrigieren Sie die Heizfläche oder den Verbrauch.",
+      "heatingAreaNoAllocationBase": "Alle versorgten Wohnungen haben die Heizfläche 0. Die Grundkosten der Heizung lassen sich so nicht verteilen.",
+      "editUnit": "Wohnung bearbeiten",
+      "showMeters": "Zähler anzeigen",
+      "showUnits": "Wohnungen anzeigen"
     }
   },
   "meters": {

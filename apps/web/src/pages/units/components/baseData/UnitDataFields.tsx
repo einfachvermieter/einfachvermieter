@@ -9,8 +9,10 @@ import { t } from "../../../../lib/i18n";
 
 export const UnitDataFields = ({
   form,
+  savedHeatingArea,
 }: {
   form: UseFormReturn<UnitFormValues>;
+  savedHeatingArea?: string;
 }) => {
   const toNumber = (value: string) =>
     Number.parseFloat(value.replace(",", "."));
@@ -41,6 +43,13 @@ export const UnitDataFields = ({
     Number.isFinite(heatingArea) &&
     area > 0 &&
     heatingArea > area;
+
+  // Die Heizfläche hat keine Historie: Eine Änderung wirkt auch auf alle
+  // offenen Abrechnungen früherer Zeiträume. Object.is, damit zweimal leer
+  // (NaN) als gleich gilt.
+  const heatingAreaChanged =
+    savedHeatingArea !== undefined &&
+    !Object.is(heatingArea, toNumber(savedHeatingArea));
 
   return (
     <FieldGroup className="gap-5">
@@ -74,6 +83,7 @@ export const UnitDataFields = ({
           name="heatingAreaSqm"
           label={t("ui.units.fields.heatingArea")}
           description={t("ui.units.fields.heatingAreaDescription")}
+          labelHelp={t("ui.units.fields.heatingAreaHelp")}
           inputMode="decimal"
           placeholder={t("ui.units.fields.heatingAreaPlaceholder")}
           suffix="m²"
@@ -84,6 +94,20 @@ export const UnitDataFields = ({
         <Alert variant="info">
           <AlertDescription>
             {t("ui.units.fields.heatingAreaUnusedHint")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {heatingArea === 0 ? (
+        <Alert variant="warning">
+          <AlertDescription>
+            {t("ui.units.fields.heatingAreaZeroHint")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {heatingAreaChanged ? (
+        <Alert variant="warning">
+          <AlertDescription>
+            {t("ui.units.fields.heatingAreaChangedHint")}
           </AlertDescription>
         </Alert>
       ) : null}

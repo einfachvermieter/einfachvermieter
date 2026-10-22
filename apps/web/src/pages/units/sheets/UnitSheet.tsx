@@ -48,7 +48,12 @@ export const UnitSheet = ({
       onSubmit={(values) => onSubmit(unitFormToDto(values))}
       onClose={onClose}
     >
-      <UnitDataFields form={form} />
+      <UnitDataFields
+        form={form}
+        savedHeatingArea={
+          mode === "edit" ? defaultValues.heatingAreaSqm : undefined
+        }
+      />
     </FormSheet>
   );
 };

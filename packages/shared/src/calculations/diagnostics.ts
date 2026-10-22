@@ -63,6 +63,9 @@ const BLOCKING_WARNING_CODES = new Set([
   "supplyNoParticipantsHotWater",
   "co2SplitValuesIncomplete",
   "co2RestrictionConflictInPeriod",
+  "heatingAreaZeroWithConsumption",
+  "heatingAreaNoAllocationBase",
+  "costAllocationBaseZero",
 ]);
 
 /**
@@ -72,11 +75,13 @@ export const hasBlockingWarning = (result: {
   heatingDetail?: { warnings?: CalcWarning[] } | null;
   waterDetail?: { warnings?: CalcWarning[] } | null;
   kwhWarnings?: CalcWarning[];
+  costWarnings?: CalcWarning[];
 }): boolean =>
   [
     ...(result.heatingDetail?.warnings ?? []),
     ...(result.waterDetail?.warnings ?? []),
     ...(result.kwhWarnings ?? []),
+    ...(result.costWarnings ?? []),
   ].some((warning) => BLOCKING_WARNING_CODES.has(warning.code));
 
 /**
