@@ -411,7 +411,7 @@ export const CostEntryEditPage = () => {
               onExtract={aiConfig?.configured ? requestExtraction : undefined}
               onUploaded={(attachment) => {
                 // Frisch hochgeladener Beleg einer noch leeren Rechnung wird
-                // direkt ausgewertet; sonst entscheidet der Knopf am Beleg.
+                // direkt ausgewertet; sonst entscheidet der Button am Beleg.
                 if (
                   aiConfig?.configured &&
                   entry.items.length === 0 &&

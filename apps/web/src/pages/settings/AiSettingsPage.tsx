@@ -88,7 +88,7 @@ export const AiSettingsPage = () => {
     );
     queryClient.setQueryData(aiSettingsQueryOptions.queryKey, updated);
     setApiKeyCleared(false);
-    // Ob die Rechnungs-Erfassung den KI-Knopf anbietet, hängt an diesen
+    // Ob die Rechnungs-Erfassung den KI-Button anbietet, hängt an diesen
     // Einstellungen.
     await queryClient.invalidateQueries({
       queryKey: aiConfigQueryOptions.queryKey,

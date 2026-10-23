@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /**
- * Erste Tabellenspalte: Icon-Kachel oder Avatar + Name (fett) + optionale
+ * Erste Tabellenspalte: Icon-Badge oder Avatar + Name (fett) + optionale
  * Subline
  */
 export const EntityCell = ({

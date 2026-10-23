@@ -204,7 +204,7 @@ export class UnitsService {
   }
 
   /**
-   * Wohnung anlegen. Der Name muss innerhalb des Gebaeudes eindeutig sein.
+   * Wohnung anlegen. Der Name muss innerhalb des Gebäudes eindeutig sein.
    */
   async create(dto: UnitCreateDto) {
     await assertBuildingExists(this.em, dto.buildingId);
@@ -249,8 +249,8 @@ export class UnitsService {
   }
 
   /**
-   * Wohnung loeschen. Nicht moeglich, solange noch Mietvertraege oder Zaehler
-   * an der Wohnung haengen.
+   * Wohnung löschen. Nicht möglich, solange noch Mietverträge oder Zähler
+   * an der Wohnung hängen.
    */
   async delete(id: string) {
     const tenant = await this.em.findOne(TenantSchema, { unitId: id });
@@ -275,7 +275,7 @@ export class UnitsService {
   }
 
   /**
-   * Prueft, ob im Gebaeude bereits eine Wohnung mit diesem Namen existiert.
+   * Prüft, ob im Gebäude bereits eine Wohnung mit diesem Namen existiert.
    *
    * @param excludeId Eigene Wohnung kann von Check ausgenommen werden
    */

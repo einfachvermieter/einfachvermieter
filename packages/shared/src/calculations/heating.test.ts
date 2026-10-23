@@ -443,7 +443,7 @@ describe("calculateHeating", () => {
     expect(eg?.consumptionCostCents).toBeLessThan(265_000);
     // Grundkostentopf = 30 % x 10.000 € = 3.000 €
     // Gewichte: EG = 80 x 450 = 36.000; OG = 120 x 1.000 = 120.000.
-    // Apr-Dez stand EG leer -> Vermieter-Gewicht = 200x1.000 − 156.000 =
+    // Apr-Dez stand EG leer -> Vermieter-Gewicht = 200x1.000 - 156.000 =
     // 44.000. Summe inklusive Vermieter = 200.000.
     // EG bekommt 36.000 / 200.000 x 3.000 € = 540 €.
     expect(eg?.basicCostCents).toBeGreaterThan(53_000);
@@ -1674,7 +1674,7 @@ describe("calculateHeating - Warmwasser-Abspaltung (§ 9 Abs. 2 HeizkostenV)", (
   });
 
   it("ohne Boiler-WMZ wird Q_WW über die Schätzformel ermittelt", () => {
-    // Q_WW = 2,5 x 50 m3 x (60 − 10) = 6.250 kWh.
+    // Q_WW = 2,5 x 50 m3 x (60 - 10) = 6.250 kWh.
     const result = calculateHeating({
       ...baseInput(),
       hotWater: {

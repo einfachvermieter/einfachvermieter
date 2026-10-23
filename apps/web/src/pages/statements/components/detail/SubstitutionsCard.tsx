@@ -23,7 +23,7 @@ import { SubstitutionTable } from "./SubstitutionTable";
 import { SupplyIssueList } from "./SupplyIssueList";
 
 /**
- * Verbrauchserfassung nach § 9a HeizkostenV im Reiter "Heizkosten":
+ * Verbrauchserfassung nach § 9a HeizkostenV im Tab "Heizkosten":
  * offene Lücken, erfasste Erfassungsausfälle, Flächenanteil je Bereich und
  * Ausgleich aus der Vorperiode. Im Entwurf mit Aktionen, finalisiert
  * nur der Snapshot.

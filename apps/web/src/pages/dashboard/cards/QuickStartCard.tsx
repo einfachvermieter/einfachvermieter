@@ -21,7 +21,7 @@ const TILE_CLASS =
   "flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted";
 
 /**
- * Kachel: Icon, Beschriftung, Chevron
+ * Link-Tile: Icon, Beschriftung, Chevron
  */
 const TileContent = ({
   icon,
@@ -41,7 +41,7 @@ const TileContent = ({
 );
 
 /**
- * Häufige Aufgaben. Welche Kacheln erscheinen, hängt am Stand der
+ * Häufige Aufgaben. Welche Link-Tiles erscheinen, hängt am Stand der
  * Einrichtung
  */
 export const QuickStartCard = ({

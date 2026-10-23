@@ -127,7 +127,7 @@ export const PaymentsCard = ({
           </p>
         ) : (
           <div className="space-y-4">
-            {/* Monats-Kacheln: NK-Voraus-Anteil je Kalendermonat (wie Aggregation der PDF-Anlage). Nicht den i18n aus dem PDF verwenden, da dort "Sie" Anrede! */}
+            {/* Monats-Tiles: NK-Voraus-Anteil je Kalendermonat (wie Aggregation der PDF-Anlage). Nicht den i18n aus dem PDF verwenden, da dort "Sie" Anrede! */}
             <p className="text-sm text-muted-foreground">
               {t("ui.statements.detail.paymentsIntro")}
             </p>

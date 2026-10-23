@@ -112,7 +112,7 @@ export const deleteSubstitution = (id: string) =>
   api.delete(`/consumption-substitutions/${id}`);
 
 /**
- * Menge in der Einheit des Bereichs: HKV-Einheiten, kWh oder m³
+ * Menge in der Einheit des Bereichs: HKV-Einheiten, kWh oder m3
  */
 export const formatSubstituteConsumption = (
   value: number,

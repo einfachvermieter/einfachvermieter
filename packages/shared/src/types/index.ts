@@ -79,10 +79,11 @@ export type MeterInfo = {
   serialNumber?: string | null;
   measurementUnit: "m3" | "kwh" | "units";
   /**
-   * Bewertungsfaktor KGesamt. Pflicht bei `heat_cost_allocator`. */
+   * Bewertungsfaktor KGesamt. Pflicht bei `heat_cost_allocator`.
+   */
   kTotal?: number | null;
   /**
-   * Gültigkeitsbereich (ISO). Berechnungen klemmen die Periode darauf;
+   * Gültigkeitsbereich (ISO). Berechnungen begrenzen die Periode darauf;
    * Zählertausch = zwei überlappungsfreie Records.
    */
   validFrom: string;
@@ -152,7 +153,8 @@ export type CostLineResult = {
   costTypeName: string;
   allocationKey: CostEntry["allocationKey"];
   /**
-   * Gesamtbetrag der Kostenart (anteilig). */
+   * Gesamtbetrag der Kostenart (anteilig).
+   */
   totalAmountCents: number;
   /**
    * Bemessungsgrundlage gesamt (z. B. 180 qm).
@@ -433,7 +435,7 @@ export type OccupancyDetail = {
    */
   totalOccupiedDays: number;
   /**
-   * Vermieter-Wohnungstage: (Wohnungen x periodDays) − totalOccupiedDays. 0 bei Vollbelegung.
+   * Vermieter-Wohnungstage: (Wohnungen x periodDays) - totalOccupiedDays. 0 bei Vollbelegung.
    */
   landlordOccupiedDays: number;
   /**
@@ -444,7 +446,7 @@ export type OccupancyDetail = {
 
 export type HeatingDetail = {
   /**
-   * Verteilter Netto-Topf (Brutto − Vermieter-CO2-Anteil). Immer
+   * Verteilter Netto-Topf (Brutto - Vermieter-CO2-Anteil). Immer
    * `consumptionPortionCents + basicPortionCents === totalHeatingCostsCents`.
    */
   totalHeatingCostsCents: number;
@@ -575,7 +577,7 @@ export type HeatingDetail = {
   heatingAreaDiffersFromLivingArea?: boolean;
   /**
    * Brutto-Topf je Kostenart (absteigend nach Betrag). Summe ~= Brutto-Topf =
-   * `totalHeatingCostsCents + (co2Detail?.landlordDeductionCents ?? 0)` (±1 Cent/Position).
+   * `totalHeatingCostsCents + (co2Detail?.landlordDeductionCents ?? 0)` (+/-1 Cent/Position).
    * Nur intern gesetzt.
    */
   costBreakdown?: Array<{
@@ -713,7 +715,7 @@ export type HeatingDetail = {
     /**
      * Ermittlung Q_WW.
      * - "boiler_meter":       am Boiler-WMZ gemessen (kWh-Delta).
-     * - "estimated":          2,5 x V_WW x (t_WW − 10).
+     * - "estimated":          2,5 x V_WW x (t_WW - 10).
      * - "flat_rate_fallback": wenn weder Boiler-WMZ noch Warmwasserverbrauch
      *                         vorliegen (32 kWh je qm Wohnfläche und Jahr)
      */

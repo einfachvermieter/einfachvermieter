@@ -100,7 +100,7 @@ const HEATING_ALLOCATION = "heating_ordinance";
  * Positionen werden nach `periodStart` sortiert. Der Tarif der spätesten
  * Position gilt als "neuer Tarif" - er ist der zuletzt gültige und wird
  * voraussichtlich auch in der Folgeperiode wirken. Der Durschnitt-Tarif aller
- * älteren Positionen gilt als "alter Tarif". `bps = neu/alt − 1`. So
+ * älteren Positionen gilt als "alter Tarif". `bps = neu/alt - 1`. So
  * wirkt z. B. eine Tarif-Erhöhung im letzten Monat der aktuellen Periode
  * korrekt für die Folgeperiode, obwohl sie nur einen Bruchteil des
  * Vorjahres-Anteils ausmacht.
@@ -256,7 +256,7 @@ type InferenceComponent = {
 /**
  * Tarif-Komponente: "alter Verbrauch x neuer Tarif". altSumme = Summe amountCents
  * der älteren Tarif-Items; Prognose = Summe(amount/unitPrice) der älteren x
- * unitPrice des jüngsten Items. Braucht ≥2 Items mit Einheitspreis.
+ * unitPrice des jüngsten Items. Braucht >=2 Items mit Einheitspreis.
  */
 const inferTariffComponent = (
   tariffItems: TariffInferenceItem[],
@@ -486,7 +486,7 @@ export const firstOfMonthIso = (iso: string, offset: number): string => {
 /**
  * Default-Stichtag für die Anpassung der Vorauszahlung.
  *
- * Regel: Wenn vom heutigen Datum noch ≥ `minLeadDays` Tage bis Monatsende
+ * Regel: Wenn vom heutigen Datum noch >= `minLeadDays` Tage bis Monatsende
  * verbleiben, wird der 1. des Folgemonats gewählt, sonst der 1. des
  * übernächsten Monats. Damit hat der Mieter genug Zeit, den Dauerauftrag
  * anzupassen.

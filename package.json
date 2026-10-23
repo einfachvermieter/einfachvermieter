@@ -11,7 +11,7 @@
   "scripts": {
     "build": "node scripts/turbo.mjs run build",
     "dev": "node scripts/turbo.mjs run dev",
-    "check": "biome check .",
+    "check": "biome check . && node scripts/check-text.mjs",
     "check:fix": "biome check --write .",
     "test": "node scripts/turbo.mjs run test",
     "typecheck": "node scripts/turbo.mjs run typecheck",

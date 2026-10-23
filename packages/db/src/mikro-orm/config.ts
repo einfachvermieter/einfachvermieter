@@ -56,7 +56,8 @@ export const createOrmOptions = async (): Promise<Options> => {
 };
 
 /**
- * Kysely-Connection-Wrapper des libsql-Treibers (nur `executeQuery` genutzt). */
+ * Kysely-Connection-Wrapper des libsql-Treibers (nur `executeQuery` genutzt).
+ */
 type LibSqlRawConnection = {
   executeQuery: (query: {
     sql: string;

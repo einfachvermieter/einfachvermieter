@@ -63,7 +63,7 @@ type AllocationContext = {
   targetUnitId: string;
   waterDetail?: WaterDetail;
   /**
-   * Verbrauch der Zähler, die der Kostenart zugeordnet sind (m³ oder kWh)
+   * Verbrauch der Zähler, die der Kostenart zugeordnet sind (m3 oder kWh)
    */
   measuredConsumption?: MeasuredConsumption;
   translate: TranslateFn;
@@ -131,7 +131,7 @@ const allocatePerLivingArea = ({
     }),
     bemessungTotal: totalAreaSqm,
     bemessungTenant: targetUnit.areaSqm,
-    bemessungUnit: "m²",
+    bemessungUnit: "m\u00b2",
     daysTotal: periodDays,
     daysTenant: targetUnit.occupiedDays,
   };
@@ -189,7 +189,7 @@ const allocatePerHeatingArea = ({
     }),
     bemessungTotal: totalHeatingAreaSqm,
     bemessungTenant: heatingArea(targetUnit),
-    bemessungUnit: "m²",
+    bemessungUnit: "m\u00b2",
     daysTotal: periodDays,
     daysTenant: targetUnit.occupiedDays,
   };
@@ -311,7 +311,7 @@ const allocatePerUnit = ({
 };
 
 /**
- * Verteilung nach gemessenem Verbrauch (m³ oder kWh). Der Verbrauch der
+ * Verteilung nach gemessenem Verbrauch (m3 oder kWh). Der Verbrauch der
  * Ziel-Wohnung außerhalb der Mietzeit fällt als Kostenanteil auf den
  * Vermieter und wird über das Statement des anderen Mieters wieder
  * eingesammelt.
@@ -392,7 +392,7 @@ const allocatePerConsumptionM3 = (
     {
       allocationKey: "per_consumption_m3",
       baseUnit: translate("costs.baseUnits.consumptionM3"),
-      bemessungUnit: "m³",
+      bemessungUnit: "m\u00b3",
     },
   );
 };

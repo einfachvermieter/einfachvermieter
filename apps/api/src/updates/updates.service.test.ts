@@ -35,7 +35,7 @@ describe("pickEntry", () => {
     expect(pickEntry(feedWithOldBeta, "beta")?.version).toBe("2026.2.0");
   });
 
-  it("liefert ohne Beta-Zweig den stabilen Eintrag und ohne Eintraege null", () => {
+  it("liefert ohne Beta-Zweig den stabilen Eintrag und ohne Einträge null", () => {
     expect(pickEntry({ stable: entry("2026.1.0") }, "beta")?.version).toBe(
       "2026.1.0",
     );
@@ -43,7 +43,7 @@ describe("pickEntry", () => {
     expect(pickEntry(undefined, "stable")).toBeNull();
   });
 
-  it("verwirft Eintraege, deren Download-Adresse nicht https ist", () => {
+  it("verwirft Einträge, deren Download-Adresse nicht https ist", () => {
     for (const downloadUrl of [
       "javascript:alert(1)",
       "http://example.test/2026.1.0",
@@ -56,7 +56,7 @@ describe("pickEntry", () => {
     }
   });
 
-  it("laesst Release-Notes ohne https weg, behaelt aber den Eintrag", () => {
+  it("lässt Release-Notes ohne https weg, behält aber den Eintrag", () => {
     const withUnsafeNotes = {
       stable: { ...entry("2026.1.0"), releaseNotesUrl: "javascript:alert(1)" },
     };
@@ -91,7 +91,7 @@ describe("pickMessages", () => {
     ]);
   });
 
-  it("prueft jede Bedingung fuer sich", () => {
+  it("prüft jede Bedingung für sich", () => {
     const cases: [Record<string, unknown>, boolean][] = [
       [{ minVersion: "2026.1.2" }, true],
       [{ minVersion: "2026.1.3" }, false],
@@ -133,7 +133,7 @@ describe("pickMessages", () => {
     ).toEqual(["d"]);
   });
 
-  it("laesst ungueltige Eintraege einzeln weg", () => {
+  it("lässt ungültige Einträge einzeln weg", () => {
     expect(
       pickedIds([
         message("a", { display: "always" }),
@@ -145,7 +145,7 @@ describe("pickMessages", () => {
     ).toEqual(["d"]);
   });
 
-  it("laesst nur den Link weg, wenn er nicht auf die Projektseite fuehrt", () => {
+  it("lässt nur den Link weg, wenn er nicht auf die Projektseite führt", () => {
     const withLink = (url: string) =>
       pickMessages(
         [message("a", { link: { label: "Mehr erfahren", url } })],
@@ -171,7 +171,7 @@ describe("pickMessages", () => {
     }
   });
 
-  it("kappt nach dem Filtern auf drei und behaelt die Reihenfolge", () => {
+  it("kappt nach dem Filtern auf drei und behält die Reihenfolge", () => {
     expect(
       pickedIds([
         message("a"),
@@ -236,7 +236,7 @@ describe("UpdatesService", () => {
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ redirect: "error" });
   });
 
-  it("prueft Bedingungen gegen die installierte Version", async () => {
+  it("prüft Bedingungen gegen die installierte Version", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse(
         feedBody({
@@ -251,7 +251,7 @@ describe("UpdatesService", () => {
     expect(status.messages.map((shown) => shown.id)).toEqual(["neu"]);
   });
 
-  it("laesst den Versionshinweis bei fehlenden oder kaputten Mitteilungen stehen", async () => {
+  it("lässt den Versionshinweis bei fehlenden oder kaputten Mitteilungen stehen", async () => {
     for (const messages of [undefined, "kaputt", { id: "a" }]) {
       fetchMock.mockResolvedValue(jsonResponse(feedBody({ messages })));
       const status = await serviceWith().service.getStatus();
@@ -278,7 +278,7 @@ describe("UpdatesService", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("behaelt nach einem Fehlschlag den letzten Stand und versucht es nach einer Stunde wieder", async () => {
+  it("behält nach einem Fehlschlag den letzten Stand und versucht es nach einer Stunde wieder", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(feedBody()));
     const { service } = serviceWith();
     await service.getStatus();
@@ -346,7 +346,7 @@ describe("UpdatesService", () => {
     }
   });
 
-  it("zaehlt 304 mit Stand als Erfolg und fragt danach einen Tag nicht", async () => {
+  it("zählt 304 mit Stand als Erfolg und fragt danach einen Tag nicht", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(feedBody(), { etag: '"v1"' }));
     const { service } = serviceWith();
     await service.getStatus();
@@ -365,7 +365,7 @@ describe("UpdatesService", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("zaehlt 304 ohne Stand als Fehlschlag und holt die Datei danach ganz", async () => {
+  it("zählt 304 ohne Stand als Fehlschlag und holt die Datei danach ganz", async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 304 }));
     const { service } = serviceWith();
     Object.assign(service, { etag: '"v1"' });

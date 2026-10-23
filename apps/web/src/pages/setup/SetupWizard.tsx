@@ -315,7 +315,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   );
 
   // Badge nur bei Schritten mit Feldern: Admin Pflicht, Absender optional.
-  // Der Internet-Schritt hat Schalter, dort wird immer entschieden.
+  // Der Internet-Schritt hat Switches, dort wird immer entschieden.
   const stepHints: Partial<Record<StepKey, string>> = {
     welcome: withAdmin
       ? t("ui.setup.welcome.hint")

@@ -676,7 +676,9 @@ export const HeatingCard = ({
                       </td>
                       {showHotWaterM3 ? (
                         <td className="py-2.5 text-right tabular-nums">
-                          {`${formatNumber(unit.hotWaterM3, 2)}\u00A0m³`}
+                          {t("ui.common.measures.m3", {
+                            value: formatNumber(unit.hotWaterM3, 2),
+                          })}
                         </td>
                       ) : null}
                       {distributionValueCells(
@@ -714,10 +716,12 @@ export const HeatingCard = ({
                   </td>
                   {showHotWaterM3 ? (
                     <td className="py-2.5 text-right tabular-nums">
-                      {`${formatNumber(
-                        hw.perUnit.reduce((acc, u) => acc + u.hotWaterM3, 0),
-                        2,
-                      )}\u00A0m³`}
+                      {t("ui.common.measures.m3", {
+                        value: formatNumber(
+                          hw.perUnit.reduce((acc, u) => acc + u.hotWaterM3, 0),
+                          2,
+                        ),
+                      })}
                     </td>
                   ) : null}
                   {distributionValueCells(

@@ -177,7 +177,7 @@ export const resolveDefaultValidFrom = (
 };
 
 /**
- * Betrag hinter der Kachel "Vorschlag übernehmen": im Entwurf der live
+ * Betrag hinter der Radio-Card "Vorschlag übernehmen": im Entwurf der live
  * berechnete Wert inkl. Tarif-Erwartungen, sonst der eingefrorene.
  */
 export const resolveSuggestedApplyCents = (

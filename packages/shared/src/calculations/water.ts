@@ -46,7 +46,7 @@ type WaterCalculationInput = {
    * - role="unit":                Wohnungszähler
    * - role="common":              Allgemeinzähler (z. B. Gartenwasser)
    * - role="virtual_difference":  Differenzzähler - Verbrauch wird aus
-   *                               `differenceConfig` (Basis − Subtraktionen)
+   *                               `differenceConfig` (Basis - Subtraktionen)
    *                               berechnet.
    */
   waterMeters: WaterMeterBundle[];
@@ -208,7 +208,7 @@ export const aggregateUnitConsumption = (params: {
     );
 
     if (isTarget && hasTenantClamp) {
-      // Lücken/Klemmungen außerhalb der Mietzeit sind für den Ziel-Mieter
+      // Lücken/Begrenzungen außerhalb der Mietzeit sind für den Ziel-Mieter
       // irrelevant - Warnungen des Voll-Perioden-Reads verwerfen.
       const fullConsumption = computeMeterConsumption(
         meter.id,
@@ -251,7 +251,7 @@ export const aggregateUnitConsumption = (params: {
  * Differenzzähler (`role = "virtual_difference"`) abgebildet.
  *
  * Beispiel:
- *   Haupt (main) − Wohnung A (unit) − Waschmaschine A (common)
+ *   Haupt (main) - Wohnung A (unit) - Waschmaschine A (common)
  *   = Wohnung B (virtual_difference)
  *
  * Common-Zähler (z. B. Gartenwasser) sind parallel und
@@ -276,7 +276,7 @@ export const calculateWater = (input: WaterCalculationInput): WaterDetail => {
 
   // Mehrere Hauptzähler entstehen durch Zählertausche (überlappungsfreie
   // Gültigkeit). Jeder Record steuert seinen Verbrauch über seinen
-  // eigenen Gültigkeitszeitraum bei. `computeMeterConsumption` klemmt
+  // eigenen Gültigkeitszeitraum bei. `computeMeterConsumption` begrenzt
   // die Periode automatisch auf [validFrom, validUntil].
   const totalConsumptionM3 = mainMeters.reduce(
     (acc, bundle) =>

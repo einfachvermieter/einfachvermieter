@@ -18,8 +18,8 @@ import {
 } from "./useStatementPdf";
 
 /**
- * Reiter mit der PDF-Vorschau. Schlägt das Rendern fehl, steht hier der
- * Grund und eine Schaltfläche zum erneuten Versuch, statt einer leeren Fläche.
+ * Tab mit der PDF-Vorschau. Schlägt das Rendern fehl, steht hier der
+ * Grund und ein Button zum erneuten Versuch, statt einer leeren Fläche.
  */
 export const StatementPdfTab = ({
   src,

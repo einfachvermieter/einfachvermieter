@@ -56,7 +56,7 @@ export const maskApiKey = (apiKey: string | null): string | null => {
     return null;
   }
 
-  const dots = "•".repeat(8);
+  const dots = "\u2022".repeat(8);
   if (key.length < VISIBLE_KEY_CHARS * 3) {
     return dots;
   }

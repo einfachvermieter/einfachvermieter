@@ -103,7 +103,7 @@
     --text-3xl: 1.9375rem;
     --text-3xl--line-height: 1.15;
 
-    /* Radien: Felder/Buttons 8px, Titel-Kachel 10px, Cards 12px */
+    /* Radien: Felder/Buttons 8px, Icon-Badge 10px, Cards 12px */
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius-lg: 0.625rem;

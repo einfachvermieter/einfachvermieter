@@ -1,7 +1,7 @@
 import type { SenderLogoAlignment } from "@einfachvermieter/shared";
 import { StyleSheet } from "@react-pdf/renderer";
 
-// ── Design-Tokens ─────────────────────────────────────────────────
+// -- Design-Tokens -------------------------------------------------
 const BLACK = "#000000";
 const OPERATOR_GRAY = "#888888"; // Rechenzeichen in Tabellen
 const HEADER_GRAY = "#DDDDDD"; // Hintergrund Tabellenkopf
@@ -63,7 +63,7 @@ const CELL_PAD_PLAIN_TOP = 3.5;
 const CELL_PAD_PLAIN_BOTTOM = 2.5;
 
 export const styles = StyleSheet.create({
-  // ── Seiten-Layout (DIN 5008 Form B) ──────────────────────────────
+  // -- Seiten-Layout (DIN 5008 Form B) ------------------------------
   // Margins gelten auf jeder Seite gleich. Auf Seite 1 schiebt
   // `letterContent.paddingTop` den Brief unter das DIN-Adressfeld.
   // A4 = 595 x 842 pt; 1 mm ~= 2,8346 pt.
@@ -82,7 +82,7 @@ export const styles = StyleSheet.create({
     // Render-Callback aufgerufen wird.
   },
 
-  // ── DIN-Markierungen am linken Blattrand ─────────────────────────
+  // -- DIN-Markierungen am linken Blattrand -------------------------
   foldMarkTop: {
     position: "absolute",
     top: 297.64, // 105 mm
@@ -108,7 +108,7 @@ export const styles = StyleSheet.create({
     backgroundColor: OPERATOR_GRAY,
   },
 
-  // ── Absender oben rechts + Adressfeld im Sichtfenster ───────────
+  // -- Absender oben rechts + Adressfeld im Sichtfenster -----------
   senderHeader: {
     position: "absolute",
     top: 141.72, // 50 mm
@@ -161,7 +161,7 @@ export const styles = StyleSheet.create({
     marginBottom: 18,
   },
 
-  // ── Text-Primitive ───────────────────────────────────────────────
+  // -- Text-Primitive -----------------------------------------------
   bold: { fontWeight: SEMIBOLD },
   small: { fontSize: SMALL_SIZE },
 
@@ -181,14 +181,14 @@ export const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  // Grau für Rechenzeichen (`×`, `:`, `=`) in Tabellen.
+  // Grau für Rechenzeichen (`x`, `:`, `=`) in Tabellen.
   operator: { color: OPERATOR_GRAY },
 
-  // Hochgestellte Ziffern (Fußnoten-Marker, `m²`/`m³`) werden als normale
+  // Hochgestellte Ziffern (Fußnoten-Marker, `qm`/`m3`) werden als normale
   // Ziffern kleiner und via `verticalAlign` hochgestellt gerendert.
   superscript: { fontSize: SMALL_SIZE * 0.7, verticalAlign: "super" },
 
-  // ── Block-Überschriften ──────────────────────────────────────────
+  // -- Block-Überschriften ------------------------------------------
   subject: {
     fontWeight: SEMIBOLD,
     marginBottom: 20,
@@ -215,7 +215,7 @@ export const styles = StyleSheet.create({
     lineHeight: LINE_HEIGHT,
   },
 
-  // ── Tabellen ─────────────────────────────────────────────────────
+  // -- Tabellen -----------------------------------------------------
   // Außenrahmen sitzt auf der `table`-View. Innenraster wird erzeugt,
   // indem jede Row ab Index 1 `rowDivider` (borderTop) und jede Cell
   // ab Spalte 1 `cellDivider` (borderLeft) bekommt. So entstehen
@@ -316,7 +316,7 @@ export const styles = StyleSheet.create({
     fontWeight: SEMIBOLD,
   },
 
-  // ── Bruchnotation in Tabellenzellen (CostsTable: Bemessung / Tage) ──
+  // -- Bruchnotation in Tabellenzellen (CostsTable: Bemessung / Tage) --
   // Bruchstrich und Operator sind "Rechenzeichen" -> OPERATOR_GRAY.
   fractionStack: { flex: 1, alignItems: "flex-end" },
   fractionTop: { alignSelf: "flex-end" },
@@ -330,7 +330,7 @@ export const styles = StyleSheet.create({
     color: OPERATOR_GRAY,
   },
 
-  // ── Balkengrafik Vorperiodenvergleich ─────────────────────────────
+  // -- Balkengrafik Vorperiodenvergleich -----------------------------
   // Zwei horizontale Balken (dieser/vorheriger Zeitraum). Der helle
   // Laufbalken zeigt die volle Skala, darauf sitzt der dunklere Wertbalken
   energyBarRow: {
@@ -362,7 +362,7 @@ export const styles = StyleSheet.create({
     fontFamily: "Geist Tnum",
   },
 
-  // ── Draft-Wasserzeichen ──────────────────────────────────────────
+  // -- Draft-Wasserzeichen ------------------------------------------
   // "ENTWURF" als diagonaler Schriftzug auf jeder Seite, solange die
   // Abrechnung im Draft-Status ist. Wird in jeder Page als LETZTES Element
   // gerendert, damit das Wasserzeichen optisch oben liegt
@@ -379,7 +379,7 @@ export const styles = StyleSheet.create({
     transform: "rotate(-45deg)",
   },
 
-  // ── Zweispaltiger Block auf Seite 1 ──────────────────────────────
+  // -- Zweispaltiger Block auf Seite 1 ------------------------------
   // Meta-Tabelle (links) und SummaryBlock (rechts) sitzen nebeneinander.
   // Spaltenverhältnis 1:1 mit kleinem Gutter dazwischen.
   twoColumnRow: {
@@ -396,7 +396,7 @@ export const styles = StyleSheet.create({
     paddingLeft: 12,
   },
 
-  // ── Footer ──────────────────────────────────────────────────────
+  // -- Footer ------------------------------------------------------
   // Footer ist eine Row mit drei gleich breiten Zellen: links (Dokument-
   // typ), Mitte (Abrechnungs-ID) und rechts (Seitenzahl).
   footer: {

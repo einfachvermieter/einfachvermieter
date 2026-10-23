@@ -8,7 +8,7 @@ describe("distributeCents", () => {
     expect(result).toEqual([2500, 2500, 2500, 2500]);
   });
 
-  it("behandelt Rundungsdifferenz durch Zuschlag auf groesstes Gewicht", () => {
+  it("behandelt Rundungsdifferenz durch Zuschlag auf größtes Gewicht", () => {
     // 100 Cent / 3 = 33.33 pro Teil -> 33, 33, 33 = 99, Differenz 1
     const result = distributeCents(100, [1, 1, 1]);
     expect(result.reduce((a, b) => a + b, 0)).toBe(100);
@@ -38,7 +38,7 @@ describe("distributeCents", () => {
     expect(result.reduce((a, b) => a + b, 0)).toBe(123_456);
   });
 
-  it("negative Betraege (Gutschriften) runden symmetrisch, Summe stimmt", () => {
+  it("negative Beträge (Gutschriften) runden symmetrisch, Summe stimmt", () => {
     // -3 Cent auf gleiche Gewichte: -1 pro Teil, kein Halbcent-Bias
     const result = distributeCents(-3, [1, 1, 1]);
     expect(result.reduce((a, b) => a + b, 0)).toBe(-3);

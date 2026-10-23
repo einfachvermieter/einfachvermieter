@@ -28,7 +28,7 @@ type ChoiceTilesInputProps<T extends FieldValues> = {
 };
 
 /**
- * Auswahl-Kacheln als Formularfeld
+ * Radio-Cards als Formularfeld
  */
 export const ChoiceTilesInput = <T extends FieldValues>({
   control,

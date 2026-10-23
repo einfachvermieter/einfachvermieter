@@ -1,6 +1,4 @@
 /**
- * @file
- *
  * Thin wrapper für fetch() mit Credential-Handling und
  * einheitlichem Error-Parsing. Cookies werden automatisch mitgesendet.
  */

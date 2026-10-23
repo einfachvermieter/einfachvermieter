@@ -23,8 +23,8 @@ export const referenceDateFor = (
 };
 
 /**
- * Prueft, ob ein Bewohner zum Stichtag praesent ist. Fehlende
- * moveIn/moveOut-Daten fallen auf den Vertragszeitraum zurueck
+ * Prüft, ob ein Bewohner zum Stichtag präsent ist. Fehlende
+ * moveIn/moveOut-Daten fallen auf den Vertragszeitraum zurück
  */
 export const isPresent = (
   refDate: string,

@@ -396,7 +396,7 @@ describe("inferTariffAdjustmentBpsFromInvoices - Pauschal-Bucket", () => {
     // 2026: Jahres-Gebühr 409,20 € + zusätzliche Abgabe ab Mai 36,00 €.
     // Gesamt 2026 = 445,20 €. Erwartete Änderung: +12,42 %.
     //
-    // Unter der alten Summe-Tage-Annualisierung kam −32,73 % heraus, weil
+    // Unter der alten Summe-Tage-Annualisierung kam -32,73 % heraus, weil
     // (40920 + 3600) x 365 / (365 + 245) ~= 26.644 ct als "Jahres"-Wert
     // verstanden wurde, obwohl beide Beträge im gleichen Kalenderjahr
     // anfallen.
@@ -434,7 +434,7 @@ describe("inferTariffAdjustmentBpsFromInvoices - Pauschal-Bucket", () => {
       heatingPseudoId: HEATING_PSEUDO_ID,
     });
 
-    // (44520 / 39600 − 1) x 10000 = 1242,4... -> kaufmännisch gerundet 1242
+    // (44520 / 39600 - 1) x 10000 = 1242,4... -> kaufmännisch gerundet 1242
     expect(result.restmuell).toBe(1242);
   });
 
@@ -475,7 +475,7 @@ describe("inferTariffAdjustmentBpsFromInvoices - Pauschal-Bucket", () => {
       heatingPseudoId: HEATING_PSEUDO_ID,
     });
 
-    // (45000 / 30000 − 1) x 10000 = 5000 bps = +50 %
+    // (45000 / 30000 - 1) x 10000 = 5000 bps = +50 %
     expect(result.muell).toBe(5000);
   });
 

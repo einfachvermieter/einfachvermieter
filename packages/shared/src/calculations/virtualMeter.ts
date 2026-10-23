@@ -4,7 +4,7 @@ import { consumptionBetween, type InterpolateOptions } from "./meters.js";
 
 /**
  * Konfiguration eines Differenzzählers (`role = "virtual_difference"`):
- * Stand = Verbrauch(`baseMeterId`) − Summe Verbrauch(`subtractedMeterIds`).
+ * Stand = Verbrauch(`baseMeterId`) - Summe Verbrauch(`subtractedMeterIds`).
  */
 export type DifferenceConfigInput = {
   baseMeterId: string;
@@ -43,7 +43,7 @@ export const computeMeterConsumption = (
 ): number => {
   if (visited.has(meterId)) {
     throw new CalculationError("differenceMeterCyclic", {
-      chain: [...visited, meterId].join(" → "),
+      chain: [...visited, meterId].join(" \u2192 "),
     });
   }
 
@@ -52,10 +52,10 @@ export const computeMeterConsumption = (
     throw new Error(`Meter not found: ${meterId}`);
   }
 
-  // Periode auf die Gültigkeit des Zählers klemmen. Ein Zählertausch wird
+  // Periode auf die Gültigkeit des Zählers begrenzen. Ein Zählertausch wird
   // als zwei Records mit überlappungsfreier Gültigkeit modelliert; jeder beiträgt
   // nur über seinen eigenen Zeitraum. Bei Differenzzählern propagiert die
-  // geklemmte Periode rekursiv an Basis- und Subtraktionszähler.
+  // begrenzte Periode rekursiv an Basis- und Subtraktionszähler.
   const { validFrom, validUntil } = bundle.meter;
   const clampedStart = validFrom > periodStart ? validFrom : periodStart;
   const clampedEnd =

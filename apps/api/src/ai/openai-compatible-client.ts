@@ -20,7 +20,7 @@ const logger = new Logger("OpenAiCompatibleClient");
  * Data-URL fürs Debug-Protokoll kürzen, da der Base64-Rumpf dort nutzlos ist.
  */
 const redactDataUrl = (url: string): string =>
-  `${url.slice(0, 40)}…[gekürzt, ${url.length} Zeichen gesamt]`;
+  `${url.slice(0, 40)}...[gekürzt, ${url.length} Zeichen gesamt]`;
 
 /**
  * Anbieter, deren OpenAI-kompatible Schicht auch PDFs über `image_url`

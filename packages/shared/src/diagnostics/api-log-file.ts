@@ -52,7 +52,7 @@ const readCurrent = (dir: string, limit: number): Buffer =>
  * Farbsteuerzeichen von Nest rausfiltern
  */
 // biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI-Steuerzeichen sind genau das Ziel
-const ANSI_PATTERN = /\[[0-9;]*[A-Za-z]/gu;
+const ANSI_PATTERN = /\u001b\[[0-9;]*[A-Za-z]/gu;
 
 const plainText = (chunk: string | Uint8Array): string =>
   (typeof chunk === "string"

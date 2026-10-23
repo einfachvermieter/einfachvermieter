@@ -6,6 +6,7 @@
  *
  * Aufruf: npm run seed:minimal -w @einfachvermieter/db
  */
+
 import { runSeed, runSeedAsScript, schema } from "./engine.js";
 
 const main = runSeed("minimal", ({ insert }) => {

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { t } from "@/lib/i18n";
 
 /**
- * Kautions-Übersicht als Kennzahl-Kacheln: vereinbart (Soll) vs.
+ * Kautions-Übersicht als KPI-Tiles: vereinbart (Soll) vs.
  * eingegangen (Ist) + Status-Pill.
  */
 export const DepositSummary = ({ row }: { row: DepositRow | null }) => {

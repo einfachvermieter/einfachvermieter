@@ -17,7 +17,7 @@ describe("openApiLog", () => {
 
   it("entfernt Farbsteuerzeichen", () => {
     const writeLog = openApiLog(dir);
-    writeLog("[32mLOG[39m gestartet\n");
+    writeLog("\u001b[32mLOG\u001b[39m gestartet\n");
 
     expect(readApiLogs(dir).current).toBe("LOG gestartet\n");
   });

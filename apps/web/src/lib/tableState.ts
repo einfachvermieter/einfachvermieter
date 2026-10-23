@@ -67,7 +67,7 @@ export type ServerTableQueryParams<TSort extends string> = {
 };
 
 /**
- * Handler/State-Felder fuer das `server`-Prop der `DataTable` (ohne pageCount).
+ * Handler/State-Felder für das `server`-Prop der `DataTable` (ohne pageCount).
  */
 export type ServerTableProps = {
   pagination: PaginationState;

@@ -3,6 +3,7 @@
  * Die Profil-Dateien deklarieren nur Daten und rufen `runSeed(...)`;
  * ORM-Init, Persistenz, Fixture-Spiegelung und Passwort-Hashing leben hier.
  */
+
 import { copyFile, mkdir } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";

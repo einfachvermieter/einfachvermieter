@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
 /**
- * Fläche zum Hochladen: Schaltfläche für den Dateidialog, dazu ein Ziel zum
+ * Fläche zum Hochladen: Button für den Dateidialog, dazu ein Ziel zum
  * Hineinziehen von Dateien.
  */
 export const FileDropZone = ({
@@ -24,7 +24,7 @@ export const FileDropZone = ({
   const [isOver, setIsOver] = useState(false);
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: reines Drop-Ziel, bedient wird über die Schaltfläche
+    // biome-ignore lint/a11y/noStaticElementInteractions: reines Drop-Ziel, bedient wird über den Button
     <div
       className={cn(
         "flex flex-wrap items-center gap-x-4 gap-y-3 rounded-lg border border-dashed border-input px-4 py-4 transition-colors",

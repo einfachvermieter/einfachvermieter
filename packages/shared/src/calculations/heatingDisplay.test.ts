@@ -719,8 +719,8 @@ describe("billingInfoCostRows", () => {
       "containedTaxes",
       "meteringService",
     ]);
-    expect(rows[0]?.value.params?.value).toBe("714,00 €");
-    expect(rows[1]?.value.params?.value).toBe("190,00 €");
+    expect(rows[0]?.value.params?.value).toBe("714,00\u00a0€");
+    expect(rows[1]?.value.params?.value).toBe("190,00\u00a0€");
   });
 
   it("nennt die erfassten Arten im Label der Steuerzeile", () => {
@@ -764,7 +764,7 @@ describe("averageUserComparison (§ 6a Abs. 3 Nr. 4 HeizkostenV)", () => {
     // 1000 kWh / 50 m2 = 20,0; (1000 + 800) / (50 + 30) = 22,5
     expect(result?.rows[0]?.value.params?.value).toBe("20,0");
     expect(result?.rows[1]?.value.params?.value).toBe("22,5");
-    // Der Schnitt nennt, ueber wie viele Wohnungen er geht.
+    // Der Schnitt nennt, über wie viele Wohnungen er geht.
     expect(result?.rows[1]?.label.params?.count).toBe("2");
     expect(result?.rows[0]?.value.key).toBe(
       "statements.pdf.billingInfo.comparisonValueKwh",
@@ -793,7 +793,7 @@ describe("averageUserComparison (§ 6a Abs. 3 Nr. 4 HeizkostenV)", () => {
     expect(result?.rows[0]?.value.key).toBe(
       "statements.pdf.billingInfo.comparisonValuePoints",
     );
-    // 8.000.000 / 50 m² / 1000 = 160,0
+    // 8.000.000 / 50 qm / 1000 = 160,0
     expect(result?.rows[0]?.value.params?.value).toBe("160,0");
   });
 
@@ -804,10 +804,10 @@ describe("averageUserComparison (§ 6a Abs. 3 Nr. 4 HeizkostenV)", () => {
       period("2025-01-01", "2025-06-30"),
       fullPeriod,
     );
-    // Jan-Jun = 583 ‰ -> 1000 kWh / 583 × 1000 = 1715,3 kWh; / 50 m² = 34,3
+    // Jan-Jun = 583 ‰ -> 1000 kWh / 583 x 1000 = 1715,3 kWh; / 50 qm = 34,3
     expect(result?.isExtrapolated).toBe(true);
     expect(result?.rows[0]?.value.params?.value).toBe("34,3");
-    // Durchschnitt mit dem hochgerechneten Wert: (1715,3 + 800) / 80 m²
+    // Durchschnitt mit dem hochgerechneten Wert: (1715,3 + 800) / 80 qm
     expect(result?.rows[1]?.value.params?.value).toBe("31,4");
   });
 

@@ -343,7 +343,7 @@
     "differenceConsumptionUnallocated": "Der Differenzzähler ist keiner Wohnung zugeordnet, sein Verbrauch wird deshalb nicht gesondert ausgewiesen, sondern anteilig auf alle Wohnungen mitverteilt. Bitte ordnen Sie ihn einer Wohnung zu oder prüfen Sie, ob ein Vorwegabzug gewünscht ist.",
     "waterNoConsumption": "Für diese Kostenart wurde kein Verbrauch gemessen (Summe 0 m³). Die Kosten lassen sich deshalb nicht verbrauchsabhängig verteilen und tauchen weder beim Mieter noch beim Vermieter auf. Bitte prüfen Sie die Zählerstände oder wählen Sie einen anderen Umlageschlüssel.",
     "unitWithoutAssignedMeter": "Der Kostenart „{costTypeName}“ ist für mindestens eine Wohnung kein Zähler zugeordnet. Diese Wohnung trägt deshalb keine Kosten, die übrigen Wohnungen zahlen die ganze Rechnung. Bitte prüfen Sie beim Zähler unter „Verwendet für Kostenarten“, ob eine Zuordnung fehlt.",
-    "waterMeterUnassigned": "Der Wasserzähler ist keiner Kostenart zugeordnet, sein Verbrauch zählt deshalb bei keiner Wasser-Kostenart mit. Andere Wasserzähler des Gebäudes sind zugeordnet. Bitte prüfen Sie beim Zähler unter „Verwendet für Kostenarten“, ob eine Zuordnung fehlt, z. B. beim Warmwasserzähler einer Wohnung.",
+    "waterMeterUnassigned": "Der Wasserzähler ist keiner Kostenart zugeordnet, sein Verbrauch zählt deshalb bei keiner Wasser-Kostenart mit. Andere Wasserzähler des Gebäudes sind zugeordnet. Bitte prüfen Sie beim Zähler unter „Verwendet für Kostenarten“, ob eine Zuordnung fehlt, z. B. beim Warmwasserzähler einer Wohnung.",
     "waterUnitSumMismatch": "Der Hauptzähler weist {total} m³ aus, die Summe der Wohnungsverbräuche (inkl. Vermieteranteil) ergibt aber {unitSum} m³. Vermutlich fehlt ein Differenzzähler; die Kosten werden nach der tatsächlichen Verbrauchssumme verteilt. Bitte prüfen Sie die Zählerzuordnung.",
     "hotWaterTotalHeatMissing": "Zentrale Warmwasserbereitung erfasst, aber die Gesamt-Wärmemenge (kWh) fehlt, daher kann der Warmwasseranteil nicht nach § 9 Abs. 2 HeizkostenV herausgerechnet werden. Tragen Sie sie bei den Werten des Abrechnungszeitraums ein oder legen Sie einen Wärmemengenzähler als Hauptzähler an.",
     "hotWaterSourceMissing": "Zentrale Warmwasserbereitung erfasst, aber weder Boiler-Wärmemengenzähler noch Warmwasserverbrauch vorhanden, daher konnte der Warmwasseranteil nicht ermittelt werden.",
@@ -466,8 +466,13 @@
         "eurPerSqm": "€/m²",
         "eurPerUnit": "€/Wohnung"
       },
+      "unitSymbols": {
+        "sqm": "m²",
+        "celsius": "°C"
+      },
       "measures": {
         "sqm": "{value} m²",
+        "m3": "{value} m³",
         "kwh": "{value} kWh",
         "celsius": "{value} °C",
         "kg": "{value} kg",
@@ -2804,7 +2809,7 @@
       },
       "basisSourceDescription": {
         "meter_readings": "Die App rechnet mit den erfassten Ablesungen.",
-        "manual_reference": "Z. B. aus der Abrechnung eines früheren Messdienstes."
+        "manual_reference": "Z. B. aus der Abrechnung eines früheren Messdienstes."
       },
       "preview": {
         "title": "Vorschau",

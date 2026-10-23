@@ -16,7 +16,7 @@ import { type PasswordPolicy, passwordSchema } from "./password.js";
  * den Hinweis, die aktuelle Version zu installieren.
  * `migrationFailed` ist gesetzt, wenn die Aktualisierung der Datenbank beim
  * Start gescheitert ist: die App ist dann gesperrt und zeigt nur den Rückweg.
- * `privacyUrl` ist die verlinkte Datenschutzerklaerung (`PRIVACY_URL`); leer
+ * `privacyUrl` ist die verlinkte Datenschutzerklärung (`PRIVACY_URL`); leer
  * bedeutet, dass die App keinen Link anzeigt. `licenseUrl` ebenso für den
  * Lizenztext (`LICENSE_URL`).
  */

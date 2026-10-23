@@ -7,7 +7,7 @@ import { useBreadcrumbTrail } from "../useBreadcrumbTrail";
 
 /**
  * Einheitlicher Seitenkopf für Listen- und Detailseiten: Breadcrumb,
- * Titel-Kachel bzw. Avatar, Titel, Unterzeile und rechts entweder ein
+ * Icon-Badge bzw. Avatar, Titel, Unterzeile und rechts entweder ein
  * Primärbutton (Listen) oder Kennzahlen (Detail).
  */
 export const PageHeader = ({
@@ -57,7 +57,7 @@ export const PageHeader = ({
   action?: ReactNode;
 
   /**
-   * Breadcrumb ausblenden (z.B. Einstellungen mit eigener Reiter-Navigation)
+   * Breadcrumb ausblenden (z.B. Einstellungen mit eigener Tab-Navigation)
    */
   breadcrumb?: boolean;
 }) => {
@@ -107,7 +107,7 @@ export const PageHeader = ({
         <div className="min-w-0 flex-1">
           {loading ? (
             // Höhe der geladenen h1-Zeile reservieren,
-            // damit die mittig ausgerichtete Kachel nicht springt
+            // damit das mittig ausgerichtete Icon-Badge nicht springt
             <div className="flex h-7 items-center">
               <Skeleton className="h-5 w-56" />
             </div>

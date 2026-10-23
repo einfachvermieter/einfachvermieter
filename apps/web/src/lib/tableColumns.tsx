@@ -5,7 +5,7 @@ import { RowActions } from "@/components/RowActions";
 import type { DeleteResource } from "./useDeleteResource";
 
 /**
- * Schmale erste Spalte mit einer freistehenden Kachel je Zeile
+ * Schmale erste Spalte mit einem freistehenden Icon-Badge je Zeile
  */
 export const rowTileColumn = <T,>(
   tile: (row: T) => ReactNode,
@@ -21,7 +21,7 @@ export const rowTileColumn = <T,>(
 });
 
 /**
- * Kachel-Spalte mit einem Icon je Zeile
+ * Icon-Badge-Spalte mit einem Icon je Zeile
  */
 export const rowIconColumn = <T,>(
   icon: (row: T) => RemixiconComponentType,

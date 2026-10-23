@@ -4,7 +4,7 @@ import { BadRequestException } from "@nestjs/common";
 import { getI18n } from "../i18n/i18n.registry.js";
 
 /**
- * Ueberpruefung der Sperre des Mieterkontos:
+ * Überprüfung der Sperre des Mieterkontos:
  * liegt ein Datum (bzw. ein Datumsbereich, z. B. ein Mietmonat)
  * in einer finalisierten Abrechnungsperiode des Mieters,
  * sind Schreiboperationen für diesen Zweck gesperrt.

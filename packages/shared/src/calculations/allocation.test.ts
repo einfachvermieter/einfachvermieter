@@ -97,7 +97,7 @@ describe("allocateCost per_living_area", () => {
     // EG: 80/200 = 40 %, 10000 x 0,4 = 4000
     expect(result.tenantAmountCents).toBe(4000);
     expect(result.shareBps).toBe(4000);
-    expect(result.totalBase).toBe(200 * PERIOD_DAYS); // m² x Tage
+    expect(result.totalBase).toBe(200 * PERIOD_DAYS); // qm x Tage
     expect(result.tenantBase).toBe(80 * PERIOD_DAYS);
     expect(result.landlordAmountCents).toBe(0);
     expect(result.landlordShareBps).toBe(0);

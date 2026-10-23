@@ -2,7 +2,7 @@ import type { RemixiconComponentType } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 
 /**
- * Größenabhängige Maße (Kachel, Radius, Icon)
+ * Größenabhängige Maße (Badge, Radius, Icon)
  */
 const SIZE_CLASSES = {
   26: "size-6.5 rounded-md [&_svg]:size-3.75",
@@ -13,7 +13,7 @@ const SIZE_CLASSES = {
 } as const;
 
 /**
- * Icon-Kachel: blasse Akzentfläche mit Akzent-Icon. Eine Optik für alle
+ * Icon-Badge: blasse Akzentfläche mit Akzent-Icon. Eine Optik für alle
  * Domänen (Seitenkopf, Aktionszeilen, Schnellstart, Tabellenzeilen).
  */
 export const IconTile = ({

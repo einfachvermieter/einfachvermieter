@@ -195,7 +195,7 @@ const startApi = async (): Promise<{ port: number; token: string }> => {
     // Stacktraces im Fehlerbericht zeigen so Quelldatei und Zeile
     execArgv: ["--enable-source-maps"],
     // `pipe` statt `inherit`: ohne Konsole (Start über Startmenü, Dock oder
-    // Explorer) waere die Ausgabe der API sonst verloren, und genau die
+    // Explorer) wäre die Ausgabe der API sonst verloren, und genau die
     // braucht man bei einem Fehlerbericht.
     stdio: "pipe",
     env: {
@@ -421,9 +421,9 @@ const buildMenu = (): Menu => {
 
 /**
  * Ladeseite für die Zeit bis die API antwortet. Ohne sie bliebe nach dem
- * Start alles unsichtbar, weil der Server erst Migrationen und ORM hochfaehrt;
+ * Start alles unsichtbar, weil der Server erst Migrationen und ORM hochfährt;
  * auf langsamen Rechnern wirkt das wie ein Fehlstart. Die Seite bildet den
- * Ladebildschirm der Anwendung nach, damit der Uebergang nicht auffaellt.
+ * Ladebildschirm der Anwendung nach, damit der Übergang nicht auffällt.
  */
 const loadingPage = (): string => {
   const html = `<!doctype html><html lang="de"><head><meta charset="utf-8">
@@ -457,7 +457,7 @@ body { display: flex; flex-direction: column; align-items: center;
 <div class="version">${t("ui.updates.version", { version: appVersion })}</div>
 <script>
 // Nach der Installation liest Windows beim ersten Zugriff alle Paketdateien,
-// das dauert. Ab fuenf Sekunden sagen wir warum.
+// das dauert. Ab fünf Sekunden sagen wir warum.
 setTimeout(() => document.getElementById("hint").classList.add("visible"), 5000);
 </script>
 </body></html>`;

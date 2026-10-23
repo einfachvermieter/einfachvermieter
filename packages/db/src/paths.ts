@@ -8,7 +8,7 @@ const resolveAgainstRoot = (raw: string): string =>
   isAbsolute(raw) ? raw : resolve(repoRoot, raw);
 
 /**
- * Wurzel fuer alle volatilen Daten (SQLite-DB, Uploads, erstellte
+ * Wurzel für alle volatilen Daten (SQLite-DB, Uploads, erstellte
  * Abrechnungen). Per ENV `DATA_DIR` konfigurierbar (absolut oder relativ zum
  * repoRoot), Default `<repoRoot>/data`. Im Container auf `/data` gesetzt und
  * als Volume gemountet.

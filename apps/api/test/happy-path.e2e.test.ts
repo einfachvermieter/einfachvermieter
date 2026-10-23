@@ -5,6 +5,7 @@
  *   Rechnung -> Zahlung -> Preview -> Abrechnung -> Finalize -> PDF ->
  *   Mieterkonto-Settlement -> Lock-Verhalten -> Storno -> Delete-Guards.
  */
+
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -110,7 +111,7 @@ afterAll(async () => {
 
 describe("Happy Path", () => {
   it("durchläuft den kompletten Abrechnungs-Workflow", async () => {
-    // ── Auth ────────────────────────────────────────────────────────────
+    // -- Auth ------------------------------------------------------------
     const failedLogin = await fetch(`${baseUrl}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -145,7 +146,7 @@ describe("Happy Path", () => {
       expect: 200,
     });
 
-    // ── Stammdaten ──────────────────────────────────────────────────────
+    // -- Stammdaten ------------------------------------------------------
     const building = await api("/buildings", {
       method: "POST",
       body: {
@@ -190,7 +191,7 @@ describe("Happy Path", () => {
     });
     const tenantId: string = tenantAggregate.tenant.id;
 
-    // ── Zähler + Stände (Endstand bewusst geschätzt) ────────────────────
+    // -- Zähler + Stände (Endstand bewusst geschätzt) --------------------
     const meter = await api("/meters", {
       method: "POST",
       body: {
@@ -221,7 +222,7 @@ describe("Happy Path", () => {
       expect: 201,
     });
 
-    // ── Kostenart + Rechnung ────────────────────────────────────────────
+    // -- Kostenart + Rechnung --------------------------------------------
     const costType = await api("/costs/types", {
       method: "POST",
       body: {
@@ -252,7 +253,7 @@ describe("Happy Path", () => {
       expect: 201,
     });
 
-    // ── Zahlung (Zweck Monat Januar) ────────────────────────────────────
+    // -- Zahlung (Zweck Monat Januar) ------------------------------------
     const payment = await api("/payments", {
       method: "POST",
       body: {
@@ -268,7 +269,7 @@ describe("Happy Path", () => {
       expect: 201,
     });
 
-    // ── Live-Preview ────────────────────────────────────────────────────
+    // -- Live-Preview ----------------------------------------------------
     const preview = await api(
       `/statements/preview/calculate?buildingId=${building.id}&tenantId=${tenantId}&from=2025-01-01&to=2025-12-31`,
       { expect: 200 },
@@ -283,7 +284,7 @@ describe("Happy Path", () => {
     // Geschätzter Endstand -> übersetzte readingEstimated-Warnung sichtbar.
     expect(JSON.stringify(preview.warnings)).toContain("geschätzt");
 
-    // ── Abrechnung anlegen + finalisieren ───────────────────────────────
+    // -- Abrechnung anlegen + finalisieren -------------------------------
     const balancesBefore = await api("/accounts/balances?asOf=2025-12-31", {
       expect: 200,
     });
@@ -304,7 +305,7 @@ describe("Happy Path", () => {
     });
     expect(statement.status).toBe("draft");
 
-    // H2-Regression (integritaet.md): zwei parallele Finalize-Requests
+    // Regression: zwei parallele Finalize-Requests
     // (Doppelklick/Retry) dürfen nur einmal buchen: genau ein 201, und
     // weiter unten genau ein Settlement auf dem Mieterkonto.
     const finalizeResponses = await Promise.all(
@@ -333,12 +334,12 @@ describe("Happy Path", () => {
       waterWarnings.some((warning) => warning.code === "readingEstimated"),
     ).toBe(true);
 
-    // Saldo-Konsistenz: Kosten − Vorauszahlungen = Saldo.
+    // Saldo-Konsistenz: Kosten - Vorauszahlungen = Saldo.
     expect(finalized.balanceCents).toBe(
       finalized.totalCostsCents - finalized.totalAdvancesCents,
     );
 
-    // ── PDF ─────────────────────────────────────────────────────────────
+    // -- PDF -------------------------------------------------------------
     const pdfResponse = await fetch(
       `${baseUrl}/api/statements/${statement.id}/pdf`,
       { headers: { cookie: authCookie } },
@@ -352,7 +353,7 @@ describe("Happy Path", () => {
     const pdfBytes = await pdfResponse.arrayBuffer();
     expect(pdfBytes.byteLength).toBeGreaterThan(1000);
 
-    // ── Mieterkonto: Settlement-Soll gebucht ────────────────────────────
+    // -- Mieterkonto: Settlement-Soll gebucht ----------------------------
     const balancesAfter = await api("/accounts/balances?asOf=2025-12-31", {
       expect: 200,
     });
@@ -372,14 +373,14 @@ describe("Happy Path", () => {
     expect(settlements).toHaveLength(1);
     expect(settlements[0].statementId).toBe(statement.id);
 
-    // ── Lock: Zahlung in finalisierter Periode unveränderlich ───────────
+    // -- Lock: Zahlung in finalisierter Periode unveränderlich -----------
     const lockError = await api(`/payments/${payment.id}`, {
       method: "DELETE",
       expect: 400,
     });
     expect(JSON.stringify(lockError)).toContain("finalisiert");
 
-    // ── Werte des Abrechnungszeitraums: Sperre nur für genau den Zeitraum ─
+    // -- Werte des Abrechnungszeitraums: Sperre nur für genau den Zeitraum -
     const valuesPath = `/buildings/${building.id}/heating/period-values`;
     const putPeriodValues = (
       periodStart: string,
@@ -409,10 +410,10 @@ describe("Happy Path", () => {
       lockedByStatementId: statement.id,
     });
 
-    // ── Delete-Guard: Mietvertrag mit Zahlungen/Abrechnungen ────────────
+    // -- Delete-Guard: Mietvertrag mit Zahlungen/Abrechnungen ------------
     await api(`/tenants/${tenantId}`, { method: "DELETE", expect: 400 });
 
-    // ── Storno: Soll wird zurückgenommen ────────────────────────────────
+    // -- Storno: Soll wird zurückgenommen --------------------------------
     const cancelled = await api(`/statements/${statement.id}/cancel`, {
       method: "POST",
       body: { reason: "E2E-Storno-Test" },
@@ -439,7 +440,7 @@ describe("Happy Path", () => {
     );
     expect(settlementsAfterCancel).toHaveLength(0);
 
-    // ── Korrektur: Zahlung auf die Abrechnung bleibt erhalten ───────────
+    // -- Korrektur: Zahlung auf die Abrechnung bleibt erhalten -----------
     const correction = await api(`/statements/${statement.id}/correct`, {
       method: "POST",
       expect: 201,
@@ -690,7 +691,7 @@ describe("Happy Path", () => {
     );
     expect(Array.isArray(externalEntries)).toBe(true);
 
-    // ── Werte des Abrechnungszeitraums ──────────────────────────────────
+    // -- Werte des Abrechnungszeitraums ----------------------------------
     const valuesPath = `/buildings/${building.id}/heating/period-values`;
     const year = { periodStart: "2025-01-01", periodEnd: "2025-12-31" };
     const yearQuery = "periodStart=2025-01-01&periodEnd=2025-12-31";
@@ -828,7 +829,7 @@ describe("Happy Path", () => {
       await api(`${valuesPath}?${yearQuery}`, { expect: 200 }),
     ).toMatchObject(noValues);
 
-    // ── Beschränkung nach § 9 CO2KostAufG ───────────────────────────────
+    // -- Beschränkung nach § 9 CO2KostAufG -------------------------------
     const heatingPath = `/buildings/${building.id}/heating`;
     const patchHeating = (body: Record<string, unknown>, status: number) =>
       api(`${heatingPath}/${heatingVersionId}`, {

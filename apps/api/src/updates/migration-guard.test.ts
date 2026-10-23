@@ -313,10 +313,14 @@ describe("runMigrations mit SQLite", () => {
 
 type FakeOptions = {
   pendingAfter?: () => Promise<{ name: string }[]>;
-  /** War vor dem Versuch schon eine Migration angewendet? */
+  /**
+   * War vor dem Versuch schon eine Migration angewendet?
+   */
   applied?: boolean;
   tableCount?: number;
-  /** Was `up` tut, bevor es scheitert */
+  /**
+   * Was `up` tut, bevor es scheitert
+   */
   beforeFailing?: (emit: (event: string, name: string) => void) => void;
 };
 

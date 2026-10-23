@@ -10,11 +10,11 @@ import {
 
 describe("formatEur", () => {
   it("zeigt bei einer Null mit umgekehrtem Vorzeichen kein Minus", () => {
-    expect(formatEur(-0)).toBe("0,00 €");
+    expect(formatEur(-0)).toBe("0,00\u00a0€");
   });
 
   it("behält das Vorzeichen bei echten negativen Beträgen", () => {
-    expect(formatEur(-288_000)).toBe("-2.880,00 €");
+    expect(formatEur(-288_000)).toBe("-2.880,00\u00a0€");
   });
 });
 

@@ -1004,7 +1004,7 @@ export const billingInfoCostRows = (
   if (detail.containedTaxesCents !== undefined) {
     rows.push({
       key: "containedTaxes",
-      // Die erfassten Arten benennen die Summe naeher und gehoeren deshalb
+      // Die erfassten Arten benennen die Summe näher und gehören deshalb
       // ins Label - die Wertspalte bleibt eine reine Betragsspalte.
       label:
         kinds.length > 0
@@ -1092,7 +1092,7 @@ export const averageUserComparison = (
   const ownRow = perUnit.find((row) => row.unitId === targetUnitId);
   const totalArea = perUnit.reduce((acc, row) => acc + row.areaSqm, 0);
 
-  // Bei einer einzigen Wohnung waere der "Durchschnitt" der eigene Verbrauch.
+  // Bei einer einzigen Wohnung wäre der "Durchschnitt" der eigene Verbrauch.
   if (!ownRow || ownRow.areaSqm <= 0 || totalArea <= 0 || perUnit.length < 2) {
     return null;
   }

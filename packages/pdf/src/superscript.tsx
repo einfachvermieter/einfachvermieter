@@ -3,17 +3,18 @@ import type { ReactNode } from "react";
 import { styles } from "./styles.js";
 
 /**
- * Hochgestellte Unicode-Zeichen -> normale Ziffer. Statt der Unicode-Hochzeichen
- * rendern wir normale Ziffern, die via `styles.superscript` kleiner und
- * hochgestellt dargestellt werden, typografisch kontrolliert (einheitliche
- * Größe/Höhe) und unabhängig davon, ob die Schrift eigene Superscript-Glyphen
+ * Hochgestellte Unicode-Ziffern 0 bis 9, Index = Ziffer. Im PDF werden sie
+ * nicht als Glyphe ausgegeben, sondern als normale Ziffer, die
+ * `styles.superscript` kleiner und hochgestellt setzt: einheitliche
+ * Größe/Höhe, unabhängig davon, ob die Schrift eigene Superscript-Glyphen
  * besitzt.
  */
-const DIGIT_TO_SUPERSCRIPT = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+const DIGIT_TO_SUPERSCRIPT =
+  "\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079";
 
 /**
- * Wandelt eine Zahl in hochgestellte Unicode-Ziffern (z. B. 12 -> "¹²"). Wird
- * für Fußnoten-Marker genutzt
+ * Wandelt eine Zahl in hochgestellte Unicode-Ziffern (jede Ziffer
+ * einzeln, 12 ergibt zwei hochgestellte Ziffern). Wird für Fußnoten-Marker genutzt
  */
 export const toSuperscript = (value: number): string =>
   String(value)
@@ -21,18 +22,12 @@ export const toSuperscript = (value: number): string =>
     .map((digit) => DIGIT_TO_SUPERSCRIPT[Number(digit)] ?? digit)
     .join("");
 
-const SUPERSCRIPT_TO_DIGIT: Record<string, string> = {
-  "⁰": "0", // ⁰
-  "¹": "1", // ¹
-  "²": "2", // ²
-  "³": "3", // ³
-  "⁴": "4", // ⁴
-  "⁵": "5", // ⁵
-  "⁶": "6", // ⁶
-  "⁷": "7", // ⁷
-  "⁸": "8", // ⁸
-  "⁹": "9", // ⁹
-};
+const SUPERSCRIPT_TO_DIGIT: Record<string, string> = Object.fromEntries(
+  [...DIGIT_TO_SUPERSCRIPT].map((superscript, digit) => [
+    superscript,
+    String(digit),
+  ]),
+);
 
 /**
  * Ersetzt hochgestellte Unicode-Zeichen in einem Text durch echt hochgestellte

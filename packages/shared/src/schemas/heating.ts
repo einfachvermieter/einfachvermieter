@@ -138,7 +138,7 @@ const internalSchema = z
     fuelType: z.enum(heatingFuelTypes),
     hotWaterMeterId: z.guid().nullable(),
     hotWaterSupplyTemperatureCelsius: z.number().int().min(20).max(95),
-    // Mit Default, damit Aufrufer die Sonderfall-Schalter weglassen können.
+    // Mit Default, damit Aufrufer die Sonderfall-Flags weglassen können.
     // Der Normalfall ist "trifft nicht zu".
     gasBillingByCalorificValue: z.boolean().default(false),
     heatPumpMonovalent: z.boolean().default(false),

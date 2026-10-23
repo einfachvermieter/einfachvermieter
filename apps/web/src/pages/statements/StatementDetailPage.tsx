@@ -154,7 +154,7 @@ const renderStatusBadge = (statement: StatementDetail) => {
 };
 
 /**
- * Kennzahl-Kacheln des Übersicht-Tabs
+ * KPI-Tiles des Übersicht-Tabs
  */
 const buildKpiItems = (
   result: StatementResult,

@@ -20,7 +20,7 @@ const OccupancyBoxes = ({
   <span className="mt-1.5 flex gap-1">
     {Array.from({ length: units }, (_, index) => (
       <span
-        // biome-ignore lint/suspicious/noArrayIndexKey: Kästchen
+        // biome-ignore lint/suspicious/noArrayIndexKey: Platzhalter
         key={index}
         className={cn(
           "block size-3 rounded",

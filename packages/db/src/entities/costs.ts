@@ -169,7 +169,7 @@ export type CostEntryItem = {
   /**
    * Arten der in `containedTaxesCents` enthaltenen Steuern und Abgaben
    * (Umsatzsteuer, Energiesteuer, CO2-Abgabe nach BEHG ...);
-   * nur die Arten, die Betraege bleiben eine Summe.
+   * nur die Arten, die Beträge bleiben eine Summe.
    */
   containedTaxKinds: string[] | null;
   periodStart: string;

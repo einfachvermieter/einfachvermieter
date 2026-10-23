@@ -57,7 +57,7 @@ export const supportsCostTypeAssignment = (
 
 /**
  * Rollen, bei denen die Wohnungsauswahl angeboten wird. Differenzzähler
- * können einer Wohnung zugeordnet werden (z. B. "Wohnung B = Haupt − A"),
+ * können einer Wohnung zugeordnet werden (z. B. "Wohnung B = Haupt - A"),
  * sind aber wie `sub`/`common` nicht zwingend an eine Wohnung gebunden.
  */
 export const unitScopedRoles: readonly MeterRole[] = [

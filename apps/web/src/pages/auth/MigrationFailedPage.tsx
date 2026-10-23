@@ -14,7 +14,7 @@ import { t } from "../../lib/i18n";
 /**
  * Sperrseite, wenn die Einrichtung oder Aktualisierung der Datenbank beim
  * Start gescheitert ist: einziger erreichbarer Bildschirm. Sie nennt den Rückweg und hat
- * bewusst keine Schaltfläche, ein neuer Versuch braucht einen Neustart.
+ * bewusst keinen Button, ein neuer Versuch braucht einen Neustart.
  */
 export const MigrationFailedPage = () => {
   const { data: status } = useQuery(setupStatusQueryOptions);

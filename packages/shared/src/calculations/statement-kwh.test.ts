@@ -178,7 +178,7 @@ describe("calculateStatement mit Umlageschlüssel Verbrauch (kWh)", () => {
     ).toEqual([
       // 4.000 von 5.000 kWh nach Verbrauch, davon EG 3.000 von 4.000
       ["Wärmepumpenstrom", "per_consumption_kwh", 80_000, 60_000],
-      // 1.000 von 5.000 kWh nach Wohnfläche, EG 80 von 200 m²
+      // 1.000 von 5.000 kWh nach Wohnfläche, EG 80 von 200 qm
       ["Wärmepumpenstrom, Anteil Allgemein", "per_living_area", 20_000, 8000],
     ]);
     expect(result.kwhWarnings).toBeUndefined();

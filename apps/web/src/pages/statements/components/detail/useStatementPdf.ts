@@ -73,7 +73,7 @@ export const downloadStatementPdf = (
 };
 
 /**
- * Vorschau als Blob-Adresse. Fehler bleiben in der Query, damit der Reiter
+ * Vorschau als Blob-Adresse. Fehler bleiben in der Query, damit der Tab
  * sie anzeigen kann, statt eine leere Fläche zu zeigen.
  */
 export const useStatementPdfPreview = (src: string, cacheKey: string) => {

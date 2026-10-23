@@ -18,8 +18,8 @@ type EntityKey =
   | "heatingSettings";
 
 /**
- * Baut eine lokalisierte "nicht gefunden"-Meldung fuer eine Entitaet auf,
- * inklusive uebersetztem Entitaetsnamen und der gesuchten Id
+ * Baut eine lokalisierte "nicht gefunden"-Meldung für eine Entität auf,
+ * inklusive übersetztem Entitätsnamen und der gesuchten Id
  */
 export const notFoundMessage = (entity: EntityKey, id: string): string => {
   const i18n = getI18n();

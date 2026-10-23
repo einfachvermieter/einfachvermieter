@@ -32,7 +32,7 @@ type ApiKeyFieldProps<T extends FieldValues> = {
 
 /**
  * Eingabe für den API-Key des Anbieters. Ist bereits einer gespeichert,
- * erscheint er verdeckt und schreibgeschützt mit einem Löschen-Knopf im
+ * erscheint er verdeckt und schreibgeschützt mit einem Löschen-Button im
  * Feld; erst danach lässt sich ein neuer eintragen.
  */
 export const ApiKeyField = <T extends FieldValues>({

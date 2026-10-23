@@ -45,7 +45,7 @@ import { notFoundMessage } from "../i18n/notFound.js";
 import { isPresent, referenceDateFor } from "./occupancy.js";
 
 /**
- * ISO-Datum (YYYY-MM-DD) um einen Tag erhoehen, UTC-basiert ohne
+ * ISO-Datum (YYYY-MM-DD) um einen Tag erhöhen, UTC-basiert ohne
  * Zeitzonenverschiebung.
  */
 const increaseOneDayIso = (iso: string): string => {
@@ -458,8 +458,8 @@ export class TenantsService {
   }
 
   /**
-   * Schlanke Verknuepfungsliste aller Mietvertraege mit ihren Bewohner-Ids.
-   * Fuer Stellen, die nur die Zuordnung, nicht die vollen Aggregate brauchen.
+   * Schlanke Verknüpfungsliste aller Mietverträge mit ihren Bewohner-Ids.
+   * Für Stellen, die nur die Zuordnung, nicht die vollen Aggregate brauchen.
    */
   async listLinks(): Promise<TenantLink[]> {
     const tenantRows = await this.em.find(
@@ -494,7 +494,7 @@ export class TenantsService {
   }
 
   /**
-   * Alle Mietvertraege einer Wohnung samt Bewohnern, Mieten, Bankverbindungen
+   * Alle Mietverträge einer Wohnung samt Bewohnern, Mieten, Bankverbindungen
    * und Adressen laden
    */
   async listByUnit(unitId: string): Promise<TenantAggregate[]> {
@@ -508,8 +508,8 @@ export class TenantsService {
   }
 
   /**
-   * Reichert eine Menge geladener Mietvertraege in moeglichst wenigen Queries
-   * mit ihren Detaildaten an (Bewohner-Links + aufgeloeste Residents, Mieten,
+   * Reichert eine Menge geladener Mietverträge in möglichst wenigen Queries
+   * mit ihren Detaildaten an (Bewohner-Links + aufgelöste Residents, Mieten,
    * Bankverbindungen, Adressen) und baut die TenantAggregate-Struktur.
    */
   private async hydrate(
@@ -571,7 +571,7 @@ export class TenantsService {
   }
 
   /**
-   * Einzelnen Mietvertrag als vollstaendiges Aggregate laden
+   * Einzelnen Mietvertrag als vollständiges Aggregate laden
    */
   async getAggregate(id: string): Promise<TenantAggregate> {
     const tenant = await this.em.findOne(TenantSchema, { id });
@@ -589,7 +589,7 @@ export class TenantsService {
 
   /**
    * Neuen Mietvertrag anlegen. Stellt vorab sicher, dass sich der Zeitraum
-   * nicht mit einem bestehenden Vertrag derselben Wohnung ueberschneidet.
+   * nicht mit einem bestehenden Vertrag derselben Wohnung überschneidet.
    */
   async create(dto: TenantSaveDto) {
     await assertUnitExists(this.em, dto.unitId);
@@ -599,7 +599,7 @@ export class TenantsService {
   }
 
   /**
-   * Bestehenden Mietvertrag aktualisieren, inklusive Ueberlappungspruefung
+   * Bestehenden Mietvertrag aktualisieren, inklusive Überlappungsprüfung
    */
   async update(id: string, dto: TenantSaveDto) {
     const existing = await this.em.findOne(TenantSchema, { id });
@@ -618,8 +618,8 @@ export class TenantsService {
   }
 
   /**
-   * Mietvertrag loeschen.
-   * Vertraege mit gebuchten Zahlungen oder Abrechnungen sind nicht loeschbar.
+   * Mietvertrag löschen.
+   * Verträge mit gebuchten Zahlungen oder Abrechnungen sind nicht löschbar.
    * Buchungshistorie und Abrechnungs-Snapshots blieben sonst verwaist.
    */
   async delete(id: string) {

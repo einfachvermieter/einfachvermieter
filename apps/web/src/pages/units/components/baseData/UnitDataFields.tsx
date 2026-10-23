@@ -76,7 +76,7 @@ export const UnitDataFields = ({
           label={t("ui.units.fields.area")}
           inputMode="decimal"
           placeholder={t("ui.units.fields.areaPlaceholder")}
-          suffix="m²"
+          suffix={t("ui.common.unitSymbols.sqm")}
         />
         <TextInput
           control={form.control}
@@ -86,7 +86,7 @@ export const UnitDataFields = ({
           labelHelp={t("ui.units.fields.heatingAreaHelp")}
           inputMode="decimal"
           placeholder={t("ui.units.fields.heatingAreaPlaceholder")}
-          suffix="m²"
+          suffix={t("ui.common.unitSymbols.sqm")}
           optional={true}
         />
       </div>

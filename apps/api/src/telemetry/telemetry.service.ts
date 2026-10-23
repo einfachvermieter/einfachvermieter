@@ -31,7 +31,9 @@ const FETCH_TIMEOUT_MS = 5000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const SERVER_CHECK_EVERY_MS = 60 * 60 * 1000;
 
-/** Abfrage der Server-Version je Dialekt */
+/**
+ * Abfrage der Server-Version je Dialekt
+ */
 const DB_VERSION_QUERY: Record<string, string> = {
   postgresql: "show server_version",
   mariadb: "select version() as version",

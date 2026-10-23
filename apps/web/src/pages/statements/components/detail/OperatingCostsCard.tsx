@@ -74,7 +74,10 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
   const footnoteMeters = waterFootnoteMeters(result);
   const meterList = (meters: Array<{ label: string; consumptionM3: number }>) =>
     meters
-      .map((c) => `${c.label} (${formatNumber(c.consumptionM3, 2)}\u00A0m³)`)
+      .map(
+        (c) =>
+          `${c.label} (${t("ui.common.measures.m3", { value: formatNumber(c.consumptionM3, 2) })})`,
+      )
       .join(", ");
   const consumptionNote =
     footnoteMeters.fresh.length > 0

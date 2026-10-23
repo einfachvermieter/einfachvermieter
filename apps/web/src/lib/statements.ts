@@ -6,7 +6,7 @@ import type { TenantAggregate } from "./tenants";
 import type { Unit } from "./units";
 
 /**
- * Reiter der Detailseite
+ * Tab der Detailseite
  * Erster Eintrag ist der Standard
  */
 export const statementTabs = [

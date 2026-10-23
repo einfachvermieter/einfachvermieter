@@ -163,7 +163,7 @@ const checkPaymentPurposes = async (em: EntityManager, findings: Finding[]) => {
       findings.push({
         level: "error",
         area: "payments",
-        message: `Zahlung ${payment.id} (Tenant ${payment.tenantId}) hängt an Abrechnung ${statement.id} mit Status „${statement.status}“ und fehlt damit im Mieterkonto.`,
+        message: `Zahlung ${payment.id} (Tenant ${payment.tenantId}) hängt an Abrechnung ${statement.id} mit Status "${statement.status}" und fehlt damit im Mieterkonto.`,
       });
       continue;
     }

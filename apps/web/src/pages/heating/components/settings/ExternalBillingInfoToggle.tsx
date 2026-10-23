@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { t } from "../../../../lib/i18n";
 
 /**
- * Schalter für die § 6a-Informationsseite, nur im externen Modus sichtbar.
+ * Switch für die § 6a-Informationsseite, nur im externen Modus sichtbar.
  * Beim Abwählen erscheint ein Warnhinweis.
  */
 export const ExternalBillingInfoToggle = ({

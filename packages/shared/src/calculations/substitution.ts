@@ -408,7 +408,7 @@ export type ScopeEvaluation = {
 };
 
 /**
- * § 9a Abs. 2: mehr als 25 % der Fläche betroffen. Auf ganze cm² gerundet,
+ * § 9a Abs. 2: mehr als 25 % der Fläche betroffen. Auf ganze cm2 gerundet,
  * damit Fließkomma die Grenze nicht verschiebt; genau 25 % reicht nicht.
  */
 export const isSubstitutionLimitExceeded = (
@@ -769,7 +769,7 @@ const resolveSameRooms = (context: ScopeContext, draft: Draft): void => {
 };
 
 /**
- * Verfahren b und c aus Zählerständen: Verbrauch je m² der
+ * Verfahren b und c aus Zählerständen: Verbrauch je qm der
  * Vergleichswohnungen bzw. des Gebäudes ohne gestörte Wohnungen
  */
 const comparisonRate = (context: ScopeContext, draft: Draft): number | null => {
@@ -853,7 +853,7 @@ const resolveComparison = (context: ScopeContext, draft: Draft): void => {
 /**
  * Verfahren a mit Anteil: gemeinsamer Gebäudeverbrauch T, damit jeder
  * Ersatzwert im laufenden Zeitraum seinen Vergleichsanteil erhält:
- * `T = (M + Σ E_bc) / (1 − Σ p)`, `E_i = p_i × T`
+ * `T = (M + Summe  E_bc) / (1 - Summe  p)`, `E_i = p_i x T`
  */
 const applyShares = (context: ScopeContext, drafts: Draft[]): void => {
   const shareDrafts = drafts.filter(
@@ -1039,7 +1039,7 @@ export const evaluateSubstitutionScope = (
     fullConsumptionByMeter,
     gaps,
     // Nur ganzjährig versorgte Wohnungen taugen als Vergleich, sonst wäre
-    // der Verbrauch je m² zu niedrig.
+    // der Verbrauch je qm zu niedrig.
     hasUsableConsumption: (unitId) =>
       meteredUnits.has(unitId) &&
       !unitsWithGap.has(unitId) &&

@@ -1432,7 +1432,7 @@ export class StatementsService {
 
     if (meterIds.length > 0) {
       // Verbrauch wird nur innerhalb der Abrechnungsperiode interpoliert; ein
-      // Jahr Puffer je Seite deckt die umschliessenden Ablesungen bei jaehrlicher
+      // Jahr Puffer je Seite deckt die umschliessenden Ablesungen bei jährlicher
       // (gesetzlich vorgeschriebener) Ablesung ab.
       const windowStart = addDaysIso(statementPeriod.start, -366);
       const windowEnd = addDaysIso(statementPeriod.end, 366);

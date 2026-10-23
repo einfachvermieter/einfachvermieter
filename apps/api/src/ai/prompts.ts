@@ -311,3 +311,41 @@ export const TRANSCRIPTION_INSTRUCTION = [
   "Antworten Sie ausschließlich mit dem Dokumentinhalt, ohne Vorbemerkung und",
   "ohne abschließenden Kommentar.",
 ].join("\n");
+
+/**
+ * Nachfrage an das Modell, wenn die Summe der Positionen nicht zum
+ * Brutto-Endbetrag der Rechnung passt.
+ */
+export const buildCorrectionPrompt = (params: {
+  userPrompt: string;
+  firstJson: string;
+  sumCents: number;
+  totalCents: number;
+  diffCents: number;
+}): string =>
+  [
+    params.userPrompt,
+    "",
+    "--- Vorherige Antwort (FEHLERHAFT) ---",
+    params.firstJson,
+    "",
+    "--- Korrektur erforderlich ---",
+    "Das Backend hat aus deinen Roh-Werten die Brutto-Summe der",
+    `Positionen berechnet: ${params.sumCents} ct. Der Brutto-Endbetrag der`,
+    `Rechnung ist jedoch ${params.totalCents} ct (invoiceTotalCents).`,
+    `Differenz: ${params.diffCents} ct.`,
+    "Da die Brutto-Umrechnung im Backend deterministisch erfolgt,",
+    "ist die Diskrepanz nicht durch einen Rechenfehler entstanden.",
+    "Mögliche Ursachen: (a) für eine Position wurde ein Tarif statt",
+    "des abgerechneten Betrags übernommen, (b) eine Position fehlt",
+    "oder ist doppelt vorhanden, (c) der falsche taxRateBps wurde",
+    "gewählt, (d) invoiceTotalCents wurde aus einem anderen Zeile",
+    "übernommen (z. B. Abschlagssumme statt Brutto-Endbetrag),",
+    "(e) bei einer Versicherungsrechnung wurde der Nettobeitrag mit",
+    "taxRateBps=0 statt des Bruttoabrechnungsbeitrags übernommen –",
+    "Versicherungsbeiträge sind zwar umsatzsteuerfrei, enthalten aber",
+    "Versicherungssteuer (VersStG); IMMER den Bruttoabrechnungsbeitrag",
+    "als amountGrossCents nehmen. Die Versicherungssteuer NICHT als",
+    "eigene Position anlegen – sie ist im Brutto bereits enthalten.",
+    "Bitte gib eine korrigierte JSON-Antwort gemäß Schema zurück.",
+  ].join("\n");

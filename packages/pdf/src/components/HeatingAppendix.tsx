@@ -588,7 +588,9 @@ export const HeatingAppendix = ({
                 >
                   <Text>
                     {renderSuperscripts(
-                      `${formatNumber(row.hotWaterM3, 2)}\u00A0m³`,
+                      t("ui.common.measures.m3", {
+                        value: formatNumber(row.hotWaterM3, 2),
+                      }),
                     )}
                   </Text>
                 </View>
@@ -647,10 +649,12 @@ export const HeatingAppendix = ({
             >
               <Text>
                 {renderSuperscripts(
-                  `${formatNumber(
-                    hw.perUnit.reduce((acc, u) => acc + u.hotWaterM3, 0),
-                    2,
-                  )}\u00A0m³`,
+                  t("ui.common.measures.m3", {
+                    value: formatNumber(
+                      hw.perUnit.reduce((acc, u) => acc + u.hotWaterM3, 0),
+                      2,
+                    ),
+                  }),
                 )}
               </Text>
             </View>
@@ -1003,7 +1007,9 @@ export const HeatingAppendix = ({
               >
                 <Text>
                   {renderSuperscripts(
-                    `${formatNumber(row.areaSqm, 2)}\u00A0m²`,
+                    t("ui.common.measures.sqm", {
+                      value: formatNumber(row.areaSqm, 2),
+                    }),
                   )}
                 </Text>
               </View>
@@ -1071,7 +1077,11 @@ export const HeatingAppendix = ({
             ]}
           >
             <Text>
-              {renderSuperscripts(`${formatNumber(totalArea, 2)}\u00A0m²`)}
+              {renderSuperscripts(
+                t("ui.common.measures.sqm", {
+                  value: formatNumber(totalArea, 2),
+                }),
+              )}
             </Text>
           </View>
           <View

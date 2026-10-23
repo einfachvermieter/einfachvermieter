@@ -129,7 +129,7 @@ export const HeatingInstallationFields = ({
               min="20"
               max="95"
               step="1"
-              suffix="°C"
+              suffix={t("ui.common.unitSymbols.celsius")}
             />
             <Alert variant="info">
               <AlertDescription>

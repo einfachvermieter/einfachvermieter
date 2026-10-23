@@ -4,6 +4,7 @@
  * Sperre der Erfassungsausfälle, Ausgleich im Folgejahr aus dem Snapshot.
  * Dazu der Grundkostenmaßstab der Heizung über einen Jahreswechsel.
  */
+
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -262,7 +263,7 @@ describe("Erfassungsausfall nach § 9a HeizkostenV", () => {
       expect: 201,
     });
 
-    // ── 2026: Endstand von WMZ A fehlt ──────────────────────────────────
+    // -- 2026: Endstand von WMZ A fehlt ----------------------------------
     const statement2026 = await api("/statements", {
       method: "POST",
       body: {
@@ -393,7 +394,7 @@ describe("Erfassungsausfall nach § 9a HeizkostenV", () => {
       expect: 400,
     });
 
-    // ── 2027: echter Stand, Ausgleich ab 22.000 ─────────────────────────
+    // -- 2027: echter Stand, Ausgleich ab 22.000 -------------------------
     await addReading(wmzA.id, "2027-12-31", 27_000);
     for (const meterId of [wmzB.id, wmzC.id, waterMain.id]) {
       await addReading(meterId, "2027-01-01", 10_000);
@@ -418,7 +419,7 @@ describe("Erfassungsausfall nach § 9a HeizkostenV", () => {
       detail2027.warnings.map((warning: { code: string }) => warning.code),
     ).toContain("substitutionCompensationHeating");
 
-    // ── Teilnahme an der zentralen Versorgung ───────────────────────────
+    // -- Teilnahme an der zentralen Versorgung ---------------------------
     const supplyPath = `/units/${unitC.id}/supply-exclusions`;
     const later = await api(supplyPath, {
       method: "POST",

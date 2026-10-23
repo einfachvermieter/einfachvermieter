@@ -22,6 +22,7 @@
  *
  * Aufruf: npm run seed:demo -w @einfachvermieter/db
  */
+
 import { runSeed, runSeedAsScript, schema } from "./engine.js";
 
 const nid = (): string => crypto.randomUUID();
@@ -76,7 +77,7 @@ const monthlyRentPayments = (
 
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: linearer Seed-Daten-Builder (mehrere Gebäude), kein Logik-Zerlegungsbedarf.
 const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
-  // ── Globale Einstellungen + Login ──────────────────────────────────────
+  // -- Globale Einstellungen + Login --------------------------------------
   const demoLogoStorageKey = "settings/sender-logo.svg";
   insert(schema.appSettings, {
     id: schema.APP_SETTINGS_ID,
@@ -139,10 +140,10 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     },
   ]);
 
-  // ════════════════════════════════════════════════════════════════════════
+  // ========================================================================
   // Gebäude A - "Lindenhof 4", Essen
   // Interne Zentralheizung ohne Warmwasser, Gas, HKV, Differenzzähler Wasser.
-  // ════════════════════════════════════════════════════════════════════════
+  // ========================================================================
   const aBuilding = nid();
   insert(schema.buildings, {
     id: aBuilding,
@@ -327,7 +328,7 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       validFrom: "2025-01-01",
       isActive: true,
     },
-    // OG wird als virtueller Differenzzähler abgebildet: Hauptzähler − EG.
+    // OG wird als virtueller Differenzzähler abgebildet: Hauptzähler - EG.
     {
       id: aMeterWaterOgDiff,
       buildingId: aBuilding,
@@ -1041,10 +1042,10 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     },
   ]);
 
-  // ════════════════════════════════════════════════════════════════════════
+  // ========================================================================
   // Gebäude B - "Gartenstadt 12", Bochum
   // Interne Zentralheizung mit Warmwasser, Öl, Wärmemengenzähler.
-  // ════════════════════════════════════════════════════════════════════════
+  // ========================================================================
   const bBuilding = nid();
   insert(schema.buildings, {
     id: bBuilding,
@@ -1640,11 +1641,11 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     districtHeatPrimaryEnergyFactor: null,
   });
 
-  // ════════════════════════════════════════════════════════════════════════
+  // ========================================================================
   // Gebäude C - "Seeblick 5", Düsseldorf
   // Externe Wärmelieferung (Fernwärme): Heizkosten kommen 1:1 aus
   // external_heating_entries, die App rechnet sie nicht selbst.
-  // ════════════════════════════════════════════════════════════════════════
+  // ========================================================================
   const cBuilding = nid();
   insert(schema.buildings, {
     id: cBuilding,
@@ -2038,11 +2039,11 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     status: "draft",
   });
 
-  // ════════════════════════════════════════════════════════════════════════
+  // ========================================================================
   // Gebäude D - "Ahornweg 3", Duisburg
   // Bewusst leer (keine Wohnungen/Mieter/Kostenarten): zeigt die Empty-States
   // von Wohnungen-, Mieter-, Zähler- und Kostenarten-Liste bei aktivem Gebäude.
-  // ════════════════════════════════════════════════════════════════════════
+  // ========================================================================
   insert(schema.buildings, {
     id: nid(),
     name: "Ahornweg 3",

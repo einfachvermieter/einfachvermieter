@@ -25,9 +25,13 @@ const DEFAULT_LICENSE_URL = "https://einfachvermieter.de/lizenz/";
 
 @Injectable()
 export class SetupService {
-  /** Leer gesetzt blendet den Link auf die Datenschutzerklärung aus. */
+  /**
+   * Leer gesetzt blendet den Link auf die Datenschutzerklärung aus.
+   */
   private readonly privacyUrl = process.env.PRIVACY_URL ?? DEFAULT_PRIVACY_URL;
-  /** Leer gesetzt blendet den Link auf den Lizenztext aus. */
+  /**
+   * Leer gesetzt blendet den Link auf den Lizenztext aus.
+   */
   private readonly licenseUrl = process.env.LICENSE_URL ?? DEFAULT_LICENSE_URL;
 
   constructor(

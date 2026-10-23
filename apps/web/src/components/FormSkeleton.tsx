@@ -3,12 +3,12 @@ import { Skeleton } from "./ui/Skeleton";
 
 /**
  * Platzhalter für den Formular-Body (Card mit Feldzeilen). Der Seitenkopf
- * wird separat gerendert und bleibt beim Laden stehen, damit Kachel und
+ * wird separat gerendert und bleibt beim Laden stehen, damit Icon-Badge und
  * Breadcrumb nicht springen.
  *
  * `aside` rechte Sidebar als Skeleton ja/nein
  * `tabs` Tabs in Skeleton entweder als Pills oder Switches, je nach Seite
- * `kpis` Anzahl Kennzahl-Kacheln über dem Body (Abrechnungs-Detail)
+ * `kpis` Anzahl KPI-Tiles über dem Body (Abrechnungs-Detail)
  */
 export const FormSkeleton = ({
   rows = 4,

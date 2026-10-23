@@ -17,7 +17,7 @@ export type ChoiceTileOption = {
 };
 
 /**
- * Vorangestelltes Bildelement einer Kachel: freier Inhalt hat Vorrang vor
+ * Vorangestelltes Bildelement einer Radio-Card: freier Inhalt hat Vorrang vor
  * dem Icon, damit Logos ihre eigenen Farben behalten.
  */
 const tileLeading = (option: ChoiceTileOption): ReactNode => {
@@ -56,7 +56,7 @@ const tileLeading = (option: ChoiceTileOption): ReactNode => {
 };
 
 /**
- * Auswahl als getönte Radio-Kacheln (Icon, Titel, Beschreibung). Für
+ * Auswahl als farbige Radio-Cards (Icon, Titel, Beschreibung). Für
  * Formularfelder gibt es die Variante `ChoiceTilesInput`.
  */
 export const ChoiceTiles = ({

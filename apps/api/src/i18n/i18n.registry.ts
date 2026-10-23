@@ -7,7 +7,7 @@ export const setI18n = (i18n: I18nInstance): void => {
 };
 
 /**
- * Liefert die global registrierte i18n-Instanz fuer Code ausserhalb der
+ * Liefert die global registrierte i18n-Instanz für Code ausserhalb der
  * Nest-DI (Helper, Exceptions)
  */
 export const getI18n = (): I18nInstance => {

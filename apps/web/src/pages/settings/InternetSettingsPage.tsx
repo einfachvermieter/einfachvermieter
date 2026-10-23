@@ -23,7 +23,7 @@ import { SettingsLayout } from "./SettingsLayout";
 
 /**
  * Card Einwilligung: Hinweis, solange nicht entschieden, dann die
- * Schalterzeile und optional eine Statuszeile darunter.
+ * Switch-Zeile und optional eine Statuszeile darunter.
  */
 const ConsentCard = ({
   icon,

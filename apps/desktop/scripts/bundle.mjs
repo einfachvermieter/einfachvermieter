@@ -1,21 +1,22 @@
+/**
+ * Bündelt den Electron-Main-Prozess in eine einzige CJS-Datei. Das i18n-Paket
+ * (inkl. i18next) wird mitgebündelt. Die gepackte App braucht dadurch keine
+ * eigenen node_modules; nur `electron` selbst bleibt extern.
+ *
+ * Veröffentlichungsweg (z. B. win-store, macos-download) entweder per ENV
+ * `APP_PLATFORM` oder als erstes Argument.
+ *
+ * Die Produktversion wird hier eingebrannt, weil `app.getVersion()` im
+ * Windows-Paket die MSIX-Paketversion liefert und nicht die Nummer,
+ * die Nutzer und Versionsprüfung sehen sollen.
+ */
+
 import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 
-/**
- * Bündelt den Electron-Main-Prozess in eine einzige CJS-Datei. Das i18n-Paket
- * (inkl. i18next) wird mitgebündelt. Die gepackte App braucht dadurch keine
- * eigenen node_modules; nur `electron` selbst bleibt extern.
- *
- * Veröffentlichungsweg (z.B. win-store, macos-download) entweder per ENV
- * `APP_PLATFORM` oder als erstes Argument.
- *
- * Die Produktversion wird hier eingebrannt, weil `app.getVersion()` im
- * Windows-Paket die MSIX-Paketversion liefert und nicht die Nummer,
-  die Nutzer und Versionsprüfung sehen sollen.
- */
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const appPlatform = process.env.APP_PLATFORM?.trim() || process.argv[2] || "";
 const { version } = createRequire(import.meta.url)("../package.json");

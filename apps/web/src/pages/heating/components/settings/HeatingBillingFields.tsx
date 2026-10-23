@@ -25,7 +25,7 @@ import { ExternalBillingInfoToggle } from "./ExternalBillingInfoToggle";
 
 /**
  * Setzt das ergänzende Anteilsfeld (Grund-/Verbrauchsanteil, Summe = 100 %)
- * auf `100 − Wert`, sofern der eingegebene Wert eine valide Prozentzahl ist
+ * auf `100 - Wert`, sofern der eingegebene Wert eine valide Prozentzahl ist
  * und sich der Zielwert tatsächlich ändert.
  */
 const syncComplementaryShare = (

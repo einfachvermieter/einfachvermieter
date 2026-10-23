@@ -21,7 +21,7 @@ export const DesktopMenuBar = () => {
   const menuButtons = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
-    // Alt allein (ohne weitere Taste dazwischen) wählt die Menüzeile an
+    // Alt allein (ohne weiteren Tastendruck dazwischen) wählt die Menüzeile an
     let altAlone = false;
 
     const onKeyDown = (event: globalThis.KeyboardEvent) => {

@@ -43,7 +43,7 @@ export const applyApiFieldErrors = <
 
     for (const fieldError of err.fieldErrors) {
       // Ein Fehler ohne Pfad und ein Fehler auf ein hier nicht vorhandenes
-      // Feld landen beide über der Schaltflächenzeile.
+      // Feld landen beide über der Button-Zeile.
       if (fieldError.path.length === 0 || !hasField(values, fieldError.path)) {
         rootMessage ??= fieldError.message;
         continue;

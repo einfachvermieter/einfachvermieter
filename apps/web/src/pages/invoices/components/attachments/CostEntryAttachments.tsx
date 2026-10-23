@@ -32,7 +32,7 @@ import {
 import { t } from "../../../../lib/i18n";
 
 /**
- * Getönte 36-px-Kachel nach Dateityp: PDF himbeere, Bild azur,
+ * Farbiges 36-px-Icon-Badge nach Dateityp: PDF himbeere, Bild azur,
  * sonst schiefer.
  */
 const AttachmentTile = ({ att }: { att: CostEntryAttachment }) => {

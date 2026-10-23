@@ -11,7 +11,7 @@ const VALUE_TONE = {
 } as const;
 
 /**
- * Reihe kleiner Kennzahl-Kacheln (z. B. Kaution: Vereinbart / Eingegangen /
+ * Reihe kleiner KPI-Tiles (z. B. Kaution: Vereinbart / Eingegangen /
  * Status). Der Wert darf Text, eine Zahl oder eine Pill sein.
  */
 export const MiniKpiRow = ({

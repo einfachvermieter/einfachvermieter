@@ -475,7 +475,7 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
           );
 
           // Frischwasser-Fußnote: listet die Zähler dieser Wohnung mit ihrem
-          // Einzelverbrauch. Fußnote nur bei ≥ 2 beitragenden Zählern; bei
+          // Einzelverbrauch. Fußnote nur bei >= 2 beitragenden Zählern; bei
           // einem einzelnen Zähler ist die Information redundant zur
           // Bemessungs-Spalte.
           const footnoteMeters = waterFootnoteMeters(result);
@@ -485,7 +485,7 @@ export const StatementDocument = ({ result, meta }: StatementDocumentProps) => {
             meters
               .map(
                 (c) =>
-                  `${c.label} (${formatNumber(c.consumptionM3, 2)}\u00A0m³)`,
+                  `${c.label} (${t("ui.common.measures.m3", { value: formatNumber(c.consumptionM3, 2) })})`,
               )
               .join(", ");
           const consumptionNote =

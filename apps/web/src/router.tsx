@@ -481,7 +481,7 @@ const tenantAccountRoute = createRoute({
   errorComponent: TenantScopedNotFound,
   staticData: {
     // Konstant zur Stammdaten-Crumb: der Mietvertrag ist die Entität, Konto
-    // nur einer ihrer Reiter (keine eigene "Mieterkonto"-Ebene).
+    // nur einer ihrer Tabs (keine eigene "Mieterkonto"-Ebene).
     crumb: ({ loaderData }) => {
       const data = loaderData as
         | { aggregate: TenantAggregate; units: Unit[] }
@@ -578,7 +578,7 @@ const meterEditRoute = createRoute({
 
 /**
  * Zählerstände-Tab des Zählers. Gleiche Entität wie die Stammdaten, nur ein
- * anderer Reiter -> Crumb konstant zur Zähler-Crumb (keine eigene Ebene).
+ * anderer Tab -> Crumb konstant zur Zähler-Crumb (keine eigene Ebene).
  */
 const meterReadingsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -870,7 +870,7 @@ const statementDetailRoute = createRoute({
 
 /**
  * Einstiegspunkt der Einstellungen (Ziel der Breadcrumb): leitet auf den
- * ersten sichtbaren Reiter weiter.
+ * ersten sichtbaren Tab weiter.
  */
 const settingsIndexRoute = createRoute({
   getParentRoute: () => rootRoute,

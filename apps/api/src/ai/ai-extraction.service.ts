@@ -20,6 +20,7 @@ import {
   type AiRawItem,
   type AiRawResult,
   aiRawResultSchema,
+  buildCorrectionPrompt,
   buildSystemPrompt,
   COST_ENTRY_EXTRACTION_JSON_SCHEMA,
   type CostTypeForPrompt,
@@ -357,32 +358,13 @@ export class AiExtractionService {
 
     const sumCents = sumItemGrossCents(raw.items);
     const totalCents = raw.invoiceTotalCents ?? 0;
-    const correctionPrompt = [
-      ctx.userPrompt,
-      "",
-      "--- Vorherige Antwort (FEHLERHAFT) ---",
-      ctx.firstJson,
-      "",
-      "--- Korrektur erforderlich ---",
-      "Das Backend hat aus deinen Roh-Werten die Brutto-Summe der",
-      `Positionen berechnet: ${sumCents} ct. Der Brutto-Endbetrag der`,
-      `Rechnung ist jedoch ${totalCents} ct (invoiceTotalCents).`,
-      `Differenz: ${firstDiff} ct.`,
-      "Da die Brutto-Umrechnung im Backend deterministisch erfolgt,",
-      "ist die Diskrepanz nicht durch einen Rechenfehler entstanden.",
-      "Mögliche Ursachen: (a) für eine Position wurde ein Tarif statt",
-      "des abgerechneten Betrags übernommen, (b) eine Position fehlt",
-      "oder ist doppelt vorhanden, (c) der falsche taxRateBps wurde",
-      "gewählt, (d) invoiceTotalCents wurde aus einem anderen Zeile",
-      "übernommen (z. B. Abschlagssumme statt Brutto-Endbetrag),",
-      "(e) bei einer Versicherungsrechnung wurde der Nettobeitrag mit",
-      "taxRateBps=0 statt des Bruttoabrechnungsbeitrags übernommen –",
-      "Versicherungsbeiträge sind zwar umsatzsteuerfrei, enthalten aber",
-      "Versicherungssteuer (VersStG); IMMER den Bruttoabrechnungsbeitrag",
-      "als amountGrossCents nehmen. Die Versicherungssteuer NICHT als",
-      "eigene Position anlegen – sie ist im Brutto bereits enthalten.",
-      "Bitte gib eine korrigierte JSON-Antwort gemäß Schema zurück.",
-    ].join("\n");
+    const correctionPrompt = buildCorrectionPrompt({
+      userPrompt: ctx.userPrompt,
+      firstJson: ctx.firstJson,
+      sumCents,
+      totalCents,
+      diffCents: firstDiff,
+    });
 
     const retryJson = await ctx.client.chatJson(
       {

@@ -190,7 +190,7 @@ export class BuildingsService {
   }
 
   /**
-   * Prueft, ob bereits ein Gebaeude mit diesem Namen existiert
+   * Prüft, ob bereits ein Gebäude mit diesem Namen existiert
    */
   private async nameTaken(name: string, excludeId?: string) {
     const where: FilterQuery<Building> = excludeId
@@ -201,8 +201,8 @@ export class BuildingsService {
   }
 
   /**
-   * Gebaeude loeschen
-   * Nicht moeglich, solange noch Wohnungen daran haengen
+   * Gebäude löschen
+   * Nicht möglich, solange noch Wohnungen daran hängen
    */
   async delete(id: string) {
     const unit = await this.em.findOne(UnitSchema, { buildingId: id });

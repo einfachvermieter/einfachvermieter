@@ -1,5 +1,4 @@
 /**
- * @file
  * Hochgeladene Logo-SVGs werden serverseitig in die PDF-Erzeugung (react-pdf)
  * eingespeist UND via /settings/sender/logo wieder ausgeliefert.
  *

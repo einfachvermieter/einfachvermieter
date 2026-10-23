@@ -26,8 +26,8 @@ export const useTenantAggregateSave = (
     mutationFn: (dto: TenantSaveDto) =>
       api.patch<TenantAggregate>(`/tenants/${tenantId}`, dto),
     setQueryData: [{ queryKey: ["tenant", tenantId], updater: (data) => data }],
-    // "accounts" aktiv neu laden: die Kennzahl-Kacheln (Kaution, Saldo)
-    // haengen daran und sind beim Speichern gerade eingeblendet.
+    // "accounts" aktiv neu laden: die KPI-Tiles (Kaution, Saldo)
+    // hängen daran und sind beim Speichern gerade eingeblendet.
     invalidateKeys: [["tenants"], ["accounts"]],
   });
 

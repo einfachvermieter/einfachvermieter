@@ -74,7 +74,7 @@ const virtualBundle = (
 describe("calculateWater", () => {
   it("Differenzzähler-Szenario: Haupt − OG − Gartenwasser_OG = EG", () => {
     // Haupt: 200 m3 Gesamt, OG-Wohnung: 100 m3, Gartenwasser OG: 30 m3.
-    // EG (Differenz): 200 − 100 − 30 = 70 m3.
+    // EG (Differenz): 200 - 100 - 30 = 70 m3.
     const result = calculateWater({
       units: [unitEg, unitOg],
       waterMeters: [
@@ -183,7 +183,7 @@ describe("calculateWater", () => {
     });
 
     const eg = result.perUnit.find((u) => u.unitId === "unit-eg");
-    expect(eg?.consumptionM3).toBe(100); // 10 + (200 − 100 − 10)
+    expect(eg?.consumptionM3).toBe(100); // 10 + (200 - 100 - 10)
     expect(eg?.isDifferential).toBe(true);
     expect(eg?.meterContributions).toEqual([
       { label: "Waschmaschine EG", consumptionM3: 10 },
@@ -271,8 +271,8 @@ describe("calculateWater", () => {
     });
     expect(result.totalConsumptionM3).toBeCloseTo(148, 5);
     const eg = result.perUnit.find((u) => u.unitId === "unit-eg");
-    // Differenzzähler ab 13.02. -> Hauptzähler-neu (137) − OG-Anteil
-    // ab 13.02. (interpoliert: 60 − 7,088 ~= 52,91) ~= 84,09 m3.
+    // Differenzzähler ab 13.02. -> Hauptzähler-neu (137) - OG-Anteil
+    // ab 13.02. (interpoliert: 60 - 7,088 ~= 52,91) ~= 84,09 m3.
     expect(eg?.consumptionM3).toBeCloseTo(84.09, 1);
   });
 
@@ -384,7 +384,7 @@ describe("calculateWater", () => {
     const eg = result.perUnit.find((u) => u.unitId === "unit-eg");
     expect(eg?.consumptionM3).toBe(0);
     expect(eg?.isDifferential).toBe(false);
-    // Ohne Differenzzähler bleiben 100 m3 (200 Haupt − 100 OG − 0 EG)
+    // Ohne Differenzzähler bleiben 100 m3 (200 Haupt - 100 OG - 0 EG)
     // unerklärt
     expect(result.warnings).toContainEqual({
       code: "waterUnitSumMismatch",

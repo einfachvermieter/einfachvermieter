@@ -21,8 +21,8 @@ export type ParsedPaginationQuery<TSort extends string> = {
 };
 
 /**
- * Engt einen rohen Order-String auf "asc"/"desc" ein und faellt bei
- * ungueltigem Wert auf den uebergebenen Default zurueck.
+ * Engt einen rohen Order-String auf "asc"/"desc" ein und fällt bei
+ * ungültigem Wert auf den übergebenen Default zurück.
  */
 const resolveOrder = (
   order: string | undefined,

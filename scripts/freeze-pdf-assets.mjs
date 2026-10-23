@@ -27,6 +27,7 @@
  * Font-/Logo-Änderungen Output-Datei löschen und Skript nochmal laufen
  * lassen (`npm run freeze-pdf-assets`).
  */
+
 import { execSync, spawnSync } from "node:child_process";
 import {
   existsSync,

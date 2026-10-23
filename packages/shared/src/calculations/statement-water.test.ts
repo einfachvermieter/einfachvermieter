@@ -155,7 +155,7 @@ describe("calculateStatement mit Zählerzuordnung beim Wasser", () => {
     ).toEqual([
       // 80 von 100 m3 nach Verbrauch, davon EG 60 von 80
       ["Frischwasser", "per_consumption_m3", 80_000, 60_000],
-      // 20 von 100 m3 nach Wohnfläche, EG 60 von 100 m²
+      // 20 von 100 m3 nach Wohnfläche, EG 60 von 100 qm
       ["Frischwasser, Anteil Garten", "per_living_area", 20_000, 12_000],
       ["Schmutzwasser", "per_consumption_m3", 100_000, 75_000],
     ]);

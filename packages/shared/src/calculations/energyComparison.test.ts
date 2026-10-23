@@ -97,7 +97,7 @@ describe("buildEnergyComparison (§ 6a Abs. 3 Nr. 5 HeizkostenV)", () => {
   });
 
   it("addiert Warmwasser-Energie, wenn beide Perioden sie hergeben", () => {
-    // Eigener WW-Anteil: 2.000 kWh x 30/100 m³ = 600 kWh (volles Jahr).
+    // Eigener WW-Anteil: 2.000 kWh x 30/100 m3 = 600 kWh (volles Jahr).
     const result = buildEnergyComparison(
       "a",
       periodInput(1000, fullYear2025, {

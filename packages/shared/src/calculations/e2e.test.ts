@@ -306,7 +306,7 @@ describe("End-to-End Abrechnung 2025", () => {
     const input = buildInput("u-eg", "t-mieter1");
     const result = calculateStatement(input);
 
-    // Gas-Anteil 2025: 31.12.2025 − 01.01.2025 = 212 Tage von 2024-08-01 - 2025-07-31
+    // Gas-Anteil 2025: 31.12.2025 - 01.01.2025 = 212 Tage von 2024-08-01 - 2025-07-31
     // (Januar bis Juli = 212 Tage)
     // 365000 x (212/365) = 211.917
     // Der Rest fällt in den Januar-Juli-Zeitraum des Abrechnungsjahres
@@ -534,7 +534,7 @@ describe("End-to-End Abrechnung 2025", () => {
 
     // Müll (per_person, mit Vermieter-Basis-Person bei Leerstand):
     // Mieter1 1x275 = 275, Mieter2 2x365 = 730, Summe Mieter = 1005. Leerstand
-    // = 2x365 − (275 + 365) = 90 Tage -> Vermieter 1x90 = 90 Personentage.
+    // = 2x365 - (275 + 365) = 90 Tage -> Vermieter 1x90 = 90 Personentage.
     // totalBase = 1005 + 90 = 1095. 36 000 x 275/1095 ~= 9 041.
     const garbage = result.lines.find((l) => l.costTypeName === "Müllgebühr");
     expect(garbage?.totalAmountCents).toBe(36_000);
@@ -543,7 +543,7 @@ describe("End-to-End Abrechnung 2025", () => {
 
     // Versicherung (per_living_area, mit Vermieter-Leerstand): Mieter1
     // 80x275 = 22 000, Mieter2 120x365 = 43 800. maxBase = 200x365 =
-    // 73 000. Vermieter trägt 73 000 − 65 800 = 7 200. Mieter1: 80 000 x
+    // 73 000. Vermieter trägt 73 000 - 65 800 = 7 200. Mieter1: 80 000 x
     // 22 000/73 000 ~= 24 110.
     const insurance = result.lines.find(
       (l) => l.costTypeName === "Gebäudeversicherung",
@@ -657,7 +657,7 @@ describe("End-to-End Abrechnung 2025", () => {
   // Bei unterjährigem Mietverhältnis darf die Verbrauchs-Quote
   // der Mietzeit nicht auf die Jahres-Kosten angewendet werden. Nenner läuft
   // über die volle Periode, nur die Ziel-Wohnung wird auf die Mietzeit
-  // geklemmt; ihr Rest-Verbrauch fällt auf den Vermieter.
+  // begrenzt; ihr Rest-Verbrauch fällt auf den Vermieter.
   it("Wasser bei Mieterwechsel: Jahresmengen-Quote statt Raten-Quote, Summen-Invariante", () => {
     const period = { start: periodStart, end: periodEnd };
 
@@ -763,7 +763,7 @@ describe("End-to-End Abrechnung 2025", () => {
     );
     expect(waterB?.tenantAmountCents).toBeCloseTo(15_082, 0);
 
-    // OG-Mieter: ganzjährig, keine Klemmung -> exakt 50 %.
+    // OG-Mieter: ganzjährig, keine Begrenzung -> exakt 50 %.
     const statementOg = calculateStatement(
       buildWaterInput("u-og", "t-mieter2", undefined, PERIOD_DAYS_2025),
     );

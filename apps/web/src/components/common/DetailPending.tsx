@@ -4,7 +4,7 @@ import { PageHeader } from "./PageHeader";
 
 /**
  * Ladeansicht einer Detailseite (Route-`pendingComponent`): der Seitenkopf als
- * Skeleton-Variante (Kachel + Breadcrumb stehen, Titel/Unterzeile/Kennzahlen
+ * Skeleton-Variante (Icon-Badge + Breadcrumb stehen, Titel/Unterzeile/Kennzahlen
  * als Skeleton) plus die Formular-Card. So bleibt der Kopf beim
  * Übergang zur geladenen Seite an fester Position.
  */
@@ -17,7 +17,7 @@ export const DetailPending = ({
   kpis,
 }: {
   /**
-   * Statische Domänen-Kachel (Name/Typ sind beim Laden noch unbekannt)
+   * Statisches Icon-Badge der Domäne (Name/Typ sind beim Laden noch unbekannt)
    */
   tile: ReactNode;
   statsSkeleton?: number;
@@ -34,7 +34,7 @@ export const DetailPending = ({
   tabs?: "default" | "pills";
 
   /**
-   * Kennzahl-Kachel-Platzhalter über dem Card-Body
+   * KPI-Tile-Platzhalter über dem Card-Body
    */
   kpis?: number;
 }) => (

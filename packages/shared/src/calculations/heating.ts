@@ -861,9 +861,9 @@ export const hotWaterCorrectionFactor = (settings: {
 
 /**
  * Faktor der Schätzformel aus § 9 Abs. 2 HeizkostenV: Q_WW [kWh] =
- * 2,5 x V_WW [m3] x (t_WW − 10) [K]. Der Wert 2,5 bündelt Dichte und
+ * 2,5 x V_WW [m3] x (t_WW - 10) [K]. Der Wert 2,5 bündelt Dichte und
  * spezifische Wärmekapazität von Wasser samt Einheitenumrechnung auf kWh;
- * 10 °C ist die unterstellte Kaltwasser-Zulauftemperatur.
+ * 10 Grad C ist die unterstellte Kaltwasser-Zulauftemperatur.
  */
 const HOT_WATER_ESTIMATION_FACTOR = 2.5;
 const COLD_WATER_INLET_TEMPERATURE_CELSIUS = 10;
@@ -962,7 +962,7 @@ const computeHotWaterSplit = (
     };
   }
 
-  // Anteil hart auf [0,1] klemmen, damit eine fehlerhafte Erfassung
+  // Anteil hart auf [0,1] begrenzen, damit eine fehlerhafte Erfassung
   // (Q_WW > Q_gesamt) nicht den ganzen Heiztopf auffrisst.
   const rawShare = core.hotWaterHeatKwh / totalHeatEnergyKwh;
   const share = Math.min(1, Math.max(0, rawShare));
@@ -2588,8 +2588,8 @@ export const measureHotWaterUnits = (params: {
  *      dieser Anteil fällt auf den Vermieter und wird über das Statement
  *      des anderen Mieters wieder eingesammelt.
  *
- * 2. **Grundkostenanteil** (1 − consumptionShareBps, typ. 30 %):
- *    - Topf = `totalHeatingCostsCents x (1 − consumptionFactor)` -
+ * 2. **Grundkostenanteil** (1 - consumptionShareBps, typ. 30 %):
+ *    - Topf = `totalHeatingCostsCents x (1 - consumptionFactor)` -
  *      **ungekürzt** (Jahres-Topf).
  *    - Verteilung nach Flächentagen über alle Wohnungen (qm x belegte
  *      Tage). Bei `prorationMethod = "degree_days"` werden die Tage mit

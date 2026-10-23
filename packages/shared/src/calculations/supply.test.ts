@@ -242,7 +242,7 @@ describe("calculateHeating mit Versorgungsteilnahme", () => {
       expect(row(detail, "B")?.consumptionKwh).toBe(300);
       expect(row(detail, "A")?.consumptionCostCents).toBe(49_000);
       expect(row(detail, "B")?.consumptionCostCents).toBe(21_000);
-      // Grundkosten 30.000 ct nach 60 × 365 zu 40 × 181 Flächentagen
+      // Grundkosten 30.000 ct nach 60 x 365 zu 40 x 181 Flächentagen
       expect(row(detail, "A")?.basicCostCents).toBe(
         Math.round((30_000 * 60 * 365) / (60 * 365 + 40 * 181)),
       );

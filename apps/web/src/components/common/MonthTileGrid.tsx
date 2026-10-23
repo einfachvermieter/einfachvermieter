@@ -5,7 +5,8 @@ export type MonthTile = {
   label: string;
   value: ReactNode;
   /**
-   * ok = eingegangen (Limette), open = offen (Honig), outside = außerhalb der Mietzeit (neutral) */
+   * ok = eingegangen (Limette), open = offen (Honig), outside = außerhalb der Mietzeit (neutral)
+   */
   state: "ok" | "open" | "outside";
 };
 
@@ -16,7 +17,7 @@ const STATE_CLASSES: Record<MonthTile["state"], string> = {
 };
 
 /**
- * Monatsraster als Kacheln (Zahlungs-Matrix)
+ * Monatsraster als Monats-Tiles (Zahlungs-Matrix)
  */
 export const MonthTileGrid = ({ months }: { months: MonthTile[] }) => (
   <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">

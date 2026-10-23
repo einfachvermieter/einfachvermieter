@@ -154,7 +154,7 @@ export const MonthInput = <T extends FieldValues>({
         />
 
         <InputGroupAddon align="inline-end">
-          <Popover open={open} onOpenChange={setOpen}>
+          <Popover open={open} onOpenChange={setOpen} modal={true}>
             <PopoverTrigger asChild={true}>
               <InputGroupButton
                 size="icon-xs"

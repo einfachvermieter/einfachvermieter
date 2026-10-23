@@ -56,7 +56,7 @@ export const waterFootnoteMeters = (
  * Nachkommastellen je Bemessungs-Einheit: Flächen/Volumen 2, Zähl-Einheiten 0
  */
 export const bemessungDigits = (unit: string | null | undefined): number =>
-  unit === "m²" || unit === "m³" ? 2 : 0;
+  unit === "m\u00b2" || unit === "m\u00b3" ? 2 : 0;
 
 const PLURAL_BEMESSUNG_UNITS = new Set(["person", "unit"]);
 
@@ -67,7 +67,7 @@ const shortBemessungUnit = (unit: string): string =>
   unit === "Personentage" ? "PT" : unit;
 
 /**
- * Bemessungswert mit Einheit ("12,00 m²", "5 Personen"). Der Renderer reicht
+ * Bemessungswert mit Einheit ("12,00 qm", "5 Personen"). Der Renderer reicht
  * seine eigene `t`-Funktion herein, damit pluralabhängige Einheiten (Personen)
  * lokalisiert werden; alle übrigen Einheiten sind feste Kürzel.
  */

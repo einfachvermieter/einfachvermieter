@@ -112,13 +112,13 @@ describe("computeMeterConsumption", () => {
         reading("2025-01-01", 0),
         reading("2025-12-31", 100),
       ]),
-      // virt1 = main − a = 200
+      // virt1 = main - a = 200
       virtualMeter("virt1", "main", ["a"]),
       physical("c", "unit", [
         reading("2025-01-01", 0),
         reading("2025-12-31", 60),
       ]),
-      // virt2 = virt1 − c = 200 − 60 = 140
+      // virt2 = virt1 - c = 200 - 60 = 140
       virtualMeter("virt2", "virt1", ["c"]),
     );
     expect(
@@ -160,9 +160,9 @@ describe("computeMeterConsumption", () => {
     ).toThrow(/differenceMeterNoConfig/u);
   });
 
-  it("klemmt die Periode auf die Gültigkeit des Zählers", () => {
+  it("begrenzt die Periode auf die Gültigkeit des Zählers", () => {
     // Zähler nur gültig Q2 (Apr-Jun). Verbrauch wird auf [Apr 1, Jun 30]
-    // geklemmt - Q1 und Q3+ ignoriert.
+    // begrenzt - Q1 und Q3+ ignoriert.
     const bundles = bundleMap(
       physical(
         "m",
@@ -178,7 +178,7 @@ describe("computeMeterConsumption", () => {
 
   it("Differenzzähler-Gültigkeit propagiert auf Basis und Subtraktionen", () => {
     // Differenzzähler valid Apr-Jun. Basis/Sub-Zähler haben breitere
-    // Gültigkeit, werden aber auf die Differenzzähler-Periode geklemmt.
+    // Gültigkeit, werden aber auf die Differenzzähler-Periode begrenzt.
     const bundles = bundleMap(
       physical("main", "main", [
         reading("2025-01-01", 0),
@@ -197,7 +197,7 @@ describe("computeMeterConsumption", () => {
         validUntil: "2025-06-30",
       }),
     );
-    // Apr-Jun: main = 180 − 90 = 90, a = 60 − 30 = 30, b = 60.
+    // Apr-Jun: main = 180 - 90 = 90, a = 60 - 30 = 30, b = 60.
     expect(
       computeMeterConsumption("b", bundles, "2025-01-01", "2025-12-31"),
     ).toBe(60);
@@ -217,8 +217,8 @@ describe("computeMeterConsumption", () => {
     ).toBe(0);
   });
 
-  it("klemmt negativen Differenzverbrauch auf 0 und warnt", () => {
-    // Subtraktionszähler (90) > Basiszähler (50) -> Differenz wäre −40.
+  it("setzt negativen Differenzverbrauch auf 0 und warnt", () => {
+    // Subtraktionszähler (90) > Basiszähler (50) -> Differenz wäre -40.
     const bundles = bundleMap(
       physical("main", "main", [
         reading("2025-01-01", 0),
