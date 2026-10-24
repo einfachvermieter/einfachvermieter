@@ -1,7 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { type ComponentProps, type ReactNode, useMemo } from "react";
-import { HelpScope } from "@/components/help/HelpScope";
-import { HelpSlot } from "@/components/help/HelpSlot";
 import { Label } from "@/components/ui/Label";
 import { Separator } from "@/components/ui/Separator";
 import { translateKey } from "@/lib/i18n";
@@ -46,7 +44,7 @@ const FieldGroup = ({ className, ...props }: ComponentProps<"div">) => (
 );
 
 const fieldVariants = cva(
-  "group/field flex w-full gap-1.5 data-[invalid=true]:*:data-[slot=field-label]:text-himbeere-700 data-[invalid=true]:*:data-[slot=field-error]:text-himbeere-700",
+  "group/field flex w-full gap-1.5 data-[invalid=true]:*:data-[slot=field-label]:text-himbeere-600 data-[invalid=true]:*:data-[slot=field-error]:text-himbeere-500",
   {
     variants: {
       orientation: {
@@ -70,7 +68,7 @@ const Field = ({
   children,
   ...props
 }: ComponentProps<"div"> & VariantProps<typeof fieldVariants>) => {
-  const field = (
+  return (
     // biome-ignore lint/a11y/useSemanticElements: fieldset's default styling conflicts with this layout primitive
     <div
       role="group"
@@ -80,11 +78,8 @@ const Field = ({
       {...props}
     >
       {children}
-      {/* Hilfetext der Beschriftung klappt direkt unter ihr auf */}
-      {orientation === "vertical" ? <HelpSlot className="-order-1" /> : null}
     </div>
   );
-  return orientation === "vertical" ? <HelpScope>{field}</HelpScope> : field;
 };
 
 const FieldContent = ({ className, ...props }: ComponentProps<"div">) => (
@@ -102,7 +97,7 @@ const FieldLabel = ({ className, ...props }: ComponentProps<typeof Label>) => (
   <Label
     data-slot="field-label"
     className={cn(
-      "text-sm text-foreground",
+      "text-sm font-semibold text-schiefer-700",
       "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-3",
       "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
       "has-[[data-state=unchecked]:disabled]:cursor-not-allowed has-[[data-state=unchecked]:disabled]:opacity-50",
@@ -210,7 +205,7 @@ const FieldError = ({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn("text-xs font-normal text-himbeere-700", className)}
+      className={cn("text-xs font-normal text-himbeere-500", className)}
       {...props}
     >
       {content}

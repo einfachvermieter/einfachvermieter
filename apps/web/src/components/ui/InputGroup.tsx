@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { cn } from "@/lib/utils";
 
 const inputGroupVariants = cva(
-  "group/input-group relative flex h-8.5 min-w-0 items-center rounded-md border border-edge bg-white outline-none in-data-[slot=combobox-content]:focus-within:border-inherit has-[[data-slot=input-group-control]:focus-visible]:outline-2 has-[[data-slot=input-group-control]:focus-visible]:outline-offset-2 has-[[data-slot=input-group-control]:focus-visible]:outline-azur-500 has-[[data-slot][aria-invalid=true]]:border-himbeere-500 has-[[data-slot][aria-invalid=true]]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-himbeere-50 has-[[data-slot][aria-invalid=true]:focus-visible]:outline-himbeere-500 has-[[data-slot=input-group-control]:disabled]:border-border has-[[data-slot=input-group-control]:disabled]:bg-schiefer-50 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
+  "group/input-group relative flex h-8.5 min-w-0 items-center rounded-md border border-edge bg-white in-data-[slot=combobox-content]:focus-within:border-inherit has-[[data-slot=input-group-control]:focus]:outline-2 has-[[data-slot=input-group-control]:focus]:outline-offset-2 has-[[data-slot=input-group-control]:focus]:outline-azur-500 has-[[data-slot][aria-invalid=true]]:border-himbeere-500 has-[[data-slot][aria-invalid=true]]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-himbeere-50 has-[[data-slot][aria-invalid=true]:focus]:outline-himbeere-500 has-[[data-slot=input-group-control]:disabled]:border-border has-[[data-slot=input-group-control]:disabled]:bg-schiefer-50 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
   {
     variants: {
       width: {
@@ -15,7 +15,7 @@ const inputGroupVariants = cva(
          * Zahlenfeld mit Einheit: feste Breite, damit die Kanten
          * untereinander fluchten, Zahl rechtsbündig
          */
-        unit: "w-45 max-w-full [&>input]:text-right [&>input]:tabular-nums",
+        unit: "w-36 max-w-full [&>input]:text-right [&>input]:tabular-nums",
         /**
          * Wie `unit`, für lange Einheiten wie "kg CO2/kWh"
          */
@@ -152,7 +152,7 @@ const InputGroupInput = ({
     ref={ref}
     data-slot="input-group-control"
     className={cn(
-      "min-w-0 flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:outline-none aria-invalid:ring-0 disabled:bg-transparent",
+      "min-w-0 flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus:outline-none aria-invalid:ring-0 disabled:bg-transparent",
       className,
     )}
     {...props}
@@ -171,7 +171,7 @@ const InputGroupTextarea = ({
     ref={ref}
     data-slot="input-group-control"
     className={cn(
-      "flex-1 resize-none rounded-none border-0 bg-transparent py-2 shadow-none ring-0 focus-visible:outline-none aria-invalid:ring-0",
+      "flex-1 resize-none rounded-none border-0 bg-transparent py-2 shadow-none ring-0 focus:outline-none aria-invalid:ring-0",
       className,
     )}
     {...props}

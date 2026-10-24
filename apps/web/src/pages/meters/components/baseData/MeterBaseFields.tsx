@@ -195,7 +195,7 @@ export const MeterBaseFields = ({
         ) : null}
       </div>
       <Disclose label={t("ui.meters.detail.moreFields")}>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-3">
           <TextInput
             control={form.control}
             name="room"

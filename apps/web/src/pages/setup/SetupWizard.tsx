@@ -11,6 +11,7 @@ import { type FieldPath, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Description } from "@/components/common/Description";
 import { ExternalLink } from "@/components/common/ExternalLink";
+import { Spinner } from "@/components/common/Spinner";
 import { PasswordPolicyHint } from "@/components/form/PasswordPolicyHint";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -168,10 +169,9 @@ const toDto = (values: SetupFormValues, withAdmin: boolean): SetupDto => ({
 const primaryButtonLabel = (params: {
   stepKey: StepKey;
   isLastStep: boolean;
-  isPending: boolean;
   currentStepEmpty: boolean;
 }): string => {
-  const { stepKey, isLastStep, isPending, currentStepEmpty } = params;
+  const { stepKey, isLastStep, currentStepEmpty } = params;
 
   if (stepKey === "welcome") {
     return t("ui.setup.action.start");
@@ -181,10 +181,6 @@ const primaryButtonLabel = (params: {
   }
 
   if (isLastStep) {
-    if (isPending) {
-      return t("ui.setup.action.finishing");
-    }
-
     return currentStepEmpty
       ? t("ui.setup.action.skipAndFinish")
       : t("ui.setup.action.finish");
@@ -218,6 +214,8 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
     [policy, withAdmin],
   );
   const form = useForm<SetupFormValues>({
+    // Erst beim Absenden prüfen, nicht bei jeder Eingabe
+    reValidateMode: "onSubmit",
     resolver: zodResolver(schema),
     defaultValues: {
       adminFirstName: "",
@@ -333,7 +331,6 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   const primaryLabel = primaryButtonLabel({
     stepKey,
     isLastStep,
-    isPending: runSetup.isPending,
     currentStepEmpty,
   });
 
@@ -368,7 +365,11 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
         noValidate={true}
         className="flex flex-col"
       >
-        <div className="flex flex-1 flex-col gap-6 p-6 sm:p-7">
+        {/* Während der Einrichtung sind die Felder gesperrt */}
+        <fieldset
+          disabled={runSetup.isPending}
+          className="flex min-w-0 flex-1 flex-col gap-6 p-6 sm:p-7"
+        >
           <div className="flex flex-col gap-1">
             <h3 className="flex items-center gap-2 font-heading text-lg font-semibold text-foreground">
               {t(`ui.setup.${stepKey}.heading`)}
@@ -532,7 +533,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
                 : t("ui.setup.error.generic")}
             </p>
           ) : null}
-        </div>
+        </fieldset>
 
         <div className="flex flex-col-reverse gap-2 border-t border-border bg-azur-50 px-6 py-4 sm:flex-row sm:justify-between sm:px-7">
           {step > 0 ? (
@@ -547,6 +548,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
           ) : null}
           <div className="flex flex-col sm:ml-auto">
             <Button type="submit" disabled={runSetup.isPending}>
+              {runSetup.isPending ? <Spinner data-icon="inline-start" /> : null}
               {primaryLabel}
             </Button>
           </div>

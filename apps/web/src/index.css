@@ -111,6 +111,8 @@
     --shadow-key-limette: 0 2px 0 var(--color-limette-600);
     --shadow-key-azur: 0 2px 0 var(--color-azur-900);
     --shadow-key-himbeere: 0 2px 0 var(--color-himbeere-800);
+    --shadow-key-himbeere-soft: 0 2px 0 var(--color-himbeere-500);
+    --shadow-help: 0 10px 28px oklch(30% 0.06 248 / 0.14);
     --shadow-sheet: -16px 0 48px oklch(25% 0.021 251 / 0.16);
     --shadow-dialog: 0 16px 48px oklch(25% 0.021 251 / 0.2);
 
@@ -248,14 +250,12 @@
 
 /*
  * Fensterleiste über Sidebar und Inhalt, in Web und Desktop-App gleich. Alles
- * beginnt unter ihr: Sidebar, Inhalt, Sheets, Dialoge und Toasts.
+ * beginnt unter ihr: Sidebar, Inhalt und Toasts. Sheets und Dialoge liegen
+ * darüber und dunkeln die ganze App ab, auch die Leiste.
  */
 :root {
   /* Außenseiten (Anmeldung, Einrichtung) haben keine Fensterleiste */
   --app-bar-height: 0px;
-  /* Wie SIDEBAR_WIDTH in components/ui/Sidebar.tsx; Sheets liegen im Portal
-     außerhalb der Sidebar und sehen deren --sidebar-width nicht */
-  --app-sidebar-width: 14.5rem;
 }
 
 :root:has([data-slot="sidebar-wrapper"]) {
@@ -266,42 +266,79 @@
   padding-top: var(--app-bar-height);
 }
 
-:is([data-slot="sidebar-container"], [data-slot="sidebar"][data-mobile], [data-slot="dialog-overlay"], [data-slot="alert-dialog-overlay"]) {
+:is([data-slot="sidebar-container"], [data-slot="sidebar"][data-mobile]) {
   top: var(--app-bar-height);
   height: auto;
 }
 
-:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) {
-  top: calc(50% + var(--app-bar-height) / 2);
-  max-height: calc(100dvh - 2rem - var(--app-bar-height));
+/* Fokusring an Tasten mit Kante: als Schatten um Fläche und Kante
+   zusammen, 3px Luft und 2px Azur, um 1px nach unten versetzt, damit er
+   oben und unten gleich weit absteht. Eine Umrisslinie würde die Kante
+   unten nicht einschließen. --tw-shadow ist die Kante der Variante */
+:is(
+    [data-slot="button"]:is(
+        [data-variant="default"],
+        [data-variant="outline"],
+        [data-variant="outlineDestructive"],
+        [data-variant="secondary"],
+        [data-variant="action"],
+        [data-variant="current"],
+        [data-variant="destructive"],
+        [data-variant="row"],
+        [data-variant="rowDestructive"]
+      ),
+    [data-slot="switch"],
+    [data-slot="checkbox"]
+  ):focus-visible,
+[data-slot="choice-tile"]:has(:focus-visible) {
+  outline: none;
+  box-shadow:
+    var(--tw-shadow, 0 0 #0000),
+    0 1px 0 3px var(--color-white),
+    0 1px 0 5px var(--color-azur-500);
 }
 
-/* Sheets überdecken nur den Inhalt, nicht Sidebar und Leiste. Klicks
-   daneben fängt der Dialog weiterhin ab (modal). */
-:is([data-slot="sheet-overlay"], [data-slot="sheet-content"][data-side="right"]) {
-  top: var(--app-bar-height);
-  height: auto;
+/* In der Auswahl-Card trägt die Card den Ring, nicht ihr Radio-Knopf */
+[data-slot="choice-tile"] [data-slot="radio-group-item"]:focus-visible {
+  outline: none;
 }
 
-[data-slot="sheet-content"][data-side="right"] {
-  bottom: 0;
+/* Stehender Kopf der Detailseite: halb durchsichtige Fläche mit Unschärfe
+   und Linie über die ganze Breite der Inhaltsfläche, nicht nur der Spalte.
+   main schneidet den Überstand ab (overflow-x-clip). Die Linie erscheint,
+   wenn Inhalt darunter liegt */
+header[data-detail]::before {
+  content: "";
+  position: absolute;
+  inset: 0 -100vw;
+  z-index: -1;
+  border-bottom: 1px solid transparent;
+  background: color-mix(in oklch, var(--color-white) 72%, transparent);
+  backdrop-filter: blur(12px);
+  transition: border-color 150ms;
 }
 
-:root:has([data-slot="sidebar"][data-state="expanded"]) [data-slot="sheet-overlay"] {
-  @media (width >= 64rem) {
-    left: var(--app-sidebar-width);
-  }
+header[data-detail][data-scrolled]::before {
+  border-bottom-color: var(--color-border);
 }
 
-/* SubSheet: das zweite Sheet fährt herein, das erste rückt im selben
-   Takt nach links und wird etwas dunkler. Der Hintergrund wird nicht ein
-   zweites Mal abgedunkelt */
+/* SubSheet: das zweite Sheet fährt herein, das erste wird im selben Takt
+   nach links breiter und etwas dunkler. Es reicht dabei immer bis zur
+   rechten Kante, damit beim Hinausfahren des zweiten keine Lücke
+   aufgeht; der Innenabstand rechts hält seinen Inhalt an der alten
+   Breite. Der Hintergrund wird nicht ein zweites Mal abgedunkelt */
 [data-slot="sheet-content"]:not([data-sub]) {
-  transition: translate 240ms ease-out, filter 240ms ease-out;
+  transition:
+    width 240ms ease-out,
+    max-width 240ms ease-out,
+    padding-right 240ms ease-out,
+    filter 240ms ease-out;
 }
 
-:root:has([data-slot="sheet-content"][data-sub]) [data-slot="sheet-content"]:not([data-sub]) {
-  translate: -3.5rem 0;
+:root:has([data-slot="sheet-content"][data-sub][data-state="open"]) [data-slot="sheet-content"]:not([data-sub]) {
+  width: calc(75% + 3.5rem);
+  max-width: calc(var(--container-sheet-form) + 3.5rem);
+  padding-right: 3.5rem;
   filter: brightness(0.92);
 }
 

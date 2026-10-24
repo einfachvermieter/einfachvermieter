@@ -32,7 +32,6 @@ import { t } from "../../lib/i18n";
  */
 export const FormSheet = <T extends FieldValues>({
   form,
-  icon: Icon,
   title,
   description,
   submitLabel,
@@ -117,15 +116,7 @@ export const FormSheet = <T extends FieldValues>({
             onSubmit={form.handleSubmit(handleValid)}
           >
             <SheetHeader className="sticky top-0 z-10 border-b border-border bg-popover px-7 py-4.5">
-              <SheetTitle>
-                {Icon ? (
-                  <Icon
-                    aria-hidden={true}
-                    className="size-5 shrink-0 text-azur-700"
-                  />
-                ) : null}
-                {title}
-              </SheetTitle>
+              <SheetTitle>{title}</SheetTitle>
               {description ? (
                 <SheetDescription>{description}</SheetDescription>
               ) : null}

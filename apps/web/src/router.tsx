@@ -334,7 +334,6 @@ const buildingEditRoute = createRoute({
       rows={4}
     />
   ),
-  pendingMs: 0,
   staticData: {
     crumb: ({ loaderData }) => {
       const building = loaderData as Building | null;
@@ -389,7 +388,6 @@ const unitEditRoute = createRoute({
       aside={true}
     />
   ),
-  pendingMs: 0,
   staticData: {
     crumb: ({ loaderData }) => {
       const unit = loaderData as Unit | null;
@@ -441,7 +439,6 @@ const tenantEditRoute = createRoute({
       />
     </div>
   ),
-  pendingMs: 0,
   errorComponent: TenantScopedNotFound,
   staticData: {
     crumb: ({ loaderData }) => {
@@ -562,7 +559,6 @@ const meterEditRoute = createRoute({
       tabs="default"
     />
   ),
-  pendingMs: 0,
   staticData: {
     crumb: ({ loaderData }) => {
       const meter = loaderData as Meter | null;
@@ -603,7 +599,6 @@ const meterReadingsRoute = createRoute({
       tabs="default"
     />
   ),
-  pendingMs: 0,
   staticData: {
     crumb: ({ loaderData }) => {
       const meter = loaderData as Meter | null;
@@ -862,7 +857,6 @@ const statementDetailRoute = createRoute({
       />
     </div>
   ),
-  pendingMs: 0,
   staticData: { crumb: statementDetailCrumb },
 });
 

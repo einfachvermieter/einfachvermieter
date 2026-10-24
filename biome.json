@@ -15,7 +15,9 @@
       "!node_modules",
       "!packages/db/src/migrations",
       "!**/*.css",
-      "!**/*.svg"
+      "!**/*.svg",
+      "!!**/.claude/worktrees",
+      "!docs-internal"
     ]
   },
   "formatter": {

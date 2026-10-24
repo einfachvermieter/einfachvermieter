@@ -12,16 +12,10 @@ import {
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { PageDeleteAction } from "@/components/common/PageDeleteAction";
 import { RowListSection } from "@/components/common/RowListSection";
 import { HelpHint } from "@/components/help/HelpHint";
-import { IconMore, IconTrash, IconUsers } from "@/lib/icons";
-import { Button } from "../../components/ui/Button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../components/ui/DropdownMenu";
+import { IconUsers } from "@/lib/icons";
 import { formatPeriod, isPeriodActiveToday } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { contractPartyNames, tenantQueryOptions } from "../../lib/tenants";
@@ -172,26 +166,9 @@ export const TenantEditPage = () => {
         active="stammdaten"
         className="pb-6"
         action={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild={true}>
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label={t("ui.common.a11y.more")}
-              >
-                <IconMore />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-56">
-              <DropdownMenuItem
-                variant="destructive"
-                onSelect={() => deletion.request({ id: tenantId })}
-              >
-                <IconTrash />
-                {t("ui.tenant.actions.delete")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <PageDeleteAction
+            onClick={() => deletion.request({ id: tenantId })}
+          />
         }
       >
         <div>

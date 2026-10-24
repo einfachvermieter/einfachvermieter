@@ -1,5 +1,4 @@
-import { type ReactNode, useContext, useState } from "react";
-import { createPortal } from "react-dom";
+import { type ReactNode, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   Popover,
@@ -13,13 +12,17 @@ import {
 } from "@/components/ui/Tooltip";
 import { IconHelp } from "@/lib/icons";
 import { t } from "../../lib/i18n";
-import { HelpSlotContext } from "./helpSlotContext";
 
 /**
- * Kleines Fragezeichen an Überschrift oder Beschriftung. Ein Klick klappt den
- * Hilfetext als Kasten (Azur 50) im zugehörigen HelpSlot auf und schiebt den
- * Inhalt darunter nach unten, statt ihn zu verdecken. Ohne HelpScope (z. B.
- * in Tabellenköpfen) erscheint der Text als Popover.
+ * Beschriftung, an deren linker Kante das Overlay beginnt
+ */
+const LABEL_SELECTOR = '[data-slot="field-label"], h2, h3';
+
+/**
+ * Kleines Fragezeichen an Überschrift oder Beschriftung. Ein Klick öffnet
+ * den Hilfetext als Overlay darunter: es verdeckt den Inhalt, statt ihn zu
+ * schieben, beginnt bündig mit der Beschriftung und zeigt mit dem Pfeil auf
+ * das Fragezeichen. Zweiter Klick, Esc oder ein Klick daneben schließt.
  *
  * Wird ein String mit doppelten Zeilenumbrüchen (`\n\n`) übergeben,
  * werden die Teile als separate Absätze gerendert. Sonst werden die
@@ -28,61 +31,67 @@ import { HelpSlotContext } from "./helpSlotContext";
 export const HelpHint = ({
   children,
   ariaLabel,
-  side = "top",
-  align = "center",
 }: {
   children: ReactNode;
   ariaLabel?: string;
-  side?: "top" | "right" | "bottom" | "left";
-  align?: "start" | "center" | "end";
 }) => {
   const label = ariaLabel ?? t("ui.common.help");
   const content =
     typeof children === "string" ? renderParagraphs(children) : children;
-  const scope = useContext(HelpSlotContext);
   const [open, setOpen] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [alignOffset, setAlignOffset] = useState(0);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const button = (
-    <Button
-      type="button"
-      variant="helpHint"
-      size="icon-hint"
-      aria-label={label}
-      aria-expanded={scope ? open : undefined}
-      onClick={scope ? () => setOpen((value) => !value) : undefined}
-    >
-      <IconHelp />
-    </Button>
-  );
-
-  if (scope) {
-    return (
-      <>
-        <Tooltip>
-          <TooltipTrigger asChild={true}>{button}</TooltipTrigger>
-          <TooltipContent>{label}</TooltipContent>
-        </Tooltip>
-        {open && scope.slot
-          ? createPortal(
-              <div className="space-y-2 rounded-lg bg-azur-50 px-3.5 py-3 text-sm leading-relaxed font-normal text-azur-900">
-                {content}
-              </div>,
-              scope.slot,
-            )
-          : null}
-      </>
-    );
-  }
+  const toggle = () => {
+    const button = buttonRef.current;
+    const labelElement = button?.closest(LABEL_SELECTOR);
+    if (button && labelElement) {
+      setAlignOffset(
+        labelElement.getBoundingClientRect().left -
+          button.getBoundingClientRect().left,
+      );
+    }
+    setOpen((value) => !value);
+  };
 
   return (
-    <Popover>
-      <Tooltip>
+    <Popover open={open} onOpenChange={setOpen}>
+      {/* Ist die Infobox offen, wäre der Tooltip "Hilfe anzeigen" doppelt */}
+      <Tooltip open={tooltipOpen && !open} onOpenChange={setTooltipOpen}>
         <TooltipTrigger asChild={true}>
-          <PopoverTrigger asChild={true}>{button}</PopoverTrigger>
+          <PopoverTrigger asChild={true}>
+            <Button
+              ref={buttonRef}
+              type="button"
+              variant="helpHint"
+              size="icon-hint"
+              aria-label={label}
+              onClick={(event) => {
+                // Steht das Fragezeichen in der Beschriftung eines Schalters
+                // oder Kästchens, würde der Klick sonst auch diesen umlegen
+                event.preventDefault();
+                toggle();
+              }}
+            >
+              <IconHelp />
+            </Button>
+          </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent>{label}</TooltipContent>
       </Tooltip>
-      <PopoverContent side={side} align={align} className="text-sm">
+      <PopoverContent
+        variant="help"
+        side="bottom"
+        align="start"
+        alignOffset={alignOffset}
+        // Radix rechnet die Pfeilhöhe (10 px) schon als Abstand ein
+        sideOffset={0}
+        collisionPadding={16}
+        // Fokus bleibt auf dem Fragezeichen: Im Sheet würde die Fokusfalle
+        // ihn sonst zurückholen und das Overlay sofort wieder schließen
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         {content}
       </PopoverContent>
     </Popover>

@@ -84,7 +84,7 @@ export const ExternalHeatingEntrySheet = ({
         options={unitOptions}
         placeholder={t("ui.heating.external.fields.unit")}
       />
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-x-5 gap-y-6">
         <MonthInput
           control={form.control}
           name="periodStart"
@@ -105,7 +105,7 @@ export const ExternalHeatingEntrySheet = ({
         inputMode="decimal"
         suffix="€"
       />
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-x-5 gap-y-6">
         <TextInput
           control={form.control}
           name="baseCostCents"

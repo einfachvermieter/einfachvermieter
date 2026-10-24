@@ -239,6 +239,7 @@ const DataTableBody = <TData,>({
       <TableRow
         key={row.id}
         data-state={row.getIsSelected() ? "selected" : undefined}
+        data-clickable={onRowClick ? "" : undefined}
         className={cn(rowClassName?.(row.original))}
         onClick={
           onRowClick

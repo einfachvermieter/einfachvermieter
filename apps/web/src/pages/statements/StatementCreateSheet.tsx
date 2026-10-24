@@ -145,7 +145,7 @@ export const StatementCreateSheet = ({ onClose }: { onClose: () => void }) => {
           label={t("ui.common.columns.tenant")}
           options={tenantOptions}
         />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
           <MonthInput
             control={form.control}
             name="periodStart"

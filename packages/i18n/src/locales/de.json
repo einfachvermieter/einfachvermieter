@@ -632,7 +632,6 @@
         "statusInactive": "Beendet",
         "usageLabel": "Verwendung",
         "heatingConfig": "Heizkostenkonfiguration",
-        "deleteAction": "Zähler löschen",
         "lastReadingHint": "Abgelesen am {date} von {source}",
         "hkvSection": "Heizkostenverteiler",
         "assignmentModeLabel": "Abrechnung",
@@ -819,9 +818,6 @@
           "title": "Stammdaten"
         }
       },
-      "actions": {
-        "delete": "Gebäude löschen"
-      },
       "fields": {
         "name": "Bezeichnung",
         "namePlaceholder": "z. B. MFH Musterstraße",
@@ -897,24 +893,21 @@
       "confirmDeleteQuestion": "Soll „{name}“ wirklich gelöscht werden?",
       "confirmDeleteHint": "Das lässt sich nicht rückgängig machen.",
       "supply": {
-        "title": "Versorgung",
-        "add": "Ausnahme eintragen",
-        "empty": "Heizung und Warmwasser aus der zentralen Anlage",
-        "emptyHeatingOnly": "Heizung aus der zentralen Anlage",
+        "title": "Abweichende Versorgung",
+        "add": "Abweichung eintragen",
+        "empty": "Keine: Heizung und Warmwasser dieser Wohnung kommen aus der zentralen Anlage des Gebäudes.",
+        "emptyHeatingOnly": "Keine: Die Heizung dieser Wohnung kommt aus der zentralen Anlage des Gebäudes.",
         "rowOpen": "{scope} nicht aus der zentralen Anlage seit {from}",
         "rowClosed": "{scope} nicht aus der zentralen Anlage vom {from} bis {until}",
         "confirmDelete": "Eintrag löschen",
         "sheet": {
-          "titleNew": "Ausnahme von der zentralen Versorgung",
-          "titleEdit": "Ausnahme bearbeiten",
-          "description": "Nur eintragen, wenn die Wohnung technisch nicht aus der zentralen Anlage versorgt wird, z. B. eigene Heizung oder Durchlauferhitzer. Leerstand, zugedrehte oder entfernte Heizkörper gehören nicht hierher.",
-          "readingHint": "Ändert sich die Versorgung, müssen Sie den Zählerstand am Tag der Umstellung erfassen. Ohne diesen Stand lässt sich die Abrechnung nicht finalisieren. Der Stand wird nicht geschätzt."
+          "description": "Nur, wenn die Wohnung technisch eine eigene Versorgung hat. Nicht für Leerstand oder abgedrehte Heizkörper."
         },
         "fields": {
           "scope": "Bereich",
-          "validFrom": "Ohne zentrale Versorgung ab",
+          "validFrom": "Gültig ab",
+          "validFromHelp": "Erfassen Sie für den Tag der Umstellung einen Zählerstand. Ohne ihn lässt sich die Abrechnung nicht finalisieren, er wird nicht geschätzt.",
           "validUntil": "Bis einschließlich",
-          "validUntilHint": "Leer lassen, wenn die Wohnung bis auf Weiteres nicht zentral versorgt wird.",
           "notes": "Notiz"
         },
         "scope": {
@@ -924,11 +917,18 @@
         "validation": {
           "required": "Bitte geben Sie ein Datum ein.",
           "range": "Das Ende darf nicht vor dem Beginn liegen."
+        },
+        "scopeDescription": {
+          "heating": "Die Wohnung hat eine eigene Heizung, zum Beispiel eine Gastherme.",
+          "hot_water": "Das Warmwasser kommt aus einem Gerät in der Wohnung, zum Beispiel einem Durchlauferhitzer."
+        },
+        "singleScope": {
+          "heating": "Die Wohnung wird nicht über die zentrale Anlage des Gebäudes beheizt, zum Beispiel wegen einer eigenen Gastherme. Nicht für Leerstand oder abgedrehte Heizkörper.",
+          "hot_water": "Das Warmwasser der Wohnung kommt nicht aus der zentralen Anlage des Gebäudes, zum Beispiel aus einem Durchlauferhitzer."
         }
       },
       "allBuildings": "Alle Gebäude",
       "editEyebrow": "Wohnung bearbeiten",
-      "unitNumberMeta": "Mieteinheit {number}",
       "sections": {
         "baseData": {
           "title": "Stammdaten"
@@ -938,8 +938,7 @@
         "tenantSince": "Mieter seit {date}"
       },
       "actions": {
-        "unitMeters": "Zähler der Wohnung",
-        "delete": "Wohnung löschen"
+        "unitMeters": "Zähler der Wohnung"
       },
       "sub": {
         "count": "{count, plural, one {# Wohnung} other {# Wohnungen}}",
@@ -957,17 +956,15 @@
         "namePlaceholder": "z. B. EG oder OG/DG",
         "tenant": "Mieter",
         "unitNumber": "Mieteinheit",
-        "unitNumberDescription": "Bezeichnung der Mieteinheit in der Wohnanlage. Wird in der Nebenkostenabrechnung mit ausgewiesen.",
         "unitNumberPlaceholder": "z. B. 3.07",
         "area": "Wohnfläche",
-        "areaSqm": "Wohnfläche (m²)",
-        "areaPlaceholder": "120,00",
         "heatingArea": "Heizfläche",
-        "heatingAreaSqm": "Heizfläche (m², optional)",
-        "heatingAreaDescription": "Wird für die Verteilung der Heizkosten verwendet, wenn das Gebäude nach der Fläche der beheizten Räume verteilt. Warmwasserkosten werden nach Wohnfläche verteilt. Ohne Angabe wird die Wohnfläche verwendet.",
-        "heatingAreaPlaceholder": "Wohnfläche wird verwendet",
         "heatingAreaUnusedHint": "Das Gebäude verteilt die Grundkosten der Heizung nach Wohnfläche. Die Heizfläche wird dafür nicht verwendet.",
-        "heatingAreaLargerWarning": "Die Heizfläche ist größer als die Wohnfläche. Das ist möglich (z. B. beheizter Keller), verzerrt aber die Heizkostenverteilung, wenn es ein Tippfehler ist. Bitte prüfen Sie den Wert."
+        "heatingAreaLargerWarning": "Die Heizfläche ist größer als die Wohnfläche. Das ist möglich (z. B. beheizter Keller), verzerrt aber die Heizkostenverteilung, wenn es ein Tippfehler ist. Bitte prüfen Sie den Wert.",
+        "unitNumberHelp": "Bezeichnung der Mieteinheit in der Wohnanlage. Wird in der Nebenkostenabrechnung mit ausgewiesen.",
+        "heatingAreaHelp": "Wird für die Verteilung der Heizkosten verwendet, wenn das Gebäude nach der Fläche der beheizten Räume verteilt. Warmwasserkosten werden nach Wohnfläche verteilt. Ohne Angabe wird die Wohnfläche verwendet.",
+        "heatingAreaDiffers": "Heizfläche weicht von der Wohnfläche ab",
+        "heatingAreaSameAsArea": "wie Wohnfläche"
       },
       "validation": {
         "buildingRequired": "Gebäude erforderlich",
@@ -975,7 +972,8 @@
         "areaRequired": "Wohnfläche erforderlich",
         "areaInvalid": "Fläche als Zahl, z. B. 120 oder 120,5",
         "areaPositive": "Fläche muss größer als 0 sein.",
-        "areaTooLarge": "Fläche darf höchstens 10.000 m² betragen."
+        "areaTooLarge": "Fläche darf höchstens 10.000 m² betragen.",
+        "heatingAreaRequired": "Bitte geben Sie die Heizfläche ein."
       },
       "notFound": {
         "title": "Wohnung nicht gefunden",
@@ -1230,8 +1228,7 @@
         "metersDescription": "Diese Zähler liefern den Verbrauch, nach dem die Kosten verteilt werden",
         "metersEmpty": "Dieser Kostenart ist noch kein Zähler zugeordnet. Die Zuordnung nehmen Sie beim Zähler vor.",
         "manageMeters": "Zähler verwalten",
-        "heatingLink": "Heizkostenkonfiguration",
-        "deleteAction": "Kostenart löschen"
+        "heatingLink": "Heizkostenkonfiguration"
       },
       "entryCreateTitle": "Kostenrechnung",
       "entryCreateDescription": "Eine einzelne Kostenrechnung erfassen.",
@@ -1379,7 +1376,6 @@
         "moreOptions": "Mehr Optionen (Preisart, Einheitspreis)",
         "vendorFallback": "Ohne Lieferant",
         "costTypesLabel": "Kostenarten",
-        "deleteAction": "Rechnung löschen",
         "deleteTitle": "Rechnung löschen?",
         "deleteMessage": "Soll die Rechnung vom {date} mit allen Positionen wirklich gelöscht werden?",
         "deleteMessageWithVendor": "Soll die Rechnung von {vendor} vom {date} mit allen Positionen wirklich gelöscht werden?",
@@ -1424,7 +1420,6 @@
       "attachments": {
         "title": "Belege",
         "upload": "Beleg hochladen",
-        "uploading": "Wird hochgeladen …",
         "hint": "PDF und Bilder, bis {limit} pro Datei.",
         "hintDeferred": "PDF und Bilder, bis {limit} pro Datei. Werden nach dem Speichern hochgeladen.",
         "empty": "Noch keine Belege hochgeladen.",
@@ -1537,8 +1532,7 @@
         "modeLabel": "Modus",
         "modeInternalHeatMeter": "Intern (WMZ)",
         "modeInternalAllocator": "Intern (HKV)",
-        "modeExternal": "Extern",
-        "deleteAction": "Konfiguration löschen"
+        "modeExternal": "Extern"
       },
       "identityTitle": "Gültig ab {validFrom}",
       "empty": "Noch keine Heizkostenkonfigurationen angelegt. Wählen Sie in der Seitenleiste ein Gebäude, um eine erste Konfiguration anzulegen.",
@@ -2138,8 +2132,7 @@
         "next": "Weiter",
         "skip": "Überspringen",
         "skipAndFinish": "Überspringen & abschließen",
-        "finish": "Einrichtung abschließen",
-        "finishing": "Wird eingerichtet …"
+        "finish": "Einrichtung abschließen"
       },
       "validation": {
         "emailFormat": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
@@ -2153,7 +2146,6 @@
     },
     "auth": {
       "login": "Anmelden",
-      "loggingIn": "Anmelden …",
       "email": "E-Mail-Adresse",
       "password": "Passwort",
       "emailInvalid": "Ungültige E-Mail-Adresse",
@@ -2238,9 +2230,6 @@
       "atAGlance": {
         "title": "Auf einen Blick",
         "account": "Mieterkonto"
-      },
-      "actions": {
-        "delete": "Mieter löschen"
       },
       "validation": {
         "startDateRequired": "Vertragsbeginn erforderlich",

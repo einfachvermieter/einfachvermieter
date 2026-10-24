@@ -100,6 +100,9 @@ export const TextInput = <T extends FieldValues>({
             <InputGroup width={unitWidth(suffix)} className={inputClassName}>
               <InputGroupInput
                 {...inputProps}
+                // Zahlenfelder mit Einheit ohne Platzhalter: Ein Beispielwert
+                // sähe dort aus wie ein eingetragener Wert
+                placeholder={undefined}
                 {...field}
                 id={id}
                 aria-invalid={fieldState.invalid}

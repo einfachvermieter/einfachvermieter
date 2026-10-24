@@ -121,16 +121,22 @@ export const PageHeader = ({
     <header
       ref={headerRef}
       data-detail={area ? true : undefined}
+      data-scrolled={area && scrolled ? true : undefined}
       className={cn(
         "mb-6 pt-1",
         // Detailseiten: der Kopf bleibt stehen, halb durchsichtig mit
         // Unschärfe. Die Linie erscheint erst, wenn Inhalt darunter liegt
-        area &&
-          "sticky top-0 z-20 -mx-5 -mt-6 border-b border-transparent bg-white/72 px-5 pt-7 pb-4 backdrop-blur-md transition-colors",
-        area && scrolled && "border-border",
+        area && "sticky top-0 z-20 -mx-5 -mt-6 px-5 pt-7 pb-4",
       )}
     >
-      <div className="flex items-center gap-3.25 max-lg:flex-wrap">
+      {/* Auf Detailseiten so breit wie die Abschnitte, damit die Tasten mit
+          der Inhaltskante abschließen */}
+      <div
+        className={cn(
+          "flex items-center gap-3.25 max-lg:flex-wrap",
+          area && "max-w-205",
+        )}
+      >
         <div className="shrink-0">{tile}</div>
 
         {/* Mindestbreite, damit die Buttons im schmalen Fenster in die

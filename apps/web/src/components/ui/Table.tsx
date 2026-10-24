@@ -44,11 +44,15 @@ const TableFooter = ({ className, ...props }: ComponentProps<"tfoot">) => (
   />
 );
 
+/**
+ * Zeile einer Tabelle. Mit `data-clickable` öffnet ein Klick die Zeile: Dann
+ * zeigt sie den normalen Pfeil.
+ */
 const TableRow = ({ className, ...props }: ComponentProps<"tr">) => (
   <tr
     data-slot="table-row"
     className={cn(
-      "group/row border-b border-border transition-colors hover:bg-schiefer-50 has-aria-expanded:bg-schiefer-50 data-[state=selected]:bg-azur-50",
+      "group/row border-b border-border transition-colors hover:bg-schiefer-50 has-aria-expanded:bg-schiefer-50 data-[state=selected]:bg-azur-50 data-clickable:cursor-default data-clickable:select-none",
       className,
     )}
     {...props}

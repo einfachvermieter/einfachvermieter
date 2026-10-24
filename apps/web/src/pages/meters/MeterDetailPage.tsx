@@ -3,18 +3,12 @@ import { RiSubtractLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { IconFlame, IconGauge, IconMore, IconTrash } from "@/lib/icons";
+import { PageDeleteAction } from "@/components/common/PageDeleteAction";
+import { IconFlame, IconGauge } from "@/lib/icons";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { RowListSection } from "../../components/common/RowListSection";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { HelpHint } from "../../components/help/HelpHint";
-import { Button } from "../../components/ui/Button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../components/ui/DropdownMenu";
 import { allocationLabel, costTypesQueryOptions } from "../../lib/costs";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
@@ -99,26 +93,7 @@ export const MeterDetailPage = () => {
         className="pb-6"
         action={
           meter ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild={true}>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label={t("ui.common.a11y.more")}
-                >
-                  <IconMore />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-56">
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={() => deletion.request(meter)}
-                >
-                  <IconTrash />
-                  {t("ui.meters.detail.deleteAction")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <PageDeleteAction onClick={() => deletion.request(meter)} />
           ) : undefined
         }
       >

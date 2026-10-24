@@ -9,19 +9,12 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { IconMore, IconTrash } from "@/lib/icons";
+import { PageDeleteAction } from "@/components/common/PageDeleteAction";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Badge } from "../../components/ui/Badge";
-import { Button } from "../../components/ui/Button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../components/ui/DropdownMenu";
 import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { buildingsQueryOptions } from "../../lib/buildings";
 import { formatPeriod } from "../../lib/format";
@@ -178,26 +171,7 @@ export const HeatingVersionEditPage = () => {
             </span>
           }
           action={
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild={true}>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label={t("ui.common.a11y.more")}
-                >
-                  <IconMore />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-56">
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={() => deletion.request(version)}
-                >
-                  <IconTrash />
-                  {t("ui.heating.detail.deleteAction")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <PageDeleteAction onClick={() => deletion.request(version)} />
           }
         />
 

@@ -9,6 +9,7 @@ import {
   type ChoiceTileOption,
   ChoiceTiles,
 } from "@/components/form/ChoiceTiles";
+import { HelpHint } from "@/components/help/HelpHint";
 import {
   Field,
   FieldDescription,
@@ -21,9 +22,11 @@ type ChoiceTilesInputProps<T extends FieldValues> = {
   name: FieldPath<T>;
   label?: string;
   description?: ReactNode;
+  labelHelp?: ReactNode;
   options: ChoiceTileOption[];
   columns?: 1 | 2 | 3;
   disabled?: boolean;
+  showIcons?: boolean;
   onValueChange?: (value: string) => void;
 };
 
@@ -35,9 +38,11 @@ export const ChoiceTilesInput = <T extends FieldValues>({
   name,
   label,
   description,
+  labelHelp,
   options,
   columns = 2,
   disabled = false,
+  showIcons = false,
   onValueChange,
 }: ChoiceTilesInputProps<T>) => {
   const descriptionId = useId();
@@ -48,7 +53,12 @@ export const ChoiceTilesInput = <T extends FieldValues>({
       name={name}
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
-          {label ? <FieldLabel>{label}</FieldLabel> : null}
+          {label ? (
+            <FieldLabel>
+              {label}
+              {labelHelp ? <HelpHint>{labelHelp}</HelpHint> : null}
+            </FieldLabel>
+          ) : null}
           {description ? (
             <FieldDescription id={descriptionId}>
               {description}
@@ -63,6 +73,7 @@ export const ChoiceTilesInput = <T extends FieldValues>({
             options={options}
             columns={columns}
             disabled={disabled}
+            showIcons={showIcons}
           />
           {fieldState.invalid ? (
             <FieldError errors={[fieldState.error]} />

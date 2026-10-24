@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
  * Navigation und Textlinks behalten als Link die Hand des Browsers
  */
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding font-heading text-sm font-semibold whitespace-nowrap transition-[transform,box-shadow,background-color] duration-75 outline-none select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azur-500 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding font-heading text-sm font-semibold whitespace-nowrap transition-[transform,box-shadow,background-color] duration-75 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-azur-500 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -20,6 +20,9 @@ const buttonVariants = cva(
           "cursor-default border-limette-600 bg-limette-400 text-limette-1000 shadow-key-limette hover:bg-limette-300 active:translate-y-0.5 active:shadow-none",
         outline:
           "cursor-default border-edge bg-white text-foreground shadow-key hover:bg-schiefer-50 active:translate-y-0.5 active:shadow-none aria-expanded:bg-schiefer-50",
+        // Löschen im Seitenkopf: wie jede andere Taste, erst beim Überfahren rot
+        outlineDestructive:
+          "cursor-default border-edge bg-white text-foreground shadow-key hover:border-himbeere-500 hover:bg-himbeere-50 hover:text-himbeere-500 hover:shadow-key-himbeere-soft active:translate-y-0.5 active:shadow-none",
         secondary:
           "cursor-default border-edge bg-white text-foreground shadow-key hover:bg-schiefer-50 active:translate-y-0.5 active:shadow-none aria-expanded:bg-schiefer-50",
         // Aktion an Abschnitt oder Zeile: Icon in Azur auf einem kleinen Button
@@ -32,7 +35,7 @@ const buttonVariants = cva(
         // (group/row) ein Button. Ohne Maus immer als Button
         row: "cursor-default border-transparent bg-transparent text-schiefer-300 group-hover/row:border-edge group-hover/row:bg-white group-hover/row:text-azur-700 group-hover/row:shadow-key group-focus-within/row:border-edge group-focus-within/row:bg-white group-focus-within/row:text-azur-700 group-focus-within/row:shadow-key pointer-coarse:border-edge pointer-coarse:bg-white pointer-coarse:text-azur-700 pointer-coarse:shadow-key hover:bg-schiefer-50 active:translate-y-0.5 active:shadow-none",
         rowDestructive:
-          "cursor-default border-transparent bg-transparent text-schiefer-300 group-hover/row:border-edge group-hover/row:bg-white group-hover/row:text-azur-700 group-hover/row:shadow-key group-focus-within/row:border-edge group-focus-within/row:bg-white group-focus-within/row:text-azur-700 group-focus-within/row:shadow-key pointer-coarse:border-edge pointer-coarse:bg-white pointer-coarse:text-azur-700 pointer-coarse:shadow-key hover:bg-schiefer-50 active:translate-y-0.5 active:shadow-none hover:text-himbeere-500",
+          "cursor-default border-transparent bg-transparent text-schiefer-300 group-hover/row:border-edge group-hover/row:bg-white group-hover/row:text-azur-700 group-hover/row:shadow-key group-focus-within/row:border-edge group-focus-within/row:bg-white group-focus-within/row:text-azur-700 group-focus-within/row:shadow-key pointer-coarse:border-edge pointer-coarse:bg-white pointer-coarse:text-azur-700 pointer-coarse:shadow-key hover:border-himbeere-500 hover:bg-himbeere-50 hover:text-himbeere-500 hover:shadow-key-himbeere-soft active:translate-y-0.5 active:shadow-none",
         addLink: "font-sans text-azur-700 underline-offset-3 hover:underline",
         ghost:
           "font-normal hover:bg-schiefer-900/6 hover:text-foreground aria-expanded:bg-schiefer-50 aria-expanded:text-foreground",
@@ -40,7 +43,7 @@ const buttonVariants = cva(
           "font-sans font-normal text-muted-foreground hover:bg-schiefer-50 hover:text-foreground aria-expanded:bg-schiefer-50 aria-expanded:text-foreground",
         ghostDestructive: "font-sans text-himbeere-500 hover:bg-himbeere-50",
         helpHint:
-          "font-sans text-schiefer-500 hover:rounded-full hover:bg-azur-50 hover:text-azur-700 aria-expanded:rounded-full aria-expanded:bg-azur-50 aria-expanded:text-azur-700",
+          "font-sans text-schiefer-500 hover:bg-azur-50 hover:text-azur-700 aria-expanded:bg-azur-50 aria-expanded:text-azur-700",
         // Nur im Löschen-Dialog: der einzige rot gefüllte Button
         destructive:
           "cursor-default border-himbeere-800 bg-himbeere-500 text-white shadow-key-himbeere hover:bg-himbeere-600 active:translate-y-0.5 active:shadow-none",
@@ -55,7 +58,8 @@ const buttonVariants = cva(
         icon: "h-8.5 w-9",
         "icon-xs":
           "size-6 rounded-md in-data-[slot=button-group]:rounded-md [&_svg:not([class*='size-'])]:size-3",
-        "icon-hint": "-my-1 size-6 in-data-[slot=button-group]:rounded-md",
+        "icon-hint":
+          "-my-0.5 size-5 rounded-full focus-visible:outline-offset-0",
         "icon-sm":
           "h-7 w-7.5 rounded-md in-data-[slot=button-group]:rounded-md",
         "icon-lg": "size-10",

@@ -56,6 +56,7 @@ export const SenderLogoCard = ({
     >
       <div className="flex flex-col gap-4">
         <ChoiceTilesInput
+          showIcons={true}
           control={form.control}
           name="logoMode"
           label={t("ui.settings.sender.fields.logoMode")}

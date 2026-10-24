@@ -112,7 +112,7 @@ export const HeatingBillingFields = ({
 
   return (
     <FieldGroup>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-x-5 gap-y-6">
         <MonthInput
           control={form.control}
           name="validFrom"
@@ -152,7 +152,7 @@ export const HeatingBillingFields = ({
 
       {mode === "external" ? null : (
         <>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-6">
             <TextInput
               control={form.control}
               name="baseSharePercent"

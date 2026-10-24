@@ -27,6 +27,7 @@ export const UnitCreateSheet = ({ onClose }: { onClose: () => void }) => {
         name: "",
         unitNumber: "",
         areaSqm: "",
+        heatingAreaDiffers: false,
         heatingAreaSqm: "",
       }}
       onSubmit={async (values) => {

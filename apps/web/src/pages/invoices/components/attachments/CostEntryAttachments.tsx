@@ -54,7 +54,6 @@ const AttachmentTile = ({ att }: { att: CostEntryAttachment }) => {
   );
 };
 
-// biome-ignore lint/complexity/noExcessiveLinesPerFunction: Länge liegt am Markup
 export const CostEntryAttachments = ({
   costEntryId,
   onExtract,
@@ -254,12 +253,9 @@ export const CostEntryAttachments = ({
 
         <FileDropZone
           accept={ATTACHMENT_ACCEPT_ATTR}
-          buttonLabel={
-            uploadMutation.isPending
-              ? t("ui.invoices.attachments.uploading")
-              : t("ui.invoices.attachments.upload")
-          }
+          buttonLabel={t("ui.invoices.attachments.upload")}
           disabled={uploadMutation.isPending}
+          busy={uploadMutation.isPending}
           hint={
             <>
               <span className="block">
