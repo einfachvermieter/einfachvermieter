@@ -72,6 +72,7 @@ import { DocumentDateSheet } from "./components/DocumentDateSheet";
 import { BillingInfoCard } from "./components/detail/BillingInfoCard";
 import { ClimateFactorsCard } from "./components/detail/ClimateFactorsCard";
 import { HeatingCard } from "./components/detail/HeatingCard";
+import { HeatingConfigWarnings } from "./components/detail/HeatingConfigWarnings";
 import { OccupancyCard } from "./components/detail/OccupancyCard";
 import { OperatingCostsCard } from "./components/detail/OperatingCostsCard";
 import { OverviewCard } from "./components/detail/OverviewCard";
@@ -782,6 +783,13 @@ export const StatementDetailPage = () => {
               })}
             </AlertDescription>
           </Alert>
+        ) : null}
+
+        {isDraft && result?.heatingConfigWarnings ? (
+          <HeatingConfigWarnings
+            warnings={result.heatingConfigWarnings}
+            buildingId={statement.buildingId}
+          />
         ) : null}
 
         {result ? (

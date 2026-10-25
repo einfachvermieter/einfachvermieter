@@ -29,13 +29,14 @@ import {
   CalculationError,
   type CalcWarning,
   type CalcWarningGroup,
+  type Co2CostItem,
   type Co2FuelBasisEntry,
   type ContainedTaxKind,
   type CostEntry,
   calculateExternalHeating,
   calculateHeating,
   calculateStatement,
-  co2RestrictionInPeriod,
+  co2SettingsForPeriod,
   consumptionBetween,
   type DifferenceConfigInput,
   daysBetween,
@@ -48,6 +49,7 @@ import {
   groupCalcWarnings,
   type HeatingDetail,
   type HeatingPeriodValueSet,
+  type HeatingSettings,
   type HotWaterInput,
   hasBlockingWarning,
   heatingPeriodValueRelevance,
@@ -96,7 +98,10 @@ import {
   assertTenantExists,
 } from "../common/assert-exists.js";
 import { ExternalHeatingEntriesService } from "../heating/external-heating-entries.service.js";
-import { HeatingService } from "../heating/heating.service.js";
+import {
+  HeatingService,
+  requireResolvedSettings,
+} from "../heating/heating.service.js";
 import { HeatingPeriodValuesService } from "../heating/heating-period-values.service.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
@@ -977,6 +982,31 @@ export class StatementsService {
   }
 
   /**
+   * Alle Warnungen einer Berechnung als Texte für die UI, je Bereich
+   * gebündelt
+   */
+  private formatResultWarnings(
+    heatingConfigWarnings: CalcWarning[],
+    result: StatementResult,
+  ): string[] {
+    return [
+      ...groupCalcWarnings([
+        ...heatingConfigWarnings,
+        ...(result.heatingDetail?.warnings ?? []),
+      ]).map((group) => this.formatWarningGroup("heating", group)),
+      ...groupCalcWarnings(result.waterDetail?.warnings ?? []).map((group) =>
+        this.formatWarningGroup("water", group),
+      ),
+      ...groupCalcWarnings(result.kwhWarnings ?? []).map((group) =>
+        this.formatWarningGroup("kwh", group),
+      ),
+      ...groupCalcWarnings(result.costWarnings ?? []).map((group) =>
+        this.formatWarningGroup("costs", group),
+      ),
+    ];
+  }
+
+  /**
    * Berechnet die Abrechnung aus den aktuellen Stammdaten.
    * Mieter-Periode wird auf die tatsächliche Vertragsdauer beschnitten.
    * Heizung, Wasser, Lohnkosten und Vorauszahlungen werden aggregiert und
@@ -1037,28 +1067,33 @@ export class StatementsService {
     const { operatingCostTypes, heatingCostEntries, laborItems } =
       await this.loadCostEntries(buildingId, statementPeriod);
 
-    const heatingSettings = await this.heatingService.getForBuildingAt(
+    const heatingConfig = await this.heatingService.resolveForPeriod(
       buildingId,
-      periodStart,
-    );
-
-    const heatingDetail = await this.buildConfiguredHeatingDetail({
-      buildingId,
-      heatingSettings,
-      units,
-      unitsRaw,
-      metersRaw,
-      readingsByMeter,
-      heatMeters,
-      heatCostAllocators,
-      heatingCostEntries,
       statementPeriod,
-      effectivePeriod,
-      occupancyDaysByUnitFull,
-      occupancyDaysByUnitTenant,
-      occupantsByUnitFull,
-      targetUnitId,
-    });
+    );
+    const heatingSettings = requireResolvedSettings(heatingConfig);
+
+    const heatingDetail = await this.buildConfiguredHeatingDetail(
+      {
+        buildingId,
+        heatingSettings,
+        heatingVersions: heatingConfig.versions,
+        units,
+        unitsRaw,
+        metersRaw,
+        readingsByMeter,
+        heatMeters,
+        heatCostAllocators,
+        heatingCostEntries,
+        statementPeriod,
+        effectivePeriod,
+        occupancyDaysByUnitFull,
+        occupancyDaysByUnitTenant,
+        occupantsByUnitFull,
+        targetUnitId,
+      },
+      hasBlockingWarning({ heatingConfigWarnings: heatingConfig.warnings }),
+    );
 
     if (heatingDetail?.mode === "internal") {
       await this.attachEnergyComparison({
@@ -1099,28 +1134,7 @@ export class StatementsService {
       throw this.toCalcHttpError(err);
     }
 
-    // Ohne Heizkosten-Detail hängt der Konfigurationswechsel an keinem
-    // Detail und kommt direkt in die Liste.
-    const heatingWarnings =
-      result.heatingDetail?.warnings ??
-      (heatingSettings.mode === "none"
-        ? await this.heatingChangeWarnings(buildingId, statementPeriod)
-        : []);
-
-    const warnings: string[] = [
-      ...groupCalcWarnings(heatingWarnings).map((group) =>
-        this.formatWarningGroup("heating", group),
-      ),
-      ...groupCalcWarnings(result.waterDetail?.warnings ?? []).map((group) =>
-        this.formatWarningGroup("water", group),
-      ),
-      ...groupCalcWarnings(result.kwhWarnings ?? []).map((group) =>
-        this.formatWarningGroup("kwh", group),
-      ),
-      ...groupCalcWarnings(result.costWarnings ?? []).map((group) =>
-        this.formatWarningGroup("costs", group),
-      ),
-    ];
+    const warnings = this.formatResultWarnings(heatingConfig.warnings, result);
 
     const occupancyDetail = this.buildOccupancyDetail(
       unitsRaw,
@@ -1149,6 +1163,9 @@ export class StatementsService {
 
     return {
       ...result,
+      ...(heatingConfig.warnings.length > 0
+        ? { heatingConfigWarnings: heatingConfig.warnings }
+        : {}),
       warnings,
       payments,
       ...(occupancyDetail ? { occupancyDetail } : {}),
@@ -1163,12 +1180,14 @@ export class StatementsService {
    * Rechnungen im Zeitraum bedeuten dann, dass die Konfiguration fehlt.
    * Gleiches gilt, wenn zum Periodenbeginn keine Heizkostenabrechnung
    * eingerichtet ist (dezentrale Versorgung): Erfasste Heizkosten werden
-   * dann weder verteilt noch still weggelassen.
+   * dann weder verteilt noch still weggelassen. Ist die Konfiguration im
+   * Zeitraum ohnehin gesperrt, nennt deren Warnung den Grund.
    */
   private async buildConfiguredHeatingDetail(
     input: Parameters<StatementsService["buildHeatingDetail"]>[0],
+    configBlocked: boolean,
   ): Promise<HeatingDetail | undefined> {
-    const { buildingId, heatingCostEntries, statementPeriod } = input;
+    const { buildingId, heatingCostEntries } = input;
     if (!(await this.heatingService.hasAnyForBuilding(buildingId))) {
       if (heatingCostEntries.length > 0) {
         throw this.toCalcHttpError(new CalculationError("heatingNoConfig"));
@@ -1178,46 +1197,14 @@ export class StatementsService {
     }
 
     if (input.heatingSettings.mode === "none") {
-      if (heatingCostEntries.length > 0) {
+      if (heatingCostEntries.length > 0 && !configBlocked) {
         throw this.toCalcHttpError(new CalculationError("heatingNotCentral"));
       }
 
       return;
     }
 
-    const heatingDetail = await this.buildHeatingDetail(input);
-    const changeWarnings = await this.heatingChangeWarnings(
-      buildingId,
-      statementPeriod,
-    );
-
-    if (changeWarnings.length > 0) {
-      heatingDetail.warnings = heatingDetail.warnings ?? [];
-      heatingDetail.warnings.push(...changeWarnings);
-    }
-
-    return heatingDetail;
-  }
-
-  /**
-   * Gerechnet wird mit der Heizkostenkonfiguration vom Beginn der Periode.
-   * Beginnt mittendrin eine neue Version, weicht das Ergebnis von der
-   * Realität ab, auch wenn zu Beginn keine Heizkostenabrechnung galt und
-   * noch keine Heizkosten erfasst sind.
-   */
-  private async heatingChangeWarnings(
-    buildingId: string,
-    statementPeriod: Period,
-  ): Promise<CalcWarning[]> {
-    const changeDates = await this.heatingService.changeDatesWithin(
-      buildingId,
-      statementPeriod,
-    );
-
-    return changeDates.map((date) => ({
-      code: "heatingConfigChangedInPeriod",
-      params: { date },
-    }));
+    return await this.buildHeatingDetail(input);
   }
 
   /**
@@ -1937,7 +1924,7 @@ export class StatementsService {
       targetUnitId,
       warnings,
     } = input;
-    if (!heatingPeriodValueRelevance(heatingSettings).totalHeatEnergy) {
+    if (!heatingPeriodValueRelevance([heatingSettings]).totalHeatEnergy) {
       return;
     }
     // warnings durchreichen: Fehlt am Perioden-Rand eine Ablesung, begrenzt die
@@ -2065,6 +2052,7 @@ export class StatementsService {
   private async buildHeatingDetail(input: {
     buildingId: string;
     heatingSettings: Awaited<ReturnType<HeatingService["getForBuildingAt"]>>;
+    heatingVersions: HeatingSettings[];
     units: UnitInfo[];
     unitsRaw: Unit[];
     metersRaw: Meter[];
@@ -2192,7 +2180,7 @@ export class StatementsService {
         consumptionMethod,
       );
 
-    const co2 = await this.buildCo2Input(input, heatingAggregation);
+    const co2 = this.buildCo2Input(input, heatingAggregation);
     let heatingDetail: HeatingDetail;
     try {
       heatingDetail = calculateHeating({
@@ -2240,7 +2228,7 @@ export class StatementsService {
         ...substitutionWarnings,
         ...co2.warnings,
       );
-      if (heatingPeriodValueRelevance(heatingSettings).districtHeat) {
+      if (heatingPeriodValueRelevance([heatingSettings]).districtHeat) {
         attachDistrictHeatInfo(heatingDetail, periodValues);
       }
     } catch (err) {
@@ -2251,45 +2239,40 @@ export class StatementsService {
   }
 
   /**
-   * CO2KostAufG-Eingaben der Heizkostenberechnung. Gelten im Zeitraum
-   * unterschiedliche Angaben nach § 9 CO2KostAufG, regelt das Gesetz die
-   * Aufteilung nicht. Sie wird dann nicht gerechnet (`input` fehlt) und
-   * die Abrechnung mit einer Warnung gesperrt.
+   * CO2KostAufG-Eingaben der Heizkostenberechnung. Ist die Aufteilung für
+   * die Rechnungen des Zeitraums nicht einheitlich bestimmt (Switch oder
+   * Angaben nach § 9 CO2KostAufG), wird sie nicht gerechnet (`input` fehlt)
+   * und die Abrechnung mit einer Warnung gesperrt.
    */
-  private async buildCo2Input(
+  private buildCo2Input(
     input: {
-      buildingId: string;
-      heatingSettings: Awaited<ReturnType<HeatingService["getForBuildingAt"]>>;
-      heatingCostEntries: Parameters<typeof co2FuelBasis>[1];
+      heatingVersions: HeatingSettings[];
+      heatingCostEntries: Parameters<typeof co2FuelBasis>[1] & Co2CostItem[];
       statementPeriod: { start: string; end: string };
     },
     heatingAggregation: ReturnType<typeof aggregateHeatingCosts>,
   ) {
-    const { heatingSettings } = input;
-    const { conflict, evidenceNote } = co2RestrictionInPeriod(
-      await this.heatingService.listForBuilding(input.buildingId),
+    const co2 = co2SettingsForPeriod(
+      input.heatingVersions,
+      input.heatingCostEntries,
       input.statementPeriod,
     );
 
-    if (conflict) {
-      return {
-        input: undefined,
-        warnings: [{ code: "co2RestrictionConflictInPeriod" }],
-      };
+    if (co2.conflict) {
+      return { input: undefined, warnings: [co2.conflict] };
     }
 
     return {
       warnings: [],
       input: {
-        enabled: heatingSettings.co2CostShareEnabled,
+        enabled: co2.enabled,
         totalCostCents: heatingAggregation.totalCo2CostCents,
         totalAmountGrams: heatingAggregation.totalCo2AmountGrams,
         fuelBasis: co2FuelBasis(heatingAggregation, input.heatingCostEntries),
         restriction: {
-          building: heatingSettings.co2BuildingRestricted,
-          supply: heatingSettings.co2SupplyRestricted,
-          evidenceNote:
-            evidenceNote ?? heatingSettings.co2RestrictionEvidenceNote ?? "",
+          building: co2.buildingRestricted,
+          supply: co2.supplyRestricted,
+          evidenceNote: co2.evidenceNote ?? "",
         },
       },
     };

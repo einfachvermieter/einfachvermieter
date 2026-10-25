@@ -23,7 +23,10 @@ import {
 } from "@nestjs/common";
 import { assertBuildingExists } from "../common/assert-exists.js";
 import { assertBuildingPeriodNotFinalized } from "../common/finalized-period-lock.js";
-import { HeatingService } from "../heating/heating.service.js";
+import {
+  HeatingService,
+  requireResolvedSettings,
+} from "../heating/heating.service.js";
 import { getI18n } from "../i18n/i18n.registry.js";
 import { notFoundMessage } from "../i18n/notFound.js";
 import { SubstitutionContextService } from "./substitution-context.service.js";
@@ -415,9 +418,8 @@ export class ConsumptionSubstitutionsService {
     meterType: "heat_cost_allocator" | "heat_meter" | "water_hot";
     baseMethod: HeatingBaseMethod;
   }> {
-    const settings = await this.heatingService.getForBuildingAt(
-      buildingId,
-      period.start,
+    const settings = requireResolvedSettings(
+      await this.heatingService.resolveForPeriod(buildingId, period),
     );
     const inactive =
       settings.mode !== "internal" ||

@@ -12,7 +12,6 @@ import {
   co2AppliedLandlordSharePercent,
   co2BasisMismatchKg,
   co2LandlordSharePercent,
-  co2RestrictionInPeriod,
   co2Tier,
   hotWaterCorrectionFactor,
 } from "./heating.js";
@@ -2104,90 +2103,5 @@ describe("Beschränkungen nach § 9 CO2KostAufG", () => {
     ).toBe(100_000);
     // Auch ohne Aufteilung bleibt die Einstufung ausgewiesen
     expect(result.co2Detail?.tableLandlordSharePercent).toBe(20);
-  });
-
-  describe("Wechsel im Abrechnungszeitraum", () => {
-    const period = { start: "2026-01-01", end: "2026-12-31" };
-    const version = (
-      validFrom: string,
-      validTo: string | null,
-      fields: Partial<Parameters<typeof co2RestrictionInPeriod>[0][number]>,
-    ) => ({
-      mode: "internal" as const,
-      validFrom,
-      validTo,
-      co2CostShareEnabled: true,
-      co2BuildingRestricted: false,
-      co2SupplyRestricted: false,
-      co2RestrictionEvidenceNote: null,
-      ...fields,
-    });
-    const building = { co2BuildingRestricted: true };
-    const supply = { co2SupplyRestricted: true };
-
-    it("meldet bei einer Version keinen Konflikt", () => {
-      expect(
-        co2RestrictionInPeriod([version("2020-01-01", null, building)], period)
-          .conflict,
-      ).toBe(false);
-    });
-
-    it("nimmt bei gleichen Angaben den Text der späteren Version", () => {
-      expect(
-        co2RestrictionInPeriod(
-          [
-            version("2026-07-01", null, {
-              ...building,
-              co2RestrictionEvidenceNote: "neu",
-            }),
-            version("2020-01-01", "2026-06-30", {
-              ...building,
-              co2RestrictionEvidenceNote: "alt",
-            }),
-          ],
-          period,
-        ),
-      ).toEqual({ conflict: false, evidenceNote: "neu" });
-    });
-
-    it.each([
-      ["mit und ohne Beschränkung", building, {}],
-      ["Gebäude und Versorgung", building, supply],
-    ])("meldet einen Konflikt: %s", (_label, first, second) => {
-      expect(
-        co2RestrictionInPeriod(
-          [
-            version("2020-01-01", "2026-06-30", first),
-            version("2026-07-01", null, second),
-          ],
-          period,
-        ).conflict,
-      ).toBe(true);
-    });
-
-    it("zählt Versionen ohne Aufteilung, im externen Modus und außerhalb des Zeitraums nicht", () => {
-      expect(
-        co2RestrictionInPeriod(
-          [
-            version("2020-01-01", "2025-12-31", {}),
-            version("2026-01-01", "2026-03-31", building),
-            version("2026-04-01", "2026-06-30", { co2CostShareEnabled: false }),
-            version("2026-07-01", "2026-12-31", { mode: "external" }),
-            version("2027-01-01", null, supply),
-          ],
-          period,
-        ).conflict,
-      ).toBe(false);
-    });
-
-    it("sperrt das Finalisieren", () => {
-      expect(
-        hasBlockingWarning({
-          heatingDetail: {
-            warnings: [{ code: "co2RestrictionConflictInPeriod" }],
-          },
-        }),
-      ).toBe(true);
-    });
   });
 });

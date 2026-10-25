@@ -54,9 +54,9 @@ export class HeatingPeriodValuesService {
    * welche Werte die Berechnung verwendet und ob der Zeitraum gesperrt ist.
    */
   async get(buildingId: string, period: Period): Promise<HeatingPeriodValues> {
-    const settings = await this.heatingService.getForBuildingAt(
+    const { versions } = await this.heatingService.resolveForPeriod(
       buildingId,
-      period.start,
+      period,
     );
     const mainHeatMeters = await this.em.count(MeterSchema, {
       buildingId,
@@ -66,7 +66,7 @@ export class HeatingPeriodValuesService {
 
     return {
       ...(await this.valuesFor(buildingId, period)),
-      relevance: heatingPeriodValueRelevance(settings),
+      relevance: heatingPeriodValueRelevance(versions),
       hasMainHeatMeter: mainHeatMeters > 0,
       lockedByStatementId: await findFinalizedStatementForExactPeriod(
         this.em,

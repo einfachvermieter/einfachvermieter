@@ -521,6 +521,7 @@ export const statementResultSchema: z.ZodType<StatementResult> = z.object({
   heatingDetail: heatingDetailSchema.optional(),
   kwhWarnings: z.array(calcWarningSchema).optional(),
   costWarnings: z.array(calcWarningSchema).optional(),
+  heatingConfigWarnings: z.array(calcWarningSchema).optional(),
   occupancyDetail: occupancyDetailSchema.optional(),
   warnings: z.array(z.string()).optional(),
   payments: z.array(paymentSummarySchema).optional(),

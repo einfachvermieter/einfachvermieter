@@ -282,6 +282,8 @@
       "allocationKwhNoMeters": "Die Kostenart „{costTypeName}“ wird nach Verbrauch (kWh) verteilt, aber ihr ist kein Zähler zugeordnet. Bitte ordnen Sie den passenden Zählern unter „Verwendet für Kostenarten“ diese Kostenart zu.",
       "allocationKwhNoConsumption": "Für die Kostenart „{costTypeName}“ wurde kein Verbrauch gemessen (Summe 0 kWh). Bitte prüfen Sie die Zählerstände der zugeordneten Zähler.",
       "noCosts": "Für diesen Zeitraum sind keine Kosten erfasst. Bitte erfassen Sie zuerst die Rechnungen des Abrechnungszeitraums.",
+      "heatingConfigGapInPeriod": "Vom {fromDate} bis {toDate} gilt keine Heizkostenkonfiguration für dieses Gebäude. Bitte legen Sie für diese Zeit eine Version an.",
+      "heatingConfigOverlapInPeriod": "Ab dem {date} gelten zwei Heizkostenkonfigurationen gleichzeitig. Die App kann nicht entscheiden, welche gilt. Korrigieren Sie „Gültig ab“ oder „Gültig bis“ der Versionen.",
       "heatingNotCentral": "Für den Abrechnungszeitraum ist keine Heizkostenabrechnung eingerichtet, es sind aber Heizkosten erfasst. Bitte prüfen Sie die Heizkostenkonfiguration. Kosten für Geräte in den Wohnungen, z. B. die Wartung einer Etagenheizung, erfassen Sie als Betriebskosten mit dem vereinbarten Umlageschlüssel.",
       "heatingNoConfig": "Es sind Heizkosten erfasst, aber für das Gebäude ist keine Heizkostenabrechnung eingerichtet. Bitte richten Sie sie unter „Heizkosten“ ein.",
       "waterNoMainMeter": "Für die Wasserabrechnung ist kein Hauptzähler hinterlegt. Bitte legen Sie mindestens einen Hauptwasserzähler an.",
@@ -358,6 +360,14 @@
     "co2BasisIncomplete": "Bei mindestens einer Brennstoffposition ist der Energiegehalt oder der Emissionsfaktor nicht erfasst. Die Abrechnung weist die Berechnungsgrundlagen nach § 7 Abs. 3 CO2KostAufG nicht vollständig aus. Mieter können ihre Heizkosten dann um 3 % kürzen (§ 7 Abs. 4).",
     "co2SplitValuesIncomplete": "Bei mindestens einer Brennstoffposition ist die CO₂-Menge oder der CO₂-Kostenanteil nicht erfasst. Die CO₂-Kostenaufteilung kann nicht vollständig berechnet werden, die Abrechnung lässt sich deshalb nicht finalisieren. Tragen Sie den fehlenden Wert an der Rechnungsposition nach.",
     "co2RestrictionConflictInPeriod": "Im Abrechnungszeitraum gelten Heizkostenkonfigurationen mit unterschiedlichen Angaben zur Beschränkung nach § 9 CO2KostAufG. Das Gesetz regelt nicht, wie die CO₂-Kosten in diesem Fall aufzuteilen sind. Die App rechnet ihn deshalb nicht, und die Abrechnung lässt sich nicht finalisieren.",
+    "heatingConfigScalesNotApplied": "Zum {date} beginnt eine neue Heizkostenkonfiguration mit anderem Prozentsatz, Grundkostenmaßstab oder anderer Aufteilung nach Gradtagen. Diese Version wird für diese Abrechnung nicht berücksichtigt. Solche Änderungen müssen zum Beginn eines Abrechnungszeitraums gelten.",
+    "heatingConfigModeChangedInPeriod": "Zum {date} wechselt die Heizkostenkonfiguration zwischen interner und externer Abrechnung. Einen solchen Wechsel innerhalb eines Abrechnungszeitraums kann die App nicht abrechnen, die Abrechnung lässt sich deshalb nicht finalisieren. Legen Sie die neue Version zum Beginn eines Abrechnungszeitraums an.",
+    "heatingConfigConsumptionMethodChangedInPeriod": "Zum {date} wechselt die Verbrauchserfassung zwischen Wärmemengenzählern und Heizkostenverteilern. Die Verbräuche beider Arten lassen sich nicht zusammenrechnen. Einen solchen Wechsel innerhalb eines Abrechnungszeitraums kann die App nicht abrechnen, die Abrechnung lässt sich deshalb nicht finalisieren. Legen Sie die neue Version zum Beginn eines Abrechnungszeitraums an.",
+    "heatingConfigFuelChangedInPeriod": "Zum {date} wechselt der Energieträger oder ein Faktor für die Warmwasser-Wärmemenge (Erdgas nach Brennwert, monovalente Wärmepumpe). Bei zentralem Warmwasser lässt sich der Anteil des Warmwassers dann nicht für den ganzen Abrechnungszeitraum bestimmen. Einen solchen Wechsel innerhalb eines Abrechnungszeitraums kann die App nicht abrechnen, die Abrechnung lässt sich deshalb nicht finalisieren. Legen Sie die neue Version zum Beginn eines Abrechnungszeitraums an.",
+    "heatingConfigPlantChangedInPeriod": "Zum {date} ändert sich die Anlage: die Abrechnungsart, das Warmwasser, der Wärmezähler für Warmwasser, die Vorlauftemperatur oder der Energieträger. Solche Wechsel innerhalb eines Abrechnungszeitraums kann die App derzeit nicht abrechnen, die Abrechnung lässt sich deshalb nicht finalisieren. Legen Sie die neue Version zum Beginn eines Abrechnungszeitraums an.",
+    "heatingConfigGapInPeriod": "Vom {fromDate} bis {toDate} gilt keine Heizkostenkonfiguration. Die Abrechnung lässt sich deshalb nicht finalisieren. Ergänzen Sie die Heizkostenkonfiguration für diese Tage.",
+    "heatingConfigOverlapInPeriod": "Ab dem {date} gelten zwei Heizkostenkonfigurationen gleichzeitig. Die App kann nicht entscheiden, welche gilt. Korrigieren Sie „Gültig ab“ oder „Gültig bis“ der Versionen.",
+    "co2ShareConflictInPeriod": "Die CO₂-Kostenaufteilung ist für die Rechnungen mit CO₂-Angaben nicht einheitlich eingeschaltet: Eine Rechnung reicht über einen Wechsel der Einstellung, oder die Rechnungen liegen teils in Zeiten mit und teils ohne Aufteilung. Die App rechnet die Aufteilung deshalb nicht, und die Abrechnung lässt sich nicht finalisieren.",
     "co2AreaHotWaterOnly": "Wohnung {unit} erhält aus der zentralen Anlage ganz oder zeitweise nur Warmwasser. Das CO2KostAufG regelt diesen Fall nicht ausdrücklich. Für diese Zeit zählt die App die Wohnfläche bei der CO₂-Einstufung nicht mit.",
     "co2DataWithoutSplit": "CO₂-Kosten sind erfasst, die CO₂-Kostenaufteilung ist ausgeschaltet. Die Abrechnung enthält keine Angaben nach § 7 Abs. 3 CO2KostAufG.",
     "consumptionFallbackZeroDelta": "Die Verbrauchsmessungen liefern für die Periode eine Differenz von 0. Der Verbrauchsanteil wird ersatzweise nach Heizfläche verteilt. Das Kürzungsrecht des Mieters von 15 % nach § 12 Abs. 1 HeizkostenV bleibt davon unberührt.",
@@ -1527,8 +1537,8 @@
         "text": "Mindestens ein Zähler dieses Gebäudes ist als fernablesbar markiert. Sie müssen Ihre Mieter dann monatlich über deren Verbrauch informieren (§ 6a Abs. 1 und 2 HeizkostenV). Diese unterjährigen Mitteilungen erstellt EinfachVermieter nicht."
       },
       "gaps": {
-        "between": "Vom {from} bis {to} gilt keine Heizkostenkonfiguration. Abrechnungen für diesen Zeitraum können scheitern.",
-        "since": "Seit dem {from} gilt keine Heizkostenkonfiguration. Abrechnungen für diesen Zeitraum können scheitern."
+        "between": "Vom {from} bis {to} gilt keine Heizkostenkonfiguration. Abrechnungen für diesen Zeitraum lassen sich nicht finalisieren.",
+        "since": "Seit dem {from} gilt keine Heizkostenkonfiguration. Abrechnungen für diesen Zeitraum lassen sich nicht finalisieren."
       },
       "prerequisites": {
         "costTypes": "{count, plural, one {# Kostenart für Heizkosten} other {# Kostenarten für Heizkosten}}",
@@ -1608,6 +1618,7 @@
         "prorationMethodDescriptionExternal": "Betrifft nur den Verbrauchskostenanteil der externen Abrechnung bei Mieter-/Leerstandswechsel. Grundkosten bleiben immer tagesproportional. Linear verteilt tagesproportional, ignoriert aber die Wintersaisonalität. Gradtagszahlen gewichten Wintertage stärker. § 9b Abs. 2 HeizkostenV lässt diese Verteilung bei Mieterwechsel ausdrücklich zu.",
         "validFrom": "Gültig ab",
         "validFromDescription": "Datum, ab dem diese Konfiguration für Abrechnungen gilt",
+        "validFromHelp": "Prozentsatz, Grundkostenmaßstab und Aufteilung nach Gradtagen gelten je Abrechnung in einer Fassung. Ändern Sie sie zum Beginn eines Abrechnungszeitraums. Ändern sich mitten im Abrechnungszeitraum Abrechnungsart, Warmwasser, Vorlauftemperatur, Verbrauchserfassung oder Energieträger, lässt sich die Abrechnung derzeit nicht finalisieren.",
         "validTo": "Gültig bis",
         "validToDescription": "Leer lassen, wenn die Konfiguration noch offen ist.",
         "heatingType": "Heizungsart",
@@ -1933,6 +1944,7 @@
         "cancelReasonPlaceholder": "Grund der Stornierung (z. B. fehlerhafte Zählerstände)",
         "cancelledTitle": "Diese Abrechnung wurde storniert",
         "cancelledReason": "Grund: {reason}",
+        "openHeatingConfig": "Heizkostenkonfiguration öffnen",
         "tabs": {
           "overview": "Übersicht",
           "operatingCosts": "Betriebskosten",

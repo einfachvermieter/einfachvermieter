@@ -6,9 +6,13 @@ import {
   MeterSchema,
 } from "@einfachvermieter/db";
 import {
+  formatWarningParams,
+  type HeatingConfigResolution,
   type HeatingSettings,
   type HeatingSettingsWriteDto,
   isSeventyPercentFuel,
+  type Period,
+  resolveHeatingConfigForPeriod,
 } from "@einfachvermieter/shared";
 import { EntityManager, type FilterQuery } from "@mikro-orm/core";
 import {
@@ -74,6 +78,26 @@ const defaultSettings = (buildingId: string): HeatingSettings => ({
   createdAt: "",
   updatedAt: "",
 });
+
+/**
+ * Die für einen Zeitraum ermittelte Konfiguration. Lässt sich keine bilden (Überlappung oder
+ * keine Version im Zeitraum), ist der Zeitraum nicht abrechenbar.
+ */
+export const requireResolvedSettings = (
+  resolution: HeatingConfigResolution,
+): HeatingSettings => {
+  if (resolution.settings) {
+    return resolution.settings;
+  }
+  const [reason] = resolution.warnings;
+
+  throw new BadRequestException(
+    getI18n().t(
+      `errors.calc.${reason?.code}`,
+      formatWarningParams(reason?.params),
+    ),
+  );
+};
 
 @Injectable()
 export class HeatingService {
@@ -205,23 +229,30 @@ export class HeatingService {
   }
 
   /**
-   * Stichtage, zu denen innerhalb des Zeitraums eine neue Version der
-   * Heizkosten-Konfiguration beginnt, aufsteigend.
+   * Heizkostenkonfiguration für einen Abrechnungszeitraum, siehe
+   * `resolveHeatingConfigForPeriod`. Hat das Gebäude noch gar keine
+   * Version, gilt der Default ohne Warnung.
    */
-  async changeDatesWithin(
+  async resolveForPeriod(
     buildingId: string,
-    period: { start: string; end: string },
-  ): Promise<string[]> {
-    const rows = await this.em.find(
-      HeatingSettingSchema,
-      {
-        buildingId,
-        validFrom: { $gt: period.start, $lte: period.end },
-      },
-      { fields: ["validFrom"], orderBy: { validFrom: "asc" } },
-    );
+    period: Period,
+  ): Promise<HeatingConfigResolution> {
+    await assertBuildingExists(this.em, buildingId);
 
-    return rows.map((row) => row.validFrom);
+    const versions = await this.em.find(HeatingSettingSchema, {
+      buildingId,
+      validFrom: { $lte: period.end },
+      $or: [{ validTo: null }, { validTo: { $gte: period.start } }],
+    });
+    if (versions.length === 0 && !(await this.hasAnyForBuilding(buildingId))) {
+      return {
+        settings: defaultSettings(buildingId),
+        versions: [],
+        warnings: [],
+      };
+    }
+
+    return resolveHeatingConfigForPeriod(versions, period);
   }
 
   /**

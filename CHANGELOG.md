@@ -5,6 +5,9 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Geändert:** Ändert sich die Heizkostenkonfiguration mitten im
+  Abrechnungszeitraum, gelten die Anteile der ersten Version weiter.
+  Änderungen an der Anlage verhindern das Finalisieren.
 - **Neu:** Die Heizkosten-Seite weist auf Zeiträume hin, für die keine
   Heizkostenkonfiguration gilt, und zeigt, wie viele Kostenarten für
   Heizkosten es gibt.

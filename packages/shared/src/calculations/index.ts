@@ -6,6 +6,7 @@ export * from "./diagnostics.js";
 export * from "./energyComparison.js";
 export * from "./heating.js";
 export * from "./heatingConfigGaps.js";
+export * from "./heatingConfigResolution.js";
 export * from "./heatingDisplay.js";
 export * from "./meters.js";
 export * from "./money.js";

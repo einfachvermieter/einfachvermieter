@@ -118,6 +118,7 @@ export const HeatingBillingFields = ({
           name="validFrom"
           label={t("ui.heating.fields.validFrom")}
           description={t("ui.heating.fields.validFromDescription")}
+          labelHelp={t("ui.heating.fields.validFromHelp")}
           boundary="start"
         />
         <MonthInput

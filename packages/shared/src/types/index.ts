@@ -300,6 +300,12 @@ export type StatementResult = {
    */
   costWarnings?: CalcWarning[];
   /**
+   * Warnungen zur Heizkostenkonfiguration im Abrechnungszeitraum, etwa
+   * eine nicht berücksichtigte spätere Version oder ein nicht abrechenbarer
+   * Wechsel. Unabhängig davon, ob es einen Heizkostenteil gibt.
+   */
+  heatingConfigWarnings?: CalcWarning[];
+  /**
    * Belegungs-Anhang (Personen-/Wohnungs-/Flächentage). Gesetzt bei Leerstand
    * oder wenn eine Personenumlage die Personentage-Gewichte erklären muss.
    */

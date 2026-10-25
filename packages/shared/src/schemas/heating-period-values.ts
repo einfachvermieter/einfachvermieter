@@ -37,19 +37,28 @@ export type HeatingPeriodValueRelevance = {
 };
 
 /**
- * Bestimmt, welche Werte des Abrechnungszeitraums Bedeutung haben. Die
- * Berechnung und die Eingabe an der Abrechnung fragen beide hier: die
- * Gesamt-Wärmemenge zählt, wenn eine Warmwasser-Abspaltung gerechnet wird,
- * die Fernwärme-Werte, wenn die Abrechnung Fernwärme-Angaben ausgibt.
+ * Bestimmt, welche Werte des Abrechnungszeitraums Bedeutung haben, über
+ * alle Versionen der Heizkostenkonfiguration im Zeitraum. Die Berechnung
+ * und die Eingabe an der Abrechnung fragen beide hier: die
+ * Gesamt-Wärmemenge zählt, wenn eine Version eine Warmwasser-Abspaltung
+ * rechnet, die Fernwärme-Werte, wenn eine Version Fernwärme-Angaben
+ * ausgibt.
  */
 export const heatingPeriodValueRelevance = (
-  settings: Pick<HeatingSettings, "mode" | "heatingType" | "fuelType">,
+  versions: readonly Pick<
+    HeatingSettings,
+    "mode" | "heatingType" | "fuelType"
+  >[],
 ): HeatingPeriodValueRelevance => ({
-  totalHeatEnergy:
-    settings.mode === "internal" &&
-    settings.heatingType === "central_with_hot_water",
-  districtHeat:
-    settings.mode === "internal" && settings.fuelType === "district_heat",
+  totalHeatEnergy: versions.some(
+    (settings) =>
+      settings.mode === "internal" &&
+      settings.heatingType === "central_with_hot_water",
+  ),
+  districtHeat: versions.some(
+    (settings) =>
+      settings.mode === "internal" && settings.fuelType === "district_heat",
+  ),
 });
 
 /**

@@ -426,16 +426,11 @@ export class SubstitutionContextService {
     substitutions: SubstitutionInput[],
     earlier: PeriodHistory,
   ): Promise<PeriodEvaluation> {
-    let settings: Awaited<ReturnType<HeatingService["getForBuildingAt"]>>;
-    try {
-      settings = await this.heatingService.getForBuildingAt(
-        buildingId,
-        period.start,
-      );
-    } catch {
-      return {};
-    }
-    if (settings.mode !== "internal") {
+    const { settings } = await this.heatingService.resolveForPeriod(
+      buildingId,
+      period,
+    );
+    if (settings?.mode !== "internal") {
       return {};
     }
 

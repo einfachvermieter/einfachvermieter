@@ -222,26 +222,49 @@ describe("Werte je Abrechnungszeitraum", () => {
 
   it("gibt Werten nur im internen Modus Bedeutung", () => {
     expect(
-      heatingPeriodValueRelevance({
-        mode: "internal",
-        heatingType: "central_with_hot_water",
-        fuelType: "gas",
-      }),
+      heatingPeriodValueRelevance([
+        {
+          mode: "internal",
+          heatingType: "central_with_hot_water",
+          fuelType: "gas",
+        },
+      ]),
     ).toEqual({ totalHeatEnergy: true, districtHeat: false });
     expect(
-      heatingPeriodValueRelevance({
-        mode: "internal",
-        heatingType: "central_without_hot_water",
-        fuelType: "district_heat",
-      }),
+      heatingPeriodValueRelevance([
+        {
+          mode: "internal",
+          heatingType: "central_without_hot_water",
+          fuelType: "district_heat",
+        },
+      ]),
     ).toEqual({ totalHeatEnergy: false, districtHeat: true });
     expect(
-      heatingPeriodValueRelevance({
-        mode: "external",
-        heatingType: "central_with_hot_water",
-        fuelType: "district_heat",
-      }),
+      heatingPeriodValueRelevance([
+        {
+          mode: "external",
+          heatingType: "central_with_hot_water",
+          fuelType: "district_heat",
+        },
+      ]),
     ).toEqual({ totalHeatEnergy: false, districtHeat: false });
+  });
+
+  it("gibt Werten Bedeutung, sobald eine Version im Zeitraum sie verwendet", () => {
+    expect(
+      heatingPeriodValueRelevance([
+        {
+          mode: "internal",
+          heatingType: "central_without_hot_water",
+          fuelType: "gas",
+        },
+        {
+          mode: "internal",
+          heatingType: "central_with_hot_water",
+          fuelType: "district_heat",
+        },
+      ]),
+    ).toEqual({ totalHeatEnergy: true, districtHeat: true });
   });
 });
 

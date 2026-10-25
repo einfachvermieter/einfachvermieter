@@ -2,7 +2,6 @@ import { type ContainedTaxKind, containedTaxKinds } from "../schemas/core.js";
 import type {
   HeatingBaseMethod,
   HeatingFuelType,
-  HeatingMode,
   HeatingProrationMethod,
 } from "../schemas/heating.js";
 import type {
@@ -501,54 +500,6 @@ export const co2AppliedLandlordSharePercent = (
   return buildingRestricted || supplyRestricted
     ? tableLandlordSharePercent / 2
     : tableLandlordSharePercent;
-};
-
-/**
- * Version der Heizkostenkonfiguration, soweit sie für die Prüfung der
- * Beschränkung nach § 9 CO2KostAufG zählt.
- */
-export type Co2RestrictionVersion = {
-  mode: HeatingMode;
-  validFrom: string;
-  validTo: string | null;
-  co2CostShareEnabled: boolean;
-  co2BuildingRestricted: boolean;
-  co2SupplyRestricted: boolean;
-  co2RestrictionEvidenceNote: string | null;
-};
-
-/**
- * Prüft die Angaben nach § 9 CO2KostAufG über einen Abrechnungszeitraum.
- * Es zählen die intern gerechneten Versionen mit eingeschalteter
- * Aufteilung, die an mindestens einem Tag des Zeitraums gelten. Weichen
- * ihre Angaben zu Gebäude oder Versorgung voneinander ab, ist das ein
- * Konflikt: Das Gesetz regelt nicht, wie dann aufzuteilen ist. Ein anderer
- * Text allein ist kein Konflikt, `evidenceNote` ist der Text der letzten
- * dieser Versionen.
- */
-export const co2RestrictionInPeriod = (
-  versions: Co2RestrictionVersion[],
-  period: Period,
-): { conflict: boolean; evidenceNote: string | null } => {
-  const relevant = versions
-    .filter(
-      (version) =>
-        version.mode === "internal" &&
-        version.co2CostShareEnabled &&
-        version.validFrom <= period.end &&
-        (version.validTo === null || version.validTo >= period.start),
-    )
-    .sort((left, right) => left.validFrom.localeCompare(right.validFrom));
-  const [first] = relevant;
-
-  return {
-    conflict: relevant.some(
-      (version) =>
-        version.co2BuildingRestricted !== first?.co2BuildingRestricted ||
-        version.co2SupplyRestricted !== first?.co2SupplyRestricted,
-    ),
-    evidenceNote: relevant.at(-1)?.co2RestrictionEvidenceNote ?? null,
-  };
 };
 
 /**
