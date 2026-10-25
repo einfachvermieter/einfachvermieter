@@ -5,6 +5,9 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Neu:** Die Heizkosten-Seite weist auf Zeiträume hin, für die keine
+  Heizkostenkonfiguration gilt, und zeigt, wie viele Kostenarten für
+  Heizkosten es gibt.
 - **Neu:** Die Heizfläche einer Wohnung darf 0 sein, wenn alle Heizkörper
   dauerhaft ausgebaut sind und die Wohnung weiter an der zentralen Heizung
   hängt. Sie braucht dann keinen Zähler für den Heizverbrauch.

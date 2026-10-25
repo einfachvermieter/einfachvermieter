@@ -1,7 +1,9 @@
 import {
+  addDaysIso,
   formatDate,
   type HeatingSettings,
   todayIso,
+  uncoveredHeatingConfigPeriods,
 } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -9,6 +11,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { IconPlus } from "@/lib/icons";
 import { DataTable } from "../../components/common/DataTable";
+import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
@@ -17,11 +20,13 @@ import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
+import { costTypesQueryOptions } from "../../lib/costs";
 import { formatPeriod } from "../../lib/format";
 import {
   type HeatingOverviewRow,
   type HeatingSortColumn,
   heatingOverviewQueryOptions,
+  heatingSettingsListQueryOptions,
 } from "../../lib/heating";
 import { t } from "../../lib/i18n";
 import { metersOverviewQueryOptions } from "../../lib/meters";
@@ -44,6 +49,37 @@ type Row = HeatingOverviewRow & { id: string };
 const isVersionActive = (version: HeatingSettings, today: string): boolean =>
   version.validFrom <= today &&
   (version.validTo === null || version.validTo >= today);
+
+/**
+ * Hinweistexte zu den Lücken zwischen den Versionen, vom `validFrom` der
+ * ersten Version bis heute. Die Zeit vor der ersten Version zählt nicht,
+ * weil die Seite nicht weiß, ab wann das Gebäude abgerechnet wird.
+ */
+const heatingGapMessages = (
+  versions: HeatingSettings[],
+  today: string,
+): string[] => {
+  const starts = versions
+    .map((version) => version.validFrom)
+    .sort((left, right) => left.localeCompare(right));
+  const [first] = starts;
+  if (first === undefined || first > today) {
+    return [];
+  }
+
+  return uncoveredHeatingConfigPeriods(versions, first, today).map((gap) => {
+    // Beginnt später noch eine Version, endet die Lücke am Vortag, auch
+    // wenn dieser Tag in der Zukunft liegt
+    const nextStart = starts.find((start) => start > gap.start);
+
+    return nextStart === undefined
+      ? t("ui.heating.gaps.since", { from: formatDate(gap.start) })
+      : t("ui.heating.gaps.between", {
+          from: formatDate(gap.start),
+          to: formatDate(addDaysIso(nextStart, -1)),
+        });
+  });
+};
 
 const heatingColumns = (
   deletion: DeleteResource<Row>,
@@ -185,6 +221,16 @@ export const HeatingOverviewPage = () => {
     ...metersOverviewQueryOptions({ page: 0, pageSize: 1000, buildingId }),
     enabled: buildingId !== undefined,
   });
+  const { data: allVersions } = useQuery({
+    ...heatingSettingsListQueryOptions(buildingId ?? ""),
+    enabled: buildingId !== undefined,
+  });
+  const { data: allCostTypes } = useQuery(costTypesQueryOptions);
+  const heatingCostTypeCount = allCostTypes?.filter(
+    (costType) =>
+      costType.buildingId === buildingId && costType.category === "heating",
+  ).length;
+
   const hasRemoteReadableMeters = (metersData?.items ?? []).some(
     (meter) => meter.isRemoteReadable && meter.isActive,
   );
@@ -211,6 +257,14 @@ export const HeatingOverviewPage = () => {
   const total = data?.total ?? 0;
   const pageCount = Math.max(1, Math.ceil(total / table.pagination.pageSize));
   const today = todayIso();
+  const versions = allVersions ?? [];
+  const gapMessages = heatingGapMessages(versions, today);
+  // Liste ist absteigend nach validFrom: die heute gültige oder, in einer
+  // Lücke, die zuletzt gültige Version; erst ohne beide die künftige
+  const currentVersion =
+    versions.find((version) => version.validFrom <= today) ?? versions[0];
+  const missingHeatingCostTypes =
+    currentVersion?.mode === "internal" && heatingCostTypeCount === 0;
 
   const { met: canAddHeating, isPending: prereqPending } =
     usePrerequisite("heating");
@@ -240,7 +294,21 @@ export const HeatingOverviewPage = () => {
         title={t("ui.heating.title")}
         sub={
           building
-            ? t("ui.heating.sub", { building: building.name })
+            ? [
+                t("ui.heating.sub", { building: building.name }),
+                heatingCostTypeCount === undefined ? null : (
+                  <DomainLink
+                    key="costTypes"
+                    to="/kostenarten"
+                    search={{ buildingId: undefined }}
+                  >
+                    {t("ui.heating.prerequisites.costTypes", {
+                      count: heatingCostTypeCount,
+                    })}
+                  </DomainLink>
+                ),
+                t("ui.heating.prerequisites.climateFactors"),
+              ].filter(Boolean)
             : undefined
         }
         subLoading={!building}
@@ -255,6 +323,20 @@ export const HeatingOverviewPage = () => {
           ) : undefined
         }
       />
+
+      {gapMessages.map((message) => (
+        <Alert key={message} variant="warning">
+          <AlertDescription>{message}</AlertDescription>
+        </Alert>
+      ))}
+
+      {missingHeatingCostTypes ? (
+        <Alert variant="warning">
+          <AlertDescription>
+            {t("ui.heating.prerequisites.noCostTypes")}
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       {hasRemoteReadableMeters ? (
         <Alert variant="info">

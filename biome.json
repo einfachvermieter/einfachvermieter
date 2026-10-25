@@ -16,7 +16,7 @@
       "!packages/db/src/migrations",
       "!**/*.css",
       "!**/*.svg",
-      "!!**/.claude/worktrees",
+      "!!.claude/worktrees",
       "!docs-internal"
     ]
   },

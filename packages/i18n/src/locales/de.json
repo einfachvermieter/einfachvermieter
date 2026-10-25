@@ -1526,6 +1526,15 @@
         "title": "Fernablesbare Geräte vorhanden",
         "text": "Mindestens ein Zähler dieses Gebäudes ist als fernablesbar markiert. Sie müssen Ihre Mieter dann monatlich über deren Verbrauch informieren (§ 6a Abs. 1 und 2 HeizkostenV). Diese unterjährigen Mitteilungen erstellt EinfachVermieter nicht."
       },
+      "gaps": {
+        "between": "Vom {from} bis {to} gilt keine Heizkostenkonfiguration. Abrechnungen für diesen Zeitraum können scheitern.",
+        "since": "Seit dem {from} gilt keine Heizkostenkonfiguration. Abrechnungen für diesen Zeitraum können scheitern."
+      },
+      "prerequisites": {
+        "costTypes": "{count, plural, one {# Kostenart für Heizkosten} other {# Kostenarten für Heizkosten}}",
+        "climateFactors": "Klimafaktoren pflegen Sie an der Abrechnung.",
+        "noCostTypes": "Es gibt keine Kostenart der Kategorie Heizkosten. Ohne sie fließen keine Kosten in die Heizkostenabrechnung."
+      },
       "editTitle": "Heizkosten bearbeiten",
       "detail": {
         "validitySection": "Gültigkeit",
