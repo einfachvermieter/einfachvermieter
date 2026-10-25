@@ -6,17 +6,14 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  RiGroupLine,
-  RiKey2Line,
-  RiMoneyEuroCircleLine,
-} from "@remixicon/react";
+import { RiKey2Line, RiMoneyEuroCircleLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { FormSheet } from "@/components/form/FormSheet";
 import { SheetSection } from "@/components/form/SheetSection";
 import { FieldGroup } from "@/components/ui/Field";
+import { IconUsers } from "@/lib/icons";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { domainVisuals } from "../../lib/domainVisuals";
@@ -86,13 +83,13 @@ export const TenantCreateSheet = ({ onClose }: { onClose: () => void }) => {
         title={t("ui.tenant.sections.contract.title")}
         divider={false}
       >
-        <FieldGroup className="gap-4">
+        <FieldGroup>
           <ContractFields control={form.control} units={units} />
         </FieldGroup>
       </SheetSection>
 
       <SheetSection
-        icon={RiGroupLine}
+        icon={IconUsers}
         title={t("ui.tenant.create.contractPartyTitle")}
         description={t("ui.tenant.create.contractPartyHint")}
       >

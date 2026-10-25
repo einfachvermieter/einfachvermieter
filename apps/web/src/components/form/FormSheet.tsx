@@ -26,14 +26,12 @@ import {
 } from "@/components/ui/Sheet";
 import { applyApiFieldErrors } from "../../lib/formErrors";
 import { t } from "../../lib/i18n";
-import { cn } from "../../lib/utils";
 
 /**
  * Seitliches Formular-Sheet
  */
 export const FormSheet = <T extends FieldValues>({
   form,
-  icon: Icon,
   title,
   description,
   submitLabel,
@@ -61,8 +59,6 @@ export const FormSheet = <T extends FieldValues>({
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const scrollRef = useRef<HTMLFormElement>(null);
 
-  // Bildlauf-Hinweis an den stehenden Leisten.
-  const [overflow, setOverflow] = useState({ top: false, bottom: false });
   const { isDirty, isSubmitting } = form.formState;
 
   // Router-Navigation (Zurück-Button etc.) muss bei dirty Forms auch
@@ -81,22 +77,6 @@ export const FormSheet = <T extends FieldValues>({
       scrollRef.current?.scrollTo({ top: 0 });
     }
   }, [rootError]);
-
-  // Nach jedem Render prüfen: Aufklappende Felder ändern die Inhaltshöhe,
-  // ohne dass gescrollt wird.
-  const syncOverflow = () => {
-    const element = scrollRef.current;
-    if (!element) {
-      return;
-    }
-    const top = element.scrollTop > 0;
-    const bottom =
-      element.scrollTop + element.clientHeight < element.scrollHeight - 1;
-    setOverflow((prev) =>
-      prev.top === top && prev.bottom === bottom ? prev : { top, bottom },
-    );
-  };
-  useEffect(syncOverflow);
 
   const requestClose = () => {
     if (isSubmitting) {
@@ -133,32 +113,21 @@ export const FormSheet = <T extends FieldValues>({
             ref={scrollRef}
             noValidate={true}
             className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto"
-            onScroll={syncOverflow}
             onSubmit={form.handleSubmit(handleValid)}
           >
-            <SheetHeader
-              className={cn(
-                "sticky top-0 z-10 border-b border-border bg-popover/70 backdrop-blur-lg",
-                "after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-3 after:bg-linear-to-b after:from-schiefer-1000/10 after:to-transparent after:opacity-0 after:transition-opacity",
-                overflow.top && "after:opacity-100",
-              )}
-            >
-              <SheetTitle>
-                {Icon ? (
-                  <Icon
-                    aria-hidden={true}
-                    className="size-5 shrink-0 text-azur-700"
-                  />
-                ) : null}
-                {title}
-              </SheetTitle>
+            <SheetHeader className="sticky top-0 z-10 border-b border-border bg-popover px-7 py-4.5">
+              <SheetTitle>{title}</SheetTitle>
               {description ? (
                 <SheetDescription>{description}</SheetDescription>
               ) : null}
             </SheetHeader>
 
-            <fieldset disabled={isSubmitting} className="min-w-0 px-4 py-4">
-              <div className="flex min-w-0 flex-col gap-4">
+            {/* Zwischen den Feldern 24px, innerhalb eines Felds 6px: so steht jedes Feld als eigener Block */}
+            <fieldset
+              disabled={isSubmitting}
+              className="min-w-0 px-7 pt-6 pb-8"
+            >
+              <div className="flex min-w-0 flex-col gap-6">
                 {rootError ? (
                   <Alert variant="error">
                     <AlertTitle>
@@ -171,13 +140,7 @@ export const FormSheet = <T extends FieldValues>({
               </div>
             </fieldset>
 
-            <SheetFooter
-              className={cn(
-                "sticky bottom-0 mt-auto flex-row justify-end border-t border-border bg-popover/70 backdrop-blur-lg",
-                "before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-3 before:bg-linear-to-t before:from-schiefer-1000/10 before:to-transparent before:opacity-0 before:transition-opacity",
-                overflow.bottom && "before:opacity-100",
-              )}
-            >
+            <SheetFooter className="sticky bottom-0 mt-auto flex-row justify-end border-t border-border bg-azur-50 px-7 py-4">
               {footerStart ? (
                 <div className="mr-auto">{footerStart}</div>
               ) : null}

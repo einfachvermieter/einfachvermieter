@@ -44,14 +44,14 @@ export const BankAccountRowSummary = ({
           <Badge variant="warn">{t("ui.tenant.lastBankAccount")}</Badge>
         ) : null}
         {row.mandateReference ? (
-          <Badge variant="info">{t("ui.tenant.mandateBadge")}</Badge>
+          <Badge variant="tag">{t("ui.tenant.mandateBadge")}</Badge>
         ) : null}
       </div>
       {row.accountHolder || periodText ? (
         <p className="truncate text-sm">
           {row.accountHolder}
           {row.accountHolder && periodText
-            ? t("ui.common.separators.bullet")
+            ? t("ui.common.separators.comma")
             : null}
           {periodText ? (
             <span className="text-muted-foreground tabular-nums">

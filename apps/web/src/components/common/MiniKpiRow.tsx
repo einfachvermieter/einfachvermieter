@@ -11,8 +11,9 @@ const VALUE_TONE = {
 } as const;
 
 /**
- * Reihe kleiner KPI-Tiles (z. B. Kaution: Vereinbart / Eingegangen /
- * Status). Der Wert darf Text, eine Zahl oder eine Pill sein.
+ * Reihe kleiner Kennzahlen ohne Fläche, je Kennzahl eine Linie links (z. B.
+ * Kaution: Vereinbart / Eingegangen / Status). Der Wert darf Text, eine Zahl
+ * oder eine Pill sein.
  */
 export const MiniKpiRow = ({
   items,
@@ -32,7 +33,7 @@ export const MiniKpiRow = ({
 }) => (
   <div
     className={cn(
-      "grid grid-cols-1 gap-3.5",
+      "grid grid-cols-1 gap-5",
       columns === 2 && "sm:grid-cols-2",
       columns === 3 && "sm:grid-cols-3",
     )}
@@ -41,21 +42,21 @@ export const MiniKpiRow = ({
       <div
         // biome-ignore lint/suspicious/noArrayIndexKey: statische Liste
         key={index}
-        className="rounded-lg bg-schiefer-50 px-5 py-4"
+        className="border-l-2 border-border pl-4"
       >
-        <div className="text-2xs font-semibold text-schiefer-600">
-          {item.label}
-        </div>
+        <div className="text-xs text-muted-foreground">{item.label}</div>
         <div
           className={cn(
-            "mt-1 text-xl font-semibold tabular-nums",
+            "mt-0.5 font-heading text-lg font-semibold tabular-nums",
             VALUE_TONE[item.tone ?? "neutral"],
           )}
         >
           {item.value}
         </div>
         {item.hint ? (
-          <div className="mt-1 text-xs text-schiefer-600">{item.hint}</div>
+          <div className="mt-0.5 text-xs text-muted-foreground">
+            {item.hint}
+          </div>
         ) : null}
       </div>
     ))}

@@ -4,12 +4,9 @@ import {
   type MonthGridRow,
   type PotState,
 } from "@einfachvermieter/shared";
-import {
-  RiAddLine,
-  RiArrowDownSLine,
-  RiArrowRightSLine,
-} from "@remixicon/react";
+import { RiArrowRightSLine } from "@remixicon/react";
 import { Fragment, useMemo, useState } from "react";
+import { TableFrame } from "@/components/common/TableFrame";
 import { RowActionButton, RowActions } from "@/components/RowActions";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -24,6 +21,7 @@ import {
 import { monthStatus } from "@/lib/accounts";
 import { formatForMonth } from "@/lib/dateInput";
 import { t } from "@/lib/i18n";
+import { IconChevronDown, IconPlus } from "@/lib/icons";
 import type { Payment } from "@/lib/payments";
 import type { useDeleteResource } from "@/lib/useDeleteResource";
 
@@ -38,14 +36,17 @@ const yearPot = (sollCents: number, istCents: number): PotState => ({
 });
 
 /**
- * Eine Topf-Spalte als eine Zelle "ist / soll"
+ * Eine Topf-Spalte: der eingegangene Betrag. Das Soll steht nur dabei, wenn
+ * es abweicht ("150,00 € von 190,00 €")
  */
 const PotIstSollCell = ({ pot }: { pot: PotState }) => (
-  <TableCell className="px-4 py-3 text-right align-middle tabular-nums">
-    <span className="font-semibold">{formatEur(pot.istCents)}</span>{" "}
-    <span className="text-muted-foreground">
-      {`/ ${formatEur(pot.sollCents)}`}
-    </span>
+  <TableCell className="px-3.5 py-3 text-right align-middle tabular-nums">
+    <span className="font-semibold">{formatEur(pot.istCents)}</span>
+    {pot.istCents === pot.sollCents ? null : (
+      <span className="ml-1.5 text-muted-foreground">
+        {t("ui.account.ofSoll", { amount: formatEur(pot.sollCents) })}
+      </span>
+    )}
   </TableCell>
 );
 
@@ -72,11 +73,14 @@ const MonthStatusBadge = ({
   forMonth?: string;
 }) => {
   const status = monthStatus(base, advance, forMonth);
+  // Der Normalfall ist still: ausgeglichen braucht keinen Status
   return (
-    <TableCell className="px-4 py-3 align-middle">
-      <Badge variant={MONTH_STATUS_VARIANT[status]}>
-        {t(`ui.account.status.${status}`)}
-      </Badge>
+    <TableCell className="px-3.5 py-3 align-middle">
+      {status === "balanced" ? null : (
+        <Badge variant={MONTH_STATUS_VARIANT[status]}>
+          {t(`ui.account.status.${status}`)}
+        </Badge>
+      )}
     </TableCell>
   );
 };
@@ -91,8 +95,8 @@ type MonthGridTableProps = {
 
 /**
  * Monatsraster Kaltmiete/NK-Voraus: nach Jahr gruppiert (absteigend,
- * neuestes Jahr offen, frühere eingeklappt), je Monat Ist x Soll x Status
- * pro Topf plus Zahlungs-Aktionen.
+ * neuestes Jahr offen, frühere eingeklappt). Je Zelle ein Betrag, Soll und
+ * Status nur bei Abweichung, rechts die Zahlungs-Aktionen.
  */
 export const MonthGridTable = ({
   monthRows,
@@ -159,140 +163,150 @@ export const MonthGridTable = ({
     return map;
   }, [payments]);
 
+  const actionsOf = (row: MonthGridRow) =>
+    row.paymentIds.length === 0 ? (
+      <RowActionButton
+        label={t("ui.account.recordPayment")}
+        icon={<IconPlus />}
+        onSelect={() => onRecordPayment(row)}
+      />
+    ) : (
+      <div className="flex flex-col items-end gap-1">
+        {row.paymentIds.map((paymentId) => {
+          const payment = paymentById.get(paymentId);
+          if (!payment) {
+            return null;
+          }
+          return (
+            <RowActions
+              key={paymentId}
+              isDeleting={paymentId === deletion.deletingId}
+              onEdit={() => onEditPayment(payment)}
+              onDelete={() => deletion.request(payment)}
+            />
+          );
+        })}
+      </div>
+    );
+
   return (
-    <Table>
-      <TableHeader>
-        <TableRow className="text-muted-foreground">
-          <TableHead className="px-4" />
-          <TableHead className="px-4">
-            {t("ui.account.columns.month")}
-          </TableHead>
-          <TableHead className="px-4 text-right">
-            {t("ui.account.columns.baseRent")}
-          </TableHead>
-          <TableHead className="px-4 text-right">
-            {t("ui.account.columns.advance")}
-          </TableHead>
-          <TableHead className="px-4">
-            {t("ui.common.columns.status")}
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {monthsByYear.length === 0 ? (
+    // Die Monate liegen wie ein schmalerer Zettel unter der Jahreszeile:
+    // links ein Streifen in Azur 50, der nicht auf das Überfahren reagiert
+    <TableFrame>
+      <Table>
+        <TableHeader>
           <TableRow>
-            <TableCell
-              className="px-4 py-6 text-center text-muted-foreground"
-              colSpan={5}
-            >
-              {t("ui.account.monthsEmpty")}
-            </TableCell>
+            <TableHead className="w-10 px-0" />
+            <TableHead className="pl-1">
+              {t("ui.account.columns.yearMonth")}
+            </TableHead>
+            <TableHead className="text-right">
+              {t("ui.account.columns.baseRent")}
+            </TableHead>
+            <TableHead className="text-right">
+              {t("ui.account.columns.advance")}
+            </TableHead>
+            <TableHead>{t("ui.common.columns.status")}</TableHead>
+            <TableHead className="w-22" />
           </TableRow>
-        ) : (
-          visibleGroups.map((group) => {
-            const { year, rows } = group;
-            const open = isYearOpen(year);
-            return (
-              <Fragment key={year}>
-                <TableRow className="border-schiefer-200 border-t-2 bg-schiefer-100 hover:bg-schiefer-100">
-                  <TableCell className="px-4 py-2 align-middle">
-                    <Button
-                      type="button"
-                      variant="ghostMuted"
-                      size="icon-sm"
-                      aria-expanded={open}
-                      aria-label={t("ui.account.toggleYear", { year })}
-                      onClick={() => toggleYear(year)}
-                    >
-                      {open ? <RiArrowDownSLine /> : <RiArrowRightSLine />}
-                    </Button>
-                  </TableCell>
-                  <TableCell className="p-0 align-middle">
-                    <button
-                      type="button"
-                      onClick={() => toggleYear(year)}
-                      className="w-full px-4 py-2 text-left text-base font-semibold tabular-nums"
-                    >
-                      {year}
-                    </button>
-                  </TableCell>
-                  <PotIstSollCell
-                    pot={yearPot(group.baseSollCents, group.baseIstCents)}
-                  />
-                  <PotIstSollCell
-                    pot={yearPot(group.advanceSollCents, group.advanceIstCents)}
-                  />
-                  <MonthStatusBadge
-                    base={yearPot(group.baseSollCents, group.baseIstCents)}
-                    advance={yearPot(
-                      group.advanceSollCents,
-                      group.advanceIstCents,
-                    )}
-                  />
-                </TableRow>
-                {open
-                  ? rows.map((row) => (
-                      <TableRow key={row.forMonth}>
-                        <TableCell className="px-4 py-3 align-middle">
-                          {row.paymentIds.length === 0 ? (
-                            <RowActionButton
-                              label={t("ui.account.recordPayment")}
-                              icon={<RiAddLine />}
-                              onSelect={() => onRecordPayment(row)}
-                            />
-                          ) : (
-                            <div className="flex flex-col items-start gap-1">
-                              {row.paymentIds.map((paymentId) => {
-                                const payment = paymentById.get(paymentId);
-                                if (!payment) {
-                                  return null;
-                                }
-                                return (
-                                  <RowActions
-                                    key={paymentId}
-                                    isDeleting={
-                                      paymentId === deletion.deletingId
-                                    }
-                                    onEdit={() => onEditPayment(payment)}
-                                    onDelete={() => deletion.request(payment)}
-                                  />
-                                );
-                              })}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="px-4 py-3 align-middle font-medium tabular-nums">
-                          {formatForMonth(row.forMonth)}
-                        </TableCell>
-                        <PotIstSollCell pot={row.baseRent} />
-                        <PotIstSollCell pot={row.advance} />
-                        <MonthStatusBadge
-                          base={row.baseRent}
-                          advance={row.advance}
-                          forMonth={row.forMonth}
-                        />
-                      </TableRow>
-                    ))
-                  : null}
-              </Fragment>
-            );
-          })
-        )}
-        {hasHiddenYears ? (
-          <TableRow>
-            <TableCell colSpan={5} className="px-4 py-2">
-              <Button
-                type="button"
-                variant="addLink"
-                size="text"
-                onClick={() => setShowAllYears(true)}
+        </TableHeader>
+        <TableBody>
+          {monthsByYear.length === 0 ? (
+            <TableRow>
+              <TableCell
+                className="py-6 text-center text-muted-foreground"
+                colSpan={6}
               >
-                {t("ui.account.showEarlierYears")}
-              </Button>
-            </TableCell>
-          </TableRow>
-        ) : null}
-      </TableBody>
-    </Table>
+                {t("ui.account.monthsEmpty")}
+              </TableCell>
+            </TableRow>
+          ) : (
+            visibleGroups.map((group) => {
+              const { year, rows } = group;
+              const open = isYearOpen(year);
+              return (
+                <Fragment key={year}>
+                  <TableRow>
+                    <TableCell className="py-2 pr-0 pl-2.5 align-middle">
+                      <Button
+                        type="button"
+                        variant="ghostMuted"
+                        size="icon-xs"
+                        aria-expanded={open}
+                        aria-label={t("ui.account.toggleYear", { year })}
+                        onClick={() => toggleYear(year)}
+                      >
+                        {open ? <IconChevronDown /> : <RiArrowRightSLine />}
+                      </Button>
+                    </TableCell>
+                    <TableCell className="p-0 align-middle">
+                      <button
+                        type="button"
+                        onClick={() => toggleYear(year)}
+                        className="w-full py-3 pl-1 text-left font-semibold tabular-nums"
+                      >
+                        {year}
+                      </button>
+                    </TableCell>
+                    <PotIstSollCell
+                      pot={yearPot(group.baseSollCents, group.baseIstCents)}
+                    />
+                    <PotIstSollCell
+                      pot={yearPot(
+                        group.advanceSollCents,
+                        group.advanceIstCents,
+                      )}
+                    />
+                    <MonthStatusBadge
+                      base={yearPot(group.baseSollCents, group.baseIstCents)}
+                      advance={yearPot(
+                        group.advanceSollCents,
+                        group.advanceIstCents,
+                      )}
+                    />
+                    <TableCell />
+                  </TableRow>
+                  {open
+                    ? rows.map((row) => (
+                        <TableRow key={row.forMonth}>
+                          <TableCell className="border-l-12 border-l-azur-50 p-0" />
+                          <TableCell className="py-3 pl-1 align-middle tabular-nums">
+                            {formatForMonth(row.forMonth)}
+                          </TableCell>
+                          <PotIstSollCell pot={row.baseRent} />
+                          <PotIstSollCell pot={row.advance} />
+                          <MonthStatusBadge
+                            base={row.baseRent}
+                            advance={row.advance}
+                            forMonth={row.forMonth}
+                          />
+                          <TableCell className="py-2 text-right align-middle">
+                            {actionsOf(row)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    : null}
+                </Fragment>
+              );
+            })
+          )}
+          {hasHiddenYears ? (
+            <TableRow>
+              <TableCell colSpan={6} className="py-2 text-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => setShowAllYears(true)}
+                >
+                  <IconChevronDown />
+                  {t("ui.account.showEarlierYears")}
+                </Button>
+              </TableCell>
+            </TableRow>
+          ) : null}
+        </TableBody>
+      </Table>
+    </TableFrame>
   );
 };

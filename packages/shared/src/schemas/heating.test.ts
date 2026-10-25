@@ -82,6 +82,68 @@ describe("heatingSettingsWriteSchema - 70-%-Pflichtfall (§ 7 Abs. 1 Satz 2 Heiz
   });
 });
 
+describe("heatingSettingsWriteSchema - Antworten passen zu den Switches", () => {
+  const parse = (overrides: Record<string, unknown>) =>
+    heatingSettingsWriteSchema.safeParse({
+      ...internalBase,
+      consumptionSharePercent: 70,
+      baseSharePercent: 30,
+      ...overrides,
+    }).success;
+
+  it("verlangt den 70-%-Switch, wenn die Antworten ihn vorschreiben", () => {
+    const answers = {
+      seventyInsulationAnswer: "no",
+      seventyPipesAnswer: "yes",
+    };
+    expect(parse({ ...answers, mandatorySeventyPercent: false })).toBe(false);
+    expect(parse({ ...answers, mandatorySeventyPercent: true })).toBe(true);
+  });
+
+  it("lässt bei unklarer Lage beide Stellungen des Switches zu", () => {
+    const answers = {
+      seventyInsulationAnswer: "no",
+      seventyPipesAnswer: "unknown",
+    };
+    expect(parse({ ...answers, mandatorySeventyPercent: true })).toBe(true);
+    expect(parse({ ...answers, mandatorySeventyPercent: false })).toBe(true);
+  });
+
+  it("prüft die 70-%-Antworten bei anderen Brennstoffen nicht", () => {
+    expect(
+      parse({
+        fuelType: "pellets",
+        seventyInsulationAnswer: "no",
+        seventyPipesAnswer: "yes",
+      }),
+    ).toBe(true);
+  });
+
+  it("setzt die Beschränkung nur bei „Ja“", () => {
+    const note = { co2RestrictionEvidenceNote: "Denkmalschutz" };
+    expect(
+      parse({
+        ...note,
+        co2BuildingRestrictionAnswer: "yes",
+        co2BuildingRestricted: true,
+      }),
+    ).toBe(true);
+    expect(
+      parse({
+        co2BuildingRestrictionAnswer: "unknown",
+        co2BuildingRestricted: false,
+      }),
+    ).toBe(true);
+    expect(
+      parse({
+        ...note,
+        co2BuildingRestrictionAnswer: "unknown",
+        co2BuildingRestricted: true,
+      }),
+    ).toBe(false);
+  });
+});
+
 describe("Werte je Abrechnungszeitraum", () => {
   const period = { periodStart: "2025-01-01", periodEnd: "2025-12-31" };
   const allNull = {

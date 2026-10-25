@@ -1,6 +1,5 @@
 import { todayIso } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiBardFill, RiEditLine, RiUploadCloud2Line } from "@remixicon/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useId, useState } from "react";
@@ -11,6 +10,7 @@ import { FormSheet } from "@/components/form/FormSheet";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/Field";
 import { Switch } from "@/components/ui/Switch";
+import { IconPen, IconSparkle, IconUpload } from "@/lib/icons";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { aiConfigQueryOptions } from "../../lib/aiExtraction";
 import { ApiError, api } from "../../lib/api";
@@ -136,13 +136,13 @@ export const CostEntryCreateSheet = ({
           options={[
             {
               value: "manual",
-              icon: RiEditLine,
+              icon: IconPen,
               title: t("ui.invoices.create.sourceManual"),
               description: t("ui.invoices.create.sourceManualDescription"),
             },
             {
               value: "upload",
-              icon: RiUploadCloud2Line,
+              icon: IconUpload,
               title: t("ui.invoices.create.sourceUpload"),
               description: canExtract
                 ? t("ui.invoices.create.sourceUploadDescription")
@@ -166,7 +166,7 @@ export const CostEntryCreateSheet = ({
               />
               <div className="min-w-0">
                 <FieldLabel htmlFor={autoExtractId}>
-                  <RiBardFill
+                  <IconSparkle
                     aria-hidden={true}
                     className="size-4 shrink-0 text-azur-700"
                   />

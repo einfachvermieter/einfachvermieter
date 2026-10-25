@@ -26,8 +26,8 @@ const tabsListVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "gap-0.5 rounded-lg border border-border bg-muted p-1 group-data-horizontal/tabs:h-auto",
+        // Segmente: Buttons mit Kante nebeneinander, das aktive ist gedrückt in Limette
+        default: "gap-0 p-0 pb-0.5 group-data-horizontal/tabs:h-auto",
         pills:
           "mb-2.5 w-full flex-wrap justify-start gap-2 bg-transparent p-0 group-data-horizontal/tabs:h-auto",
       },
@@ -62,10 +62,10 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "group/tabs-trigger relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 group-data-[variant=default]/tabs-list:data-active:border-border [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "group-data-[variant=default]/tabs-list:h-auto group-data-[variant=default]/tabs-list:flex-none group-data-[variant=default]/tabs-list:gap-1.75 group-data-[variant=default]/tabs-list:rounded-md group-data-[variant=default]/tabs-list:px-4 group-data-[variant=default]/tabs-list:py-1.5 group-data-[variant=default]/tabs-list:text-sm group-data-[variant=default]/tabs-list:font-semibold",
+        "group/tabs-trigger relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-semibold whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "group-data-[variant=default]/tabs-list:-ml-px group-data-[variant=default]/tabs-list:h-8 group-data-[variant=default]/tabs-list:flex-none group-data-[variant=default]/tabs-list:gap-1.75 group-data-[variant=default]/tabs-list:rounded-none group-data-[variant=default]/tabs-list:border-edge group-data-[variant=default]/tabs-list:bg-white group-data-[variant=default]/tabs-list:px-4.5 group-data-[variant=default]/tabs-list:font-heading group-data-[variant=default]/tabs-list:text-sm group-data-[variant=default]/tabs-list:text-foreground group-data-[variant=default]/tabs-list:shadow-key group-data-[variant=default]/tabs-list:first:ml-0 group-data-[variant=default]/tabs-list:first:rounded-l-lg group-data-[variant=default]/tabs-list:last:rounded-r-lg group-data-[variant=default]/tabs-list:hover:bg-schiefer-50 group-data-[variant=default]/tabs-list:data-active:z-10 group-data-[variant=default]/tabs-list:data-active:translate-y-0.5 group-data-[variant=default]/tabs-list:data-active:border-limette-600 group-data-[variant=default]/tabs-list:data-active:bg-limette-100 group-data-[variant=default]/tabs-list:data-active:shadow-none",
         "group-data-[variant=pills]/tabs-list:h-auto group-data-[variant=pills]/tabs-list:flex-none group-data-[variant=pills]/tabs-list:rounded-full group-data-[variant=pills]/tabs-list:border-border group-data-[variant=pills]/tabs-list:bg-card group-data-[variant=pills]/tabs-list:px-3.5 group-data-[variant=pills]/tabs-list:py-1.5 group-data-[variant=pills]/tabs-list:text-sm group-data-[variant=pills]/tabs-list:font-semibold group-data-[variant=pills]/tabs-list:text-muted-foreground group-data-[variant=pills]/tabs-list:not-data-active:hover:bg-schiefer-50 group-data-[variant=pills]/tabs-list:not-data-active:hover:text-foreground group-data-[variant=pills]/tabs-list:data-active:border-azur-100 group-data-[variant=pills]/tabs-list:data-active:bg-azur-100 group-data-[variant=pills]/tabs-list:data-active:text-azur-800",
-        "data-active:bg-card data-active:text-foreground",
+        "group-data-[variant=pills]/tabs-list:data-active:text-azur-800 data-active:text-foreground",
         className,
       )}
       {...props}
@@ -81,7 +81,7 @@ function TabCount({ className, ...props }: ComponentProps<"span">) {
     <span
       data-slot="tab-count"
       className={cn(
-        "text-2xs font-bold text-schiefer-400 group-data-active/tabs-trigger:text-azur-700",
+        "text-xs font-semibold text-schiefer-400 group-data-active/tabs-trigger:text-azur-700",
         className,
       )}
       {...props}

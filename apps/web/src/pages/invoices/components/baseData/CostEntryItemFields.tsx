@@ -1,25 +1,19 @@
-import {
-  co2BasisMismatchKg,
-  containedTaxKinds,
-  formatNumberLoose,
-} from "@einfachvermieter/shared";
-import { RiFundsLine, RiPriceTag3Line } from "@remixicon/react";
+import { RiFundsLine } from "@remixicon/react";
 import { useEffect } from "react";
 import { type UseFormReturn, useWatch } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
-import { CheckboxGroupInput } from "@/components/form/CheckboxGroupInput";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { DateInput } from "@/components/form/DateInput";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
-import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
+import { IconTag } from "@/lib/icons";
 import type { CostType } from "../../../../lib/costs";
 import { t } from "../../../../lib/i18n";
 import type { Unit } from "../../../../lib/units";
+import { CostEntryCo2TaxesSection } from "./CostEntryCo2TaxesSection";
 import {
   type CostEntryFormValues,
-  parseOptionalDecimal,
   unitPriceDisplayConfig,
 } from "./costEntryForm.schema";
 
@@ -126,35 +120,6 @@ export const CostEntryItemFields = ({
     }
   }, [showCo2Inputs, form, index]);
 
-  // Hinweise zu den Berechnungsgrundlagen. Beide sperren das Speichern nicht.
-  const [co2AmountInput, co2CostInput, co2EnergyInput, co2EmissionFactorInput] =
-    useWatch({
-      control: form.control,
-      name: [
-        `items.${index}.co2AmountInput`,
-        `items.${index}.co2CostInput`,
-        `items.${index}.co2EnergyInput`,
-        `items.${index}.co2EmissionFactorInput`,
-      ],
-    });
-  const co2AmountKg = parseOptionalDecimal(co2AmountInput);
-  const co2EnergyKwh = parseOptionalDecimal(co2EnergyInput);
-  const co2EmissionFactor = parseOptionalDecimal(co2EmissionFactorInput);
-  // Sobald eine der vier Angaben eingetragen ist, gehören alle vier dazu.
-  const co2Inputs = [
-    co2AmountKg,
-    parseOptionalDecimal(co2CostInput),
-    co2EnergyKwh,
-    co2EmissionFactor,
-  ];
-  const co2BasisMissing =
-    co2Inputs.some((value) => value !== null) &&
-    co2Inputs.some((value) => value === null);
-  const co2MismatchKg =
-    co2AmountKg !== null && co2EnergyKwh !== null && co2EmissionFactor !== null
-      ? co2BasisMismatchKg(co2AmountKg * 1000, co2EnergyKwh, co2EmissionFactor)
-      : null;
-
   // Wechselt die Position auf eine Nicht-Heiz-Kostenart, die Steuern-/
   // Abgaben-Eingabe verwerfen. Sonst landet ein unsichtbarer Wert im Submit.
   useEffect(() => {
@@ -169,7 +134,7 @@ export const CostEntryItemFields = ({
   }, [showContainedTaxesInput, form, index]);
 
   return (
-    <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
       <div className="sm:col-span-2">
         <SelectInput
           control={form.control}
@@ -230,7 +195,7 @@ export const CostEntryItemFields = ({
                 options={[
                   {
                     value: "fixed",
-                    icon: RiPriceTag3Line,
+                    icon: IconTag,
                     title: t("ui.costs.entryFields.priceModeFixed"),
                     description: t(
                       "ui.costs.entryFields.priceModeFixedDescription",
@@ -274,100 +239,15 @@ export const CostEntryItemFields = ({
           />
         </div>
       ) : null}
-      {showCo2Inputs ? (
-        <>
-          <TextInput
-            control={form.control}
-            name={`items.${index}.co2AmountInput`}
-            label={t("ui.costs.entryFields.co2Amount")}
-            description={t("ui.costs.entryFields.co2AmountDescription")}
-            optional={true}
-            inputMode="decimal"
-            placeholder={t("ui.common.placeholders.quantity")}
-            suffix="kg"
+      {showCo2Inputs || showContainedTaxesInput ? (
+        <div className="sm:col-span-2">
+          <CostEntryCo2TaxesSection
+            form={form}
+            index={index}
+            showCo2Inputs={showCo2Inputs}
+            showContainedTaxesInput={showContainedTaxesInput}
           />
-          <TextInput
-            control={form.control}
-            name={`items.${index}.co2CostInput`}
-            label={t("ui.costs.entryFields.co2Cost")}
-            description={t("ui.costs.entryFields.co2CostDescription")}
-            optional={true}
-            inputMode="decimal"
-            placeholder={t("ui.common.placeholders.amount")}
-            suffix="€"
-          />
-          <TextInput
-            control={form.control}
-            name={`items.${index}.co2EnergyInput`}
-            label={t("ui.costs.entryFields.co2Energy")}
-            description={t("ui.costs.entryFields.co2EnergyDescription")}
-            optional={true}
-            inputMode="decimal"
-            placeholder={t("ui.common.placeholders.quantity")}
-            suffix="kWh"
-          />
-          <TextInput
-            control={form.control}
-            name={`items.${index}.co2EmissionFactorInput`}
-            label={t("ui.costs.entryFields.co2EmissionFactor")}
-            description={t("ui.costs.entryFields.co2EmissionFactorDescription")}
-            optional={true}
-            inputMode="decimal"
-            suffix={t("ui.costs.entryFields.co2EmissionFactorUnit")}
-          />
-          {co2BasisMissing ? (
-            <div className="sm:col-span-2">
-              <Alert variant="warning">
-                <AlertDescription>
-                  {t("ui.costs.entryFields.co2BasisMissingHint")}
-                </AlertDescription>
-              </Alert>
-            </div>
-          ) : null}
-          {co2MismatchKg !== null && co2AmountKg !== null ? (
-            <div className="sm:col-span-2">
-              <Alert variant="warning">
-                <AlertDescription>
-                  {t("ui.costs.entryFields.co2BasisMismatchHint", {
-                    computed: formatNumberLoose(co2MismatchKg, 0),
-                    entered: formatNumberLoose(co2AmountKg, 0),
-                  })}
-                </AlertDescription>
-              </Alert>
-            </div>
-          ) : null}
-        </>
-      ) : null}
-      {showContainedTaxesInput ? (
-        <>
-          <div className="sm:col-span-2">
-            <TextInput
-              control={form.control}
-              name={`items.${index}.containedTaxesInput`}
-              label={t("ui.costs.entryFields.containedTaxes")}
-              description={t("ui.costs.entryFields.containedTaxesDescription")}
-              optional={true}
-              inputMode="decimal"
-              placeholder={t("ui.common.placeholders.amount")}
-              suffix="€"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <CheckboxGroupInput
-              control={form.control}
-              name={`items.${index}.containedTaxKinds`}
-              label={t("ui.costs.entryFields.containedTaxKinds")}
-              description={t(
-                "ui.costs.entryFields.containedTaxKindsDescription",
-              )}
-              optional={true}
-              options={containedTaxKinds.map((kind) => ({
-                value: kind,
-                label: t(`ui.costs.taxKinds.${kind}`),
-              }))}
-            />
-          </div>
-        </>
+        </div>
       ) : null}
     </FieldGroup>
   );

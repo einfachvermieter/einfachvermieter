@@ -370,14 +370,26 @@ describe("Schema der Wohnung", () => {
     };
 
     expect(
-      unitFormSchema.safeParse({ ...form, heatingAreaSqm: "0" }).success,
+      unitFormSchema.safeParse({
+        ...form,
+        heatingAreaDiffers: true,
+        heatingAreaSqm: "0",
+      }).success,
     ).toBe(true);
     expect(
-      unitFormSchema.safeParse({ ...form, heatingAreaSqm: "-1" }).success,
+      unitFormSchema.safeParse({
+        ...form,
+        heatingAreaDiffers: true,
+        heatingAreaSqm: "-1",
+      }).success,
     ).toBe(false);
     expect(
-      unitFormSchema.safeParse({ ...form, areaSqm: "0", heatingAreaSqm: "" })
-        .success,
+      unitFormSchema.safeParse({
+        ...form,
+        areaSqm: "0",
+        heatingAreaDiffers: false,
+        heatingAreaSqm: "",
+      }).success,
     ).toBe(false);
   });
 });

@@ -16,7 +16,9 @@ export const EntityCell = ({
   <div className="flex items-center gap-3">
     {tile}
     <div className="min-w-0">
-      <div className="truncate text-sm font-medium text-foreground">{name}</div>
+      <div className="truncate text-sm font-semibold text-foreground">
+        {name}
+      </div>
       {subline ? (
         <div className="mt-0.5 truncate text-xs text-muted-foreground">
           {subline}

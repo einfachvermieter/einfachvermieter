@@ -1,23 +1,27 @@
 import type { DepositRow } from "@einfachvermieter/shared";
 import { formatEur } from "@einfachvermieter/shared";
-import { MiniKpiRow } from "@/components/common/MiniKpiRow";
+import { ResultRows } from "@/components/common/ResultRows";
 import { Badge } from "@/components/ui/Badge";
 import { t } from "@/lib/i18n";
 
 /**
- * Kautions-Übersicht als KPI-Tiles: vereinbart (Soll) vs.
- * eingegangen (Ist) + Status-Pill.
+ * Kautions-Übersicht als Wertezeilen: vereinbart (Soll), eingegangen (Ist)
+ * und Status
  */
 export const DepositSummary = ({ row }: { row: DepositRow | null }) => {
   if (!row) {
     return (
-      <p className="text-muted-foreground">{t("ui.account.depositEmpty")}</p>
+      <p className="text-sm text-muted-foreground">
+        {t("ui.account.depositEmpty")}
+      </p>
     );
   }
 
   if (row.pot.sollCents === 0 && row.pot.istCents === 0) {
     return (
-      <p className="text-muted-foreground">{t("ui.account.depositNone")}</p>
+      <p className="text-sm text-muted-foreground">
+        {t("ui.account.depositNone")}
+      </p>
     );
   }
 
@@ -32,8 +36,8 @@ export const DepositSummary = ({ row }: { row: DepositRow | null }) => {
     );
 
   return (
-    <MiniKpiRow
-      items={[
+    <ResultRows
+      rows={[
         {
           label: t("ui.account.depositSoll"),
           value: formatEur(row.pot.sollCents),

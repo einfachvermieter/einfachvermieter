@@ -44,7 +44,7 @@ export const TenantAddressSheet = ({
       onSubmit={onSubmit}
       onClose={onClose}
     >
-      <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
         <DateInput
           control={form.control}
           name="startDate"

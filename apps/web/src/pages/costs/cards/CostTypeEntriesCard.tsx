@@ -1,9 +1,9 @@
 import { formatDate, formatEur } from "@einfachvermieter/shared";
-import { RiAddLine, RiReceiptLine } from "@remixicon/react";
 import { DomainLink } from "@/components/common/DomainLink";
 import { EmptyNote } from "@/components/common/EmptyNote";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Button } from "@/components/ui/Button";
+import { TableFrame } from "@/components/common/TableFrame";
 import {
   Table,
   TableBody,
@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
+import { IconReceipt } from "@/lib/icons";
 import type { CostTypeEntryRow } from "../../../lib/costs";
 import { formatPeriod } from "../../../lib/format";
 import { t } from "../../../lib/i18n";
@@ -28,19 +29,20 @@ export const CostTypeEntriesCard = ({
   onAdd: () => void;
 }) => (
   <SectionCard
-    icon={RiReceiptLine}
+    icon={IconReceipt}
     title={t("ui.costs.entriesTitle")}
     action={
-      <Button type="button" variant="addLink" size="text" onClick={onAdd}>
-        <RiAddLine />
-        {t("ui.costs.addEntry")}
-      </Button>
+      <SectionAction
+        kind="add"
+        label={t("ui.costs.addEntry")}
+        onClick={onAdd}
+      />
     }
   >
     {rows.length === 0 ? (
       <EmptyNote>{t("ui.costs.detail.entriesEmpty")}</EmptyNote>
     ) : (
-      <div className="-mx-3.5">
+      <TableFrame>
         <Table>
           <TableHeader>
             <TableRow>
@@ -77,7 +79,7 @@ export const CostTypeEntriesCard = ({
             ))}
           </TableBody>
         </Table>
-      </div>
+      </TableFrame>
     )}
   </SectionCard>
 );

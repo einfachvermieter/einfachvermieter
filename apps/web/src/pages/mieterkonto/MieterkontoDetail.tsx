@@ -6,21 +6,19 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import {
-  RiAddLine,
   RiBankCard2Line,
-  RiFileList3Line,
   RiMoneyEuroCircleLine,
-  RiReceiptLine,
   RiSafe2Line,
 } from "@remixicon/react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { EmptyNote } from "../../components/common/EmptyNote";
+import { SectionAction } from "@/components/common/SectionAction";
+import { TableFrame } from "@/components/common/TableFrame";
+import { IconDoc, IconReceipt } from "@/lib/icons";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { SectionCard } from "../../components/common/SectionCard";
 import { FormSkeleton } from "../../components/FormSkeleton";
-import { Button } from "../../components/ui/Button";
 import {
   type FeeRow,
   tenantBalanceQueryOptions,
@@ -94,6 +92,7 @@ export const MieterkontoDetail = () => {
         date: formatDate(payment.paymentDate),
         amount: formatEur(paymentDisplayAmountCents(payment)),
       }),
+    hint: t("ui.payments.confirmDeleteHint"),
   });
 
   const feeDeletion = useDeleteResource<FeeDeletionTarget>({
@@ -162,10 +161,7 @@ export const MieterkontoDetail = () => {
     : t("ui.account.detail.mieteDescriptionPlain");
 
   const addLink = (label: string, onClick: () => void) => (
-    <Button variant="addLink" size="text" type="button" onClick={onClick}>
-      <RiAddLine />
-      {label}
-    </Button>
+    <SectionAction kind="add" label={label} onClick={onClick} />
   );
 
   return (
@@ -183,7 +179,7 @@ export const MieterkontoDetail = () => {
                 openPaymentForm(null),
               )}
             >
-              <div className="-mx-2">
+              <div>
                 <MonthGridTable
                   monthRows={monthRows ?? []}
                   payments={payments}
@@ -220,7 +216,7 @@ export const MieterkontoDetail = () => {
               )}
             >
               {otherPayments.length > 0 ? (
-                <div className="-mx-2">
+                <TableFrame>
                   <AccountPaymentsTable
                     rows={otherPayments}
                     deletion={paymentDeletion}
@@ -228,28 +224,24 @@ export const MieterkontoDetail = () => {
                       setPaymentRequest({ mode: "edit", payment })
                     }
                   />
-                </div>
-              ) : (
-                <EmptyNote>{t("ui.account.detail.emptyPayments")}</EmptyNote>
-              )}
+                </TableFrame>
+              ) : null}
             </SectionCard>
 
             <SectionCard
-              icon={RiFileList3Line}
+              icon={IconDoc}
               title={t("ui.account.settlementsHeading")}
               description={t("ui.account.detail.settlementsDescription")}
             >
               {settlementRows && settlementRows.length > 0 ? (
-                <div className="-mx-2">
+                <TableFrame>
                   <SettlementsTable rows={settlementRows} />
-                </div>
-              ) : (
-                <EmptyNote>{t("ui.account.detail.emptySettlements")}</EmptyNote>
-              )}
+                </TableFrame>
+              ) : null}
             </SectionCard>
 
             <SectionCard
-              icon={RiReceiptLine}
+              icon={IconReceipt}
               title={t("ui.account.feesHeading")}
               description={t("ui.account.detail.feesDescription")}
               action={addLink(t("ui.account.fee.add"), () =>
@@ -257,7 +249,7 @@ export const MieterkontoDetail = () => {
               )}
             >
               {feeRows && feeRows.length > 0 ? (
-                <div className="-mx-2">
+                <TableFrame>
                   <FeesTable
                     rows={feeRows}
                     deletion={feeDeletion}
@@ -271,10 +263,8 @@ export const MieterkontoDetail = () => {
                       })
                     }
                   />
-                </div>
-              ) : (
-                <EmptyNote>{t("ui.account.detail.emptyFees")}</EmptyNote>
-              )}
+                </TableFrame>
+              ) : null}
             </SectionCard>
           </div>
         )}

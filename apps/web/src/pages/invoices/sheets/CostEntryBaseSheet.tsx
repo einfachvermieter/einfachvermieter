@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiReceiptLine } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { FormSheet } from "@/components/form/FormSheet";
+import { IconReceipt } from "@/lib/icons";
 import { t } from "../../../lib/i18n";
 import { CostEntryBaseFields } from "../components/baseData/CostEntryBaseFields";
 import {
@@ -31,7 +31,7 @@ export const CostEntryBaseSheet = ({
   return (
     <FormSheet
       form={form}
-      icon={RiReceiptLine}
+      icon={IconReceipt}
       title={t("ui.invoices.detail.basicsSection")}
       submitLabel={t("ui.common.action.save")}
       onSubmit={onSubmit}

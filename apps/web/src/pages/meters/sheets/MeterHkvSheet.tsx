@@ -1,9 +1,9 @@
 import type { MeterFormValues } from "@einfachvermieter/shared";
 import { meterFormSchema } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiFireLine } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { FormSheet } from "@/components/form/FormSheet";
+import { IconFlame } from "@/lib/icons";
 import { t } from "../../../lib/i18n";
 import { HkvFields } from "../components/hkv/HkvFields";
 
@@ -28,7 +28,7 @@ export const MeterHkvSheet = ({
   return (
     <FormSheet
       form={form}
-      icon={RiFireLine}
+      icon={IconFlame}
       title={t("ui.meters.detail.hkvSection")}
       submitLabel={t("ui.common.action.save")}
       onSubmit={onSubmit}

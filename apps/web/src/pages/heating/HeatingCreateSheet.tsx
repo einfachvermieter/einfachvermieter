@@ -8,12 +8,13 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiCalendarLine, RiFireLine, RiPercentLine } from "@remixicon/react";
+import { RiCalendarLine, RiPercentLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { FormSheet } from "@/components/form/FormSheet";
 import { SheetSection } from "@/components/form/SheetSection";
+import { IconFlame } from "@/lib/icons";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { domainVisuals } from "../../lib/domainVisuals";
 import {
@@ -130,7 +131,7 @@ const HeatingCreateForm = ({
       )}
       {mode === "internal" ? (
         <SheetSection
-          icon={RiFireLine}
+          icon={IconFlame}
           title={t("ui.heating.installation.title")}
         >
           <HeatingInstallationFields

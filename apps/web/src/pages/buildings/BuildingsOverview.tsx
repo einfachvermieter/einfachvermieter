@@ -1,8 +1,8 @@
-import { RiAddLine, RiCommunityLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { IconPlus } from "@/lib/icons";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -87,13 +87,13 @@ export const BuildingsOverview = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={<PageHeaderIcon icon={RiCommunityLine} />}
+        tile={<PageHeaderIcon domain="buildings" />}
         title={t("ui.buildings.title")}
         sub={sub}
         subLoading={!data}
         action={
           <Button onClick={() => setCreateOpen(true)}>
-            <RiAddLine />
+            <IconPlus />
             <span className="hidden sm:inline">{t("ui.buildings.add")}</span>
           </Button>
         }

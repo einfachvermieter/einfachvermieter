@@ -1,8 +1,8 @@
-import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { IconPlus } from "@/lib/icons";
 import { DataTable } from "../../components/common/DataTable";
 import { DomainLink } from "../../components/common/DomainLink";
 import { EntityCell } from "../../components/common/EntityCell";
@@ -23,7 +23,7 @@ import {
   costTypeCategoryLabel,
   costTypesOverviewQueryOptions,
 } from "../../lib/costs";
-import { costTypeVisual, domainVisuals } from "../../lib/domainVisuals";
+import { costTypeVisual } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
 import { statsQueryOptions } from "../../lib/stats";
@@ -114,22 +114,20 @@ export const CostsOverview = () => {
   }
 
   const sub = data
-    ? [t("ui.costs.sub.count", { count: data.total }), building?.name]
-        .filter(Boolean)
-        .join(t("ui.common.separators.bullet"))
+    ? [t("ui.costs.sub.count", { count: data.total })].filter(Boolean)
     : undefined;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={<PageHeaderIcon icon={domainVisuals.costTypes.icon} />}
+        tile={<PageHeaderIcon domain="costTypes" />}
         title={t("ui.costs.title")}
         sub={sub}
         subLoading={!data}
         action={
           canAddCostType ? (
             <Button type="button" onClick={() => setCreateOpen(true)}>
-              <RiAddLine />
+              <IconPlus />
               <span className="hidden sm:inline">{t("ui.costs.addType")}</span>
             </Button>
           ) : undefined

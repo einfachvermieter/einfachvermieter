@@ -13,7 +13,6 @@ import {
   roleRequiresUnit,
   UNIT_NONE,
 } from "@einfachvermieter/shared";
-import { RiDashboard2Line } from "@remixicon/react";
 import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
@@ -23,6 +22,7 @@ import { SelectInput } from "@/components/form/SelectInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
+import { IconGauge } from "@/lib/icons";
 import { t } from "../../../../lib/i18n";
 import { measurementUnitLabel } from "../../../../lib/meters";
 import type { Unit } from "../../../../lib/units";
@@ -129,7 +129,7 @@ export const MeterBaseFields = ({
   }, [selectedRole, isVirtual, form]);
 
   const fields = (
-    <FieldGroup className="gap-4">
+    <FieldGroup>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <TextInput
           control={form.control}
@@ -195,7 +195,7 @@ export const MeterBaseFields = ({
         ) : null}
       </div>
       <Disclose label={t("ui.meters.detail.moreFields")}>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-3">
           <TextInput
             control={form.control}
             name="room"
@@ -236,10 +236,7 @@ export const MeterBaseFields = ({
   }
 
   return (
-    <SectionCard
-      icon={RiDashboard2Line}
-      title={t("ui.meters.detail.baseSection")}
-    >
+    <SectionCard icon={IconGauge} title={t("ui.meters.detail.baseSection")}>
       {fields}
     </SectionCard>
   );

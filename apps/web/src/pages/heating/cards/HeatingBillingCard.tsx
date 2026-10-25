@@ -1,10 +1,10 @@
 import { formatDate, type HeatingSettings } from "@einfachvermieter/shared";
-import { RiPencilLine, RiPercentLine } from "@remixicon/react";
+import { RiPercentLine } from "@remixicon/react";
 import type { ResultRow } from "@/components/common/ResultRows";
 import { ResultRows } from "@/components/common/ResultRows";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
 import { SplitBar } from "@/components/common/SplitBar";
-import { Button } from "@/components/ui/Button";
 import { t } from "../../../lib/i18n";
 import { toBillingType } from "../billingType";
 
@@ -51,10 +51,13 @@ export const HeatingBillingCard = ({
       label: t("ui.heating.fields.baseMethod"),
       value: t(`ui.heating.baseMethods.${version.baseMethod}`),
     });
-    rows.push({
-      label: t("ui.heating.fields.mandatorySeventyPercent"),
-      value: yesNo(version.mandatorySeventyPercent),
-    });
+    // Die Vorgabe gibt es nur bei Öl- und Gasheizungen
+    if (version.fuelType === "oil" || version.fuelType === "gas") {
+      rows.push({
+        label: t("ui.heating.fields.mandatorySeventyPercent"),
+        value: yesNo(version.mandatorySeventyPercent),
+      });
+    }
   } else if (version.mode === "external") {
     rows.push({
       label: t("ui.heating.fields.includeBillingInfo"),
@@ -67,10 +70,11 @@ export const HeatingBillingCard = ({
       icon={RiPercentLine}
       title={t("ui.heating.cards.billing")}
       action={
-        <Button type="button" variant="addLink" size="text" onClick={onEdit}>
-          <RiPencilLine />
-          {t("ui.common.action.edit")}
-        </Button>
+        <SectionAction
+          kind="edit"
+          label={t("ui.common.action.edit")}
+          onClick={onEdit}
+        />
       }
     >
       <ResultRows rows={rows} />

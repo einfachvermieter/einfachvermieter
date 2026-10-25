@@ -19,6 +19,7 @@ export type HeatingMode = "internal" | "external" | "none";
 export type HeatingBaseMethod = "living_area" | "heated_area";
 export type HeatingConsumptionMethod = "heat_meter" | "heat_cost_allocator";
 export type HeatingProrationMethod = "linear" | "degree_days";
+export type HeatingFactAnswer = "yes" | "no" | "unknown";
 export type HeatingType =
   | "central_with_hot_water"
   | "central_without_hot_water";
@@ -308,6 +309,15 @@ export type HeatingSetting = {
    * Abrechnung druckt. NULL ohne Beschränkung.
    */
   co2RestrictionEvidenceNote: Opt<string | null>;
+  /**
+   * Antworten des Vermieters auf die Fragen hinter den Switches
+   * (`yes`/`no`/`unknown`), NULL solange nicht gefragt. Sie zeigen nur,
+   * was angegeben wurde; gerechnet wird mit den Switches.
+   */
+  seventyInsulationAnswer: Opt<HeatingFactAnswer | null>;
+  seventyPipesAnswer: Opt<HeatingFactAnswer | null>;
+  co2BuildingRestrictionAnswer: Opt<HeatingFactAnswer | null>;
+  co2SupplyRestrictionAnswer: Opt<HeatingFactAnswer | null>;
   validFrom: string;
   validTo: string | null;
   createdAt: Opt<string>;
@@ -398,6 +408,26 @@ export const HeatingSettingSchema = new EntitySchema<HeatingSetting>({
     co2RestrictionEvidenceNote: {
       type: "text",
       fieldName: "co2_restriction_evidence_note",
+      nullable: true,
+    },
+    seventyInsulationAnswer: {
+      type: "string",
+      fieldName: "seventy_insulation_answer",
+      nullable: true,
+    },
+    seventyPipesAnswer: {
+      type: "string",
+      fieldName: "seventy_pipes_answer",
+      nullable: true,
+    },
+    co2BuildingRestrictionAnswer: {
+      type: "string",
+      fieldName: "co2_building_restriction_answer",
+      nullable: true,
+    },
+    co2SupplyRestrictionAnswer: {
+      type: "string",
+      fieldName: "co2_supply_restriction_answer",
       nullable: true,
     },
     validFrom: {

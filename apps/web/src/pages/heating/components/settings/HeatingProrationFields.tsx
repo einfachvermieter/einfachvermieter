@@ -26,7 +26,7 @@ export const HeatingProrationFields = ({
   }));
 
   return (
-    <FieldGroup className="gap-4">
+    <FieldGroup>
       <SelectInput
         control={form.control}
         name="prorationMethod"

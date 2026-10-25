@@ -1,7 +1,6 @@
-import { RiPencilLine } from "@remixicon/react";
 import { ResultRows } from "@/components/common/ResultRows";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
-import { Button } from "@/components/ui/Button";
 import {
   type CostTypeDetail,
   costTypeAllocationText,
@@ -29,10 +28,11 @@ export const CostTypeBaseCard = ({
       icon={costTypeVisual(costType).icon}
       title={t("ui.costs.detail.sectionTitle")}
       action={
-        <Button type="button" variant="addLink" size="text" onClick={onEdit}>
-          <RiPencilLine />
-          {t("ui.common.action.edit")}
-        </Button>
+        <SectionAction
+          kind="edit"
+          label={t("ui.common.action.edit")}
+          onClick={onEdit}
+        />
       }
     >
       <ResultRows

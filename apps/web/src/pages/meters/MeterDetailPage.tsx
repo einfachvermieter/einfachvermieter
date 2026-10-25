@@ -1,25 +1,14 @@
 import { formatNumber, UNIT_NONE } from "@einfachvermieter/shared";
-import {
-  RiDashboard2Line,
-  RiDeleteBinLine,
-  RiFireLine,
-  RiMoreLine,
-  RiSubtractLine,
-} from "@remixicon/react";
+import { RiSubtractLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
+import { PageDeleteAction } from "@/components/common/PageDeleteAction";
+import { IconFlame, IconGauge } from "@/lib/icons";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { RowListSection } from "../../components/common/RowListSection";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { HelpHint } from "../../components/help/HelpHint";
-import { Button } from "../../components/ui/Button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../components/ui/DropdownMenu";
 import { allocationLabel, costTypesQueryOptions } from "../../lib/costs";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
@@ -79,7 +68,8 @@ export const MeterDetailPage = () => {
     invalidateKeys: [["meters"]],
     title: t("ui.meters.confirmDelete"),
     describe: (target) =>
-      t("ui.meters.confirmDeleteMessage", { label: target.label }),
+      t("ui.meters.confirmDeleteQuestion", { label: target.label }),
+    hint: t("ui.meters.confirmDeleteHint"),
     onDeleted: goBack,
   });
 
@@ -103,26 +93,7 @@ export const MeterDetailPage = () => {
         className="pb-6"
         action={
           meter ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild={true}>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label={t("ui.common.a11y.more")}
-                >
-                  <RiMoreLine />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-56">
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={() => deletion.request(meter)}
-                >
-                  <RiDeleteBinLine />
-                  {t("ui.meters.detail.deleteAction")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <PageDeleteAction onClick={() => deletion.request(meter)} />
           ) : undefined
         }
       >
@@ -265,7 +236,7 @@ const MeterCards = ({
   return (
     <div>
       <MeterViewCard
-        icon={RiDashboard2Line}
+        icon={IconGauge}
         title={t("ui.meters.detail.baseSection")}
         rows={[
           { label: t("ui.meters.fields.label"), value: meter.label },
@@ -295,7 +266,7 @@ const MeterCards = ({
 
       {isHkv ? (
         <MeterViewCard
-          icon={RiFireLine}
+          icon={IconFlame}
           title={t("ui.meters.detail.hkvSection")}
           rows={[
             {
@@ -352,7 +323,7 @@ const MeterCards = ({
 
       {meter.type === "gas" ? (
         <RowListSection<GasFactorRowValues>
-          icon={RiFireLine}
+          icon={IconFlame}
           title={t("ui.meters.gasFactors.title")}
           addLabel={t("ui.meters.gasFactors.addPeriod")}
           emptyHint={t("ui.meters.gasFactors.emptyHint")}

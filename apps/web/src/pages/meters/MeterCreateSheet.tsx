@@ -7,17 +7,13 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  RiDashboard2Line,
-  RiFireLine,
-  RiPriceTag3Line,
-  RiSubtractLine,
-} from "@remixicon/react";
+import { RiSubtractLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { FormSheet } from "@/components/form/FormSheet";
 import { SheetSection } from "@/components/form/SheetSection";
+import { IconFlame, IconGauge, IconTag } from "@/lib/icons";
 import { useActiveBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { costTypesQueryOptions } from "../../lib/costs";
@@ -85,7 +81,7 @@ export const MeterCreateSheet = ({
       onClose={onClose}
     >
       <SheetSection
-        icon={RiDashboard2Line}
+        icon={IconGauge}
         title={t("ui.meters.detail.baseSection")}
         divider={false}
       >
@@ -93,10 +89,7 @@ export const MeterCreateSheet = ({
       </SheetSection>
 
       {isHkv ? (
-        <SheetSection
-          icon={RiFireLine}
-          title={t("ui.meters.detail.hkvSection")}
-        >
+        <SheetSection icon={IconFlame} title={t("ui.meters.detail.hkvSection")}>
           <HkvFields form={form} variant="sheet" />
         </SheetSection>
       ) : null}
@@ -112,7 +105,7 @@ export const MeterCreateSheet = ({
 
       {isHkv ? null : (
         <SheetSection
-          icon={RiPriceTag3Line}
+          icon={IconTag}
           title={t("ui.meters.detail.assignmentSection")}
           description={t("ui.meters.detail.assignmentDescription")}
         >

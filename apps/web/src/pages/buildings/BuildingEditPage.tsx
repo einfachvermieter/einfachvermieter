@@ -1,25 +1,16 @@
 import { type BuildingCreateDto, formatNumber } from "@einfachvermieter/shared";
-import { RiDeleteBinLine, RiMoreLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { PageDeleteAction } from "@/components/common/PageDeleteAction";
 import { DomainLink } from "../../components/common/DomainLink";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { MiniKpiRow } from "../../components/common/MiniKpiRow";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
-import { Button } from "../../components/ui/Button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../components/ui/DropdownMenu";
 import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { type Building, buildingQueryOptions } from "../../lib/buildings";
-import { domainVisuals } from "../../lib/domainVisuals";
 import { t } from "../../lib/i18n";
 import { unitsOverviewQueryOptions } from "../../lib/units";
 import { useCrudMutation } from "../../lib/useCrudMutation";
@@ -64,7 +55,8 @@ export const BuildingEditPage = () => {
     invalidateKeys: [["buildings"], ["stats"]],
     title: t("ui.buildings.confirmDelete"),
     describe: (target) =>
-      t("ui.buildings.confirmDeleteWithUnits", { name: target.name }),
+      t("ui.buildings.confirmDeleteQuestion", { name: target.name }),
+    hint: t("ui.buildings.confirmDeleteHint"),
     onDeleted: () => navigate({ to: "/gebaeude" }),
   });
 
@@ -82,7 +74,7 @@ export const BuildingEditPage = () => {
     return (
       <div className="max-w-225 pb-6">
         <PageHeader
-          tile={<PageHeaderIcon icon={domainVisuals.buildings.icon} />}
+          tile={<PageHeaderIcon domain="buildings" />}
           title=""
           loading={true}
         />
@@ -98,15 +90,23 @@ export const BuildingEditPage = () => {
     <>
       <div className="max-w-225 pb-6">
         <PageHeader
-          tile={<PageHeaderIcon icon={domainVisuals.buildings.icon} />}
+          tile={<PageHeaderIcon domain="buildings" />}
           title={building.name}
           sub={
-            <span className="flex flex-wrap items-center gap-2">
+            <span className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
               <span>
                 {[
                   building.addressStreet,
                   `${building.addressPostalCode} ${building.addressCity}`,
-                ].join(t("ui.common.separators.bullet"))}
+                ].join(t("ui.common.separators.comma"))}
+              </span>
+              <span>
+                {t("ui.units.sub.count", { count: building.unitsCount })}
+              </span>
+              <span>
+                {t("ui.common.measures.sqm", {
+                  value: formatNumber(totalArea, 2),
+                })}
               </span>
               <DomainLink to="/mieter" search={{ buildingId }}>
                 {t("ui.navigation.tenants")}
@@ -120,50 +120,11 @@ export const BuildingEditPage = () => {
             </span>
           }
           action={
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild={true}>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label={t("ui.common.a11y.more")}
-                >
-                  <RiMoreLine />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-56">
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={() => deletion.request(building)}
-                >
-                  <RiDeleteBinLine />
-                  {t("ui.buildings.actions.delete")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <PageDeleteAction onClick={() => deletion.request(building)} />
           }
         />
 
         <div className="space-y-5">
-          <MiniKpiRow
-            columns={3}
-            items={[
-              {
-                label: t("ui.navigation.units"),
-                value: building.unitsCount,
-              },
-              {
-                label: t("ui.units.fields.area"),
-                value: t("ui.common.measures.sqm", {
-                  value: formatNumber(totalArea, 2),
-                }),
-              },
-              {
-                label: t("ui.buildings.activeTenants"),
-                value: building.activeTenantsCount,
-              },
-            ]}
-          />
-
           <div>
             <BuildingBaseCard
               building={building}

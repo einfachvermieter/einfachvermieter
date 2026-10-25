@@ -6,24 +6,16 @@ import {
 } from "@einfachvermieter/shared";
 import {
   RiBankCardLine,
-  RiDeleteBinLine,
-  RiGroupLine,
   RiMapPinLine,
   RiMoneyEuroCircleLine,
-  RiMoreLine,
 } from "@remixicon/react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { PageDeleteAction } from "@/components/common/PageDeleteAction";
 import { RowListSection } from "@/components/common/RowListSection";
 import { HelpHint } from "@/components/help/HelpHint";
-import { Button } from "../../components/ui/Button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../components/ui/DropdownMenu";
+import { IconUsers } from "@/lib/icons";
 import { formatPeriod, isPeriodActiveToday } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { contractPartyNames, tenantQueryOptions } from "../../lib/tenants";
@@ -123,15 +115,17 @@ export const TenantEditPage = () => {
     title: t("ui.tenants.confirmDeleteTenant"),
     describe: () =>
       contractParties
-        ? t("ui.tenants.confirmDeleteTenantMessage", {
+        ? t("ui.tenants.confirmDeleteTenantQuestion", {
             residents: contractParties,
             unit: unit?.name ?? "",
             period: formatPeriod(tenant.startDate, tenant.endDate),
           })
-        : t("ui.tenants.confirmDeleteTenantMessageNoResidents", {
+        : t("ui.tenants.confirmDeleteTenantQuestionNoResidents", {
             unit: unit?.name ?? "",
             period: formatPeriod(tenant.startDate, tenant.endDate),
           }),
+    consequence: t("ui.tenants.confirmDeleteTenantConsequence"),
+    hint: t("ui.tenants.confirmDeleteTenantHint"),
     onDeleted: () =>
       navigate({ to: "/mieter", search: { buildingId: undefined } }),
   });
@@ -172,26 +166,9 @@ export const TenantEditPage = () => {
         active="stammdaten"
         className="pb-6"
         action={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild={true}>
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label={t("ui.common.a11y.more")}
-              >
-                <RiMoreLine />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-56">
-              <DropdownMenuItem
-                variant="destructive"
-                onSelect={() => deletion.request({ id: tenantId })}
-              >
-                <RiDeleteBinLine />
-                {t("ui.tenant.actions.delete")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <PageDeleteAction
+            onClick={() => deletion.request({ id: tenantId })}
+          />
         }
       >
         <div>
@@ -202,7 +179,7 @@ export const TenantEditPage = () => {
           />
 
           <RowListSection
-            icon={RiGroupLine}
+            icon={IconUsers}
             title={t("ui.tenant.fields.residents")}
             titleHelp={<HelpHint>{t("ui.tenant.residentsHelp")}</HelpHint>}
             addLabel={t("ui.tenant.addResident")}

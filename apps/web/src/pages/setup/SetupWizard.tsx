@@ -11,6 +11,7 @@ import { type FieldPath, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Description } from "@/components/common/Description";
 import { ExternalLink } from "@/components/common/ExternalLink";
+import { Spinner } from "@/components/common/Spinner";
 import { PasswordPolicyHint } from "@/components/form/PasswordPolicyHint";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -168,10 +169,9 @@ const toDto = (values: SetupFormValues, withAdmin: boolean): SetupDto => ({
 const primaryButtonLabel = (params: {
   stepKey: StepKey;
   isLastStep: boolean;
-  isPending: boolean;
   currentStepEmpty: boolean;
 }): string => {
-  const { stepKey, isLastStep, isPending, currentStepEmpty } = params;
+  const { stepKey, isLastStep, currentStepEmpty } = params;
 
   if (stepKey === "welcome") {
     return t("ui.setup.action.start");
@@ -181,10 +181,6 @@ const primaryButtonLabel = (params: {
   }
 
   if (isLastStep) {
-    if (isPending) {
-      return t("ui.setup.action.finishing");
-    }
-
     return currentStepEmpty
       ? t("ui.setup.action.skipAndFinish")
       : t("ui.setup.action.finish");
@@ -218,6 +214,8 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
     [policy, withAdmin],
   );
   const form = useForm<SetupFormValues>({
+    // Erst beim Absenden prüfen, nicht bei jeder Eingabe
+    reValidateMode: "onSubmit",
     resolver: zodResolver(schema),
     defaultValues: {
       adminFirstName: "",
@@ -324,8 +322,8 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
     internet: t("ui.setup.internet.hint"),
   };
   const stepBadges: Partial<Record<StepKey, ReactNode>> = {
-    admin: <Badge variant="neutral">{t("ui.setup.requiredBadge")}</Badge>,
-    sender: <Badge variant="neutral">{t("ui.setup.optionalBadge")}</Badge>,
+    admin: <Badge variant="tag">{t("ui.setup.requiredBadge")}</Badge>,
+    sender: <Badge variant="tag">{t("ui.setup.optionalBadge")}</Badge>,
   };
   const stepHint = stepHints[stepKey];
   const stepBadge = stepBadges[stepKey] ?? null;
@@ -333,23 +331,25 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
   const primaryLabel = primaryButtonLabel({
     stepKey,
     isLastStep,
-    isPending: runSetup.isPending,
     currentStepEmpty,
   });
 
+  // Willkommen ist der Einstieg und zählt nicht als Schritt; dort steht
+  // noch kein Schritt als aktiv
+  const setupStepKeys = stepKeys.slice(1);
   const stepperProps = {
-    labels: stepKeys.map((key) => t(`ui.setup.${key}.heading`)),
-    current: step,
+    labels: setupStepKeys.map((key) => t(`ui.setup.${key}.heading`)),
+    current: step - 1,
     srLabel: t("ui.setup.stepIndicator", {
-      current: step + 1,
-      total: stepKeys.length,
+      current: Math.max(step, 1),
+      total: setupStepKeys.length,
     }),
   };
 
   return (
     <div className="grid sm:min-h-130 sm:grid-cols-[15rem_minmax(0,1fr)]">
-      <aside className="border-b border-border bg-muted px-6 py-5 sm:border-r sm:border-b-0 sm:py-7">
-        <p className="mb-4 text-2xs font-medium uppercase tracking-wider text-muted-foreground max-sm:hidden">
+      <aside className="border-b border-border bg-sidebar px-6 py-5 sm:border-r sm:border-b-0 sm:py-7">
+        <p className="mb-4 font-heading text-xs font-semibold text-muted-foreground max-sm:hidden">
           {t("ui.setup.title")}
         </p>
         <SetupStepper
@@ -365,9 +365,13 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
         noValidate={true}
         className="flex flex-col"
       >
-        <div className="flex flex-1 flex-col gap-6 p-6 sm:p-7">
+        {/* Während der Einrichtung sind die Felder gesperrt */}
+        <fieldset
+          disabled={runSetup.isPending}
+          className="flex min-w-0 flex-1 flex-col gap-6 p-6 sm:p-7"
+        >
           <div className="flex flex-col gap-1">
-            <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+            <h3 className="flex items-center gap-2 font-heading text-lg font-semibold text-foreground">
               {t(`ui.setup.${stepKey}.heading`)}
               {stepBadge}
             </h3>
@@ -375,7 +379,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
           </div>
 
           {stepKey === "welcome" ? (
-            <div className="flex flex-col gap-3 rounded-lg bg-muted px-4 py-3 text-xs leading-normal text-muted-foreground">
+            <div className="flex flex-col gap-3 rounded-lg bg-azur-50 px-4 py-3 text-xs leading-normal text-azur-900">
               <div className="flex flex-col gap-0.5">
                 <p className="font-semibold text-foreground">
                   {t("ui.about.usage.title")}
@@ -401,7 +405,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
           ) : null}
 
           {stepKey === "admin" ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
               <TextInput
                 control={form.control}
                 name="adminFirstName"
@@ -447,7 +451,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
           ) : null}
 
           {stepKey === "sender" ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
               <TextInput
                 control={form.control}
                 name="senderName"
@@ -476,7 +480,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
           ) : null}
 
           {stepKey === "internet" ? (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-6">
               <SwitchInput
                 control={form.control}
                 name="climateFactorsAutoFetch"
@@ -529,9 +533,9 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
                 : t("ui.setup.error.generic")}
             </p>
           ) : null}
-        </div>
+        </fieldset>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-between sm:px-7">
+        <div className="flex flex-col-reverse gap-2 border-t border-border bg-azur-50 px-6 py-4 sm:flex-row sm:justify-between sm:px-7">
           {step > 0 ? (
             <Button
               type="button"
@@ -544,6 +548,7 @@ export const SetupWizard = ({ policy }: { policy: PasswordPolicy }) => {
           ) : null}
           <div className="flex flex-col sm:ml-auto">
             <Button type="submit" disabled={runSetup.isPending}>
+              {runSetup.isPending ? <Spinner data-icon="inline-start" /> : null}
               {primaryLabel}
             </Button>
           </div>

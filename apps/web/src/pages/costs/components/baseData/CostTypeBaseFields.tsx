@@ -2,7 +2,7 @@ import {
   isCo2SplitInapplicableFuel,
   isLikelyNonAllocatableCostTypeName,
 } from "@einfachvermieter/shared";
-import { RiFireLine, RiHomeGearLine } from "@remixicon/react";
+import { RiHomeGearLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
@@ -13,6 +13,7 @@ import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { FieldGroup } from "@/components/ui/Field";
+import { IconFlame } from "@/lib/icons";
 import {
   allocationLabel,
   costTypeCategoryLabel,
@@ -29,7 +30,7 @@ import {
 
 const CATEGORY_TILES = [
   { value: "operating" as const, icon: RiHomeGearLine },
-  { value: "heating" as const, icon: RiFireLine },
+  { value: "heating" as const, icon: IconFlame },
 ];
 const LABOR_CATEGORY_OPTIONS = [
   LABOR_CATEGORY_NONE,
@@ -102,7 +103,7 @@ export const CostTypeBaseFields = ({
   }, [isHeating, form]);
 
   return (
-    <FieldGroup className="gap-5">
+    <FieldGroup>
       <TextInput
         control={form.control}
         name="name"

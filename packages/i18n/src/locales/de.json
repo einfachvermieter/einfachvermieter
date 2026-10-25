@@ -454,7 +454,6 @@
     },
     "common": {
       "separators": {
-        "bullet": " · ",
         "dash": " – ",
         "comma": ", "
       },
@@ -546,6 +545,12 @@
       },
       "action": {
         "delete": "Löschen",
+        "confirmDelete": "Ja, löschen",
+        "confirmRemove": "Ja, entfernen",
+        "unknownAnswer": "Weiß ich nicht",
+        "back": "Zurück",
+        "apply": "Übernehmen",
+        "check": "Prüfen",
         "edit": "Bearbeiten",
         "viewDetails": "Details ansehen",
         "save": "Speichern",
@@ -638,7 +643,6 @@
         "statusInactive": "Beendet",
         "usageLabel": "Verwendung",
         "heatingConfig": "Heizkostenkonfiguration",
-        "deleteAction": "Zähler löschen",
         "lastReadingHint": "Abgelesen am {date} von {source}",
         "hkvSection": "Heizkostenverteiler",
         "assignmentModeLabel": "Abrechnung",
@@ -657,7 +661,8 @@
       "emptySearch": "Keine Zähler gefunden für „{query}“",
       "emptySearchForBuilding": "Keine Zähler gefunden für „{query}“ in Gebäude „{building}“",
       "confirmDelete": "Zähler löschen?",
-      "confirmDeleteMessage": "Soll „{label}“ wirklich gelöscht werden? Zähler mit erfassten Ständen können nicht gelöscht werden.",
+      "confirmDeleteQuestion": "Soll „{label}“ wirklich gelöscht werden?",
+      "confirmDeleteHint": "Zähler mit erfassten Ständen können nicht gelöscht werden.",
       "allBuildings": "Alle Gebäude",
       "columns": {
         "label": "Bezeichnung",
@@ -810,7 +815,8 @@
       "editEyebrow": "Gebäude bearbeiten",
       "add": "Gebäude hinzufügen",
       "confirmDelete": "Gebäude löschen?",
-      "confirmDeleteWithUnits": "Soll „{name}“ wirklich gelöscht werden? Ein Gebäude mit Wohnungen kann nicht gelöscht werden.",
+      "confirmDeleteQuestion": "Soll „{name}“ wirklich gelöscht werden?",
+      "confirmDeleteHint": "Ein Gebäude mit Wohnungen kann nicht gelöscht werden.",
       "empty": "Noch keine Gebäude angelegt",
       "emptySearch": "Keine Gebäude gefunden für „{query}“",
       "columns": {
@@ -822,9 +828,6 @@
         "baseData": {
           "title": "Stammdaten"
         }
-      },
-      "actions": {
-        "delete": "Gebäude löschen"
       },
       "fields": {
         "name": "Bezeichnung",
@@ -898,26 +901,24 @@
       "emptySearch": "Keine Wohnungen gefunden für „{query}“",
       "emptySearchForBuilding": "Keine Wohnungen gefunden für „{query}“ in Gebäude „{building}“",
       "confirmDelete": "Wohnung löschen?",
-      "confirmDeleteMessage": "Soll „{name}“ wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "confirmDeleteQuestion": "Soll „{name}“ wirklich gelöscht werden?",
+      "confirmDeleteHint": "Das lässt sich nicht rückgängig machen.",
       "supply": {
-        "title": "Versorgung",
-        "add": "Ausnahme eintragen",
-        "empty": "Heizung und Warmwasser aus der zentralen Anlage",
-        "emptyHeatingOnly": "Heizung aus der zentralen Anlage",
+        "title": "Abweichende Versorgung",
+        "add": "Abweichung eintragen",
+        "empty": "Keine: Heizung und Warmwasser dieser Wohnung kommen aus der zentralen Anlage des Gebäudes.",
+        "emptyHeatingOnly": "Keine: Die Heizung dieser Wohnung kommt aus der zentralen Anlage des Gebäudes.",
         "rowOpen": "{scope} nicht aus der zentralen Anlage seit {from}",
         "rowClosed": "{scope} nicht aus der zentralen Anlage vom {from} bis {until}",
         "confirmDelete": "Eintrag löschen",
         "sheet": {
-          "titleNew": "Ausnahme von der zentralen Versorgung",
-          "titleEdit": "Ausnahme bearbeiten",
-          "description": "Nur eintragen, wenn die Wohnung technisch nicht aus der zentralen Anlage versorgt wird, z. B. eigene Heizung oder Durchlauferhitzer. Leerstand, zugedrehte oder entfernte Heizkörper gehören nicht hierher.",
-          "readingHint": "Ändert sich die Versorgung, müssen Sie den Zählerstand am Tag der Umstellung erfassen. Ohne diesen Stand lässt sich die Abrechnung nicht finalisieren. Der Stand wird nicht geschätzt."
+          "description": "Nur, wenn die Wohnung technisch eine eigene Versorgung hat. Nicht für Leerstand oder abgedrehte Heizkörper."
         },
         "fields": {
           "scope": "Bereich",
-          "validFrom": "Ohne zentrale Versorgung ab",
+          "validFrom": "Gültig ab",
+          "validFromHelp": "Erfassen Sie für den Tag der Umstellung einen Zählerstand. Ohne ihn lässt sich die Abrechnung nicht finalisieren, er wird nicht geschätzt.",
           "validUntil": "Bis einschließlich",
-          "validUntilHint": "Leer lassen, wenn die Wohnung bis auf Weiteres nicht zentral versorgt wird.",
           "notes": "Notiz"
         },
         "scope": {
@@ -927,11 +928,18 @@
         "validation": {
           "required": "Bitte geben Sie ein Datum ein.",
           "range": "Das Ende darf nicht vor dem Beginn liegen."
+        },
+        "scopeDescription": {
+          "heating": "Die Wohnung hat eine eigene Heizung, zum Beispiel eine Gastherme.",
+          "hot_water": "Das Warmwasser kommt aus einem Gerät in der Wohnung, zum Beispiel einem Durchlauferhitzer."
+        },
+        "singleScope": {
+          "heating": "Die Wohnung wird nicht über die zentrale Anlage des Gebäudes beheizt, zum Beispiel wegen einer eigenen Gastherme. Nicht für Leerstand oder abgedrehte Heizkörper.",
+          "hot_water": "Das Warmwasser der Wohnung kommt nicht aus der zentralen Anlage des Gebäudes, zum Beispiel aus einem Durchlauferhitzer."
         }
       },
       "allBuildings": "Alle Gebäude",
       "editEyebrow": "Wohnung bearbeiten",
-      "unitNumberMeta": "Mieteinheit {number}",
       "sections": {
         "baseData": {
           "title": "Stammdaten"
@@ -941,8 +949,7 @@
         "tenantSince": "Mieter seit {date}"
       },
       "actions": {
-        "unitMeters": "Zähler der Wohnung",
-        "delete": "Wohnung löschen"
+        "unitMeters": "Zähler der Wohnung"
       },
       "sub": {
         "count": "{count, plural, one {# Wohnung} other {# Wohnungen}}",
@@ -960,20 +967,17 @@
         "namePlaceholder": "z. B. EG oder OG/DG",
         "tenant": "Mieter",
         "unitNumber": "Mieteinheit",
-        "unitNumberDescription": "Bezeichnung der Mieteinheit in der Wohnanlage. Wird in der Nebenkostenabrechnung mit ausgewiesen.",
         "unitNumberPlaceholder": "z. B. 3.07",
         "area": "Wohnfläche",
-        "areaSqm": "Wohnfläche (m²)",
-        "areaPlaceholder": "120,00",
         "heatingArea": "Heizfläche",
-        "heatingAreaSqm": "Heizfläche (m², optional)",
-        "heatingAreaDescription": "Wird für die Verteilung der Heizkosten verwendet, wenn das Gebäude nach der Fläche der beheizten Räume verteilt. Warmwasserkosten werden nach Wohnfläche verteilt. Ohne Angabe wird die Wohnfläche verwendet.",
-        "heatingAreaPlaceholder": "Wohnfläche wird verwendet",
         "heatingAreaUnusedHint": "Das Gebäude verteilt die Grundkosten der Heizung nach Wohnfläche. Die Heizfläche wird dafür nicht verwendet. Auch hier heißt Heizfläche 0: Die Wohnung nimmt keine Wärme aus der zentralen Heizung ab und braucht keinen Zähler für den Heizverbrauch. Ihre Grundkosten werden weiter nach Wohnfläche verteilt.",
         "heatingAreaLargerWarning": "Die Heizfläche ist größer als die Wohnfläche. Das ist möglich (z. B. beheizter Keller), verzerrt aber die Heizkostenverteilung, wenn es ein Tippfehler ist. Bitte prüfen Sie den Wert.",
-        "heatingAreaHelp": "Dauerhaft ausgebaute Heizkörper: Ziehen Sie die Fläche dieser Räume ab. Das gilt nicht, wenn ein Mieter Heizkörper ohne Ihre Zustimmung entfernt hat.\n\nZugedrehte oder nur vorübergehend abgebaute Heizkörper: Ziehen Sie nichts ab.\n\nRäume ohne eigenen Heizkörper, die von Nachbarräumen mitgeheizt werden (Flur, Abstellkammer): Ob sie mitzählen, wird unterschiedlich gesehen. Entscheiden Sie es für alle Wohnungen des Gebäudes gleich.\n\nTragen Sie 0 nur ein, wenn die Wohnung gar keine Heizkörper oder andere Heizflächen mehr hat, aber weiter an der zentralen Heizung hängt. Hat sie eine eigene Heizung oder ist sie von der Anlage getrennt, tragen Sie das unter „Versorgung“ ein.\n\nÄndern Sie die Heizfläche erst, wenn alle Abrechnungen für die Zeit vor dem Umbau finalisiert sind.",
+        "unitNumberHelp": "Bezeichnung der Mieteinheit in der Wohnanlage. Wird in der Nebenkostenabrechnung mit ausgewiesen.",
+        "heatingAreaHelp": "Wird für die Verteilung der Heizkosten verwendet, wenn das Gebäude nach der Fläche der beheizten Räume verteilt. Warmwasserkosten werden nach Wohnfläche verteilt. Ohne Abweichung wird die Wohnfläche verwendet.\n\nDauerhaft ausgebaute Heizkörper: Ziehen Sie die Fläche dieser Räume ab. Das gilt nicht, wenn ein Mieter Heizkörper ohne Ihre Zustimmung entfernt hat.\n\nZugedrehte oder nur vorübergehend abgebaute Heizkörper: Ziehen Sie nichts ab.\n\nRäume ohne eigenen Heizkörper, die von Nachbarräumen mitgeheizt werden (Flur, Abstellkammer): Ob sie mitzählen, wird unterschiedlich gesehen. Entscheiden Sie es für alle Wohnungen des Gebäudes gleich.\n\nTragen Sie 0 nur ein, wenn die Wohnung gar keine Heizkörper oder andere Heizflächen mehr hat, aber weiter an der zentralen Heizung hängt. Hat sie eine eigene Heizung oder ist sie von der Anlage getrennt, tragen Sie das unter „Abweichende Versorgung“ ein.\n\nÄndern Sie die Heizfläche erst, wenn alle Abrechnungen für die Zeit vor dem Umbau finalisiert sind.",
         "heatingAreaZeroHint": "Tragen Sie 0 nur ein, wenn die Wohnung keine Heizkörper mehr hat. Für die Wohnung darf dann kein Heizverbrauch anfallen.",
-        "heatingAreaChangedHint": "Die neue Heizfläche gilt auch für alle noch nicht finalisierten Abrechnungen früherer Zeiträume. Finalisieren Sie diese vorher."
+        "heatingAreaChangedHint": "Die neue Heizfläche gilt auch für alle noch nicht finalisierten Abrechnungen früherer Zeiträume. Finalisieren Sie diese vorher.",
+        "heatingAreaDiffers": "Heizfläche weicht von der Wohnfläche ab",
+        "heatingAreaSameAsArea": "wie Wohnfläche"
       },
       "validation": {
         "buildingRequired": "Gebäude erforderlich",
@@ -982,7 +986,8 @@
         "areaInvalid": "Fläche als Zahl, z. B. 120 oder 120,5",
         "areaPositive": "Fläche muss größer als 0 sein.",
         "areaTooLarge": "Fläche darf höchstens 10.000 m² betragen.",
-        "areaNonNegative": "Fläche darf nicht negativ sein."
+        "areaNonNegative": "Fläche darf nicht negativ sein.",
+        "heatingAreaRequired": "Bitte geben Sie die Heizfläche ein."
       },
       "notFound": {
         "title": "Wohnung nicht gefunden",
@@ -995,16 +1000,17 @@
         "master": "Stammdaten",
         "account": "Konto"
       },
-      "openAccount": "Konto öffnen",
       "createTitle": "Neuer Mieter",
       "contractTitle": "Mietvertrag {unit} (ab {start})",
-      "identityTitle": "{residents} · {unit}",
+      "identityTitle": "{residents}, {unit}",
       "identityTitleEmpty": "Wohnung {unit}",
       "summary": "{unit} – {residents}",
       "addTenant": "Mieter anlegen",
       "confirmDeleteTenant": "Mietvertrag löschen?",
-      "confirmDeleteTenantMessage": "Soll der Mietvertrag von {residents} für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht. Für einen Auszug genügt es, das Vertragsende zu setzen, dabei bleibt die Historie erhalten.",
-      "confirmDeleteTenantMessageNoResidents": "Soll der Mietvertrag für „{unit}“ ({period}) wirklich gelöscht werden? Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht. Für einen Auszug genügt es, das Vertragsende zu setzen, dabei bleibt die Historie erhalten.",
+      "confirmDeleteTenantQuestion": "Soll der Mietvertrag von {residents} für „{unit}“ ({period}) wirklich gelöscht werden?",
+      "confirmDeleteTenantQuestionNoResidents": "Soll der Mietvertrag für „{unit}“ ({period}) wirklich gelöscht werden?",
+      "confirmDeleteTenantConsequence": "Bewohner, Mietsätze, Anschriften und Bankverbindungen werden mit gelöscht.",
+      "confirmDeleteTenantHint": "Für einen Auszug genügt es, das Vertragsende zu setzen, dabei bleibt die Historie erhalten.",
       "empty": "Keine Mietverträge vorhanden",
       "emptyForBuilding": "Noch keine Mietverträge in Gebäude „{building}“ angelegt",
       "emptySearch": "Keine Mietverträge gefunden für „{query}“",
@@ -1038,7 +1044,8 @@
       "identityTitle": "Zahlung vom {date}",
       "noTenant": "Kein Mieter",
       "confirmDelete": "Zahlung löschen?",
-      "confirmDeleteMessage": "Soll die Zahlung vom {date} über {amount} wirklich gelöscht werden? Zahlungen, die in eine finalisierte Abrechnung fallen, können nicht gelöscht werden.",
+      "confirmDeleteMessage": "Soll die Zahlung vom {date} über {amount} wirklich gelöscht werden?",
+      "confirmDeleteHint": "Zahlungen, die in eine finalisierte Abrechnung fallen, können nicht gelöscht werden.",
       "add": "Zahlung erfassen",
       "noTenants": "Für dieses Gebäude sind noch keine Mieter angelegt. Bitte zuerst {link} anlegen, bevor Zahlungen erfasst werden können.",
       "noTenantsTitle": "Noch keine Mietverträge",
@@ -1177,6 +1184,7 @@
         "balance": "Saldo",
         "deposit": "Kaution",
         "month": "Monat",
+        "yearMonth": "Jahr/Monat",
         "baseRent": "Kaltmiete",
         "advance": "NK-Vorauszahlung",
         "ist": "Ist",
@@ -1209,6 +1217,7 @@
         "confirmDelete": "Gebühr löschen?",
         "confirmDeleteMessage": "Soll die Gebühr vom {date} über {amount} wirklich gelöscht werden?"
       },
+      "ofSoll": "von {amount}",
       "showEarlierYears": "Frühere Jahre anzeigen",
       "toggleYear": "Jahr {year} auf- oder zuklappen"
     },
@@ -1225,7 +1234,7 @@
         "sectionTitle": "Stammdaten",
         "taxDisclose": "Steuerliche Angaben (§ 35a EStG)",
         "statsEntries": "Rechnungen {year}",
-        "entriesHint": "{count, plural, one {# Rechnung} other {# Rechnungen}} erfasst · zuletzt am {date}",
+        "entriesHint": "{count, plural, one {# Rechnung} other {# Rechnungen}} erfasst, zuletzt am {date}",
         "entriesEmptyYear": "Keine Rechnung in diesem Jahr erfasst",
         "entriesEmpty": "Noch keine Rechnung für diese Kostenart erfasst",
         "co2Row": "CO₂-Erfassung",
@@ -1233,15 +1242,15 @@
         "metersDescription": "Diese Zähler liefern den Verbrauch, nach dem die Kosten verteilt werden",
         "metersEmpty": "Dieser Kostenart ist noch kein Zähler zugeordnet. Die Zuordnung nehmen Sie beim Zähler vor.",
         "manageMeters": "Zähler verwalten",
-        "heatingLink": "Heizkostenkonfiguration",
-        "deleteAction": "Kostenart löschen"
+        "heatingLink": "Heizkostenkonfiguration"
       },
       "entryCreateTitle": "Kostenrechnung",
       "entryCreateDescription": "Eine einzelne Kostenrechnung erfassen.",
       "typesTitle": "Kostenarten",
       "typesDescription": "Definieren Sie Kategorien und Umlageschlüssel für jede Kostenart.",
       "confirmDeleteType": "Kostenart löschen?",
-      "confirmDeleteTypeMessage": "Soll die Kostenart „{name}“ wirklich gelöscht werden? Kostenarten mit erfassten Rechnungen können nicht gelöscht werden.",
+      "confirmDeleteTypeQuestion": "Soll die Kostenart „{name}“ wirklich gelöscht werden?",
+      "confirmDeleteTypeHint": "Kostenarten mit erfassten Rechnungen können nicht gelöscht werden.",
       "entriesTitle": "Rechnungen",
       "entriesDescription": "Einzelne Kostenrechnungen, die anteilig in die Abrechnung einfließen.",
       "addEntry": "Rechnung erfassen",
@@ -1381,7 +1390,6 @@
         "moreOptions": "Mehr Optionen (Preisart, Einheitspreis)",
         "vendorFallback": "Ohne Lieferant",
         "costTypesLabel": "Kostenarten",
-        "deleteAction": "Rechnung löschen",
         "deleteTitle": "Rechnung löschen?",
         "deleteMessage": "Soll die Rechnung vom {date} mit allen Positionen wirklich gelöscht werden?",
         "deleteMessageWithVendor": "Soll die Rechnung von {vendor} vom {date} mit allen Positionen wirklich gelöscht werden?",
@@ -1396,6 +1404,14 @@
       "emptySearchForBuilding": "Keine Rechnungen gefunden für „{query}“ in Gebäude „{building}“",
       "itemCount": "{count, plural, one {1 Position} other {# Positionen}}",
       "items": {
+        "co2Taxes": {
+          "title": "CO₂ und Steuern",
+          "titleTaxes": "Steuern und Abgaben",
+          "intro": "Diese Angaben finden Sie in der Regel auf der Brennstoffrechnung.",
+          "co2": "{amount} kg CO₂",
+          "taxes": "{amount} € Steuern und Abgaben",
+          "empty": "Noch nicht erfasst"
+        },
         "title": "Positionen",
         "description": "Eine Rechnung kann mehrere Kostenarten mit eigenem Betrag und Zeitraum enthalten.",
         "add": "Position hinzufügen",
@@ -1418,11 +1434,10 @@
       "attachments": {
         "title": "Belege",
         "upload": "Beleg hochladen",
-        "uploading": "Wird hochgeladen …",
         "hint": "PDF und Bilder, bis {limit} pro Datei.",
         "hintDeferred": "PDF und Bilder, bis {limit} pro Datei. Werden nach dem Speichern hochgeladen.",
         "empty": "Noch keine Belege hochgeladen.",
-        "fileMeta": "{size} · hochgeladen am {date}",
+        "fileMeta": "{size}, hochgeladen am {date}",
         "preview": "Vorschau",
         "delete": "Beleg entfernen",
         "download": "Datei herunterladen",
@@ -1470,6 +1485,40 @@
       "noItems": "Ohne Position"
     },
     "heating": {
+      "restriction": {
+        "title": "Beschränkung durch öffentliche Vorgaben",
+        "intro": "Manche Vorschriften verhindern, dass Sie das Gebäude oder die Heizung wesentlich verbessern können, zum Beispiel der Denkmalschutz oder ein vorgeschriebener Fernwärmeanschluss. Je nach Fall wird Ihr Anteil an den CO₂-Kosten halbiert oder entfällt ganz. Kleinere Einschränkungen reichen dafür nicht.",
+        "buildingQuestion": "Verhindert eine Vorschrift, dass das Gebäude wesentlich besser gedämmt werden kann?",
+        "buildingExample": "Zum Beispiel Denkmalschutz oder eine Erhaltungssatzung: Die Fassade darf nicht gedämmt werden.",
+        "supplyQuestion": "Verhindert eine Vorschrift, dass Heizung oder Warmwasserbereitung wesentlich verbessert werden können?",
+        "supplyExample": "Zum Beispiel ein Anschluss- und Benutzungszwang an Fernwärme: Die Heiztechnik kann nicht gewechselt werden.",
+        "noneTitle": "Keine Beschränkung",
+        "noneText": "Die CO₂-Kosten werden nach der Stufe des Gebäudes aufgeteilt.",
+        "openTitle": "Noch offen",
+        "openText": "Solange das offen ist, wird ohne Beschränkung gerechnet. Auskunft gibt zum Beispiel die Denkmalschutzbehörde oder die Satzung der Gemeinde.",
+        "oneTitle": "Ihr Anteil wird halbiert",
+        "oneText": "Der Vermieteranteil laut Stufe wird halbiert.",
+        "bothTitle": "Sie tragen keinen Anteil der CO₂-Kosten",
+        "bothText": "Die Beschränkung betrifft Gebäude und Versorgung."
+      },
+      "seventy": {
+        "title": "70 % Verbrauchsanteil zwingend",
+        "intro": "Bei einer Öl- oder Gasheizung können 70 % nach Verbrauch vorgeschrieben sein. Das hängt von zwei Punkten ab.",
+        "insulationQuestion": "Erfüllt das Gebäude das Anforderungsniveau der Wärmeschutzverordnung 1994?",
+        "insulationHelp": "Gebäude ab Mitte der 1990er-Jahre erfüllen es oft, ältere nach einer energetischen Sanierung. Das Baujahr allein entscheidet nicht. Hinweise geben Bauunterlagen oder eine energetische Bewertung.",
+        "pipesQuestion": "Sind die freiliegenden Wärmeleitungen überwiegend gedämmt?",
+        "mustTitle": "70 % nach Verbrauch sind vorgeschrieben",
+        "mustText": "Das Gebäude erfüllt den Wärmeschutz von 1994 nicht, und die freiliegenden Leitungen sind überwiegend gedämmt. Der Verbrauchsanteil wird deshalb auf 70 % gesetzt.",
+        "freeTitle": "70 % sind nicht vorgeschrieben",
+        "freeText": "Sie können den Verbrauchsanteil zwischen 50 % und 70 % frei wählen.",
+        "unclearTitle": "Nicht eindeutig",
+        "unclearText": "Ohne diese Angabe lässt sich nicht sagen, ob 70 % vorgeschrieben sind. Wie möchten Sie damit umgehen?",
+        "pickSeventy": "70 % ansetzen",
+        "pickSeventyText": "Passt in jedem Fall: 70 % sind auch ohne Pflicht zulässig.",
+        "pickFree": "Frei wählen",
+        "pickFreeText": "Trifft die Vorgabe doch zu, entspricht die Abrechnung nicht der Heizkostenverordnung.",
+        "valueUnclearSeventy": "Unklar, 70 % angesetzt"
+      },
       "title": "Heizkosten",
       "sub": "Heizkostenkonfigurationen für {building}",
       "description": "Pro Gebäude eine Konfiguration, wie Heizkosten abgerechnet werden.",
@@ -1484,10 +1533,10 @@
         "hotWaterDisclose": "Warmwasser-Details",
         "prorationMethodRow": "Verfahren",
         "splitBaseLegend": {
-          "living_area": "{percent} % Grund · nach Wohnfläche",
-          "heated_area": "{percent} % Grund · nach Heizfläche"
+          "living_area": "{percent} % Grund nach Wohnfläche",
+          "heated_area": "{percent} % Grund nach Heizfläche"
         },
-        "splitConsumptionLegend": "{percent} % Verbrauch · nach Zählern",
+        "splitConsumptionLegend": "{percent} % Verbrauch nach Zählern",
         "prorationChartLegendDegreeDays": "Gradtagszahlen",
         "prorationChartLegendLinear": "Linear",
         "prorationChartRefLabel": "Ø {promille} ‰/Monat",
@@ -1495,10 +1544,9 @@
         "prorationChartNoteDegreeDays": "Bei einem Wechsel im Jahr trägt der Wintermieter den größeren Anteil: Januar zählt 170 ‰, Juli nur 14 ‰ der Jahresheizkosten (Gradtagszahlen nach § 9b Abs. 2 HeizkostenV).",
         "prorationChartNoteLinear": "Bei einem Wechsel im Jahr zählt jeder Tag gleich viel: Die Jahresheizkosten werden tagesproportional aufgeteilt (Ø {promille} ‰ je Monat).",
         "modeLabel": "Modus",
-        "modeInternalHeatMeter": "Intern · WMZ",
-        "modeInternalAllocator": "Intern · HKV",
-        "modeExternal": "Extern",
-        "deleteAction": "Konfiguration löschen"
+        "modeInternalHeatMeter": "Intern (WMZ)",
+        "modeInternalAllocator": "Intern (HKV)",
+        "modeExternal": "Extern"
       },
       "identityTitle": "Gültig ab {validFrom}",
       "empty": "Noch keine Heizkostenkonfigurationen angelegt. Wählen Sie in der Seitenleiste ein Gebäude, um eine erste Konfiguration anzulegen.",
@@ -1576,19 +1624,18 @@
         "includeBillingInfo": "§ 6a-Informationsseite beilegen",
         "includeBillingInfoDescription": "Druckt die Seite „Abrechnungsinformationen nach § 6a Heizkostenverordnung“ (Beratungsstellen, Streitbeilegung) mit jeder Abrechnung.",
         "includeBillingInfoWarning": "Diese Angaben sind nach § 6a HeizkostenV verpflichtend. Deaktivieren Sie die Seite nur, wenn die Angaben sicher auf der beigelegten Abrechnung Ihres Abrechnungsunternehmens enthalten sind.",
-        "co2CostShareEnabled": "CO₂-Kosten aufteilen (CO2KostAufG)",
-        "co2CostShareEnabledDescription": "Aufteilung zwischen Vermieter und Mieter nach Emissionsstufe",
-        "co2CostShareEnabledHelp": "Bei Brennstoffen mit CO₂-Preis trägt der Vermieter einen Teil der CO₂-Kosten. Wie groß der Anteil ist, hängt vom Ausstoß des Gebäudes ab: Kilogramm CO₂ je Quadratmeter Wohnfläche und Jahr, eingeordnet in die zehn Stufen der Anlage zum CO2KostAufG (§ 5). Es zählt die Wohnfläche der Wohnungen, die aus der zentralen Anlage beheizt werden. Bei einem Abrechnungszeitraum unter einem Jahr werden die Grenzwerte der Stufen anteilig gekürzt.\n\nJe schlechter die Dämmung, desto größer der Vermieteranteil. Er wird vor der Aufteilung in Grund- und Verbrauchskosten aus den Heizkosten herausgerechnet und auf der Abrechnung ausgewiesen.\n\nDie Abrechnung weist dazu Energiegehalt und Emissionsfaktor aus den Brennstoffrechnungen aus. Tragen Sie beide Werte an den Rechnungspositionen ein.\n\nVerhindern öffentlich-rechtliche Vorgaben eine wesentliche Verbesserung, schalten Sie die Aufteilung nicht aus. Nutzen Sie die Angaben zur Beschränkung nach § 9 CO2KostAufG.",
+        "co2CostShareEnabled": "CO₂-Kosten aufteilen",
+        "co2CostShareEnabledHelp": "Bei Brennstoffen mit CO₂-Preis trägt der Vermieter einen Teil der CO₂-Kosten. Wie groß der Anteil ist, hängt vom Ausstoß des Gebäudes ab: Kilogramm CO₂ je Quadratmeter Wohnfläche und Jahr, eingeordnet in die zehn Stufen der Anlage zum CO2KostAufG (§ 5). Es zählt die Wohnfläche der Wohnungen, die aus der zentralen Anlage beheizt werden. Bei einem Abrechnungszeitraum unter einem Jahr werden die Grenzwerte der Stufen anteilig gekürzt.\n\nJe schlechter die Dämmung, desto größer der Vermieteranteil. Er wird vor der Aufteilung in Grund- und Verbrauchskosten aus den Heizkosten herausgerechnet und auf der Abrechnung ausgewiesen.\n\nDie Abrechnung weist dazu Energiegehalt und Emissionsfaktor aus den Brennstoffrechnungen aus. Tragen Sie beide Werte an den Rechnungspositionen ein.\n\nVerhindern öffentlich-rechtliche Vorgaben eine wesentliche Verbesserung, schalten Sie die Aufteilung nicht aus. Nutzen Sie dafür „Beschränkung durch öffentliche Vorgaben“ (§ 9 CO2KostAufG).",
         "co2BuildingRestricted": "Beschränkung beim Gebäude (§ 9 CO2KostAufG)",
         "co2BuildingRestrictedDescription": "Öffentlich-rechtliche Vorgaben stehen einer wesentlichen energetischen Verbesserung des Gebäudes entgegen.",
         "co2SupplyRestricted": "Beschränkung bei der Versorgung (§ 9 CO2KostAufG)",
         "co2SupplyRestrictedDescription": "Öffentlich-rechtliche Vorgaben stehen einer wesentlichen Verbesserung der Wärme- und Warmwasserversorgung entgegen.",
         "co2RestrictedHelp": "Mit diesen Angaben berufen Sie sich auf § 9 CO2KostAufG. Die App prüft nicht, ob die Voraussetzungen vorliegen.\n\nÖffentlich-rechtliche Vorgaben können eine wesentliche Verbesserung verhindern, zum Beispiel Denkmalschutz, ein Anschluss- und Benutzungszwang an Fernwärme oder Vorgaben aus einer Erhaltungssatzung. Betrifft das entweder das Gebäude oder die Versorgung, wird der Vermieteranteil laut Stufe halbiert. Betrifft es beides, werden die CO₂-Kosten nicht aufgeteilt.\n\nKleinere Einschränkungen reichen nicht. Wesentlich ist zum Beispiel, wenn die Fassade nicht gedämmt werden darf oder die Heiztechnik nicht gewechselt werden kann.\n\nTragen Sie die Beschränkung mit dem Datum ein, ab dem sie gilt. Gelten in einem Abrechnungszeitraum unterschiedliche Angaben, kann die App die Abrechnung nicht erstellen.",
         "co2RestrictionEvidenceNote": "Angaben zum Nachweis",
-        "co2RestrictionEvidenceNoteDescription": "Wird in der Abrechnung gedruckt. Je nach Fall brauchen Sie zusätzliche Unterlagen.",
+        "co2RestrictionEvidenceNoteDescription": "Tragen Sie ein, welche Vorgabe gilt und was sie verhindert.",
         "co2RestrictionEvidenceNoteHelp": "Sie können sich auf die Beschränkung nur berufen, wenn Sie dem Mieter die Umstände nachweisen (§ 9 Abs. 3 CO2KostAufG). Tragen Sie hier ein, welche Vorgabe gilt und was sie verhindert. Der Text wird in der Abrechnung gedruckt.\n\nDer Text allein ist nicht in jedem Fall der Nachweis. Bei einem Anschluss- und Benutzungszwang kann der Hinweis auf die Satzung genügen. Beim Denkmalschutz ist darzulegen, welche Teile des Gebäudes geschützt sind und welche Verbesserung deshalb nicht möglich ist, zum Beispiel mit einer Auskunft der Denkmalschutzbehörde. Wurde eine nötige Genehmigung abgelehnt, kann eine Kopie des Bescheids als Nachweis dienen.\n\nDie App speichert keine Unterlagen und prüft den Nachweis nicht. Erbringen Sie den erforderlichen Nachweis gegenüber dem Mieter spätestens im Rahmen der nächsten Heizkostenabrechnung.",
         "co2RestrictionEvidenceNoteRequired": "Bitte tragen Sie Angaben zum Nachweis ein.",
-        "co2Restriction": "Beschränkung nach § 9 CO2KostAufG",
+        "co2Restriction": "Beschränkung durch öffentliche Vorgaben",
         "co2RestrictionNone": "keine",
         "co2RestrictionBuilding": "Gebäude",
         "co2RestrictionSupply": "Versorgung",
@@ -1641,6 +1688,7 @@
         "consumptionShareBandwidth": "Der Verbrauchsanteil muss zwischen 50 % und 70 % liegen (§ 7 Abs. 1 HeizkostenV).",
         "tempRange": "Temperatur zwischen 20 und 95 °C",
         "seventyPercentMandatory": "Für dieses Gebäude sind 70 % Verbrauchsanteil zwingend (§ 7 Abs. 1 Satz 2 HeizkostenV).",
+        "answersMismatch": "Die Einstellung passt nicht zu Ihren Antworten. Bitte prüfen Sie die Fragen erneut.",
         "validToBeforeFrom": "„Gültig bis“ darf nicht vor „Gültig ab“ liegen."
       },
       "cards": {
@@ -1650,7 +1698,7 @@
       "kpi": {
         "split": "Verteilung der Heizkosten",
         "splitValue": "{base} / {consumption}",
-        "splitHint": "{base} % Grundkosten nach Fläche · {consumption} % Verbrauch nach Zählern",
+        "splitHint": "{base} % Grundkosten nach Fläche, {consumption} % Verbrauch nach Zählern",
         "splitExternal": "Extern",
         "splitExternalHint": "Der Dienstleister verteilt, Sie tragen die Endbeträge ein",
         "proration": "Aufteilung bei Mieterwechsel"
@@ -1704,7 +1752,7 @@
           "heatingType": "Heizungsart",
           "status": "Status"
         },
-        "confirmDelete": "Konfiguration wirklich löschen?",
+        "confirmDelete": "Konfiguration löschen?",
         "confirmDeleteMessage": "Soll die Heizkostenkonfiguration für {building} ({period}) wirklich gelöscht werden?"
       },
       "errors": {
@@ -1756,8 +1804,8 @@
           "consumptionCostCents": "Verbrauchskostenanteil",
           "notes": "Notizen"
         },
-        "confirmDelete": "Eintrag wirklich löschen?",
-        "confirmDeleteMessage": "Heizkosten-Eintrag für {unit} im Zeitraum {start} – {end} wird gelöscht.",
+        "confirmDelete": "Eintrag löschen?",
+        "confirmDeleteMessage": "Soll der Heizkosten-Eintrag für {unit} im Zeitraum {start} – {end} wirklich gelöscht werden?",
         "validation": {
           "splitExceedsTotal": "Grund- und Verbrauchskosten dürfen zusammen den Endbetrag nicht überschreiten.",
           "periodRange": "Das Enddatum darf nicht vor dem Startdatum liegen."
@@ -1925,8 +1973,9 @@
           "resultCredit": "{amount} Guthaben",
           "deleteDraft": "Entwurf löschen",
           "confirmDeleteTitle": "Entwurf löschen?",
-          "confirmDeleteMessage": "Der Entwurf für den Zeitraum {period} wird gelöscht. Erfasste Kosten, Zahlungen und Zählerstände bleiben erhalten. Nur diese Abrechnung entfällt und kann jederzeit neu erstellt werden.",
-          "confirmDeleteMessageWithTenant": "Der Entwurf für {tenant}, „{unit}“ ({period}) wird gelöscht. Erfasste Kosten, Zahlungen und Zählerstände bleiben erhalten. Nur diese Abrechnung entfällt und kann jederzeit neu erstellt werden.",
+          "confirmDeleteQuestion": "Soll der Entwurf für den Zeitraum {period} wirklich gelöscht werden?",
+          "confirmDeleteHint": "Erfasste Kosten, Zahlungen und Zählerstände bleiben erhalten. Die Abrechnung lässt sich jederzeit neu erstellen.",
+          "confirmDeleteQuestionWithTenant": "Soll der Entwurf für {tenant}, „{unit}“ ({period}) wirklich gelöscht werden?",
           "hintText": "Nach dem Finalisieren sind keine Änderungen mehr möglich. Danach stehen „Stornieren“ und „Korrekturabrechnung“ zur Verfügung."
         },
         "loadingData": "Lade Daten …",
@@ -2103,8 +2152,7 @@
         "next": "Weiter",
         "skip": "Überspringen",
         "skipAndFinish": "Überspringen & abschließen",
-        "finish": "Einrichtung abschließen",
-        "finishing": "Wird eingerichtet …"
+        "finish": "Einrichtung abschließen"
       },
       "validation": {
         "emailFormat": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
@@ -2118,7 +2166,6 @@
     },
     "auth": {
       "login": "Anmelden",
-      "loggingIn": "Anmelden …",
       "email": "E-Mail-Adresse",
       "password": "Passwort",
       "emailInvalid": "Ungültige E-Mail-Adresse",
@@ -2194,14 +2241,15 @@
       },
       "hero": {
         "warmRent": "Warmmiete",
-        "residentsCount": "{count, plural, one {# Bewohner} other {# Bewohner}}"
+        "residentsCount": "{count, plural, one {# Bewohner} other {# Bewohner}}",
+        "arrears": "Rückstand {amount}",
+        "credit": "Guthaben {amount}",
+        "depositOpen": "Kaution offen",
+        "initial": "{letter}."
       },
       "atAGlance": {
         "title": "Auf einen Blick",
         "account": "Mieterkonto"
-      },
-      "actions": {
-        "delete": "Mieter löschen"
       },
       "validation": {
         "startDateRequired": "Vertragsbeginn erforderlich",
@@ -2351,7 +2399,7 @@
       "editTitle": "Zählerstand bearbeiten",
       "confirmDelete": "Zählerstand löschen?",
       "confirmDeleteMessage": "Soll der Zählerstand vom {date} wirklich gelöscht werden?",
-      "confirmDeleteSettledMessage": "Der Zählerstand vom {date} liegt in einem bereits finalisierten Abrechnungszeitraum. Löschen Sie ihn nur, wenn Sie anschließend eine Korrekturabrechnung erstellen. Wirklich löschen?",
+      "confirmDeleteSettledConsequence": "Der Zählerstand liegt in einem finalisierten Abrechnungszeitraum. Löschen Sie ihn nur, wenn Sie danach eine Korrekturabrechnung erstellen.",
       "olderDateWarningTitle": "Datum liegt vor letzter Ablesung",
       "olderDateWarningDescription": "Das eingegebene Datum liegt vor der zuletzt erfassten Ablesung am {date}. Bitte prüfen Sie, ob das beabsichtigt ist.",
       "settledBadge": "Abgerechnet",
@@ -2393,7 +2441,7 @@
         "setUp": "einrichten",
         "overdue": "{amount} offen",
         "missingStatements": "Abrechnung {year} fehlt",
-        "total": "Zusammen {units, plural, one {# Wohnung} other {# Wohnungen}} · {amount} Sollmiete im Monat",
+        "total": "Zusammen {units, plural, one {# Wohnung} other {# Wohnungen}}, {amount} Sollmiete im Monat",
         "unitsLink": "{count, plural, one {# Wohnung} other {# Wohnungen}}",
         "rentedLink": "{count, plural, one {# vermietet} other {# vermietet}}"
       },
@@ -2418,8 +2466,8 @@
         "statements": "Abrechnungen {year}",
         "statementsOpen": "{count, plural, one {# offen} other {# offen}}",
         "statementsAllDone": "vollständig",
-        "statementsHint": "von {total} · noch {days, plural, one {# Tag} other {# Tage}} bis zur Frist",
-        "statementsHintOverdue": "von {total} · die Frist ist seit dem {deadline} verstrichen",
+        "statementsHint": "von {total}, noch {days, plural, one {# Tag} other {# Tage}} bis zur Frist",
+        "statementsHintOverdue": "von {total}, die Frist ist seit dem {deadline} verstrichen",
         "statementsHintDone": "Frist am {deadline} gewahrt",
         "overdue": "Offene Forderungen",
         "overdueHint": "{count, plural, one {# Mieter im Rückstand} other {# Mieter im Rückstand}} seit {month}",
@@ -2444,7 +2492,7 @@
         "less": "Weniger anzeigen",
         "setupNoUnits": "keine Wohnungen",
         "setupNoTenant": "kein Mieter",
-        "setupUnitLabel": "{building} · {unit}",
+        "setupUnitLabel": "{building}, {unit}",
         "senderTitle": "Absenderdaten vervollständigen",
         "senderBody": "Ohne Anschrift lässt sich keine Abrechnung finalisieren. Ohne Bankverbindung nennt das Schreiben bei einer Nachzahlung kein Konto.",
         "senderGaps": {

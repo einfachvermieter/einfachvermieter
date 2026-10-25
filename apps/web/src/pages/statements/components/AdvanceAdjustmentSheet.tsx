@@ -13,12 +13,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RiCalendarScheduleLine } from "@remixicon/react";
 import { useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { QUIET_TABLE_HEAD_ROW } from "@/components/common/tableStyles";
+import { TableFrame } from "@/components/common/TableFrame";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { FormSheet } from "@/components/form/FormSheet";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
 import { api } from "../../../lib/api";
 import { t } from "../../../lib/i18n";
 import { useCrudMutation } from "../../../lib/useCrudMutation";
@@ -204,7 +212,7 @@ export const AdvanceAdjustmentSheet = ({
 
       {watchedMode !== "keep" ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
             <SelectInput
               control={form.control}
               name="validFrom"
@@ -253,59 +261,60 @@ export const AdvanceAdjustmentSheet = ({
           className="rounded-md border border-border p-3"
           open={hasAutoTariffs}
         >
-          <summary className="cursor-pointer text-sm font-semibold">
+          <summary className="text-sm font-semibold">
             {t("ui.statements.advanceAdjustment.tariffs.sectionTitle")}
           </summary>
           <p className="mt-2 text-xs text-muted-foreground">
             {t("ui.statements.advanceAdjustment.tariffs.sectionDescription")}
           </p>
           {hasAutoTariffs ? (
-            <table className="mt-3 w-full text-sm">
-              <thead>
-                <tr className={QUIET_TABLE_HEAD_ROW}>
-                  <th className="py-1.5">
-                    {t(
-                      "ui.statements.advanceAdjustment.tariffs.columnCostType",
-                    )}
-                  </th>
-                  <th className="py-1.5 text-right">
-                    {t(
-                      "ui.statements.advanceAdjustment.tariffs.columnPeriodCost",
-                    )}
-                  </th>
-                  <th className="py-1.5 text-right">
-                    {t(
-                      "ui.statements.advanceAdjustment.tariffs.columnAdjustment",
-                    )}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {tariffEntries.map((entry) => {
-                  const autoBps = autoTariffs?.[entry.costTypeId];
-                  const hasValue =
-                    autoBps !== undefined && autoBps !== null && autoBps !== 0;
-                  return (
-                    <tr
-                      key={entry.costTypeId}
-                      className="border-t border-border"
-                    >
-                      <td className="py-1.5">{labelForCostType(entry)}</td>
-                      <td className="py-1.5 text-right tabular-nums text-muted-foreground">
-                        {formatEur(entry.tenantAmountCents)}
-                      </td>
-                      <td className="py-1.5 text-right tabular-nums">
-                        {hasValue
-                          ? formatBpsAsPercent(autoBps)
-                          : t(
-                              "ui.statements.advanceAdjustment.tariffs.noChange",
-                            )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <TableFrame>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>
+                      {t(
+                        "ui.statements.advanceAdjustment.tariffs.columnCostType",
+                      )}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t(
+                        "ui.statements.advanceAdjustment.tariffs.columnPeriodCost",
+                      )}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t(
+                        "ui.statements.advanceAdjustment.tariffs.columnAdjustment",
+                      )}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tariffEntries.map((entry) => {
+                    const autoBps = autoTariffs?.[entry.costTypeId];
+                    const hasValue =
+                      autoBps !== undefined &&
+                      autoBps !== null &&
+                      autoBps !== 0;
+                    return (
+                      <TableRow key={entry.costTypeId} className="border-t">
+                        <TableCell>{labelForCostType(entry)}</TableCell>
+                        <TableCell className="text-right tabular-nums text-muted-foreground">
+                          {formatEur(entry.tenantAmountCents)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {hasValue
+                            ? formatBpsAsPercent(autoBps)
+                            : t(
+                                "ui.statements.advanceAdjustment.tariffs.noChange",
+                              )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableFrame>
           ) : (
             <p className="mt-3 text-xs text-muted-foreground">
               {t("ui.statements.advanceAdjustment.tariffs.emptyHint")}

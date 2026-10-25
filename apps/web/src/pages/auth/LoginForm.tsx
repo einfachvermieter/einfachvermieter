@@ -1,9 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
+import { RiEyeOffLine } from "@remixicon/react";
 import { useNavigate } from "@tanstack/react-router";
 import { type ComponentProps, type FormEvent, useId, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { IconEye } from "@/lib/icons";
+import { Spinner } from "../../components/common/Spinner";
 import { CheckboxInput } from "../../components/form/CheckboxInput";
 import { Button } from "../../components/ui/Button";
 import {
@@ -40,6 +42,8 @@ export const LoginForm = ({
   const formId = useId();
   const [showPassword, setShowPassword] = useState(false);
   const form = useForm<LoginFormValues>({
+    // Erst beim Absenden prüfen, nicht bei jeder Eingabe
+    reValidateMode: "onSubmit",
     resolver: zodResolver(schema),
     defaultValues: { email: "", password: "", rememberMe: false },
   });
@@ -65,79 +69,83 @@ export const LoginForm = ({
       className={cn("flex flex-col gap-6", className)}
       {...props}
     >
-      <FieldGroup>
-        <Controller
-          name="email"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={`${formId}-email`}>
-                {t("ui.auth.email")}
-              </FieldLabel>
-              <Input
-                {...field}
-                id={`${formId}-email`}
-                type="email"
-                autoComplete="email"
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid ? (
-                <FieldError errors={[fieldState.error]} />
-              ) : null}
-            </Field>
-          )}
-        />
-        <Controller
-          name="password"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={`${formId}-password`}>
-                {t("ui.auth.password")}
-              </FieldLabel>
-              <InputGroup>
-                <InputGroupInput
+      {/* Während der Anmeldung sind die Felder gesperrt */}
+      <fieldset disabled={login.isPending} className="contents">
+        <FieldGroup>
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={`${formId}-email`}>
+                  {t("ui.auth.email")}
+                </FieldLabel>
+                <Input
                   {...field}
-                  id={`${formId}-password`}
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
+                  id={`${formId}-email`}
+                  type="email"
+                  autoComplete="email"
                   aria-invalid={fieldState.invalid}
                 />
-                <InputGroupAddon align="inline-end">
-                  <InputGroupButton
-                    size="icon-xs"
-                    aria-label={t(
-                      showPassword
-                        ? "ui.auth.hidePassword"
-                        : "ui.auth.showPassword",
-                    )}
-                    aria-pressed={showPassword}
-                    onClick={() => setShowPassword((shown) => !shown)}
-                  >
-                    {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
-                  </InputGroupButton>
-                </InputGroupAddon>
-              </InputGroup>
-              {fieldState.invalid ? (
-                <FieldError errors={[fieldState.error]} />
-              ) : null}
-            </Field>
-          )}
-        />
-        <CheckboxInput
-          control={form.control}
-          name="rememberMe"
-          label={t("ui.auth.rememberMe")}
-        />
-        {login.isError ? (
-          <FieldError>{t("errors.loginFailed")}</FieldError>
-        ) : null}
-        <Field>
-          <Button type="submit" disabled={login.isPending}>
-            {login.isPending ? t("ui.auth.loggingIn") : t("ui.auth.login")}
-          </Button>
-        </Field>
-      </FieldGroup>
+                {fieldState.invalid ? (
+                  <FieldError errors={[fieldState.error]} />
+                ) : null}
+              </Field>
+            )}
+          />
+          <Controller
+            name="password"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={`${formId}-password`}>
+                  {t("ui.auth.password")}
+                </FieldLabel>
+                <InputGroup>
+                  <InputGroupInput
+                    {...field}
+                    id={`${formId}-password`}
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton
+                      size="icon-xs"
+                      aria-label={t(
+                        showPassword
+                          ? "ui.auth.hidePassword"
+                          : "ui.auth.showPassword",
+                      )}
+                      aria-pressed={showPassword}
+                      onClick={() => setShowPassword((shown) => !shown)}
+                    >
+                      {showPassword ? <RiEyeOffLine /> : <IconEye />}
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
+                {fieldState.invalid ? (
+                  <FieldError errors={[fieldState.error]} />
+                ) : null}
+              </Field>
+            )}
+          />
+          <CheckboxInput
+            control={form.control}
+            name="rememberMe"
+            label={t("ui.auth.rememberMe")}
+          />
+          {login.isError ? (
+            <FieldError>{t("errors.loginFailed")}</FieldError>
+          ) : null}
+          <Field>
+            <Button type="submit" disabled={login.isPending}>
+              {login.isPending ? <Spinner data-icon="inline-start" /> : null}
+              {t("ui.auth.login")}
+            </Button>
+          </Field>
+        </FieldGroup>
+      </fieldset>
     </form>
   );
 };

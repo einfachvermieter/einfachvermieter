@@ -1,9 +1,9 @@
 import { formatName } from "@einfachvermieter/shared";
-import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { IconPlus } from "@/lib/icons";
 import { BalanceAmount } from "../../components/common/BalanceAmount";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
@@ -13,7 +13,6 @@ import { PrerequisiteEmpty } from "../../components/common/PrerequisiteEmpty";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
@@ -164,22 +163,20 @@ export const StatementsPage = () => {
   }
 
   const sub = data
-    ? [t("ui.statements.sub.count", { count: data.total }), building?.name]
-        .filter(Boolean)
-        .join(t("ui.common.separators.bullet"))
+    ? [t("ui.statements.sub.count", { count: data.total })].filter(Boolean)
     : undefined;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
+        tile={<PageHeaderIcon domain="statements" />}
         title={t("ui.statements.pageTitle")}
         sub={sub}
         subLoading={!data}
         action={
           canAddStatement ? (
             <Button type="button" onClick={() => setCreateOpen(true)}>
-              <RiAddLine />
+              <IconPlus />
               <span className="hidden sm:inline">
                 {t("ui.statements.addStatement")}
               </span>

@@ -29,7 +29,7 @@ export const MonthTileGrid = ({ months }: { months: MonthTile[] }) => (
           STATE_CLASSES[month.state],
         )}
       >
-        <div className="text-2xs font-semibold text-muted-foreground">
+        <div className="text-xs font-semibold text-muted-foreground">
           {month.label}
         </div>
         <div

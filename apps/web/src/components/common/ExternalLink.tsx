@@ -14,7 +14,7 @@ export const ExternalLink = ({
     href={href}
     target="_blank"
     rel="noreferrer"
-    className="inline-flex items-center gap-1 font-medium underline underline-offset-3 hover:text-foreground"
+    className="inline-flex items-center gap-1 underline underline-offset-3 hover:text-foreground"
   >
     {label}
     <RiExternalLinkLine className="size-3.5" />

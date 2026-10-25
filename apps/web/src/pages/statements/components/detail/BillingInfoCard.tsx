@@ -8,6 +8,7 @@ import {
   type Period,
 } from "@einfachvermieter/shared";
 import { RiInformationLine } from "@remixicon/react";
+import { ResultRows } from "@/components/common/ResultRows";
 import { SectionCard } from "../../../../components/common/SectionCard";
 import { t } from "../../../../lib/i18n";
 
@@ -52,22 +53,12 @@ export const BillingInfoCard = ({
             <h3 className="mb-2.5 font-semibold text-foreground">
               {t("statements.pdf.billingInfo.energyTitle")}
             </h3>
-            <div className="scroll-shadow-x overflow-x-auto">
-              <table className="w-full text-sm">
-                <tbody>
-                  {rows.map((row) => (
-                    <tr key={row.key} className="border-b border-border">
-                      <td className="py-2.5 font-semibold text-foreground">
-                        {t(row.label.key, row.label.params)}
-                      </td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {t(row.value.key, row.value.params)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ResultRows
+              rows={rows.map((row) => ({
+                label: t(row.label.key, row.label.params),
+                value: t(row.value.key, row.value.params),
+              }))}
+            />
           </section>
         ) : null}
         {rows.length === 0 ? (
@@ -80,22 +71,12 @@ export const BillingInfoCard = ({
             <h3 className="mb-2.5 font-semibold text-foreground">
               {t("statements.pdf.billingInfo.costsTitle")}
             </h3>
-            <div className="scroll-shadow-x overflow-x-auto">
-              <table className="w-full text-sm">
-                <tbody>
-                  {costRows.map((row) => (
-                    <tr key={row.key} className="border-b border-border">
-                      <td className="py-2.5 font-semibold text-foreground">
-                        {t(row.label.key, row.label.params)}
-                      </td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {t(row.value.key, row.value.params)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ResultRows
+              rows={costRows.map((row) => ({
+                label: t(row.label.key, row.label.params),
+                value: t(row.value.key, row.value.params),
+              }))}
+            />
           </section>
         ) : null}
         {comparison?.rows ? (
@@ -104,22 +85,12 @@ export const BillingInfoCard = ({
               {t("statements.pdf.billingInfo.comparisonTitle")}
               <sup>{FOOTNOTE_MARKER}</sup>
             </h3>
-            <div className="scroll-shadow-x overflow-x-auto">
-              <table className="w-full text-sm">
-                <tbody>
-                  {comparison.rows.map((row) => (
-                    <tr key={row.key} className="border-b border-border">
-                      <td className="py-2.5 font-semibold text-foreground">
-                        {t(row.label.key, row.label.params)}
-                      </td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {t(row.value.key, row.value.params)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ResultRows
+              rows={comparison.rows.map((row) => ({
+                label: t(row.label.key, row.label.params),
+                value: t(row.value.key, row.value.params),
+              }))}
+            />
             <p className="mt-2 text-xs text-muted-foreground">
               <sup>{FOOTNOTE_MARKER}</sup>{" "}
               {t("statements.pdf.billingInfo.comparisonNote")}

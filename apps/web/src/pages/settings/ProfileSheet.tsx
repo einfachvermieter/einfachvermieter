@@ -3,13 +3,13 @@ import {
   profileUpdateSchema,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiUserLine } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { FormSheet } from "@/components/form/FormSheet";
 import { TextInput } from "@/components/form/TextInput";
 import { useCurrentUser, useUpdateProfile } from "@/lib/auth";
 import { t } from "@/lib/i18n";
+import { IconUser } from "@/lib/icons";
 
 /**
  * Profil des angemeldeten Kontos im FormSheet
@@ -31,7 +31,7 @@ export const ProfileSheet = ({ onClose }: { onClose: () => void }) => {
   return (
     <FormSheet
       form={form}
-      icon={RiUserLine}
+      icon={IconUser}
       title={t("ui.settings.profile.title")}
       description={t("ui.settings.profile.description")}
       submitLabel={t("ui.common.action.save")}

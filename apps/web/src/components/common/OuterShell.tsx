@@ -32,7 +32,7 @@ export const OuterShell = ({
       <div data-drag-region={true} className="fixed inset-x-0 top-0 h-10" />
     ) : null}
     <BetaNotice autoOpen={betaNoticeAutoOpen} />
-    <AppBrand tone="dark" />
+    <AppBrand tone="light" />
     <div className={cn("w-full", widthClasses[width])}>{children}</div>
     <p className="text-xs text-schiefer-500 tabular-nums">
       <UpdateVersion version={__APP_VERSION__} />

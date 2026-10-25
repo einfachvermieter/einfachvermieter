@@ -1,9 +1,9 @@
 import { formatDate, formatEur } from "@einfachvermieter/shared";
-import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { IconPlus } from "@/lib/icons";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -24,7 +24,7 @@ import {
   costEntriesOverviewQueryOptions,
   costTypesQueryOptions,
 } from "../../lib/costs";
-import { costTypeVisual, domainVisuals } from "../../lib/domainVisuals";
+import { costTypeVisual } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { usePrerequisite } from "../../lib/prerequisites";
@@ -69,7 +69,7 @@ const invoiceColumns = (
               {moreNames.length > 0 ? (
                 <Tooltip>
                   <TooltipTrigger asChild={true}>
-                    <Badge variant="neutral">
+                    <Badge variant="tag">
                       {t("ui.common.moreChip", { count: moreNames.length })}
                     </Badge>
                   </TooltipTrigger>
@@ -193,26 +193,23 @@ export const InvoicesPage = () => {
   const sub = data
     ? [
         t("ui.invoices.sub.count", { count: data.total }),
-        building?.name,
         t("ui.invoices.sub.totalAmount", {
           amount: formatEur(data.totalAmountCents),
         }),
-      ]
-        .filter(Boolean)
-        .join(t("ui.common.separators.bullet"))
+      ].filter(Boolean)
     : undefined;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={<PageHeaderIcon icon={domainVisuals.invoices.icon} />}
+        tile={<PageHeaderIcon domain="invoices" />}
         title={t("ui.invoices.title")}
         sub={sub}
         subLoading={!data}
         action={
           canAddInvoice ? (
             <Button type="button" onClick={() => setCreateOpen(true)}>
-              <RiAddLine />
+              <IconPlus />
               <span className="hidden sm:inline">
                 {t("ui.invoices.addEntry")}
               </span>

@@ -4,6 +4,7 @@ import { bankDataByIBAN } from "bankdata-germany";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { DateInput } from "@/components/form/DateInput";
+import { DependentFields } from "@/components/form/DependentFields";
 import { FormSheet } from "@/components/form/FormSheet";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -76,7 +77,7 @@ export const TenantBankAccountSheet = ({
       onSubmit={onSubmit}
       onClose={onClose}
     >
-      <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
         <DateInput
           control={form.control}
           name="startDate"
@@ -123,21 +124,23 @@ export const TenantBankAccountSheet = ({
         label={t("ui.tenant.fields.sepaEnabled")}
       />
       {sepaEnabled ? (
-        <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <TextInput
-            control={form.control}
-            name="mandateReference"
-            label={t("ui.tenant.fields.mandateReference")}
-            inputClassName="tabular-nums"
-          />
-          <DateInput
-            control={form.control}
-            name="mandateSignedAt"
-            label={t("ui.tenant.fields.mandateSignedAt")}
-            startMonth={mandateCalendarStart}
-            endMonth={today}
-          />
-        </FieldGroup>
+        <DependentFields>
+          <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
+            <TextInput
+              control={form.control}
+              name="mandateReference"
+              label={t("ui.tenant.fields.mandateReference")}
+              inputClassName="tabular-nums"
+            />
+            <DateInput
+              control={form.control}
+              name="mandateSignedAt"
+              label={t("ui.tenant.fields.mandateSignedAt")}
+              startMonth={mandateCalendarStart}
+              endMonth={today}
+            />
+          </FieldGroup>
+        </DependentFields>
       ) : null}
     </FormSheet>
   );

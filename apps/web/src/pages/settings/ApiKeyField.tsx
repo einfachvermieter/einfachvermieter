@@ -1,4 +1,3 @@
-import { RiDeleteBinLine } from "@remixicon/react";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { TextInput } from "@/components/form/TextInput";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/Field";
@@ -9,6 +8,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/InputGroup";
 import { t } from "@/lib/i18n";
+import { IconTrash } from "@/lib/icons";
 
 type ApiKeyFieldProps<T extends FieldValues> = {
   control: Control<T>;
@@ -73,7 +73,7 @@ export const ApiKeyField = <T extends FieldValues>({
             aria-label={t("ui.settings.ai.fields.removeApiKey")}
             title={t("ui.settings.ai.fields.removeApiKey")}
           >
-            <RiDeleteBinLine />
+            <IconTrash />
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>

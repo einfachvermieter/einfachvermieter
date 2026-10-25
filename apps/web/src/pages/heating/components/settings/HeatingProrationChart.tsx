@@ -60,7 +60,7 @@ export const HeatingProrationChart = ({
               })}
             >
               {isLinear ? null : (
-                <span className="-top-5 absolute inset-x-0 text-center text-2xs font-semibold text-muted-foreground tabular-nums">
+                <span className="-top-5 absolute inset-x-0 text-center text-xs font-semibold text-muted-foreground tabular-nums">
                   <span className="xl:hidden">{promille}</span>
                   <span className="hidden xl:inline">{`${promille} ‰`}</span>
                 </span>
@@ -72,7 +72,7 @@ export const HeatingProrationChart = ({
             style={{ bottom: `${(linearAvgPromille / maxPromille) * 100}%` }}
           >
             {isLinear ? (
-              <em className="-top-4.75 absolute right-0 rounded bg-card px-1.25 text-2xs font-semibold text-muted-foreground not-italic tabular-nums">
+              <em className="-top-4.75 absolute right-0 rounded bg-card px-1.25 text-xs font-semibold text-muted-foreground not-italic tabular-nums">
                 {t("ui.heating.detail.prorationChartRefLabel", {
                   promille: linearAvgPromille,
                 })}
@@ -80,7 +80,7 @@ export const HeatingProrationChart = ({
             ) : null}
           </div>
         </div>
-        <div className="mt-1.75 grid grid-cols-12 gap-1.5 text-center text-2xs font-semibold text-muted-foreground">
+        <div className="mt-1.75 grid grid-cols-12 gap-1.5 text-center text-xs font-semibold text-muted-foreground">
           {MONTH_KEYS.map((key) => (
             <span key={key}>
               <span className="xl:hidden">

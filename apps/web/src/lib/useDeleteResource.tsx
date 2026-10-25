@@ -12,6 +12,16 @@ type UseDeleteResourceOptions<T extends { id: string }> = {
   invalidateKeys: readonly (readonly unknown[])[];
   title: string;
   describe: (resource: T) => ReactNode;
+
+  /**
+   * Was außer dem Datensatz mit gelöscht wird (hervorgehoben)
+   */
+  consequence?: ReactNode | ((resource: T) => ReactNode);
+
+  /**
+   * Hinweis nach der Folge, z.B. eine Alternative zum Löschen
+   */
+  hint?: ReactNode;
   confirmLabel?: string;
   defaultErrorMessage?: string;
   onDeleted?: () => void;
@@ -29,7 +39,9 @@ export const useDeleteResource = <T extends { id: string }>({
   invalidateKeys,
   title,
   describe,
-  confirmLabel = t("ui.common.action.delete"),
+  consequence,
+  hint,
+  confirmLabel = t("ui.common.action.confirmDelete"),
   defaultErrorMessage = t("common.deleteFailed"),
   onDeleted,
 }: UseDeleteResourceOptions<T>): DeleteResource<T> => {
@@ -83,6 +95,12 @@ export const useDeleteResource = <T extends { id: string }>({
       }}
       title={title}
       description={target ? describe(target) : undefined}
+      consequence={
+        target && typeof consequence === "function"
+          ? consequence(target)
+          : (consequence as ReactNode)
+      }
+      hint={hint}
       confirmLabel={confirmLabel}
       onConfirm={() => {
         if (target) {

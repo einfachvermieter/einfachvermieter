@@ -1,9 +1,9 @@
 import type { MeterFormValues } from "@einfachvermieter/shared";
 import { meterFormSchema } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiDashboard2Line } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { FormSheet } from "@/components/form/FormSheet";
+import { IconGauge } from "@/lib/icons";
 import { t } from "../../../lib/i18n";
 import type { Unit } from "../../../lib/units";
 import { MeterBaseFields } from "../components/baseData/MeterBaseFields";
@@ -33,7 +33,7 @@ export const MeterBaseSheet = ({
   return (
     <FormSheet
       form={form}
-      icon={RiDashboard2Line}
+      icon={IconGauge}
       title={t("ui.meters.detail.baseSection")}
       submitLabel={t("ui.common.action.save")}
       onSubmit={onSubmit}

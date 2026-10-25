@@ -8,8 +8,17 @@ import {
   waterFootnoteMeters,
 } from "@einfachvermieter/shared";
 import { RiHomeGearLine } from "@remixicon/react";
+import { TableFrame } from "@/components/common/TableFrame";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
 import { SectionCard } from "../../../../components/common/SectionCard";
-import { QUIET_TABLE_HEAD_ROW } from "../../../../components/common/tableStyles";
 import { t } from "../../../../lib/i18n";
 import { ALLOCATION_BY_LABEL_KEY } from "../../../../lib/statements";
 
@@ -131,28 +140,28 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
       description={t("ui.statements.detail.operatingCostsDescription")}
     >
       <div className="space-y-4">
-        <div className="scroll-shadow-x overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className={QUIET_TABLE_HEAD_ROW}>
-                <th className="py-2.5">
+        <TableFrame>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="whitespace-normal">
                   {t("statements.pdf.costTable.costTypeAllocation")}
-                </th>
-                <th className="py-2.5 text-right">
+                </TableHead>
+                <TableHead className="text-right whitespace-normal">
                   {t("statements.pdf.costTable.totalCosts")}
-                </th>
-                <th className="py-2.5 text-center">
+                </TableHead>
+                <TableHead className="text-center whitespace-normal">
                   {t("ui.statements.detail.columnBemessungFraction")}
-                </th>
-                <th className="py-2.5 text-center">
+                </TableHead>
+                <TableHead className="text-center whitespace-normal">
                   {t("statements.pdf.costTable.tage")}
-                </th>
-                <th className="py-2.5 text-right">
+                </TableHead>
+                <TableHead className="text-right whitespace-normal">
                   {t("ui.statements.detail.columnYourCosts")}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {operatingLines.map((line) => {
                 const isFixed = line.allocationKey === "fixed";
                 const hasBemessung =
@@ -169,11 +178,8 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
                   .filter((fn) => fn.applies(line))
                   .map((fn) => fn.marker);
                 return (
-                  <tr
-                    key={line.costTypeName}
-                    className="border-b border-border"
-                  >
-                    <td className="py-2.5">
+                  <TableRow key={line.costTypeName}>
+                    <TableCell className="whitespace-normal">
                       <span className="font-semibold text-foreground">
                         {line.costTypeName}
                         {markers.length > 0 ? (
@@ -183,16 +189,16 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
                       <span className="mt-0.5 block text-muted-foreground">
                         {t(ALLOCATION_BY_LABEL_KEY[line.allocationKey])}
                       </span>
-                    </td>
-                    <td className="py-2.5 text-right tabular-nums">
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
                       {formatEur(line.totalAmountCents)}{" "}
                       <span className="font-semibold text-muted-foreground">
                         {isFixed
                           ? t("statements.pdf.costTable.operatorEquals")
                           : t("statements.pdf.costTable.operatorMultiply")}
                       </span>
-                    </td>
-                    <td className="py-2.5 text-center tabular-nums">
+                    </TableCell>
+                    <TableCell className="text-center tabular-nums">
                       {hasBemessung ? (
                         <span className="inline-flex items-center justify-center gap-1">
                           <Fraction
@@ -216,8 +222,8 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
                           )}
                         </span>
                       ) : null}
-                    </td>
-                    <td className="py-2.5 text-center tabular-nums">
+                    </TableCell>
+                    <TableCell className="text-center tabular-nums">
                       {hasDays ? (
                         <span className="inline-flex items-center justify-center gap-1">
                           <Fraction
@@ -229,26 +235,26 @@ export const OperatingCostsCard = ({ result }: { result: StatementResult }) => {
                           </span>
                         </span>
                       ) : null}
-                    </td>
-                    <td className="py-2.5 text-right font-semibold tabular-nums">
+                    </TableCell>
+                    <TableCell className="text-right font-semibold tabular-nums">
                       {formatEur(line.tenantAmountCents)}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })}
-            </tbody>
-            <tfoot>
-              <tr className="border-t-2 border-foreground">
-                <td className="py-2 font-semibold" colSpan={4}>
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell className="font-semibold" colSpan={4}>
                   {t("statements.pdf.costTable.total")}
-                </td>
-                <td className="py-2 text-right font-semibold tabular-nums">
+                </TableCell>
+                <TableCell className="text-right font-semibold tabular-nums">
                   {formatEur(operatingTotalCents)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </TableFrame>
         {footnotes.length > 0 || hasAnyBemessung ? (
           <div className="space-y-0.5">
             {footnotes.map((fn) => (

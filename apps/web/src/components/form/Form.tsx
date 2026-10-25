@@ -92,7 +92,10 @@ export const Form = <
             <AlertDescription>{rootError}</AlertDescription>
           </Alert>
         ) : null}
-        {children}
+        {/* Während des Speicherns sind die Felder gesperrt */}
+        <fieldset disabled={isSubmitting} className="contents">
+          {children}
+        </fieldset>
       </form>
 
       <AlertDialog

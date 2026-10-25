@@ -1,11 +1,7 @@
-import {
-  RiArrowDownSLine,
-  RiArrowUpSLine,
-  RiCheckLine,
-} from "@remixicon/react";
-
+import { RiArrowUpSLine } from "@remixicon/react";
 import { Select as SelectPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
+import { IconCheck, IconChevronDown } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 const Select = ({ ...props }: ComponentProps<typeof SelectPrimitive.Root>) => (
@@ -41,14 +37,14 @@ const SelectTrigger = ({
     data-slot="select-trigger"
     data-size={size}
     className={cn(
-      "flex w-fit items-center justify-between gap-1.5 rounded-md border border-input bg-background py-2 pr-2 pl-3 text-sm whitespace-nowrap transition-[color,box-shadow] outline-none focus-visible:border-azur-700 focus-visible:ring-3 focus-visible:ring-azur-200 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive data-placeholder:text-schiefer-400 data-[size=default]:h-10 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+      "flex w-fit items-center justify-between gap-1.5 rounded-md border border-edge bg-white py-1.5 pr-2 pl-3 text-sm whitespace-nowrap focus:outline-2 focus:outline-offset-2 focus:outline-azur-500 disabled:cursor-not-allowed disabled:border-border disabled:bg-schiefer-50 disabled:text-schiefer-500 aria-invalid:border-himbeere-500 aria-invalid:ring-3 aria-invalid:ring-himbeere-50 aria-invalid:focus:outline-himbeere-500 data-placeholder:text-schiefer-500 data-[size=default]:h-8.5 data-[size=sm]:h-7 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
       className,
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild={true}>
-      <RiArrowDownSLine className="pointer-events-none size-4 text-muted-foreground" />
+      <IconChevronDown className="pointer-events-none size-4 text-muted-foreground" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 );
@@ -65,7 +61,7 @@ const SelectContent = ({
       data-slot="select-content"
       data-align-trigger={position === "item-aligned"}
       className={cn(
-        "relative z-50 max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-lg border border-border bg-popover text-popover-foreground shadow-md duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+        "relative z-50 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-lg border border-border bg-popover text-popover-foreground shadow-md duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className,
@@ -115,7 +111,7 @@ const SelectItem = ({
   >
     <span className="pointer-events-none absolute right-3 flex size-4 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <RiCheckLine className="pointer-events-none" />
+        <IconCheck className="pointer-events-none" />
       </SelectPrimitive.ItemIndicator>
     </span>
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
@@ -161,7 +157,7 @@ const SelectScrollDownButton = ({
     )}
     {...props}
   >
-    <RiArrowDownSLine />
+    <IconChevronDown />
   </SelectPrimitive.ScrollDownButton>
 );
 

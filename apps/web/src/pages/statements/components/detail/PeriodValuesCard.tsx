@@ -1,13 +1,13 @@
 import { formatNumberLoose, type Period } from "@einfachvermieter/shared";
-import { RiPencilLine, RiTempHotLine } from "@remixicon/react";
+import { RiTempHotLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { DomainLink } from "@/components/common/DomainLink";
 import type { ResultRow } from "@/components/common/ResultRows";
 import { ResultRows } from "@/components/common/ResultRows";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
-import { Button } from "@/components/ui/Button";
 import { heatingPeriodValuesQueryOptions } from "../../../../lib/heatingPeriodValues";
 import { t } from "../../../../lib/i18n";
 import { PeriodValuesSheet } from "./PeriodValuesSheet";
@@ -88,15 +88,11 @@ export const PeriodValuesCard = ({
       description={t("ui.heatingPeriodValues.description")}
       action={
         values.lockedByStatementId === null ? (
-          <Button
-            type="button"
-            variant="addLink"
-            size="text"
+          <SectionAction
+            kind="edit"
+            label={t("ui.common.action.edit")}
             onClick={() => setIsEditing(true)}
-          >
-            <RiPencilLine />
-            {t("ui.common.action.edit")}
-          </Button>
+          />
         ) : undefined
       }
     >

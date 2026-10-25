@@ -260,14 +260,17 @@ export const PaymentForm = ({
       onSubmit={handleSubmit}
       onClose={onClose}
     >
-      <FieldGroup className="gap-4">
-        <SelectInput
-          control={form.control}
-          name="tenantId"
-          label={t("ui.common.columns.tenant")}
-          disabled={tenantFieldDisabled}
-          options={tenantOptions}
-        />
+      <FieldGroup>
+        {/* Steht der Mieter durch den Ort fest (Mieterkonto), entfällt das
+            Feld, statt gesperrt angezeigt zu werden */}
+        {tenantFieldDisabled ? null : (
+          <SelectInput
+            control={form.control}
+            name="tenantId"
+            label={t("ui.common.columns.tenant")}
+            options={tenantOptions}
+          />
+        )}
         <DateInput
           control={form.control}
           name="paymentDate"
@@ -424,7 +427,7 @@ const ContractInfo = ({
           })}
         </p>
         <p className="tabular-nums">
-          <span className="font-medium">{t(headingKey)}</span>{" "}
+          <span className="font-semibold">{t(headingKey)}</span>{" "}
           {recordedCount === 0
             ? t("ui.payments.contract.alreadyPaidNone")
             : t("ui.payments.contract.alreadyPaidSummary", {

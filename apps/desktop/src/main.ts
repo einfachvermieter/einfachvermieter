@@ -19,7 +19,6 @@ import {
   BrowserWindow,
   type BrowserWindowConstructorOptions,
   dialog,
-  ipcMain,
   Menu,
   type MenuItemConstructorOptions,
   session,
@@ -465,56 +464,22 @@ setTimeout(() => document.getElementById("hint").classList.add("visible"), 5000)
 };
 
 /**
- * Fensterrahmen je System: Die Web-App zeichnet die Titelleiste (40 px).
- * Auf dem Mac sitzen die Ampel-Buttons mittig darin, unter Windows zeichnet
- * das System nur die Fenster-Buttons (Farben: Schiefer 900/200).
+ * Fensterrahmen je System: Auf dem Mac sitzt die Ampel in der Fensterleiste
+ * der Web-App (48 px hoch, die Ampel mittig darin). Unter Windows zeichnet
+ * das System Titelleiste und Menüzeile, die Web-App ihre Fensterleiste
+ * darunter wie im Browser.
  */
 const titleBarOptions = (): Partial<BrowserWindowConstructorOptions> => {
   if (process.platform === "darwin") {
     return {
       titleBarStyle: "hiddenInset",
-      // Ampel 16 px hoch, mittig in der 40-px-Titelleiste
-      trafficLightPosition: { x: 20, y: 12 },
+      // Ampel 16 px hoch, mittig in der 48-px-Fensterleiste
+      trafficLightPosition: { x: 20, y: 16 },
     };
   }
 
-  return {
-    titleBarStyle: "hidden",
-    titleBarOverlay: { color: "#1a222c", symbolColor: "#d6dbe1", height: 40 },
-  };
+  return {};
 };
-
-/**
- * Öffnet ein Menü des Anwendungsmenüs unter dem angeklickten Menünamen der
- * Windows-Titelleiste. `buildMenu` bleibt so die einzige Quelle für Einträge
- * und Tastenkürzel.
- */
-ipcMain.on(
-  "desktop-shell:open-menu",
-  (event, menuId: unknown, x: unknown, y: unknown) => {
-    const window = BrowserWindow.fromWebContents(event.sender);
-    const submenu =
-      typeof menuId === "string"
-        ? Menu.getApplicationMenu()?.getMenuItemById(menuId)?.submenu
-        : undefined;
-
-    if (
-      !(window && submenu) ||
-      typeof x !== "number" ||
-      typeof y !== "number"
-    ) {
-      return;
-    }
-
-    // Die Web-App misst in CSS-Pixeln, das Menü erwartet Fensterpunkte.
-    const zoom = event.sender.getZoomFactor();
-    submenu.popup({
-      window,
-      x: Math.round(x * zoom),
-      y: Math.round(y * zoom),
-    });
-  },
-);
 
 const createWindow = (origin: string): BrowserWindow => {
   const state = readWindowState();

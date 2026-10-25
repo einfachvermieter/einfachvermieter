@@ -1,7 +1,7 @@
-import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
+import { IconPlus } from "@/lib/icons";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Button } from "../../components/ui/Button";
@@ -39,7 +39,7 @@ export const MeterReadingsPage = () => {
         action={
           meter && !isVirtual ? (
             <Button type="button" onClick={() => setSheet("new")}>
-              <RiAddLine />
+              <IconPlus />
               <span className="hidden sm:inline">
                 {t("ui.meters.addReading")}
               </span>

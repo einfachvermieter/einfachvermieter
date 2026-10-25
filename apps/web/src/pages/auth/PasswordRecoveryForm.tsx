@@ -69,7 +69,7 @@ export const PasswordRecoveryForm = ({
   return (
     <Form form={form} onSubmit={handleSubmit} guardUnsavedChanges={false}>
       <fieldset disabled={submitting} className="contents">
-        <FieldGroup className="gap-4">
+        <FieldGroup>
           <SelectInput
             control={form.control}
             name="email"

@@ -5,11 +5,20 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { SectionCard } from "@/components/common/SectionCard";
 import { Spinner } from "@/components/common/Spinner";
+import { TableFrame } from "@/components/common/TableFrame";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
 import { api } from "../../../../lib/api";
 import {
   type ClimateFactorRow,
@@ -194,29 +203,29 @@ export const ClimateFactorsCard = ({
             </AlertDescription>
           </Alert>
         ) : null}
-        <div className="scroll-shadow-x overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-muted-foreground">
-                <th className="py-2 font-medium">
+        <TableFrame>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
                   {t("ui.heating.climateFactors.columns.period")}
-                </th>
-                <th className="py-2 text-right font-medium">
+                </TableHead>
+                <TableHead className="text-right">
                   {t("ui.heating.climateFactors.columns.factor")}
-                </th>
-                <th className="py-2 text-right font-medium">
+                </TableHead>
+                <TableHead className="text-right">
                   {t("ui.heating.climateFactors.columns.source")}
-                </th>
-                <th className="py-2 text-right font-medium"> </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+                <TableHead className="text-right"> </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {data.rows.map((row) => (
-                <tr key={rowKey(row)} className="border-b border-border">
-                  <td className="py-2.5">
+                <TableRow key={rowKey(row)}>
+                  <TableCell>
                     {formatPeriod(row.periodStart, row.periodEnd)}
-                  </td>
-                  <td className="py-2.5 text-right tabular-nums">
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
                     {editMode ? (
                       <div className="ml-auto w-24">
                         <Input
@@ -245,9 +254,11 @@ export const ClimateFactorsCard = ({
                         </span>
                       )
                     )}
-                  </td>
-                  <td className="py-2.5 text-right">{sourceBadge(row)}</td>
-                  <td className="py-2.5 text-right">
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {sourceBadge(row)}
+                  </TableCell>
+                  <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       {editMode ? (
                         <Button
@@ -274,12 +285,12 @@ export const ClimateFactorsCard = ({
                         {t("ui.heating.climateFactors.reload")}
                       </Button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </TableFrame>
         <div className="flex items-center gap-3">
           <Switch
             checked={editMode}
@@ -289,7 +300,7 @@ export const ClimateFactorsCard = ({
             }}
           />
           <div>
-            <p className="text-sm font-medium">
+            <p className="text-sm font-semibold">
               {t("ui.heating.climateFactors.editSwitch")}
             </p>
             <p className="text-xs text-muted-foreground">

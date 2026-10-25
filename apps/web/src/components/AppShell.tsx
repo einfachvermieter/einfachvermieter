@@ -1,49 +1,32 @@
 import { Outlet } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import logoUrl from "../img/logo/logo_light.svg";
-import { desktopPlatform } from "../lib/desktopShell";
 import { BetaNotice } from "./common/BetaNotice";
+import { SectionToc } from "./common/SectionToc";
 import { UpdateMessages } from "./common/UpdateMessages";
 import { DocumentTitle } from "./DocumentTitle";
-import { DesktopTitleBar } from "./desktop/DesktopTitleBar";
 import { MainNavigation } from "./mainNavigation/MainNavigation";
-import { Separator } from "./ui/Separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/Sidebar";
+import { TopBar } from "./mainNavigation/TopBar";
+import { SidebarInset, SidebarProvider } from "./ui/Sidebar";
 
+/**
+ * Rahmen der App: Fensterleiste oben, darunter links die Sidebar des aktiven
+ * Gebäudes und rechts der Inhalt auf einer weißen Fläche über dem Grund
+ */
 export const AppShell = ({ children }: { children?: ReactNode }) => (
   <SidebarProvider>
     <DocumentTitle />
     <BetaNotice />
     <UpdateMessages />
-    {desktopPlatform ? <DesktopTitleBar /> : null}
+    <TopBar />
     <MainNavigation />
 
     <SidebarInset>
-      {/* Ab 1024px ist die Sidebar dauerhaft sichtbar; dann entfällt die Topbar
-            und der Seitenkopf trägt Navigation und Titel. Auf Mobile bleibt eine
-            Leiste mit Menü-Umschalter und Logo. Die Desktop-App trägt den
-            Umschalter in der Titelleiste. */}
-      {desktopPlatform ? null : (
-        <header className="sticky top-0 z-10 flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-border bg-background/70 px-6 pt-[env(safe-area-inset-top)] backdrop-blur-lg sm:px-8 lg:hidden">
-          <SidebarTrigger className="-mx-2" />
-
-          <Separator
-            orientation="vertical"
-            className="mx-2 data-vertical:h-full"
-          />
-
-          <div className="flex items-center gap-2">
-            <img
-              src={logoUrl}
-              alt="EinfachVermieter"
-              className="size-6 shrink-0"
-            />
-          </div>
-        </header>
-      )}
-
-      <main className="flex-1 overflow-x-clip py-8 pl-[max(1.5rem,env(safe-area-inset-left))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] sm:pl-[max(2rem,env(safe-area-inset-left))] sm:pr-[max(2rem,env(safe-area-inset-right))]">
-        <div className="w-full max-w-310">{children ?? <Outlet />}</div>
+      <main className="flex-1 overflow-x-clip py-6 pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))]">
+        {/* Seiten stehen in einer Spalte; Detailseiten bekommen rechts daneben ein Inhaltsverzeichnis */}
+        <div className="flex w-full max-w-310 gap-10 *:first:min-w-0 *:first:flex-1 min-[90rem]:max-w-370">
+          {children ?? <Outlet />}
+          <SectionToc />
+        </div>
       </main>
     </SidebarInset>
   </SidebarProvider>

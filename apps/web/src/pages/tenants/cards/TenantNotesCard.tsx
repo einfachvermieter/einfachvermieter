@@ -1,8 +1,8 @@
-import { RiPencilLine, RiStickyNoteLine } from "@remixicon/react";
+import { RiStickyNoteLine } from "@remixicon/react";
 import { EmptyNote } from "@/components/common/EmptyNote";
+import { SectionAction } from "@/components/common/SectionAction";
 import { SectionCard } from "@/components/common/SectionCard";
 import { HelpHint } from "@/components/help/HelpHint";
-import { Button } from "@/components/ui/Button";
 import { t } from "../../../lib/i18n";
 
 /**
@@ -24,10 +24,11 @@ export const TenantNotesCard = ({
     collapsible={true}
     defaultOpen={Boolean(notes)}
     action={
-      <Button type="button" variant="addLink" size="text" onClick={onEdit}>
-        <RiPencilLine />
-        {t("ui.common.action.edit")}
-      </Button>
+      <SectionAction
+        kind="edit"
+        label={t("ui.common.action.edit")}
+        onClick={onEdit}
+      />
     }
   >
     {notes ? (

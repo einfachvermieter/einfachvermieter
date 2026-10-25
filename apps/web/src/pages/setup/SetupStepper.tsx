@@ -1,4 +1,4 @@
-import { RiCheckLine } from "@remixicon/react";
+import { IconCheck } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 type SetupStepperProps = {
@@ -19,8 +19,8 @@ const stepState = (index: number, current: number): StepState => {
 };
 
 const circleClasses: Record<StepState, string> = {
-  done: "bg-azur-500 text-white",
-  active: "bg-azur-500 text-white ring-4 ring-azur-200",
+  done: "bg-azur-700 text-white",
+  active: "bg-azur-700 text-white ring-4 ring-azur-200",
   todo: "bg-schiefer-100 text-muted-foreground",
 };
 
@@ -78,7 +78,7 @@ export const SetupStepper = ({
                 )}
               >
                 {state === "done" ? (
-                  <RiCheckLine className="size-3.5" />
+                  <IconCheck className="size-3.5" />
                 ) : (
                   index + 1
                 )}
@@ -97,7 +97,7 @@ export const SetupStepper = ({
               <span
                 className={cn(
                   connectorShape,
-                  state === "done" ? "bg-azur-500" : "bg-border",
+                  state === "done" ? "bg-azur-700" : "bg-border",
                 )}
               />
             )}

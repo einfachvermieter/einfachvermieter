@@ -7,7 +7,6 @@ import {
   RiCloseLine,
   RiContractLeftLine,
   RiContractRightLine,
-  RiSearchLine,
 } from "@remixicon/react";
 import {
   type ColumnDef,
@@ -27,7 +26,6 @@ import {
 } from "@tanstack/react-table";
 import { type ReactNode, useEffect, useId, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import {
   InputGroup,
@@ -53,6 +51,7 @@ import {
   TableRow,
 } from "@/components/ui/Table";
 import { t } from "@/lib/i18n";
+import { IconSearch } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 declare module "@tanstack/react-table" {
@@ -98,7 +97,7 @@ const ServerSearchInput = ({
       />
 
       <InputGroupAddon>
-        <RiSearchLine />
+        <IconSearch />
       </InputGroupAddon>
 
       {draft ? (
@@ -149,7 +148,7 @@ const renderHeaderContent = <TData,>(header: Header<TData, unknown>) => {
     <button
       type="button"
       onClick={header.column.getToggleSortingHandler()}
-      className="group -mx-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 uppercase transition-colors hover:bg-muted-foreground/10 hover:text-foreground"
+      className="group -mx-1.5 inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 transition-colors hover:bg-azur-100 hover:text-azur-900"
     >
       {content}
       <SortIndicator sorted={header.column.getIsSorted()} />
@@ -227,7 +226,7 @@ const DataTableBody = <TData,>({
     return skeletonRowKeys.map((rowKey) => (
       <TableRow key={rowKey}>
         {columnKeys.map((colKey) => (
-          <TableCell key={colKey} className="h-15.5">
+          <TableCell key={colKey} className="h-12">
             <Skeleton className="h-4 w-[70%]" />
           </TableCell>
         ))}
@@ -240,10 +239,8 @@ const DataTableBody = <TData,>({
       <TableRow
         key={row.id}
         data-state={row.getIsSelected() ? "selected" : undefined}
-        className={cn(
-          onRowClick && "cursor-pointer",
-          rowClassName?.(row.original),
-        )}
+        data-clickable={onRowClick ? "" : undefined}
+        className={cn(rowClassName?.(row.original))}
         onClick={
           onRowClick
             ? (event) => {
@@ -299,10 +296,7 @@ const DataTablePagination = <TData,>({
   return (
     <div className="flex w-full justify-between items-center gap-2 sm:gap-8">
       <div className="flex items-center gap-2">
-        <Label
-          htmlFor={pageSizeId}
-          className="sr-only text-sm font-medium lg:not-sr-only"
-        >
+        <Label htmlFor={pageSizeId} className="sr-only text-sm lg:not-sr-only">
           {t("ui.common.pagination.entriesPerPage")}
         </Label>
         <Select
@@ -321,7 +315,7 @@ const DataTablePagination = <TData,>({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex w-fit items-center justify-center text-sm font-medium text-muted-foreground">
+      <div className="flex w-fit items-center justify-center text-sm text-muted-foreground">
         {t("ui.common.pagination.pageOf", {
           page: currentPageIndex + 1,
           total: totalPages,
@@ -479,7 +473,8 @@ export const DataTable = <TData,>({
           ) : null}
         </div>
       ) : null}
-      <Card className="gap-0 py-0">
+      {/* Rahmen mit runden Ecken, die unterste Zeile schließt mit ihm ab */}
+      <div className="overflow-hidden rounded-lg border border-border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -508,7 +503,7 @@ export const DataTable = <TData,>({
             />
           </TableBody>
         </Table>
-      </Card>
+      </div>
 
       <DataTablePagination table={table} />
     </div>

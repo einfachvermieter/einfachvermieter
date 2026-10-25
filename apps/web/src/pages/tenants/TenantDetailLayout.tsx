@@ -2,11 +2,11 @@ import type { ReactNode } from "react";
 import { cn } from "../../lib/utils";
 import { TenantDetailHeader } from "./TenantDetailHeader";
 import { TenantHero } from "./TenantHero";
-import { TenantKpiRow } from "./TenantKpiRow";
 
 /**
- * Gemeinsames Gerüst der Mieter-Detailseiten: Hero, Bereichs-Pills und
- * Kennzahl-Reihe
+ * Gemeinsames Gerüst der Mieter-Detailseiten: Seitenkopf und Tabs. Keine
+ * Kennzahlen-Flächen: Saldo und Kaution stehen als Status im Kopf, die
+ * Warmmiete bei den Mietsätzen
  */
 export const TenantDetailLayout = ({
   tenantId,
@@ -27,10 +27,7 @@ export const TenantDetailLayout = ({
     <div className="flex flex-col gap-2">
       <TenantDetailHeader tenantId={tenantId} active={active} />
 
-      <div className="space-y-5">
-        <TenantKpiRow tenantId={tenantId} />
-        {children}
-      </div>
+      <div className="space-y-5">{children}</div>
     </div>
   </div>
 );

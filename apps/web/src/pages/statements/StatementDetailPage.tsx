@@ -9,11 +9,8 @@ import {
   todayIso,
 } from "@einfachvermieter/shared";
 import {
-  RiArrowDownSLine,
   RiCalendarEventLine,
   RiCloseCircleLine,
-  RiDeleteBinLine,
-  RiDownloadLine,
   RiFileCopy2Line,
   RiFilePdf2Line,
   RiLockLine,
@@ -21,6 +18,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { Fragment, type ReactNode, useState } from "react";
+import { IconChevronDown, IconDownload, IconTrash } from "@/lib/icons";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
 import { MiniKpiRow } from "../../components/common/MiniKpiRow";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -57,7 +55,6 @@ import { Textarea } from "../../components/ui/Textarea";
 import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { api } from "../../lib/api";
 import { climateFactorsQueryOptions } from "../../lib/climateFactors";
-import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import { t } from "../../lib/i18n";
 import { senderSettingsQueryOptions } from "../../lib/senderSettings";
@@ -126,7 +123,7 @@ const renderStatusBadge = (statement: StatementDetail) => {
   switch (statement.status) {
     case "draft":
       return (
-        <Badge variant="neutral">
+        <Badge appearance="dot" variant="neutral">
           {statement.supersedesStatementId
             ? t("ui.statements.detail.correctionDraft")
             : t("ui.statements.detail.draftLive")}
@@ -134,7 +131,7 @@ const renderStatusBadge = (statement: StatementDetail) => {
       );
     case "finalized":
       return (
-        <Badge variant="ok">
+        <Badge appearance="dot" variant="ok">
           {t("ui.statements.detail.finalizedAt", {
             date: formatDate(statement.finalizedAt?.slice(0, 10) ?? ""),
           })}
@@ -142,11 +139,13 @@ const renderStatusBadge = (statement: StatementDetail) => {
       );
     case "cancelled":
       return (
-        <Badge variant="bad">{t("ui.statements.detail.cancelledBadge")}</Badge>
+        <Badge appearance="dot" variant="bad">
+          {t("ui.statements.detail.cancelledBadge")}
+        </Badge>
       );
     default:
       return (
-        <Badge variant="neutral">
+        <Badge appearance="dot" variant="neutral">
           {t("ui.statements.detail.supersededBadge")}
         </Badge>
       );
@@ -259,7 +258,7 @@ const StatementTabs = ({
 
   return (
     <Tabs value={activeTab} onValueChange={onTabChange}>
-      <TabsList variant="pills">
+      <TabsList>
         <TabsTrigger value="uebersicht">
           {t("ui.statements.detail.tabs.overview")}
         </TabsTrigger>
@@ -515,7 +514,7 @@ export const StatementDetailPage = () => {
     return (
       <div className="max-w-225 pb-6">
         <PageHeader
-          tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
+          tile={<PageHeaderIcon domain="statements" />}
           title=""
           loading={true}
         />
@@ -665,14 +664,14 @@ export const StatementDetailPage = () => {
         variant="destructive"
         onSelect={() => setDeleteOpen(true)}
       >
-        <RiDeleteBinLine />
+        <IconTrash />
         {t("ui.statements.detail.info.deleteDraft")}
       </DropdownMenuItem>,
     );
   } else if (statement.status === "finalized") {
     primaryAction = (
       <Button onClick={() => downloadStatementPdf(pdfDownloadSrc, identity)}>
-        <RiDownloadLine data-icon="inline-start" />
+        <IconDownload data-icon="inline-start" />
         {t("ui.statements.detail.downloadPdf")}
       </Button>
     );
@@ -702,14 +701,14 @@ export const StatementDetailPage = () => {
         key="download"
         onSelect={() => downloadStatementPdf(pdfDownloadSrc, identity)}
       >
-        <RiDownloadLine />
+        <IconDownload />
         {t("ui.statements.detail.downloadPdf")}
       </DropdownMenuItem>,
     );
   } else {
     primaryAction = (
       <Button onClick={() => downloadStatementPdf(pdfDownloadSrc, identity)}>
-        <RiDownloadLine data-icon="inline-start" />
+        <IconDownload data-icon="inline-start" />
         {t("ui.statements.detail.downloadPdf")}
       </Button>
     );
@@ -721,25 +720,20 @@ export const StatementDetailPage = () => {
     formatPeriod(statement.periodStart, statement.periodEnd),
   ]
     .filter(Boolean)
-    .join(t("ui.common.separators.bullet"));
+    .join(t("ui.common.separators.comma"));
 
   return (
     <div className="max-w-225 pb-6">
       <PageHeader
-        tile={<PageHeaderIcon icon={domainVisuals.statements.icon} />}
+        tile={<PageHeaderIcon domain="statements" />}
         title={identity}
-        titleExtra={statusBadge}
         sub={
-          <span className="flex flex-wrap items-center gap-2">
-            <span>
-              {subItems.map((item, index) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: statische Liste
-                <Fragment key={index}>
-                  {index > 0 ? t("ui.common.separators.bullet") : null}
-                  {item}
-                </Fragment>
-              ))}
-            </span>
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
+            {subItems.map((item, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: statische Liste
+              <Fragment key={index}>{item}</Fragment>
+            ))}
+            {statusBadge}
             {isCalculating ? (
               <span className="text-xs text-muted-foreground">
                 {t("ui.statements.detail.calculating")}
@@ -763,7 +757,7 @@ export const StatementDetailPage = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild={true}>
                     <Button size="icon" aria-label={t("ui.common.a11y.more")}>
-                      <RiArrowDownSLine />
+                      <IconChevronDown />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="min-w-56">
@@ -902,7 +896,7 @@ export const StatementDetailPage = () => {
         title={t("ui.statements.detail.info.confirmDeleteTitle")}
         description={
           tenantName
-            ? t("ui.statements.detail.info.confirmDeleteMessageWithTenant", {
+            ? t("ui.statements.detail.info.confirmDeleteQuestionWithTenant", {
                 tenant: tenantName,
                 unit: unit?.name ?? "",
                 period: formatPeriod(
@@ -910,13 +904,14 @@ export const StatementDetailPage = () => {
                   statement.periodEnd,
                 ),
               })
-            : t("ui.statements.detail.info.confirmDeleteMessage", {
+            : t("ui.statements.detail.info.confirmDeleteQuestion", {
                 period: formatPeriod(
                   statement.periodStart,
                   statement.periodEnd,
                 ),
               })
         }
+        hint={t("ui.statements.detail.info.confirmDeleteHint")}
         confirmLabel={t("ui.statements.detail.info.deleteDraft")}
         onConfirm={() => {
           setDeleteOpen(false);

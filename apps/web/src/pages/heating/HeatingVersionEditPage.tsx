@@ -6,26 +6,17 @@ import {
   heatingSettingsToFormValues,
   todayIso,
 } from "@einfachvermieter/shared";
-import { RiDeleteBinLine, RiMoreLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { PageDeleteAction } from "@/components/common/PageDeleteAction";
 import { EntityNotFound } from "../../components/common/EntityNotFound";
-import { MiniKpiRow } from "../../components/common/MiniKpiRow";
 import { PageHeader } from "../../components/common/PageHeader";
 import { PageHeaderIcon } from "../../components/common/PageHeaderIcon";
 import { FormSkeleton } from "../../components/FormSkeleton";
 import { Badge } from "../../components/ui/Badge";
-import { Button } from "../../components/ui/Button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../components/ui/DropdownMenu";
 import { useAdoptBuilding } from "../../lib/activeBuilding";
 import { buildingsQueryOptions } from "../../lib/buildings";
-import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import {
   heatingSettingsByIdQueryOptions,
@@ -56,38 +47,9 @@ const isVersionActive = (version: HeatingSettings, today: string): boolean =>
   (version.validTo === null || version.validTo >= today);
 
 /**
- * Kennzahlen des Kopfbereichs
- */
-const versionKpis = (version: HeatingSettings) => {
-  const isInternal = version.mode === "internal";
-  return [
-    {
-      label: t("ui.heating.kpi.split"),
-      value: isInternal
-        ? t("ui.heating.kpi.splitValue", {
-            base: version.baseSharePercent,
-            consumption: version.consumptionSharePercent,
-          })
-        : t("ui.heating.kpi.splitExternal"),
-      hint: isInternal
-        ? t("ui.heating.kpi.splitHint", {
-            base: version.baseSharePercent,
-            consumption: version.consumptionSharePercent,
-          })
-        : t("ui.heating.kpi.splitExternalHint"),
-    },
-    {
-      label: t("ui.heating.kpi.proration"),
-      value: t(`ui.heating.prorationShort.${version.prorationMethod}`),
-      hint: t(`ui.heating.prorationHints.${version.prorationMethod}`),
-    },
-  ];
-};
-
-/**
- * Heizkosten-Ansicht: Kopf, Kennzahlen, Abrechnung und Heizungsanlage als
- * Werte-Cards, im externen Modus zusätzlich die Endbeträge je Wohnung. Ohne
- * Heizkostenabrechnung bleibt nur die Card der Abrechnung.
+ * Heizkosten-Ansicht: Kopf, Abrechnung, Aufteilung und Heizungsanlage als
+ * Abschnitte, im externen Modus zusätzlich die Endbeträge je Wohnung. Ohne
+ * Heizkostenabrechnung bleibt nur der Abschnitt der Abrechnung
  */
 export const HeatingVersionEditPage = () => {
   const { id } = routeApi.useParams();
@@ -162,7 +124,7 @@ export const HeatingVersionEditPage = () => {
     return (
       <div className="max-w-225 pb-6">
         <PageHeader
-          tile={<PageHeaderIcon icon={domainVisuals.heating.icon} />}
+          tile={<PageHeaderIcon domain="heating" />}
           title=""
           loading={true}
         />
@@ -186,57 +148,35 @@ export const HeatingVersionEditPage = () => {
     <>
       <div className="max-w-225 pb-6">
         <PageHeader
-          tile={<PageHeaderIcon icon={domainVisuals.heating.icon} />}
+          tile={<PageHeaderIcon domain="heating" />}
           title={t("ui.heating.identityTitle", {
             validFrom: formatDate(version.validFrom),
           })}
-          titleExtra={
-            <Badge variant={active ? "ok" : "neutral"}>
-              {active
-                ? t("ui.heating.versions.statusActive")
-                : t("ui.heating.versions.statusArchived")}
-            </Badge>
+          sub={
+            <span className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
+              {isInternal ? (
+                <span>
+                  {t(`ui.heating.heatingTypes.${version.heatingType}`)}
+                </span>
+              ) : (
+                <span>{t(`ui.heating.modes.${version.mode}`)}</span>
+              )}
+              {isInternal ? (
+                <span>{t(`ui.heating.fuelTypes.${version.fuelType}`)}</span>
+              ) : null}
+              <Badge appearance="dot" variant={active ? "ok" : "neutral"}>
+                {active
+                  ? t("ui.heating.versions.statusActive")
+                  : t("ui.heating.versions.statusArchived")}
+              </Badge>
+            </span>
           }
-          sub={[
-            building?.name,
-            isInternal
-              ? t(`ui.heating.heatingTypes.${version.heatingType}`)
-              : t(`ui.heating.modes.${version.mode}`),
-            isInternal
-              ? t(`ui.heating.fuelTypes.${version.fuelType}`)
-              : undefined,
-          ]
-            .filter(Boolean)
-            .join(t("ui.common.separators.bullet"))}
           action={
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild={true}>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label={t("ui.common.a11y.more")}
-                >
-                  <RiMoreLine />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-56">
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={() => deletion.request(version)}
-                >
-                  <RiDeleteBinLine />
-                  {t("ui.heating.detail.deleteAction")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <PageDeleteAction onClick={() => deletion.request(version)} />
           }
         />
 
         <div className="space-y-5">
-          {version.mode === "none" ? null : (
-            <MiniKpiRow columns={2} items={versionKpis(version)} />
-          )}
-
           <div>
             <HeatingBillingCard
               version={version}

@@ -3,11 +3,11 @@ import {
   type HeatingSettings,
   todayIso,
 } from "@einfachvermieter/shared";
-import { RiAddLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { IconPlus } from "@/lib/icons";
 import { DataTable } from "../../components/common/DataTable";
 import { EntityCell } from "../../components/common/EntityCell";
 import { PageHeader } from "../../components/common/PageHeader";
@@ -17,7 +17,6 @@ import { Alert, AlertDescription, AlertTitle } from "../../components/ui/Alert";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { useActiveBuilding } from "../../lib/activeBuilding";
-import { domainVisuals } from "../../lib/domainVisuals";
 import { formatPeriod } from "../../lib/format";
 import {
   type HeatingOverviewRow,
@@ -237,7 +236,7 @@ export const HeatingOverviewPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        tile={<PageHeaderIcon icon={domainVisuals.heating.icon} />}
+        tile={<PageHeaderIcon domain="heating" />}
         title={t("ui.heating.title")}
         sub={
           building
@@ -248,7 +247,7 @@ export const HeatingOverviewPage = () => {
         action={
           canAddHeating ? (
             <Button onClick={() => setCreateOpen(true)}>
-              <RiAddLine />
+              <IconPlus />
               <span className="hidden sm:inline">
                 {t("ui.heating.versions.add")}
               </span>

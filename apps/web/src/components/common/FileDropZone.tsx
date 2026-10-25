@@ -1,6 +1,7 @@
-import { RiUploadCloud2Line } from "@remixicon/react";
 import { type ReactNode, useRef, useState } from "react";
+import { Spinner } from "@/components/common/Spinner";
 import { Button } from "@/components/ui/Button";
+import { IconUpload } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 /**
@@ -12,12 +13,17 @@ export const FileDropZone = ({
   buttonLabel,
   hint,
   disabled = false,
+  busy = false,
   onFiles,
 }: {
   accept: string;
   buttonLabel: string;
   hint: ReactNode;
   disabled?: boolean;
+  /**
+   * Während des Hochladens: Spinner statt Icon im Button
+   */
+  busy?: boolean;
   onFiles: (files: FileList) => void;
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -65,7 +71,11 @@ export const FileDropZone = ({
         disabled={disabled}
         onClick={() => inputRef.current?.click()}
       >
-        <RiUploadCloud2Line aria-hidden={true} />
+        {busy ? (
+          <Spinner data-icon="inline-start" />
+        ) : (
+          <IconUpload aria-hidden={true} />
+        )}
         {buttonLabel}
       </Button>
       <div className="min-w-0 flex-1 text-sm text-muted-foreground">{hint}</div>

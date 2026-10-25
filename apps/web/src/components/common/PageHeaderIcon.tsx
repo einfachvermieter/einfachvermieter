@@ -1,9 +1,9 @@
-import type { RemixiconComponentType } from "@remixicon/react";
-import { IconTile } from "./IconTile";
+import { type DomainKey, domainVisuals } from "../../lib/domainVisuals";
 
 /**
- * Icon-Badge des Seitenkopfs
+ * Bild im Seitenkopf: die Illustration des Bereichs
  */
-export const PageHeaderIcon = ({ icon }: { icon: RemixiconComponentType }) => (
-  <IconTile icon={icon} size={38} />
-);
+export const PageHeaderIcon = ({ domain }: { domain: DomainKey }) => {
+  const { art: Art } = domainVisuals[domain];
+  return <Art className="size-13 shrink-0 text-foreground" />;
+};
