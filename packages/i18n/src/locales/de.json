@@ -305,6 +305,8 @@
     },
     "statementFinalizeBlocked": "Die Abrechnung lässt sich noch nicht finalisieren. Mindestens ein Hinweis verhindert das. Die Hinweise stehen im Dialog „Abrechnung finalisieren“.",
     "substitutionFinalizedImmutable": "Für diese Periode ist bereits eine Abrechnung des Gebäudes finalisiert. Erfassungsausfälle lassen sich deshalb nicht mehr ändern.",
+    "heatingConfigFinalizedImmutable": "Für den Zeitraum {periodStart} bis {periodEnd} ist bereits eine Abrechnung des Gebäudes finalisiert. Die Heizkostenkonfiguration lässt sich für diesen Zeitraum nicht mehr ändern. Legen Sie für Änderungen eine neue Version an, die nach dem {periodEnd} beginnt.",
+    "heatingConfigLegacyRepairOnly": "Für den Zeitraum {periodStart} bis {periodEnd} ist bereits eine Abrechnung des Gebäudes finalisiert. Sie wurde mit der Version gerechnet, die am {periodStart} galt. In diesem Zeitraum können Sie nur spätere Versionen entfernen und danach diese Version bis zum {periodEnd} verlängern.",
     "heatingPeriodValuesFinalizedImmutable": "Für genau diesen Zeitraum ist bereits eine Abrechnung des Gebäudes finalisiert. Die Werte des Abrechnungszeitraums lassen sich deshalb nicht mehr ändern.",
     "substitutionDuplicate": "Für diese Wohnung und diesen Bereich ist in der Periode schon ein Erfassungsausfall erfasst.",
     "substitutionIdentityFixed": "Wohnung, Bereich und Periode eines Erfassungsausfalls lassen sich nicht ändern. Bitte löschen Sie ihn und legen Sie ihn neu an.",
@@ -1773,7 +1775,9 @@
           "status": "Status"
         },
         "confirmDelete": "Konfiguration löschen?",
-        "confirmDeleteMessage": "Soll die Heizkostenkonfiguration für {building} ({period}) wirklich gelöscht werden?"
+        "confirmDeleteMessage": "Soll die Heizkostenkonfiguration für {building} ({period}) wirklich gelöscht werden?",
+        "finalizedNotice": "Mit dieser Version sind Abrechnungen finalisiert. Änderungen, die den Zeitraum {periodStart} bis {periodEnd} betreffen, werden abgelehnt.",
+        "finalizedNoticeLink": "Abrechnungen"
       },
       "errors": {
         "hotWaterMeterBuildingMismatch": "Der gewählte Zähler gehört nicht zu diesem Gebäude.",

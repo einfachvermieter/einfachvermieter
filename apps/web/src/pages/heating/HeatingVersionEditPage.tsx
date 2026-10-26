@@ -32,6 +32,7 @@ import { ExternalHeatingEntriesCard } from "./cards/ExternalHeatingEntriesCard";
 import { HeatingBillingCard } from "./cards/HeatingBillingCard";
 import { HeatingInstallationCard } from "./cards/HeatingInstallationCard";
 import { HeatingProrationCard } from "./cards/HeatingProrationCard";
+import { HeatingFinalizedNotice } from "./components/HeatingFinalizedNotice";
 import { hotWaterMeterCandidatesOf } from "./hotWaterMeters";
 import { HeatingBillingSheet } from "./sheets/HeatingBillingSheet";
 import { HeatingInstallationSheet } from "./sheets/HeatingInstallationSheet";
@@ -177,6 +178,8 @@ export const HeatingVersionEditPage = () => {
         />
 
         <div className="space-y-5">
+          <HeatingFinalizedNotice version={version} />
+
           <div>
             <HeatingBillingCard
               version={version}

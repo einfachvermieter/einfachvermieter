@@ -9,12 +9,14 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { HeatingSettingSchema } from "@einfachvermieter/db";
 import { hasBlockingWarning } from "@einfachvermieter/shared";
 import { MikroORM, RequestContext } from "@mikro-orm/core";
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import cookieParser from "cookie-parser";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { getI18n } from "../src/i18n/i18n.registry.js";
 
 const ADMIN_EMAIL = "e2e.rejects@einfachvermieter.invalid";
 const ADMIN_PASSWORD = "e2e-test-passwort-123";
@@ -573,17 +575,21 @@ describe("Wechsel der Heizkostenkonfiguration im Abrechnungszeitraum", () => {
       expect: 201,
     });
 
-    // Ohne die spätere Version ergibt sich dasselbe Ergebnis.
+    // Nach dem Finalisieren ist die Konfiguration gesperrt. Ohne die
+    // spätere Version (direkt in der Datenbank) ergibt sich dasselbe
+    // Ergebnis.
     const heatingPath = `/buildings/${tenant.buildingId}/heating`;
     await api(`${heatingPath}/${second.id}`, {
       method: "DELETE",
-      expect: 204,
+      expect: 400,
     });
-    await api(`${heatingPath}/${first.id}`, {
-      method: "PATCH",
-      body: centralHeating("2025-01-01"),
-      expect: 200,
-    });
+    const em = app.get(MikroORM).em.fork();
+    await em.nativeDelete(HeatingSettingSchema, { id: second.id });
+    await em.nativeUpdate(
+      HeatingSettingSchema,
+      { id: first.id },
+      { validTo: null },
+    );
     const single = await previewOf(tenant, 2025, 200);
     expect(single.heatingConfigWarnings).toBeUndefined();
     expect(single.heatingDetail).toEqual(switched.heatingDetail);
@@ -632,7 +638,9 @@ describe("Wechsel der Heizkostenkonfiguration im Abrechnungszeitraum", () => {
 
     const rejected = await previewOf(tenant, 2025, 400);
     expect(rejected.message).toContain(
-      "Ab dem 01.07.2025 gelten zwei Heizkostenkonfigurationen zugleich",
+      getI18n().t("warnings.heatingConfigOverlapInPeriod", {
+        date: "01.07.2025",
+      }),
     );
   }, 60_000);
 });

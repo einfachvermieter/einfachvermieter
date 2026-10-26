@@ -8,6 +8,7 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { HeatingSettingSchema } from "@einfachvermieter/db";
 import { MikroORM, RequestContext } from "@mikro-orm/core";
 import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
@@ -693,8 +694,9 @@ describe("Grundkostenmaßstab der Heizung über einen Jahreswechsel", () => {
     expect(await wholeUnitArea("2025")).toBe(60);
     expect(await wholeUnitArea("2026")).toBe(80);
 
-    // Finalisiert, danach wird der Maßstab der Version geändert: Der
-    // Snapshot behält seinen Maßstab und seine Flächen
+    // Finalisiert: Die API lehnt die Änderung des Maßstabs ab. Ändert er
+    // sich trotzdem (direkt in der Datenbank), behält der Snapshot seinen
+    // Maßstab und seine Flächen
     const statement2025 = await api("/statements", {
       method: "POST",
       body: {
@@ -712,8 +714,16 @@ describe("Grundkostenmaßstab der Heizung über einen Jahreswechsel", () => {
     await api(`${heatingPath}/${version2025.id}`, {
       method: "PATCH",
       body: version("living_area", "2025-01-01", "2025-12-31"),
-      expect: 200,
+      expect: 400,
     });
+    await app
+      .get(MikroORM)
+      .em.fork()
+      .nativeUpdate(
+        HeatingSettingSchema,
+        { id: version2025.id },
+        { baseMethod: "living_area" },
+      );
     const stored = await api(`/statements/${statement2025.id}`, {
       expect: 200,
     });

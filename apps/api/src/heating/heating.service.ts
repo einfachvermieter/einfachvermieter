@@ -4,12 +4,15 @@ import {
   type HeatingSetting,
   HeatingSettingSchema,
   MeterSchema,
+  OperatingCostStatementSchema,
 } from "@einfachvermieter/db";
 import {
+  formatDate,
   formatWarningParams,
   type HeatingConfigResolution,
   type HeatingSettings,
   type HeatingSettingsWriteDto,
+  heatingConfigChangeVerdict,
   isSeventyPercentFuel,
   type Period,
   resolveHeatingConfigForPeriod,
@@ -292,13 +295,19 @@ export class HeatingService {
     }
     await this.assertNoOverlap(buildingId, dto.validFrom, dto.validTo, null);
 
-    const created = this.em.create(
-      HeatingSettingSchema,
-      this.toRowValues(buildingId, dto),
-    );
-    this.em.persist(created);
-    await this.em.flush();
-    return created;
+    return this.em.transactional(async (em) => {
+      const values = this.toRowValues(buildingId, dto);
+      const before = await em.find(HeatingSettingSchema, { buildingId });
+      await this.assertFinalizedHistoryUnchanged(em, buildingId, before, [
+        ...before,
+        { ...values, id: "", createdAt: "", updatedAt: "" },
+      ]);
+
+      const created = em.create(HeatingSettingSchema, values);
+      em.persist(created);
+      await em.flush();
+      return created;
+    });
   }
 
   /**
@@ -318,12 +327,19 @@ export class HeatingService {
     }
     await this.assertNoOverlap(buildingId, dto.validFrom, dto.validTo, id);
 
-    this.em.assign(existing, {
-      ...this.toRowValues(buildingId, dto),
-      updatedAt: new Date().toISOString(),
+    return this.em.transactional(async (em) => {
+      const values = this.toRowValues(buildingId, dto);
+      const before = await em.find(HeatingSettingSchema, { buildingId });
+      await this.assertFinalizedHistoryUnchanged(em, buildingId, before, [
+        ...before.filter((version) => version.id !== id),
+        { ...existing, ...values },
+      ]);
+
+      const row = before.find((version) => version.id === id) ?? existing;
+      em.assign(row, { ...values, updatedAt: new Date().toISOString() });
+      await em.flush();
+      return row;
     });
-    await this.em.flush();
-    return existing;
   }
 
   /**
@@ -334,8 +350,65 @@ export class HeatingService {
     if (!existing || existing.buildingId !== buildingId) {
       throw new NotFoundException(notFoundMessage("heatingSettings", id));
     }
-    this.em.remove(existing);
-    await this.em.flush();
+
+    await this.em.transactional(async (em) => {
+      const before = await em.find(HeatingSettingSchema, { buildingId });
+      await this.assertFinalizedHistoryUnchanged(
+        em,
+        buildingId,
+        before,
+        before.filter((version) => version.id !== id),
+      );
+
+      em.remove(before.find((version) => version.id === id) ?? existing);
+      await em.flush();
+    });
+  }
+
+  /**
+   * Sperre nach dem Finalisieren: Im Zeitraum jeder finalisierten
+   * Abrechnung des Gebäudes bleibt der Verlauf der Konfiguration gleich,
+   * siehe `heatingConfigChangeVerdict`. Die Meldung nennt den frühesten
+   * betroffenen Zeitraum.
+   */
+  private async assertFinalizedHistoryUnchanged(
+    em: EntityManager,
+    buildingId: string,
+    before: HeatingSettings[],
+    after: HeatingSettings[],
+  ): Promise<void> {
+    const finalized = await em.find(
+      OperatingCostStatementSchema,
+      { buildingId, status: "finalized" },
+      { fields: ["periodStart", "periodEnd"], orderBy: { periodStart: "asc" } },
+    );
+    const checked = new Set<string>();
+
+    for (const { periodStart, periodEnd } of finalized) {
+      const key = `${periodStart}/${periodEnd}`;
+      if (checked.has(key)) {
+        continue;
+      }
+      checked.add(key);
+
+      const verdict = heatingConfigChangeVerdict(before, after, {
+        start: periodStart,
+        end: periodEnd,
+      });
+      if (verdict !== "allowed") {
+        throw new BadRequestException(
+          getI18n().t(
+            verdict === "legacyRepairOnly"
+              ? "errors.heatingConfigLegacyRepairOnly"
+              : "errors.heatingConfigFinalizedImmutable",
+            {
+              periodStart: formatDate(periodStart),
+              periodEnd: formatDate(periodEnd),
+            },
+          ),
+        );
+      }
+    }
   }
 
   /**

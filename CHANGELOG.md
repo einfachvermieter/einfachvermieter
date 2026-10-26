@@ -5,6 +5,8 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Neu:** Ist für einen Zeitraum schon eine Abrechnung finalisiert, lässt
+  sich die Heizkostenkonfiguration für diesen Zeitraum nicht mehr ändern.
 - **Geändert:** Ändert sich die Heizkostenkonfiguration mitten im
   Abrechnungszeitraum, gelten die Anteile der ersten Version weiter.
   Änderungen an der Anlage verhindern das Finalisieren.
