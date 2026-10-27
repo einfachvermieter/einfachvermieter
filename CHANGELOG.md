@@ -5,6 +5,8 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Sicherheit:** Abhängigkeiten aktualisiert, darunter Electron in der
+  Desktop-App.
 - **Neu:** Mietsätze haben Änderungsgrund und Notiz, Mietverträge eine
   Mietart. Die Mietsatz-Liste zeigt die Änderung der Kaltmiete.
 - **Neu:** Kostenarten lassen sich aus Vorlagen anlegen, auch mehrere auf
