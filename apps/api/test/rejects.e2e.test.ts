@@ -3,7 +3,8 @@
  * Abrechnungszeitraum über 12 Monate, zweite finalisierte Abrechnung für
  * denselben Mieter und Zeitraum, Heizkosten bei einem Gebäude ohne
  * Heizkostenabrechnung, Betriebskosten ohne Verteilungsgrundlage,
- * Anfrage-Limit für Login und Passwortwechsel, Kostenarten aus Vorlagen.
+ * geänderte Mietsätze in finalisierten Zeiträumen, Anfrage-Limit für Login
+ * und Passwortwechsel, Kostenarten aus Vorlagen.
  */
 
 import { mkdtempSync, rmSync } from "node:fs";
@@ -803,5 +804,100 @@ describe("Anfrage-Limit gegen Passwort-Raten", () => {
     }
 
     expect((await changePassword()).status).toBe(429);
+  }, 60_000);
+});
+
+describe("Änderungsgrund in einem finalisierten Zeitraum", () => {
+  it("lässt Grund, Notiz und Mietart ändern, den Betrag nicht; der erste Satz bleibt ohne Grund", async () => {
+    const tenant = await createBillableTenant("aenderungsgrund");
+    const current = await api(`/tenants/${tenant.tenantId}`, { expect: 200 });
+    const saveWith = (
+      secondRent: Record<string, unknown>,
+      rentType = "standard",
+    ) => ({
+      unitId: current.tenant.unitId,
+      kind: "private",
+      rentType,
+      startDate: "2025-01-01",
+      endDate: null,
+      depositCents: 0,
+      residents: current.residents.map(
+        (resident: {
+          residentId: string;
+          firstName: string;
+          lastName: string;
+        }) => ({
+          residentId: resident.residentId,
+          resident: {
+            firstName: resident.firstName,
+            lastName: resident.lastName,
+          },
+          isContractParty: true,
+        }),
+      ),
+      rents: [
+        {
+          startDate: null,
+          endDate: "2025-06-30",
+          monthlyBaseRentCents: 50_000,
+          monthlyAdvanceCents: 10_000,
+          changeReason: "modernization",
+          changeNote: "Bestand",
+        },
+        {
+          startDate: "2025-07-01",
+          endDate: null,
+          monthlyBaseRentCents: 52_000,
+          monthlyAdvanceCents: 10_000,
+          changeReason: "agreement",
+          ...secondRent,
+        },
+      ],
+    });
+
+    await api(`/tenants/${tenant.tenantId}`, {
+      method: "PATCH",
+      body: saveWith({}),
+      expect: 200,
+    });
+    const statement = await api("/statements", {
+      method: "POST",
+      body: { ...tenant, periodStart: "2025-01-01", periodEnd: "2025-12-31" },
+      expect: 201,
+    });
+    await api(`/statements/${statement.id}/finalize`, {
+      method: "POST",
+      expect: 201,
+    });
+
+    await api(`/tenants/${tenant.tenantId}`, {
+      method: "PATCH",
+      body: saveWith(
+        { changeReason: "modernization", changeNote: "Neue Fenster" },
+        "graduated",
+      ),
+      expect: 200,
+    });
+
+    const saved = await api(`/tenants/${tenant.tenantId}`, { expect: 200 });
+    expect(saved.tenant.rentType).toBe("graduated");
+    expect(
+      saved.rents.map(
+        (rent: { changeReason: string | null; changeNote: string | null }) => [
+          rent.changeReason,
+          rent.changeNote,
+        ],
+      ),
+    ).toEqual([
+      [null, "Bestand"],
+      ["modernization", "Neue Fenster"],
+    ]);
+
+    const rejected = await api(`/tenants/${tenant.tenantId}`, {
+      method: "PATCH",
+      body: saveWith({ monthlyBaseRentCents: 53_000 }),
+      expect: 400,
+    });
+    expect(rejected.message).toBeTruthy();
   }, 60_000);
 });

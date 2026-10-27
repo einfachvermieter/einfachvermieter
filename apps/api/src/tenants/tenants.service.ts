@@ -731,6 +731,7 @@ export class TenantsService {
       em.assign(tenant, {
         unitId: dto.unitId,
         kind: dto.kind,
+        rentType: dto.rentType,
         startDate: dto.startDate,
         endDate: dto.endDate ?? null,
         depositCents: dto.depositCents,
@@ -745,6 +746,7 @@ export class TenantsService {
     const tenant = em.create(TenantSchema, {
       unitId: dto.unitId,
       kind: dto.kind,
+      rentType: dto.rentType,
       startDate: dto.startDate,
       endDate: dto.endDate ?? null,
       depositCents: dto.depositCents,
@@ -822,7 +824,7 @@ export class TenantsService {
 
     await em.nativeDelete(TenantRentSchema, { tenantId });
 
-    for (const r of dto.rents) {
+    for (const [index, r] of dto.rents.entries()) {
       em.persist(
         em.create(TenantRentSchema, {
           tenantId,
@@ -830,7 +832,11 @@ export class TenantsService {
           endDate: r.endDate ?? null,
           monthlyBaseRentCents: r.monthlyBaseRentCents,
           monthlyAdvanceCents: r.monthlyAdvanceCents,
-          reductionReason: r.reductionReason ?? null,
+          // Die Kettenprüfung erzwingt die zeitliche Reihenfolge. Der erste
+          // Satz hat keinen Vorgänger und damit keinen Änderungsgrund, auch
+          // wenn er erst durch Löschen seines Vorgängers zum ersten wurde.
+          changeReason: index === 0 ? null : (r.changeReason ?? null),
+          changeNote: r.changeNote ?? null,
         }),
       );
     }

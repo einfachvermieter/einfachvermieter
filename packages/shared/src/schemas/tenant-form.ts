@@ -7,12 +7,25 @@ import {
   unsignedAmountRegex,
 } from "../format.js";
 import { ISO_DATE_REGEX } from "./common.js";
-import type { TenantSaveDto } from "./tenants.js";
+import {
+  INCREASE_ONLY_RENT_CHANGE_REASONS,
+  RENT_CHANGE_REASONS,
+  RENT_TYPES,
+  type RentChangeReason,
+  type RentType,
+  type TenantSaveDto,
+} from "./tenants.js";
 
 const isoDateOrEmpty = z
   .string()
   .regex(ISO_DATE_REGEX, messageKey("ui.form.dateFormat"))
   .or(z.literal(""));
+
+/**
+ * Auswahlwert, wenn kein Grund angegeben ist. Ein leerer String ist als
+ * Select-Wert nicht zulässig.
+ */
+export const RENT_CHANGE_REASON_NONE = "none";
 
 const rentRowSchema = z.object({
   startDate: isoDateOrEmpty,
@@ -26,7 +39,8 @@ const rentRowSchema = z.object({
     .refine((value) => parseEurToCents(value) > 0, {
       message: messageKey("ui.tenant.validation.advanceRequired"),
     }),
-  reductionReason: z.string().max(500),
+  changeReason: z.enum([...RENT_CHANGE_REASONS, RENT_CHANGE_REASON_NONE]),
+  changeNote: z.string().max(500),
 });
 
 const residentRowSchema = z.object({
@@ -94,6 +108,7 @@ const bankAccountRowSchema = z
 export const tenantFormSchema = z.object({
   unitId: z.string().min(1, messageKey("ui.form.unitRequired")),
   kind: z.enum(["private", "owner"]),
+  rentType: z.enum(RENT_TYPES),
   startDate: z
     .string()
     .min(1, messageKey("ui.tenant.validation.startDateRequired")),
@@ -380,6 +395,42 @@ const isPeriodOutsideTenant = (
   return false;
 };
 
+/**
+ * Vergleichsmiete und Modernisierung tragen nur eine Erhöhung gegenüber dem
+ * zeitlich vorigen Mietsatz. Die Zeilen stehen in der Reihenfolge der
+ * Eingabe, deshalb erst nach Beginn sortieren.
+ */
+const checkChangeReasons = (
+  data: TenantFormValues,
+  ctx: z.RefinementCtx,
+): void => {
+  const byStart = data.rents
+    .map((rent, index) => ({ rent, index }))
+    .sort((a, b) =>
+      (a.rent.startDate || data.startDate).localeCompare(
+        b.rent.startDate || data.startDate,
+      ),
+    );
+  byStart.forEach(({ rent, index }, position) => {
+    const previous = byStart[position - 1]?.rent;
+    if (
+      previous &&
+      rent.changeReason !== RENT_CHANGE_REASON_NONE &&
+      INCREASE_ONLY_RENT_CHANGE_REASONS.includes(rent.changeReason) &&
+      parseEurToCents(rent.monthlyBaseRentEuros) <=
+        parseEurToCents(previous.monthlyBaseRentEuros)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["rents", index, "changeReason"],
+        message: messageKey(
+          "ui.tenant.validation.changeReasonRequiresIncrease",
+        ),
+      });
+    }
+  });
+};
+
 export const tenantFormSchemaRefined = tenantFormSchema.superRefine(
   (data, ctx) => {
     if (!data.startDate) {
@@ -459,6 +510,8 @@ export const tenantFormSchemaRefined = tenantFormSchema.superRefine(
               message: messageKey("ui.tenant.validation.rentOverlap"),
             });
           }
+
+          checkChangeReasons(data, ctx);
 
           // Coverage-Lücke nur prüfen, wenn keine Überlappungen gefunden wurden.
           if (
@@ -547,6 +600,7 @@ export const tenantFormSchemaRefined = tenantFormSchema.superRefine(
 export const tenantFormToDto = (values: TenantFormValues): TenantSaveDto => ({
   unitId: values.unitId,
   kind: values.kind,
+  rentType: values.kind === "owner" ? "standard" : values.rentType,
   startDate: values.startDate,
   endDate: values.endDate || undefined,
   depositCents: parseEurToCents(values.depositEuros || "0"),
@@ -577,7 +631,11 @@ export const tenantFormToDto = (values: TenantFormValues): TenantSaveDto => ({
             endDate: rent.endDate || null,
             monthlyBaseRentCents: parseEurToCents(rent.monthlyBaseRentEuros),
             monthlyAdvanceCents: parseEurToCents(rent.monthlyAdvanceEuros),
-            reductionReason: rent.reductionReason.trim() || null,
+            changeReason:
+              rent.changeReason === RENT_CHANGE_REASON_NONE
+                ? null
+                : rent.changeReason,
+            changeNote: rent.changeNote.trim() || null,
           })),
   bankAccounts: values.bankAccounts.map((bankAccount) => ({
     startDate: bankAccount.startDate || null,
@@ -604,6 +662,7 @@ export const tenantFormToDto = (values: TenantFormValues): TenantSaveDto => ({
 export const emptyTenantFormValues = (startDate: string): TenantFormValues => ({
   unitId: "",
   kind: "private",
+  rentType: "standard",
   startDate,
   endDate: "",
   depositEuros: "",
@@ -618,6 +677,7 @@ export type TenantAggregateForForm = {
   tenant: {
     unitId: string;
     kind: "private" | "owner";
+    rentType: RentType;
     startDate: string;
     endDate: string | null;
     depositCents: number;
@@ -638,7 +698,8 @@ export type TenantAggregateForForm = {
     endDate: string | null;
     monthlyBaseRentCents: number;
     monthlyAdvanceCents: number;
-    reductionReason: string | null;
+    changeReason: RentChangeReason | null;
+    changeNote: string | null;
   }[];
   bankAccounts: {
     startDate: string | null;
@@ -663,6 +724,7 @@ export const tenantAggregateToFormValues = (
 ): TenantFormValues => ({
   unitId: aggregate.tenant.unitId,
   kind: aggregate.tenant.kind,
+  rentType: aggregate.tenant.rentType,
   startDate: aggregate.tenant.startDate,
   endDate: aggregate.tenant.endDate ?? "",
   depositEuros: centsToEurInput(aggregate.tenant.depositCents),
@@ -690,7 +752,8 @@ export const tenantAggregateToFormValues = (
       endDate: rent.endDate ?? "",
       monthlyBaseRentEuros: centsToEurInput(rent.monthlyBaseRentCents),
       monthlyAdvanceEuros: centsToEurInput(rent.monthlyAdvanceCents),
-      reductionReason: rent.reductionReason ?? "",
+      changeReason: rent.changeReason ?? RENT_CHANGE_REASON_NONE,
+      changeNote: rent.changeNote ?? "",
     })),
   bankAccounts: aggregate.bankAccounts.map((bankAccount) => ({
     startDate: bankAccount.startDate ?? "",

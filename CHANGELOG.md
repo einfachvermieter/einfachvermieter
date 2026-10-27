@@ -5,6 +5,8 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Neu:** Mietsätze haben Änderungsgrund und Notiz, Mietverträge eine
+  Mietart. Die Mietsatz-Liste zeigt die Änderung der Kaltmiete.
 - **Neu:** Kostenarten lassen sich aus Vorlagen anlegen, auch mehrere auf
   einmal.
 - **Neu:** Ist für einen Zeitraum schon eine Abrechnung finalisiert, lässt

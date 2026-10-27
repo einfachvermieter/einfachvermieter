@@ -14,6 +14,32 @@ const tenantResidentInputSchema = z.object({
 });
 export type TenantResidentInput = z.infer<typeof tenantResidentInputSchema>;
 
+/**
+ * Grund, aus dem sich die vereinbarte Kaltmiete gegenüber dem vorigen
+ * Mietsatz ändert
+ */
+export const RENT_CHANGE_REASONS = [
+  "agreement",
+  "comparable_rent",
+  "modernization",
+  "index",
+] as const;
+export type RentChangeReason = (typeof RENT_CHANGE_REASONS)[number];
+
+/**
+ * Gründe, die nur eine Erhöhung der Kaltmiete tragen
+ */
+export const INCREASE_ONLY_RENT_CHANGE_REASONS: readonly RentChangeReason[] = [
+  "comparable_rent",
+  "modernization",
+];
+
+/**
+ * Mietart des Vertrags: ohne Staffel und Index, Staffelmiete, Indexmiete
+ */
+export const RENT_TYPES = ["standard", "graduated", "index"] as const;
+export type RentType = (typeof RENT_TYPES)[number];
+
 const tenantRentInputSchema = z.object({
   startDate: isoDate().optional().nullable(),
   endDate: isoDate().optional().nullable(),
@@ -23,7 +49,8 @@ const tenantRentInputSchema = z.object({
    * nicht unterstützt (daher > 0)
    */
   monthlyAdvanceCents: z.number().int().positive(),
-  reductionReason: z.string().max(500).optional().nullable(),
+  changeReason: z.enum(RENT_CHANGE_REASONS).optional().nullable(),
+  changeNote: z.string().max(500).optional().nullable(),
 });
 export type TenantRentInput = z.infer<typeof tenantRentInputSchema>;
 
@@ -76,6 +103,7 @@ export type TenantAddressInput = z.infer<typeof tenantAddressInputSchema>;
 const tenantSaveObject = z.object({
   unitId: z.guid(),
   kind: z.enum(["private", "owner"]).default("private"),
+  rentType: z.enum(RENT_TYPES).default("standard"),
   startDate: isoDate(),
   endDate: isoDate().optional().nullable(),
   /**
@@ -259,6 +287,22 @@ const checkRents = (data: TenantSaveData, ctx: z.RefinementCtx): void => {
         code: "custom",
         path: ["rents", i, "endDate"],
         message: messageKey("ui.tenant.validation.endBeforeStart"),
+      });
+    }
+
+    const previous = rents[i - 1];
+    if (
+      previous &&
+      r.changeReason &&
+      INCREASE_ONLY_RENT_CHANGE_REASONS.includes(r.changeReason) &&
+      r.monthlyBaseRentCents <= previous.monthlyBaseRentCents
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["rents", i, "changeReason"],
+        message: messageKey(
+          "ui.tenant.validation.changeReasonRequiresIncrease",
+        ),
       });
     }
   });

@@ -12,11 +12,13 @@ import { RentFields } from "../fields/RentFields";
 export const TenantRentSheet = ({
   title,
   defaultValues,
+  isFirst,
   onSubmit,
   onClose,
 }: {
   title: string;
   defaultValues: RentRowValues;
+  isFirst: boolean;
   onSubmit: (values: RentRowValues) => Promise<void>;
   onClose: () => void;
 }) => {
@@ -35,7 +37,7 @@ export const TenantRentSheet = ({
       onSubmit={onSubmit}
       onClose={onClose}
     >
-      <RentFields control={form.control} />
+      <RentFields control={form.control} variant={isFirst ? "first" : "full"} />
     </FormSheet>
   );
 };

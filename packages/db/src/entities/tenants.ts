@@ -1,3 +1,4 @@
+import type { RentChangeReason, RentType } from "@einfachvermieter/shared";
 import { EntitySchema, type Opt } from "@mikro-orm/core";
 import { currentTimestamp } from "./_defaults.js";
 import { fk } from "./_relations.js";
@@ -50,6 +51,7 @@ export type Tenant = {
   id: string;
   unitId: string;
   kind: TenantKind;
+  rentType: Opt<RentType>;
   startDate: string;
   endDate: string | null;
   depositCents: number;
@@ -65,6 +67,7 @@ export const TenantSchema = new EntitySchema<Tenant>({
     id: { type: "string", primary: true, onCreate: () => crypto.randomUUID() },
     unitId: fk(() => UnitSchema, "unit_id", "restrict"),
     kind: { type: "string", default: "private" },
+    rentType: { type: "string", fieldName: "rent_type", default: "standard" },
     startDate: { type: "string", fieldName: "start_date" },
     endDate: { type: "string", fieldName: "end_date", nullable: true },
     depositCents: { type: "integer", fieldName: "deposit_cents", default: 0 },
@@ -142,7 +145,8 @@ export type TenantRent = {
   endDate: string | null;
   monthlyBaseRentCents: number;
   monthlyAdvanceCents: number;
-  reductionReason: string | null;
+  changeReason: RentChangeReason | null;
+  changeNote: string | null;
   createdAt: Opt<string>;
   updatedAt: Opt<string>;
 };
@@ -163,9 +167,14 @@ export const TenantRentSchema = new EntitySchema<TenantRent>({
       type: "integer",
       fieldName: "monthly_advance_cents",
     },
-    reductionReason: {
+    changeReason: {
+      type: "string",
+      fieldName: "change_reason",
+      nullable: true,
+    },
+    changeNote: {
       type: "text",
-      fieldName: "reduction_reason",
+      fieldName: "change_note",
       nullable: true,
     },
     createdAt: {

@@ -1,4 +1,10 @@
-import type { Control, FieldPath, FieldValues } from "react-hook-form";
+import { RENT_TYPES } from "@einfachvermieter/shared";
+import {
+  type Control,
+  type FieldPath,
+  type FieldValues,
+  useWatch,
+} from "react-hook-form";
 import { DateInput } from "@/components/form/DateInput";
 import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -11,8 +17,9 @@ const calendarStart = new Date(today.getFullYear() - 20, 0, 1);
 const calendarEnd = new Date(today.getFullYear() + 5, 11, 1);
 
 /**
- * Vertragsfelder (Wohnung, Art, Zeitraum, Kaution). Gemeinsame Quelle für
- * das Anlege- und das Bearbeiten-Sheet, damit beide dieselben Felder zeigen.
+ * Vertragsfelder (Wohnung, Art, Mietart, Zeitraum, Kaution). Gemeinsame
+ * Quelle für das Anlege- und das Bearbeiten-Sheet, damit beide dieselben
+ * Felder zeigen.
  */
 export const ContractFields = <T extends FieldValues>({
   control,
@@ -27,6 +34,7 @@ export const ContractFields = <T extends FieldValues>({
   unitDisabled?: boolean;
 }) => {
   const path = (name: string) => name as FieldPath<T>;
+  const kind = useWatch({ control, name: path("kind") });
 
   return (
     <>
@@ -46,6 +54,17 @@ export const ContractFields = <T extends FieldValues>({
           label: t(`tenants.kinds.${value}`),
         }))}
       />
+      {kind === "private" ? (
+        <SelectInput
+          control={control}
+          name={path("rentType")}
+          label={t("ui.tenant.fields.rentType")}
+          options={RENT_TYPES.map((value) => ({
+            value,
+            label: t(`tenants.rentTypes.${value}`),
+          }))}
+        />
+      ) : null}
       <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
         <DateInput
           control={control}

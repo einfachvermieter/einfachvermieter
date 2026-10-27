@@ -1,4 +1,9 @@
-import { byName, formatName } from "@einfachvermieter/shared";
+import {
+  byName,
+  formatName,
+  type RentChangeReason,
+  type RentType,
+} from "@einfachvermieter/shared";
 import { queryOptions } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { api } from "./api";
@@ -16,6 +21,7 @@ export type Tenant = {
   id: string;
   unitId: string;
   kind: TenantKind;
+  rentType: RentType;
   startDate: string;
   endDate: string | null;
   /**
@@ -111,7 +117,8 @@ export type TenantRent = {
   endDate: string | null;
   monthlyBaseRentCents: number;
   monthlyAdvanceCents: number;
-  reductionReason: string | null;
+  changeReason: RentChangeReason | null;
+  changeNote: string | null;
   createdAt: string;
   updatedAt: string;
 };

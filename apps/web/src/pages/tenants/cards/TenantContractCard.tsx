@@ -41,6 +41,14 @@ export const TenantContractCard = ({
           label: t("ui.tenant.fields.kind"),
           value: tenantKindLabel(tenant.kind),
         },
+        ...(tenant.kind === "private"
+          ? [
+              {
+                label: t("ui.tenant.fields.rentType"),
+                value: t(`tenants.rentTypes.${tenant.rentType}`),
+              },
+            ]
+          : []),
         {
           label: t("ui.tenants.columns.term"),
           value: formatPeriod(tenant.startDate, tenant.endDate),

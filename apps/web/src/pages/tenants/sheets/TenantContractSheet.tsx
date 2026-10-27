@@ -13,6 +13,7 @@ import { ContractFields } from "../fields/ContractFields";
 const contractSchema = tenantFormSchema.pick({
   unitId: true,
   kind: true,
+  rentType: true,
   startDate: true,
   endDate: true,
   depositEuros: true,

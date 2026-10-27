@@ -2447,11 +2447,13 @@
         "streetRequired": "Straße und Hausnummer erforderlich",
         "postalCodeRequired": "PLZ erforderlich",
         "cityRequired": "Ort erforderlich",
-        "advanceRequired": "Eine monatliche Nebenkostenvorauszahlung größer als 0 ist Pflicht."
+        "advanceRequired": "Eine monatliche Nebenkostenvorauszahlung größer als 0 ist Pflicht.",
+        "changeReasonRequiresIncrease": "Bei Vergleichsmiete und Modernisierung muss die Kaltmiete höher sein als beim vorigen Mietsatz."
       },
       "fields": {
         "unit": "Wohnung",
         "kind": "Art des Vertrags",
+        "rentType": "Mietart",
         "start": "Vertragsbeginn",
         "end": "Vertragsende",
         "deposit": "Kaution",
@@ -2461,8 +2463,9 @@
         "coldRent": "Kaltmiete",
         "coldRentEuros": "Kaltmiete",
         "advanceEuros": "NK-Vorauszahlung",
-        "reductionReason": "Begründung Reduktion",
-        "reductionReasonHint": "Optional: Begründung, falls dieser Mietsatz eine einvernehmlich vereinbarte Reduktion gegenüber dem Vorgänger ist (z. B. „Sanierung Q1/2025“).",
+        "changeReason": "Änderungsgrund",
+        "changeReasonHint": "Modernisierung nur wählen, wenn die Erhöhung auf einer Modernisierungsmaßnahme beruht, auch wenn sie mit dem Mieter vereinbart ist. Jede andere vereinbarte Erhöhung oder Senkung ist eine Vereinbarung.",
+        "changeNote": "Notiz",
         "accountHolder": "Kontoinhaber",
         "notes": "Notizen",
         "firstName": "Vorname",
@@ -2503,7 +2506,7 @@
       "active": "aktiv",
       "lastResident": "zuletzt",
       "rentsTitle": "Mietsätze",
-      "rentsHelp": "Mietsätze decken den gesamten Vertragszeitraum lückenlos ab. Der erste Mietsatz beginnt am Vertragsbeginn, der letzte endet am Vertragsende.\n\nZeiträume dürfen sich nicht überlappen, Folgemietsätze starten daher am Tag nach dem Ende des vorherigen.\n\nOhne Startdatum gilt ein Mietsatz ab Vertragsbeginn, ohne Enddatum bis zum Vertragsende.",
+      "rentsHelp": "Mietsätze decken den gesamten Vertragszeitraum lückenlos ab. Der erste Mietsatz beginnt am Vertragsbeginn, der letzte endet am Vertragsende.\n\nZeiträume dürfen sich nicht überlappen, Folgemietsätze starten daher am Tag nach dem Ende des vorherigen.\n\nOhne Startdatum gilt ein Mietsatz ab Vertragsbeginn, ohne Enddatum bis zum Vertragsende.\n\nEine Mietminderung ändert die Mietsätze nicht, sie führen immer die vereinbarte Miete.",
       "addRent": "Mietsatz hinzufügen",
       "editRent": "Mietsatz bearbeiten",
       "removeRent": "Mietsatz {index} entfernen",
@@ -2511,6 +2514,10 @@
       "rentsEmptyHint": "Es muss mindestens ein Mietsatz angelegt werden, der den Vertragszeitraum lückenlos abdeckt.",
       "rentCurrent": "aktuell",
       "lastRent": "zuletzt",
+      "rentDelta": "{amount} € · {percent} %",
+      "rentDeltaAmount": "{amount} €",
+      "rentAdvanceAdjusted": "NK-Vorauszahlung angepasst",
+      "rentPeriodWithChange": "{period} · {change}",
       "bankAccountsEmptyHint": "Bankverbindungen sind optional und können bei Bedarf hinterlegt werden.",
       "bankAccountsHelp": "Bankverbindungen sind optional. Es können mehrere Einträge mit unterschiedlichen Gültigkeitszeiträumen erfasst werden, z. B. bei einem Bankwechsel.\n\nZeiträume dürfen sich nicht überlappen: Zu jedem Zeitpunkt darf nur eine Bankverbindung aktiv sein.\n\nOhne Startdatum gilt eine Bankverbindung ab Vertragsbeginn, ohne Enddatum bis zum Vertragsende.\n\nFür Lastschrifteinzug zusätzlich Mandatsreferenz und Datum der Mandatserteilung hinterlegen.",
       "addBankAccount": "Bankverbindung hinzufügen",
@@ -3064,6 +3071,18 @@
     "kinds": {
       "private": "Privater Mieter",
       "owner": "Selbstnutzung"
+    },
+    "rentChangeReasons": {
+      "none": "ohne Angabe",
+      "agreement": "Vereinbarung",
+      "comparable_rent": "Vergleichsmiete (§ 558)",
+      "modernization": "Modernisierung",
+      "index": "Indexanpassung (§ 557b)"
+    },
+    "rentTypes": {
+      "standard": "ohne Staffel und Index",
+      "graduated": "Staffelmiete (§ 557a)",
+      "index": "Indexmiete (§ 557b)"
     }
   },
   "costs": {

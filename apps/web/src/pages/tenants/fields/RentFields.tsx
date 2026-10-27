@@ -1,5 +1,10 @@
+import {
+  RENT_CHANGE_REASON_NONE,
+  RENT_CHANGE_REASONS,
+} from "@einfachvermieter/shared";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { MonthInput } from "@/components/form/MonthInput";
+import { SelectInput } from "@/components/form/SelectInput";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
 import { t } from "../../../lib/i18n";
@@ -24,17 +29,19 @@ export const RentFields = <T extends FieldValues>({
 
   /**
    * "initial" = erster Mietsatz beim Anlegen: Zeitraum ergibt sich aus dem
-   * Vertrag (Beginn bis Ende), eine Minderung gegenüber einem Vorgänger
-   * gibt es noch nicht. Beide Felder entfallen deshalb.
+   * Vertrag (Beginn bis Ende), Zeitraum, Änderungsgrund und Notiz entfallen.
+   * "first" = erster Mietsatz eines bestehenden Vertrags: Zeitraum ja, aber
+   * ohne Vorgänger kein Änderungsgrund und keine Notiz.
    */
-  variant?: "full" | "initial";
+  variant?: "full" | "first" | "initial";
 }) => {
   const path = (name: string) => `${prefix}${name}` as FieldPath<T>;
-  const full = variant === "full";
+  const withPeriod = variant !== "initial";
+  const withChange = variant === "full";
 
   return (
     <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
-      {full ? (
+      {withPeriod ? (
         <>
           <MonthInput
             control={control}
@@ -67,15 +74,28 @@ export const RentFields = <T extends FieldValues>({
         inputMode="decimal"
         suffix="€"
       />
-      {full ? (
-        <TextInput
-          control={control}
-          name={path("reductionReason")}
-          label={t("ui.tenant.fields.reductionReason")}
-          description={t("ui.tenant.fields.reductionReasonHint")}
-          optional={true}
-          inputClassName="sm:col-span-2"
-        />
+      {withChange ? (
+        <div className="grid gap-6 sm:col-span-2">
+          <SelectInput
+            control={control}
+            name={path("changeReason")}
+            label={t("ui.tenant.fields.changeReason")}
+            description={t("ui.tenant.fields.changeReasonHint")}
+            optional={true}
+            options={[RENT_CHANGE_REASON_NONE, ...RENT_CHANGE_REASONS].map(
+              (value) => ({
+                value,
+                label: t(`tenants.rentChangeReasons.${value}`),
+              }),
+            )}
+          />
+          <TextInput
+            control={control}
+            name={path("changeNote")}
+            label={t("ui.tenant.fields.changeNote")}
+            optional={true}
+          />
+        </div>
       ) : null}
     </FieldGroup>
   );

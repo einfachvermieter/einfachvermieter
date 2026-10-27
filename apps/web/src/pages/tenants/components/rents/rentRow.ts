@@ -1,4 +1,5 @@
 import {
+  RENT_CHANGE_REASON_NONE,
   type TenantFormValues,
   tenantFormSchema,
 } from "@einfachvermieter/shared";
@@ -12,5 +13,6 @@ export const emptyRentRow = (startDate = ""): RentRowValues => ({
   endDate: "",
   monthlyBaseRentEuros: "0,00",
   monthlyAdvanceEuros: "0,00",
-  reductionReason: "",
+  changeReason: RENT_CHANGE_REASON_NONE,
+  changeNote: "",
 });

@@ -710,12 +710,36 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
     tenantId: aTenantOg,
     residentId: aResSchmidt,
   });
-  insert(schema.tenantRents, {
-    id: nid(),
-    tenantId: aTenantOg,
-    monthlyBaseRentCents: 92_000,
-    monthlyAdvanceCents: 24_000,
-  });
+  // Verlauf mit Änderungsgründen: Anfangsmiete, vereinbarte Erhöhung,
+  // Erhöhung nach Modernisierung
+  insert(schema.tenantRents, [
+    {
+      id: nid(),
+      tenantId: aTenantOg,
+      endDate: "2023-08-31",
+      monthlyBaseRentCents: 85_000,
+      monthlyAdvanceCents: 24_000,
+    },
+    {
+      id: nid(),
+      tenantId: aTenantOg,
+      startDate: "2023-09-01",
+      endDate: "2024-12-31",
+      monthlyBaseRentCents: 88_000,
+      monthlyAdvanceCents: 24_000,
+      changeReason: "agreement",
+      changeNote: "Nachtrag zum Mietvertrag vom 14.07.2023",
+    },
+    {
+      id: nid(),
+      tenantId: aTenantOg,
+      startDate: "2025-01-01",
+      monthlyBaseRentCents: 92_000,
+      monthlyAdvanceCents: 24_000,
+      changeReason: "modernization",
+      changeNote: "Neue Fenster im Sommer 2024, Erklärung vom 18.10.2024",
+    },
+  ]);
   insert(schema.tenantBankAccounts, {
     id: nid(),
     tenantId: aTenantOg,
@@ -737,9 +761,11 @@ const main = runSeed("demo", async ({ insert, copyFixture, hashPassword }) => {
       74_000,
       20_000,
     ),
+    ...monthlyRentPayments(aTenantOg, "2021-09", "2023-08", 85_000, 24_000),
+    ...monthlyRentPayments(aTenantOg, "2023-09", "2024-12", 88_000, 24_000),
     ...monthlyRentPayments(
       aTenantOg,
-      "2021-09",
+      "2025-01",
       paidThroughMonth(),
       92_000,
       24_000,

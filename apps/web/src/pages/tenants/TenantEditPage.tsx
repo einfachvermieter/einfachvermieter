@@ -218,6 +218,7 @@ export const TenantEditPage = () => {
               renderRow={(row, index) => (
                 <RentRowSummary
                   row={row}
+                  previous={values.rents[index - 1]}
                   index={index}
                   tenantStartDate={values.startDate}
                   tenantEndDate={values.endDate}
@@ -317,6 +318,7 @@ export const TenantEditPage = () => {
           defaultValues={{
             unitId: values.unitId,
             kind: values.kind,
+            rentType: values.rentType,
             startDate: values.startDate,
             endDate: values.endDate,
             depositEuros: values.depositEuros,
@@ -373,6 +375,7 @@ export const TenantEditPage = () => {
               ? (values.rents[sheet.index] ?? emptyRentRow(values.startDate))
               : emptyRentRow(values.startDate)
           }
+          isFirst={sheet.index === 0}
           onSubmit={async (row) => {
             const { index } = sheet;
             await save((current) => ({

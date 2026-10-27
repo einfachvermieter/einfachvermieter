@@ -3,6 +3,8 @@ import {
   applyContractPeriod,
   closeOpenPeriods,
   type TenantFormValues,
+  tenantFormSchemaRefined,
+  tenantFormToDto,
 } from "./tenant-form.js";
 
 const baseValues = (
@@ -11,6 +13,7 @@ const baseValues = (
   ({
     unitId: "unit-1",
     kind: "private",
+    rentType: "standard",
     startDate: "2026-03-01",
     endDate: "",
     depositEuros: "0,00",
@@ -27,7 +30,8 @@ const rent = (startDate: string, endDate: string) => ({
   endDate,
   monthlyBaseRentEuros: "1200,00",
   monthlyAdvanceEuros: "350,00",
-  reductionReason: "",
+  changeReason: "none" as const,
+  changeNote: "",
 });
 
 describe("applyContractPeriod", () => {
@@ -117,5 +121,72 @@ describe("closeOpenPeriods", () => {
     );
 
     expect(result[0]?.endDate).toBe("2026-03-31");
+  });
+});
+
+describe("tenantFormSchemaRefined: Änderungsgrund", () => {
+  const withRaise = (
+    changeReason: TenantFormValues["rents"][number]["changeReason"],
+    monthlyBaseRentEuros: string,
+  ) =>
+    baseValues({
+      residents: [
+        {
+          firstName: "Rita",
+          lastName: "Muster",
+          email: "",
+          phone: "",
+          moveInDate: "",
+          moveOutDate: "",
+          isContractParty: true,
+        },
+      ],
+      // Reihenfolge der Eingabe: der spätere Satz steht vorn
+      rents: [
+        { ...rent("2026-06-01", ""), monthlyBaseRentEuros, changeReason },
+        rent("", "2026-05-31"),
+      ],
+    });
+
+  const reasonIssues = (values: TenantFormValues) => {
+    const result = tenantFormSchemaRefined.safeParse(values);
+    return result.success
+      ? []
+      : result.error.issues.filter((issue) => issue.path[2] === "changeReason");
+  };
+
+  it("weist Modernisierung mit niedrigerer Kaltmiete am richtigen Satz ab", () => {
+    const issues = reasonIssues(withRaise("modernization", "1100,00"));
+    expect(issues.map((issue) => issue.path)).toEqual([
+      ["rents", 0, "changeReason"],
+    ]);
+  });
+
+  it("erlaubt eine vereinbarte Senkung und eine Modernisierung mit Erhöhung", () => {
+    expect(reasonIssues(withRaise("agreement", "1100,00"))).toEqual([]);
+    expect(reasonIssues(withRaise("modernization", "1300,00"))).toEqual([]);
+  });
+
+  it("überträgt Grund, Notiz und Mietart ins DTO", () => {
+    const dto = tenantFormToDto({
+      ...withRaise("modernization", "1300,00"),
+      rentType: "graduated",
+      rents: [
+        {
+          ...rent("", ""),
+          changeReason: "agreement",
+          changeNote: "  Fenster neu  ",
+        },
+      ],
+    });
+    expect(dto.rentType).toBe("graduated");
+    expect(dto.rents[0]).toMatchObject({
+      changeReason: "agreement",
+      changeNote: "Fenster neu",
+    });
+    expect(
+      tenantFormToDto({ ...withRaise("none", "1300,00"), kind: "owner" })
+        .rentType,
+    ).toBe("standard");
   });
 });

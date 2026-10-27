@@ -483,3 +483,46 @@ describe("Dezentrale Heizung", () => {
     });
   });
 });
+
+describe("Änderungsgrund und Mietart", () => {
+  it("macht die Begründung zur Notiz mit Grund Vereinbarung, außer beim ersten Satz; Verträge werden standard", async () => {
+    await withDatabase(async (open) => {
+      const orm = await open();
+      const connection = orm.em.getConnection();
+      await orm.migrator.up({ to: "Migration20261021191114" });
+
+      await connection.execute(
+        "insert into buildings (id, name, address_street, address_postal_code, address_city) values ('house', 'Haus', 'Weg 1', '45127', 'Essen')",
+      );
+      await connection.execute(
+        "insert into units (id, building_id, name, area_sqm) values ('unit', 'house', 'A', 80)",
+      );
+      await connection.execute(
+        "insert into tenants (id, unit_id, start_date) values ('tenant', 'unit', '2024-01-01')",
+      );
+      await connection.execute(
+        "insert into tenant_rents (id, tenant_id, start_date, end_date, monthly_base_rent_cents, monthly_advance_cents, reduction_reason) values ('a-first', 'tenant', null, '2024-06-30', 50000, 10000, 'Bestand'), ('b-blank', 'tenant', '2024-07-01', '2024-12-31', 50000, 12000, '  '), ('c-note', 'tenant', '2025-01-01', null, 45000, 12000, 'Senkung nach Absprache')",
+      );
+
+      await orm.migrator.up();
+
+      const rents: Array<{
+        id: string;
+        change_reason: string | null;
+        change_note: string | null;
+      }> = await connection.execute(
+        "select id, change_reason, change_note from tenant_rents order by id",
+      );
+      expect(
+        rents.map((rent) => [rent.id, rent.change_reason, rent.change_note]),
+      ).toEqual([
+        ["a-first", null, "Bestand"],
+        ["b-blank", null, "  "],
+        ["c-note", "agreement", "Senkung nach Absprache"],
+      ]);
+      expect(await connection.execute("select rent_type from tenants")).toEqual(
+        [{ rent_type: "standard" }],
+      );
+    });
+  });
+});
