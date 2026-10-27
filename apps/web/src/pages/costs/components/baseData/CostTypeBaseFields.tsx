@@ -1,7 +1,4 @@
-import {
-  isCo2SplitInapplicableFuel,
-  isLikelyNonAllocatableCostTypeName,
-} from "@einfachvermieter/shared";
+import { isLikelyNonAllocatableCostTypeName } from "@einfachvermieter/shared";
 import { RiHomeGearLine } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -19,6 +16,7 @@ import {
   costTypeCategoryLabel,
   laborCostCategoryLabel,
 } from "../../../../lib/costs";
+import { usesCo2Split } from "../../../../lib/costTypeTemplates";
 import { heatingSettingsListQueryOptions } from "../../../../lib/heating";
 import { t } from "../../../../lib/i18n";
 import { AllocationKeySelectField } from "./AllocationKeySelectField";
@@ -61,11 +59,7 @@ export const CostTypeBaseFields = ({
     enabled: isHeating && co2Tracked === true && Boolean(buildingId),
   });
 
-  const anyConfigUsesCo2 = (heatingConfigs.data ?? []).some(
-    (config) =>
-      config.co2CostShareEnabled &&
-      !isCo2SplitInapplicableFuel(config.fuelType),
-  );
+  const anyConfigUsesCo2 = usesCo2Split(heatingConfigs.data ?? []);
 
   // § 1 Abs. 2 BetrKV: Verwaltungs- und Instandhaltungskosten sind nicht
   // umlagefähig. Der Name ist Freitext, deshalb nur ein Hinweis.

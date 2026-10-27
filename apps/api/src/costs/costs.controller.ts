@@ -2,10 +2,12 @@ import {
   attachmentMaxBytesFromEnv,
   type CostEntryCreateDto,
   type CostEntryUpdateDto,
+  type CostTypeBulkCreateDto,
   type CostTypeCreateDto,
   type CostTypeUpdateDto,
   costEntryCreateSchema,
   costEntryUpdateSchema,
+  costTypeBulkCreateSchema,
   costTypeCreateSchema,
   costTypeUpdateSchema,
 } from "@einfachvermieter/shared";
@@ -80,6 +82,15 @@ export class CostsController {
     dto: CostTypeCreateDto,
   ) {
     return this.costsService.createCostType(dto);
+  }
+
+  @Post("types/bulk")
+  @Roles("admin")
+  createCostTypes(
+    @Body(new ZodValidationPipe(costTypeBulkCreateSchema))
+    dto: CostTypeBulkCreateDto,
+  ) {
+    return this.costsService.createCostTypes(dto);
   }
 
   @Patch("types/:id")

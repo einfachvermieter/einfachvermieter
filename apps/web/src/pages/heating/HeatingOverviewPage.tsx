@@ -23,6 +23,7 @@ import { useActiveBuilding } from "../../lib/activeBuilding";
 import { costTypesQueryOptions } from "../../lib/costs";
 import { formatPeriod } from "../../lib/format";
 import {
+  currentHeatingVersion,
   type HeatingOverviewRow,
   type HeatingSortColumn,
   heatingOverviewQueryOptions,
@@ -259,10 +260,7 @@ export const HeatingOverviewPage = () => {
   const today = todayIso();
   const versions = allVersions ?? [];
   const gapMessages = heatingGapMessages(versions, today);
-  // Liste ist absteigend nach validFrom: die heute gültige oder, in einer
-  // Lücke, die zuletzt gültige Version; erst ohne beide die künftige
-  const currentVersion =
-    versions.find((version) => version.validFrom <= today) ?? versions[0];
+  const currentVersion = currentHeatingVersion(versions, today);
   const missingHeatingCostTypes =
     currentVersion?.mode === "internal" && heatingCostTypeCount === 0;
 

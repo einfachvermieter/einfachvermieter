@@ -12,6 +12,7 @@ import type {
   CostEntryCreateDto,
   CostEntryItemDto,
   CostEntryUpdateDto,
+  CostTypeBulkCreateDto,
   CostTypeCreateDto,
   CostTypeUpdateDto,
   FieldValidationError,
@@ -199,6 +200,22 @@ export class CostsService {
 
     const created = this.em.create(CostTypeSchema, dto);
 
+    this.em.persist(created);
+    await this.em.flush();
+
+    return created;
+  }
+
+  /**
+   * Mehrere Kostenarten eines Gebäudes anlegen, alle oder keine. Ein einzelner
+   * flush schreibt sie in einer Transaktion.
+   */
+  async createCostTypes(dto: CostTypeBulkCreateDto) {
+    await assertBuildingExists(this.em, dto.buildingId);
+
+    const created = dto.items.map((item) =>
+      this.em.create(CostTypeSchema, { ...item, buildingId: dto.buildingId }),
+    );
     this.em.persist(created);
     await this.em.flush();
 

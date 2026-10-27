@@ -35,6 +35,7 @@ export const FormSheet = <T extends FieldValues>({
   title,
   description,
   submitLabel,
+  submitDisabled = false,
   errorTitle,
   onSubmit,
   onClose,
@@ -46,6 +47,7 @@ export const FormSheet = <T extends FieldValues>({
   title: string;
   description?: string;
   submitLabel: string;
+  submitDisabled?: boolean;
   errorTitle?: string;
   onSubmit: (values: T) => Promise<void>;
   onClose: () => void;
@@ -152,7 +154,7 @@ export const FormSheet = <T extends FieldValues>({
               >
                 {t("ui.common.action.cancel")}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || submitDisabled}>
                 {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
                 {submitLabel}
               </Button>

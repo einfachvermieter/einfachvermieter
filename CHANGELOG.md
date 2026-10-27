@@ -5,6 +5,8 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Neu:** Kostenarten lassen sich aus Vorlagen anlegen, auch mehrere auf
+  einmal.
 - **Neu:** Ist für einen Zeitraum schon eine Abrechnung finalisiert, lässt
   sich die Heizkostenkonfiguration für diesen Zeitraum nicht mehr ändern.
 - **Geändert:** Ändert sich die Heizkostenkonfiguration mitten im

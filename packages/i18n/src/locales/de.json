@@ -1242,6 +1242,137 @@
         "count": "{count, plural, one {# Kostenart} other {# Kostenarten}}"
       },
       "typeCreateTitle": "Neue Kostenart",
+      "addFromTemplates": "Aus Vorlagen anlegen",
+      "templatesTitle": "Kostenarten aus Vorlagen",
+      "templatesIntro": "Die Vorlagen folgen § 2 BetrKV. Umlegen dürfen Sie eine Kostenart nur, wenn Ihr Mietvertrag das vorsieht. Auch der Umlageschlüssel richtet sich nach dem Mietvertrag. Sie können ihn nach dem Anlegen ändern.",
+      "templateGroups": {
+        "operating": "Betriebskosten",
+        "heating": "Heizkosten (§ 2 Nr. 4 bis 6 BetrKV)",
+        "other": "Sonstige Betriebskosten (§ 2 Nr. 17 BetrKV)"
+      },
+      "templatesOtherHint": "Sonstige Betriebskosten dürfen Sie nur umlegen, wenn Ihr Mietvertrag die jeweilige Kostenart umfasst. Der allgemeine Verweis auf die Betriebskostenverordnung genügt nicht.",
+      "templatesHeatingExternalHint": "Dieses Gebäude rechnet die Heizkosten extern ab. Rechnungen auf Heizkostenarten gehen dann nicht in die Abrechnung ein.",
+      "templatesHeatingNoneHint": "Dieses Gebäude hat keine Heizkostenabrechnung. Rechnungen auf Heizkostenarten verhindern dann die Abrechnung. Die Wartung der Geräte in den Wohnungen finden Sie unter den Betriebskosten.",
+      "templateAllocation": "Umlageschlüssel: {key}",
+      "templateAlreadyExists": "bereits vorhanden",
+      "templateWithCo2": "mit CO₂-Erfassung",
+      "templateWaterMetersHint": "Ordnen Sie die Wasserzähler nach dem Anlegen der Kostenart zu.",
+      "templatesSubmit": "{count, plural, =0 {Kostenarten anlegen} one {# Kostenart anlegen} other {# Kostenarten anlegen}}",
+      "templatesCreated": "{count, plural, one {# Kostenart angelegt} other {# Kostenarten angelegt}}",
+      "templates": {
+        "property_tax": {
+          "name": "Grundsteuer",
+          "hint": "Grundsteuer, die die Gemeinde für das Grundstück erhebt"
+        },
+        "fresh_water": {
+          "name": "Frischwasser",
+          "hint": "Verbrauch, Grundgebühr, Zählermiete und Eichung der Wasserzähler"
+        },
+        "waste_water": {
+          "name": "Schmutzwasser",
+          "hint": "Gebühren für das Abwasser aus dem Gebäude"
+        },
+        "rain_water": {
+          "name": "Niederschlagswasser",
+          "hint": "Gebühren für das Regenwasser von Dach und befestigten Flächen"
+        },
+        "floor_heating_maintenance": {
+          "name": "Wartung Etagenheizung",
+          "hint": "Gemeint ist die regelmäßige Reinigung und Wartung der Heizung in der Wohnung, nicht die Reparatur. Erfassen Sie je Wohnung eine Rechnungsposition. Ist ein anderer Umlageschlüssel vereinbart, ändern Sie ihn nach dem Anlegen."
+        },
+        "water_heater_maintenance": {
+          "name": "Wartung Warmwassergeräte",
+          "hint": "Gemeint ist die regelmäßige Reinigung und Wartung von Durchlauferhitzern und Boilern in der Wohnung, nicht die Reparatur. Erfassen Sie je Wohnung eine Rechnungsposition. Ist ein anderer Umlageschlüssel vereinbart, ändern Sie ihn nach dem Anlegen."
+        },
+        "elevator": {
+          "name": "Aufzug",
+          "hint": "Dazu gehören Betriebsstrom, Prüfung, Wartung und Reinigung, nicht aber Reparaturen."
+        },
+        "street_cleaning": {
+          "name": "Straßenreinigung",
+          "hint": "Gebühren der Gemeinde und Reinigung durch beauftragte Firmen"
+        },
+        "winter_service": {
+          "name": "Winterdienst",
+          "hint": "Dazu gehört das Räumen und Streuen auf Grundstück und Gehweg. Räumt der Hauswart und legen Sie seine Kosten schon um, nehmen Sie diese Vorlage nicht."
+        },
+        "refuse_collection": {
+          "name": "Müllabfuhr",
+          "hint": "Müllgebühren und Leerung der Tonnen"
+        },
+        "building_cleaning": {
+          "name": "Gebäudereinigung",
+          "hint": "Reinigung von Treppenhaus, Keller und anderen gemeinsam genutzten Räumen"
+        },
+        "pest_control": {
+          "name": "Ungezieferbekämpfung",
+          "hint": "Dazu gehören laufende Maßnahmen, nicht die Beseitigung eines einmaligen Befalls."
+        },
+        "gardening": {
+          "name": "Gartenpflege",
+          "hint": "Pflege von Grünflächen, Spielplätzen, Zugängen und Zufahrten"
+        },
+        "common_power": {
+          "name": "Allgemeinstrom",
+          "hint": "Gemeint ist der Strom für die Beleuchtung außen und in gemeinsam genutzten Räumen. Der Strom der Heizung gehört zu den Heizkosten."
+        },
+        "chimney_cleaning": {
+          "name": "Schornsteinreinigung",
+          "hint": "Gemeint sind nur Kehrgebühren, die nicht zur zentralen Heizung gehören, zum Beispiel für Kaminöfen. Sonst nehmen Sie „Schornsteinfeger (Zentralheizung)“, nicht beide."
+        },
+        "building_insurance": {
+          "name": "Gebäudeversicherung",
+          "hint": "Versicherung gegen Feuer, Sturm, Leitungswasser und Glasbruch"
+        },
+        "liability_insurance": {
+          "name": "Haftpflichtversicherung",
+          "hint": "Haftpflicht für Haus und Grundstück, auch für einen Öltank"
+        },
+        "caretaker": {
+          "name": "Hauswart",
+          "hint": "Kosten für Verwaltung und Reparaturen ziehen Sie vorher ab. Erledigt der Hauswart Reinigung, Garten oder Winterdienst, setzen Sie diese Arbeiten nicht noch einmal an."
+        },
+        "shared_antenna": {
+          "name": "Gemeinschaftsantenne",
+          "hint": "Gemeint sind nur Betriebsstrom und regelmäßige Prüfung, keine Kabelgebühren. Für Anlagen, die ab dem 01.12.2021 errichtet wurden, gilt diese Vorlage nicht."
+        },
+        "fiber_provision_fee": {
+          "name": "Glasfaser-Bereitstellungsentgelt",
+          "hint": "Das Entgelt gilt nur für eine Hausverteilung ganz aus Glasfaser, bei der der Mieter seinen Anbieter frei wählt und die wirtschaftlich umgesetzt wurde. Höhe und Dauer sind gesetzlich begrenzt. Verträge über Internet oder Fernsehen sind nicht umlagefähig."
+        },
+        "laundry_facilities": {
+          "name": "Wäschepflege",
+          "hint": "Strom, Wasser und Pflege der Geräte in der gemeinschaftlichen Waschküche"
+        },
+        "heating_energy": {
+          "name": "Heizenergie",
+          "hint": "Gas, Öl, Pellets, Fernwärme oder Heizstrom"
+        },
+        "heating_operating_power": {
+          "name": "Betriebsstrom Heizung",
+          "hint": "Strom für Brenner, Pumpen und Regelung der Heizung"
+        },
+        "heating_maintenance": {
+          "name": "Wartung Heizung",
+          "hint": "Gemeint ist die regelmäßige Prüfung und Einstellung der Heizung, nicht die Reparatur."
+        },
+        "heating_chimney_sweep": {
+          "name": "Schornsteinfeger (Zentralheizung)",
+          "hint": "Gemeint sind Kehrarbeiten und Messungen an der zentralen Heizung. Legen Sie diese Kosten nicht zusätzlich als „Schornsteinreinigung“ an."
+        },
+        "heating_metering_service": {
+          "name": "Ablesung und Abrechnung (Messdienst)",
+          "hint": "Gerätemiete, Eichung, Ablesung und Abrechnung"
+        },
+        "smoke_detector_inspection": {
+          "name": "Prüfung Rauchwarnmelder",
+          "hint": "Gemeint ist nur die regelmäßige Prüfung. Kauf und Miete der Geräte sind nicht umlagefähig. Nehmen Sie diese Vorlage nur, wenn Ihr Mietvertrag diese Kosten umlegt, zum Beispiel als Wartung der Rauchwarnmelder oder als Betrieb von Brandmeldeanlagen."
+        },
+        "gutter_cleaning": {
+          "name": "Dachrinnenreinigung",
+          "hint": "Gemeint ist nur die regelmäßige Reinigung, nicht eine einmalige aus besonderem Anlass und nicht das Beseitigen einer Verstopfung. Nehmen Sie diese Vorlage nur, wenn Ihr Mietvertrag die Dachrinnenreinigung als umlagefähig nennt."
+        }
+      },
       "detail": {
         "sectionTitle": "Stammdaten",
         "taxDisclose": "Steuerliche Angaben (§ 35a EStG)",
@@ -1367,6 +1498,7 @@
         "co2EmissionFactorFormat": "Bitte einen Emissionsfaktor mit höchstens sechs Nachkommastellen eintragen (z. B. 0,20088).",
         "co2EmissionFactorTooHigh": "Der Emissionsfaktor muss unter 1 kg CO₂/kWh liegen. Bitte den Wert in Kilogramm je kWh eintragen, nicht in Gramm.",
         "meteringServiceHeatingOnly": "Das Erfassungsentgelt-Kennzeichen ist nur bei Heizkostenarten möglich.",
+        "duplicateName": "Dieser Name kommt mehrfach vor.",
         "containedTaxesFormat": "Bitte einen Geldbetrag eintragen (z. B. 130,44).",
         "containedTaxesExceedAmount": "Die enthaltenen Steuern und Abgaben dürfen den Rechnungsbetrag nicht übersteigen.",
         "itemsMin": "Mindestens eine Position erforderlich",

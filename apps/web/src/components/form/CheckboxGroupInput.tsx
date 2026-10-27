@@ -21,6 +21,7 @@ export type CheckboxGroupOption = {
   value: string;
   label: ReactNode;
   description?: ReactNode;
+  disabled?: boolean;
 };
 
 type CheckboxGroupInputProps<T extends FieldValues> = {
@@ -103,16 +104,18 @@ export const CheckboxGroupInput = <T extends FieldValues>({
                         onCheckedChange={(checked) =>
                           toggle(option.value, checked === true)
                         }
-                        disabled={disabled}
+                        disabled={option.disabled === true ? true : disabled}
                       />
-                      <FieldLabel htmlFor={id} className="font-normal">
-                        {option.label}
+                      <div className="min-w-0">
+                        <FieldLabel htmlFor={id} className="font-normal">
+                          {option.label}
+                        </FieldLabel>
                         {option.description ? (
-                          <span className="block text-xs text-muted-foreground">
+                          <div className="mt-0.5 text-xs text-muted-foreground">
                             {option.description}
-                          </span>
+                          </div>
                         ) : null}
-                      </FieldLabel>
+                      </div>
                     </Field>
                   );
                 })}

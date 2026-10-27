@@ -3,7 +3,7 @@
  * Abrechnungszeitraum über 12 Monate, zweite finalisierte Abrechnung für
  * denselben Mieter und Zeitraum, Heizkosten bei einem Gebäude ohne
  * Heizkostenabrechnung, Betriebskosten ohne Verteilungsgrundlage,
- * Anfrage-Limit für Login und Passwortwechsel.
+ * Anfrage-Limit für Login und Passwortwechsel, Kostenarten aus Vorlagen.
  */
 
 import { mkdtempSync, rmSync } from "node:fs";
@@ -642,6 +642,134 @@ describe("Wechsel der Heizkostenkonfiguration im Abrechnungszeitraum", () => {
         date: "01.07.2025",
       }),
     );
+  }, 60_000);
+});
+
+describe("Kostenarten aus Vorlagen anlegen", () => {
+  const operatingItem = (name: string) => ({
+    name,
+    category: "operating",
+    defaultAllocationKey: "per_living_area",
+    laborCostCategory: null,
+  });
+
+  const createBuilding = (suffix: string) =>
+    api("/buildings", {
+      method: "POST",
+      body: {
+        name: `Vorlagen-Haus ${suffix}`,
+        addressStreet: "Vorlagenweg 1",
+        addressPostalCode: "45130",
+        addressCity: "Essen",
+      },
+      expect: 201,
+    });
+
+  const namesOf = async (buildingId: string): Promise<string[]> => {
+    const costTypes: { name: string }[] = await api(
+      `/costs/types?buildingId=${buildingId}`,
+      { expect: 200 },
+    );
+    return costTypes
+      .map((costType) => costType.name)
+      .sort((left, right) => left.localeCompare(right));
+  };
+
+  it("legt alle Einträge an, auch mit einem Namen, den es im Gebäude schon gibt", async () => {
+    const building = await createBuilding("alle");
+    await api("/costs/types/bulk", {
+      method: "POST",
+      body: { buildingId: building.id, items: [operatingItem("Grundsteuer")] },
+      expect: 201,
+    });
+
+    const created = await api("/costs/types/bulk", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        items: [
+          operatingItem("Grundsteuer"),
+          {
+            name: "Heizenergie",
+            category: "heating",
+            defaultAllocationKey: null,
+            laborCostCategory: null,
+            co2Tracked: true,
+          },
+        ],
+      },
+      expect: 201,
+    });
+
+    expect(created).toHaveLength(2);
+    expect(await namesOf(building.id)).toEqual([
+      "Grundsteuer",
+      "Grundsteuer",
+      "Heizenergie",
+    ]);
+  }, 60_000);
+
+  it("legt nichts an, wenn ein Eintrag ungültig ist", async () => {
+    const building = await createBuilding("ungueltig");
+    const rejected = await api("/costs/types/bulk", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        items: [
+          operatingItem("Grundsteuer"),
+          { ...operatingItem("Heizenergie"), co2Tracked: true },
+        ],
+      },
+      expect: 400,
+    });
+
+    expect(JSON.stringify(rejected)).toContain("co2Tracked");
+    expect(await namesOf(building.id)).toEqual([]);
+  }, 60_000);
+
+  it("weist gleiche Namen im selben Aufruf zurück", async () => {
+    const building = await createBuilding("doppelt");
+    const rejected = await api("/costs/types/bulk", {
+      method: "POST",
+      body: {
+        buildingId: building.id,
+        items: [operatingItem("Grundsteuer"), operatingItem(" grundsteuer ")],
+      },
+      expect: 400,
+    });
+
+    expect(rejected.errors).toEqual([
+      expect.objectContaining({ path: ["items", 1, "name"] }),
+    ]);
+    expect(await namesOf(building.id)).toEqual([]);
+  }, 60_000);
+
+  it("weist unbekanntes Gebäude, leere und zu lange Listen zurück", async () => {
+    const unknownBuilding = await api("/costs/types/bulk", {
+      method: "POST",
+      body: {
+        buildingId: "00000000-0000-4000-8000-000000000099",
+        items: [operatingItem("Grundsteuer")],
+      },
+      expect: 404,
+    });
+    expect(unknownBuilding.statusCode).toBe(404);
+
+    const building = await createBuilding("grenzen");
+    for (const items of [
+      [],
+      Array.from({ length: 51 }, (_, index) =>
+        operatingItem(`Kostenart ${index}`),
+      ),
+    ]) {
+      const rejected = await api("/costs/types/bulk", {
+        method: "POST",
+        body: { buildingId: building.id, items },
+        expect: 400,
+      });
+      expect(rejected.statusCode).toBe(400);
+    }
+    expect(await namesOf(building.id)).toEqual([]);
   }, 60_000);
 });
 

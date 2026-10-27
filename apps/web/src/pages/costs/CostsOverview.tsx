@@ -30,6 +30,7 @@ import { statsQueryOptions } from "../../lib/stats";
 import { rowIconColumn } from "../../lib/tableColumns";
 import { useServerTableState } from "../../lib/tableState";
 import { CostTypeCreateSheet } from "./CostTypeCreateSheet";
+import { CostTypeTemplatesSheet } from "./CostTypeTemplatesSheet";
 
 const SORTABLE_COLUMNS: ReadonlySet<CostTypeSortColumn> = new Set([
   "name",
@@ -44,6 +45,7 @@ export const CostsOverview = () => {
   });
   const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
   const {
     buildingId,
     building,
@@ -113,6 +115,9 @@ export const CostsOverview = () => {
     emptyMessage = t("ui.costs.empty");
   }
 
+  // Ohne Kostenarten ist das Anlegen aus Vorlagen der übliche erste Schritt
+  const buildingHasNoCostTypes = data?.total === 0 && !trimmedSearch;
+
   const sub = data
     ? [t("ui.costs.sub.count", { count: data.total })].filter(Boolean)
     : undefined;
@@ -126,10 +131,25 @@ export const CostsOverview = () => {
         subLoading={!data}
         action={
           canAddCostType ? (
-            <Button type="button" onClick={() => setCreateOpen(true)}>
-              <IconPlus />
-              <span className="hidden sm:inline">{t("ui.costs.addType")}</span>
-            </Button>
+            <>
+              <Button
+                type="button"
+                variant={buildingHasNoCostTypes ? "default" : "secondary"}
+                onClick={() => setTemplatesOpen(true)}
+              >
+                {t("ui.costs.addFromTemplates")}
+              </Button>
+              <Button
+                type="button"
+                variant={buildingHasNoCostTypes ? "secondary" : "default"}
+                onClick={() => setCreateOpen(true)}
+              >
+                <IconPlus />
+                <span className="hidden sm:inline">
+                  {t("ui.costs.addType")}
+                </span>
+              </Button>
+            </>
           ) : undefined
         }
       />
@@ -160,6 +180,9 @@ export const CostsOverview = () => {
 
       {createOpen ? (
         <CostTypeCreateSheet onClose={() => setCreateOpen(false)} />
+      ) : null}
+      {templatesOpen ? (
+        <CostTypeTemplatesSheet onClose={() => setTemplatesOpen(false)} />
       ) : null}
     </div>
   );

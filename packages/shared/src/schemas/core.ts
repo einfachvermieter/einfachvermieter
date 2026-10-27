@@ -49,66 +49,98 @@ const costTypeFieldsSchema = z.object({
   description: z.string().max(1000).optional().nullable(),
 });
 
+/**
+ * Feldregeln, die für jede Kostenart gelten, ob einzeln angelegt, geändert
+ * oder aus Vorlagen angelegt: Umlageschlüssel nur und dann zwingend bei
+ * Betriebskosten, beide Kennzeichen nur bei Heizkosten.
+ */
+const checkCostTypeFields = (
+  data: z.infer<typeof costTypeFieldsSchema>,
+  ctx: z.RefinementCtx,
+) => {
+  if (data.category === "operating" && data.defaultAllocationKey === null) {
+    ctx.addIssue({
+      code: "custom",
+      message: messageKey("ui.costs.validation.allocationKeyRequired"),
+      path: ["defaultAllocationKey"],
+    });
+  }
+  if (data.category === "heating" && data.defaultAllocationKey !== null) {
+    ctx.addIssue({
+      code: "custom",
+      message: messageKey("ui.costs.validation.allocationKeyForbidden"),
+      path: ["defaultAllocationKey"],
+    });
+  }
+  if (data.category !== "heating" && data.co2Tracked) {
+    ctx.addIssue({
+      code: "custom",
+      message: messageKey("ui.costs.validation.co2TrackedHeatingOnly"),
+      path: ["co2Tracked"],
+    });
+  }
+  if (data.category !== "heating" && data.isMeteringServiceCost) {
+    ctx.addIssue({
+      code: "custom",
+      message: messageKey("ui.costs.validation.meteringServiceHeatingOnly"),
+      path: ["isMeteringServiceCost"],
+    });
+  }
+};
+
 export const costTypeCreateSchema = costTypeFieldsSchema
   .extend({ buildingId: z.guid() })
   .strict()
-  .refine(
-    (data) =>
-      data.category !== "operating" || data.defaultAllocationKey !== null,
-    {
-      message: messageKey("ui.costs.validation.allocationKeyRequired"),
-      path: ["defaultAllocationKey"],
-    },
-  )
-  .refine(
-    (data) => data.category !== "heating" || data.defaultAllocationKey === null,
-    {
-      message: messageKey("ui.costs.validation.allocationKeyForbidden"),
-      path: ["defaultAllocationKey"],
-    },
-  )
-  .refine((data) => data.category === "heating" || !data.co2Tracked, {
-    message: messageKey("ui.costs.validation.co2TrackedHeatingOnly"),
-    path: ["co2Tracked"],
-  })
-  .refine(
-    (data) => data.category === "heating" || !data.isMeteringServiceCost,
-    {
-      message: messageKey("ui.costs.validation.meteringServiceHeatingOnly"),
-      path: ["isMeteringServiceCost"],
-    },
-  );
+  .superRefine(checkCostTypeFields);
 export type CostTypeCreateDto = z.infer<typeof costTypeCreateSchema>;
 
 export const costTypeUpdateSchema = costTypeFieldsSchema
   .strict()
-  .refine(
-    (data) =>
-      data.category !== "operating" || data.defaultAllocationKey !== null,
-    {
-      message: messageKey("ui.costs.validation.allocationKeyRequired"),
-      path: ["defaultAllocationKey"],
-    },
-  )
-  .refine(
-    (data) => data.category !== "heating" || data.defaultAllocationKey === null,
-    {
-      message: messageKey("ui.costs.validation.allocationKeyForbidden"),
-      path: ["defaultAllocationKey"],
-    },
-  )
-  .refine((data) => data.category === "heating" || !data.co2Tracked, {
-    message: messageKey("ui.costs.validation.co2TrackedHeatingOnly"),
-    path: ["co2Tracked"],
-  })
-  .refine(
-    (data) => data.category === "heating" || !data.isMeteringServiceCost,
-    {
-      message: messageKey("ui.costs.validation.meteringServiceHeatingOnly"),
-      path: ["isMeteringServiceCost"],
-    },
-  );
+  .superRefine(checkCostTypeFields);
 export type CostTypeUpdateDto = z.infer<typeof costTypeUpdateSchema>;
+
+/**
+ * Höchstzahl Kostenarten je Sammelanlage, reicht für den ganzen
+ * Vorlagenkatalog
+ */
+export const COST_TYPE_BULK_MAX = 50;
+
+/**
+ * Normalform eines Kostenartnamens für Gleichheitsvergleiche: ohne
+ * Leerzeichen am Rand, ohne Groß- und Kleinschreibung
+ */
+export const normalizeCostTypeName = (name: string): string =>
+  name.trim().toLocaleLowerCase("de");
+
+/**
+ * Mehrere Kostenarten eines Gebäudes auf einmal anlegen. Zwei Einträge mit
+ * gleichem Namen im selben Aufruf werden abgelehnt, ein Name, den es im
+ * Gebäude schon gibt, nicht (wie beim Einzelanlegen).
+ */
+export const costTypeBulkCreateSchema = z
+  .object({
+    buildingId: z.guid(),
+    items: z
+      .array(costTypeFieldsSchema.strict().superRefine(checkCostTypeFields))
+      .min(1)
+      .max(COST_TYPE_BULK_MAX)
+      .superRefine((items, ctx) => {
+        const seen = new Set<string>();
+        for (const [index, item] of items.entries()) {
+          const name = normalizeCostTypeName(item.name);
+          if (seen.has(name)) {
+            ctx.addIssue({
+              code: "custom",
+              message: messageKey("ui.costs.validation.duplicateName"),
+              path: [index, "name"],
+            });
+          }
+          seen.add(name);
+        }
+      }),
+  })
+  .strict();
+export type CostTypeBulkCreateDto = z.infer<typeof costTypeBulkCreateSchema>;
 
 /**
  * Arten von Steuern und Abgaben, die in einer Heiz-Rechnungsposition stecken

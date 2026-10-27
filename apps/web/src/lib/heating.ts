@@ -82,6 +82,17 @@ export const heatingSettingsListQueryOptions = (buildingId: string) =>
   });
 
 /**
+ * Maßgebliche Version zum Stichtag: die heute gültige, in einer Lücke die
+ * zuletzt gültige, erst ohne beide die künftige. `versions` absteigend nach
+ * `validFrom`.
+ */
+export const currentHeatingVersion = (
+  versions: readonly HeatingSettings[],
+  today: string,
+): HeatingSettings | undefined =>
+  versions.find((version) => version.validFrom <= today) ?? versions[0];
+
+/**
  * Grundkostenmaßstab der Version, die vor `validFrom` beginnt, sofern sie
  * intern abrechnet. Bei externer Abrechnung ist der gespeicherte Wert nur
  * ein Füllwert. `versions` absteigend nach `validFrom`.
