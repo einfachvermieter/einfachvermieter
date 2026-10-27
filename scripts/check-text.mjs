@@ -157,7 +157,7 @@ const checkCodeLine = (file, line, lineNumber, report) => {
   // in Code-Zeilen erlaubt, unsichtbare Leerzeichen bleiben Escapes.
   const allowVisible = testFile.test(file) && !/^\s*(\/\/|\*|\/\*)/u.test(line);
   for (const match of line.matchAll(forbiddenChar)) {
-    const char = match[0];
+    const [char] = match;
     if (allowVisible && !invisibleChar.test(char)) {
       continue;
     }
@@ -309,7 +309,7 @@ const checkLocaleFile = (lines, report) => {
     if (!valueMatch) {
       return;
     }
-    const value = valueMatch[1];
+    const [, value] = valueMatch;
     checkWords(value, lineNumber, commonWords, report);
     checkTransliteration(value, lineNumber, report);
     if (

@@ -91,15 +91,11 @@ export const Table = ({ heading, head, children, footer, plain }: Props) => {
     ...(index === lastRowIndex ? [styles.tableEdgeBottom] : []),
   ];
 
+  const closedTableStyle = plain ? styles.tablePlain : styles.table;
+
   const table = (
     <View
-      style={
-        footerInFlow
-          ? styles.tableOpen
-          : plain
-            ? styles.tablePlain
-            : styles.table
-      }
+      style={footerInFlow ? styles.tableOpen : closedTableStyle}
       wrap={!keepTogether}
     >
       {head === undefined ? null : (

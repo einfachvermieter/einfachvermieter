@@ -12,6 +12,7 @@ import { FOOTNOTE_PRESENCE_AHEAD, styles } from "../styles.js";
 import { Table } from "./Table.js";
 
 const ROW_LABEL = "Zeile";
+const FOOTNOTE = "Fußnote";
 
 const row = (index: number) => (
   <View key={index} style={styles.row}>
@@ -112,7 +113,7 @@ describe("Table", () => {
   });
 
   it("bindet die Fußnoten an eine kurze Tabelle", () => {
-    const footnote = <Text>Fußnote</Text>;
+    const footnote = <Text>{FOOTNOTE}</Text>;
     const block = render({ children: rows(3), footer: footnote });
 
     expect((block.props as { wrap?: boolean }).wrap).toBe(false);
@@ -126,7 +127,7 @@ describe("Table", () => {
       render({
         head: <View />,
         children: rows(11),
-        footer: <Text>Fußnote</Text>,
+        footer: <Text>{FOOTNOTE}</Text>,
       }),
     );
     const children = table ? childrenOf(table) : [];

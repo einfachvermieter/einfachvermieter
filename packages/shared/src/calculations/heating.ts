@@ -2679,13 +2679,7 @@ export const calculateHeating = (
       evaluation: heatingEvaluation,
       compensations: heatingCompensations.snapshots,
     },
-    hotWater:
-      hotWaterScope && hotWaterDetail
-        ? {
-            evaluation: hotWaterScope.evaluation,
-            compensations: hotWaterScope.compensations,
-          }
-        : undefined,
+    hotWater: hotWaterDetail && hotWaterScope,
     substitutions: input.substitutions ?? [],
     targetUnitId,
     baseMethod: config.baseMethod,
