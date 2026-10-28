@@ -5,6 +5,7 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Sicherheit:** Lücke beim Hochladen von Dateien behoben.
 - **Sicherheit:** Abhängigkeiten aktualisiert, darunter Electron in der
   Desktop-App.
 - **Neu:** Mietsätze haben Änderungsgrund und Notiz, Mietverträge eine

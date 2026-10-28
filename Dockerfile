@@ -1,5 +1,5 @@
-# Stage 1: Build (API + Web). Node-Version wie .nvmrc.
-FROM node:24.11.0-alpine AS builder
+# Stage 1: Build (API + Web). Node-Version wie .nvmrc, bis es das Alpine-Image zu 24.22.2 gibt eine Patch-Version darunter.
+FROM node:24.22.1-alpine AS builder
 
 # python3/make/g++ fuer native Module, opentype-feature-freezer fuer den
 # tnum-Font der PDF-Assets.
@@ -24,7 +24,7 @@ RUN npm run setup
 RUN npm run build
 
 # Stage 2: Produktions-Dependencies, nur die API-Closure (keine Web-Deps).
-FROM node:24.11.0-alpine AS prod-deps
+FROM node:24.22.1-alpine AS prod-deps
 
 RUN apk add --no-cache python3 make g++ libc6-compat
 
@@ -41,7 +41,7 @@ RUN npm ci --omit=dev --workspace=apps/api --include-workspace-root
 RUN npm_config_ignore_scripts=false npm rebuild libsql argon2
 
 # Stage 3: Runtime
-FROM node:24.11.0-alpine AS runtime
+FROM node:24.22.1-alpine AS runtime
 
 LABEL org.opencontainers.image.title="EinfachVermieter" \
       org.opencontainers.image.description="Software für Wohnraumvermietung" \

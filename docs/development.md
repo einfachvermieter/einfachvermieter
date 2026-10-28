@@ -2,7 +2,7 @@
 
 ## Voraussetzungen
 
-- **Node 24.11+** (siehe `.nvmrc`)
+- **Node** in der Version aus `.nvmrc` (`nvm use`)
 - **npm 11+**
 - macOS / Linux (libsql/argon2 bauen nativ; Windows nicht getestet)
 - **pyftfeatfreeze** (`pip install opentype-feature-freezer`), sonst bricht
