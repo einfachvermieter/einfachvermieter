@@ -92,6 +92,9 @@ const Button = ({
     <Comp
       ref={ref as Ref<HTMLButtonElement>}
       data-slot="button"
+      // Bleibt auch dann stehen, wenn ein umschließender Auslöser (Tooltip,
+      // Menü, Dialog) per asChild seinen eigenen data-slot setzt
+      data-button=""
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}

@@ -41,11 +41,17 @@ export const HelpHint = ({
   const [open, setOpen] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [alignOffset, setAlignOffset] = useState(0);
+  const [container, setContainer] = useState<HTMLElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const toggle = () => {
     const button = buttonRef.current;
     const labelElement = button?.closest(LABEL_SELECTOR);
+    setContainer(
+      button?.closest<HTMLElement>(
+        '[data-slot="sheet-content"], [data-slot="dialog-content"]',
+      ) ?? null,
+    );
     if (button && labelElement) {
       setAlignOffset(
         labelElement.getBoundingClientRect().left -
@@ -82,14 +88,14 @@ export const HelpHint = ({
       </Tooltip>
       <PopoverContent
         variant="help"
+        container={container}
         side="bottom"
         align="start"
         alignOffset={alignOffset}
         // Radix rechnet die Pfeilhöhe (10 px) schon als Abstand ein
         sideOffset={0}
         collisionPadding={16}
-        // Fokus bleibt auf dem Fragezeichen: Im Sheet würde die Fokusfalle
-        // ihn sonst zurückholen und das Overlay sofort wieder schließen
+        // Fokus bleibt auf dem Fragezeichen, der Hilfetext ist nur zum Lesen
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         {content}

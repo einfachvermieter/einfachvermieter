@@ -274,9 +274,11 @@
 /* Fokusring an Buttons mit Kante: als Schatten um Fläche und Kante
    zusammen, 3px Luft und 2px Azur, um 1px nach unten versetzt, damit er
    oben und unten gleich weit absteht. Eine Umrisslinie würde die Kante
-   unten nicht einschließen. --tw-shadow ist die Kante der Variante */
+   unten nicht einschließen. --tw-shadow ist die Kante der Variante.
+   data-button statt data-slot, weil Auslöser von Tooltip, Menü oder
+   Dialog den data-slot überschreiben */
 :is(
-    [data-slot="button"]:is(
+    [data-button]:is(
         [data-variant="default"],
         [data-variant="outline"],
         [data-variant="outlineDestructive"],
@@ -361,4 +363,51 @@ header[data-detail][data-scrolled]::before {
 
 [data-desktop] [data-drag-region] :is(a, button, input, select, textarea, [role="button"]) {
   -webkit-app-region: no-drag;
+}
+
+/*
+ * Scrollender Text blendet am Rand aus: unten, solange noch Text folgt,
+ * oben, sobald gescrollt wurde. Die Animation hängt an der Scrollposition;
+ * passt der Text ganz hinein, läuft sie nicht und nichts wird ausgeblendet.
+ * Browser ohne scrollgebundene Animationen zeigen den Text ohne Ausblenden
+ */
+@property --scroll-fade-top {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --scroll-fade-bottom {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes scroll-fade {
+  0% {
+    --scroll-fade-top: 0px;
+    --scroll-fade-bottom: calc(var(--spacing) * 8);
+  }
+  8% {
+    --scroll-fade-top: calc(var(--spacing) * 8);
+  }
+  92% {
+    --scroll-fade-bottom: calc(var(--spacing) * 8);
+  }
+  100% {
+    --scroll-fade-top: calc(var(--spacing) * 8);
+    --scroll-fade-bottom: 0px;
+  }
+}
+
+@utility scroll-fade {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    black var(--scroll-fade-top),
+    black calc(100% - var(--scroll-fade-bottom)),
+    transparent 100%
+  );
+  animation: scroll-fade linear both;
+  animation-timeline: scroll(self);
 }

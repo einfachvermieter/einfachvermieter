@@ -3,6 +3,7 @@ import { RiMapPinLine } from "@remixicon/react";
 import { useForm } from "react-hook-form";
 import { DateInput } from "@/components/form/DateInput";
 import { FormSheet } from "@/components/form/FormSheet";
+import { SheetSection } from "@/components/form/SheetSection";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
 import { t } from "../../../lib/i18n";
@@ -44,42 +45,48 @@ export const TenantAddressSheet = ({
       onSubmit={onSubmit}
       onClose={onClose}
     >
-      <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
-        <DateInput
-          control={form.control}
-          name="startDate"
-          label={t("ui.tenant.fields.validFrom")}
-          optional={true}
-          startMonth={validityCalendarStart}
-          endMonth={validityCalendarEnd}
-        />
-        <DateInput
-          control={form.control}
-          name="endDate"
-          label={t("ui.tenant.fields.validTo")}
-          optional={true}
-          startMonth={validityCalendarStart}
-          endMonth={validityCalendarEnd}
-        />
-        <TextInput
-          control={form.control}
-          name="street"
-          label={t("ui.tenant.fields.addressStreet")}
-          placeholder={t("ui.tenant.fields.addressStreetPlaceholder")}
-          inputClassName="sm:col-span-2"
-        />
-        <TextInput
-          control={form.control}
-          name="postalCode"
-          label={t("ui.tenant.fields.addressPostalCode")}
-          inputClassName="tabular-nums"
-        />
-        <TextInput
-          control={form.control}
-          name="city"
-          label={t("ui.tenant.fields.addressCity")}
-        />
-      </FieldGroup>
+      <SheetSection divider={false}>
+        <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
+          <TextInput
+            control={form.control}
+            name="street"
+            label={t("ui.tenant.fields.addressStreet")}
+            placeholder={t("ui.tenant.fields.addressStreetPlaceholder")}
+            inputClassName="sm:col-span-2"
+          />
+          <TextInput
+            control={form.control}
+            name="postalCode"
+            label={t("ui.tenant.fields.addressPostalCode")}
+            inputClassName="tabular-nums"
+          />
+          <TextInput
+            control={form.control}
+            name="city"
+            label={t("ui.tenant.fields.addressCity")}
+          />
+        </FieldGroup>
+      </SheetSection>
+      <SheetSection title={t("ui.tenant.sections.validity.title")}>
+        <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
+          <DateInput
+            control={form.control}
+            name="startDate"
+            label={t("ui.tenant.fields.validFrom")}
+            optional={true}
+            startMonth={validityCalendarStart}
+            endMonth={validityCalendarEnd}
+          />
+          <DateInput
+            control={form.control}
+            name="endDate"
+            label={t("ui.tenant.fields.validTo")}
+            optional={true}
+            startMonth={validityCalendarStart}
+            endMonth={validityCalendarEnd}
+          />
+        </FieldGroup>
+      </SheetSection>
     </FormSheet>
   );
 };

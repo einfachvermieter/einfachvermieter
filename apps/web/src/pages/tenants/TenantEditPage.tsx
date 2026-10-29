@@ -42,7 +42,10 @@ import { TenantNotesSheet } from "./sheets/TenantNotesSheet";
 import { TenantRentSheet } from "./sheets/TenantRentSheet";
 import { TenantResidentSheet } from "./sheets/TenantResidentSheet";
 import { TenantDetailLayout } from "./TenantDetailLayout";
-import { useTenantAggregateSave } from "./useTenantAggregateSave";
+import {
+  tenantChangeProblem,
+  useTenantAggregateSave,
+} from "./useTenantAggregateSave";
 
 const routeApi = getRouteApi("/mieter/$tenantId");
 
@@ -130,20 +133,52 @@ export const TenantEditPage = () => {
       navigate({ to: "/mieter", search: { buildingId: undefined } }),
   });
 
-  // Vertragspartner-Lock: nur erzwingen, wenn nach dem Speichern höchstens
-  // ein Bewohner existiert. Beim Hinzufügen zählt der neue Eintrag mit.
-  const residentLock = (index: number | null) => {
+  /**
+   * Warum "Vertragspartner" im Bewohner-Sheet nicht abgewählt werden kann:
+   * beim einzigen Bewohner immer, sonst wenn danach niemand mehr den
+   * Vertrag trägt. Beim Hinzufügen zählt der neue Eintrag mit
+   */
+  const contractPartyLock = (index: number | null): string | null => {
     const total =
       index === null ? values.residents.length + 1 : values.residents.length;
-    return total <= 1;
+    if (total <= 1) {
+      return t("ui.tenant.contractPartyLock.single");
+    }
+    if (index !== null && values.residents[index]?.isContractParty) {
+      const problem = tenantChangeProblem(aggregate, (current) => ({
+        ...current,
+        residents: current.residents.map((resident, position) =>
+          position === index
+            ? { ...resident, isContractParty: false }
+            : resident,
+        ),
+      }));
+      if (problem) {
+        return t("ui.tenant.contractPartyLock.onlyParty");
+      }
+    }
+    return null;
   };
+
+  /**
+   * Prüft das Entfernen eines Eintrags vorab, damit der Dialog den Grund
+   * nennt, statt erst beim Speichern zu scheitern
+   */
+  const removalProblem = (
+    list: "residents" | "rents" | "bankAccounts" | "addresses",
+    index: number,
+  ): string | null =>
+    tenantChangeProblem(aggregate, (current) => ({
+      ...current,
+      [list]: removeAt(current[list] as unknown[], index),
+    }));
 
   const residentDefaults = (index: number | null): ResidentRowValues => {
     if (index !== null) {
       return values.residents[index] ?? emptyResidentRow();
     }
     const base = emptyResidentRow();
-    if (residentLock(null)) {
+    if (values.residents.length === 0) {
       return { ...base, isContractParty: true };
     }
     // Existiert schon ein aktiver Vertragspartner, neuen Bewohner als
@@ -205,6 +240,11 @@ export const TenantEditPage = () => {
               }));
             }}
             confirmDeleteTitle={t("ui.tenant.confirmRemoveResident")}
+            deleteBlockedReason={(index) =>
+              values.residents.length <= 1
+                ? t("ui.tenant.removeResidentBlocked")
+                : removalProblem("residents", index)
+            }
           />
 
           {showRents ? (
@@ -233,6 +273,7 @@ export const TenantEditPage = () => {
                 }));
               }}
               confirmDeleteTitle={t("ui.tenant.confirmRemoveRent")}
+              deleteBlockedReason={(index) => removalProblem("rents", index)}
             />
           ) : null}
 
@@ -260,6 +301,9 @@ export const TenantEditPage = () => {
               }));
             }}
             confirmDeleteTitle={t("ui.tenant.confirmRemoveBankAccount")}
+            deleteBlockedReason={(index) =>
+              removalProblem("bankAccounts", index)
+            }
           />
 
           <RowListSection
@@ -288,6 +332,7 @@ export const TenantEditPage = () => {
               }));
             }}
             confirmDeleteTitle={t("ui.tenant.confirmRemoveAddress")}
+            deleteBlockedReason={(index) => removalProblem("addresses", index)}
           />
 
           <TenantNotesCard
@@ -350,7 +395,7 @@ export const TenantEditPage = () => {
               : t("ui.tenant.editResident")
           }
           defaultValues={residentDefaults(sheet.index)}
-          lockContractParty={residentLock(sheet.index)}
+          contractPartyLock={contractPartyLock(sheet.index)}
           onSubmit={async (row) => {
             const { index } = sheet;
             await save((current) => ({

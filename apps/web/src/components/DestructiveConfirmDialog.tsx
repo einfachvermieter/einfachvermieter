@@ -20,6 +20,7 @@ export const DestructiveConfirmDialog = ({
   description,
   consequence,
   hint,
+  blocked,
   confirmLabel = t("ui.common.action.confirmDelete"),
   cancelLabel = t("ui.common.action.cancel"),
   onConfirm,
@@ -39,6 +40,12 @@ export const DestructiveConfirmDialog = ({
    * Hinweis nach der Folge, z. B. eine Alternative zum Löschen
    */
   hint?: ReactNode;
+
+  /**
+   * Warum sich der Eintrag nicht löschen lässt. Dann fragt der Dialog nicht
+   * nach, sondern erklärt es und bietet nur "Schließen"
+   */
+  blocked?: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: "default" | "destructive";
@@ -47,29 +54,40 @@ export const DestructiveConfirmDialog = ({
   <AlertDialog open={open} onOpenChange={onOpenChange}>
     <AlertDialogContent size="default">
       <AlertDialogHeader>
-        <AlertDialogMedia className="mb-2 inline-flex size-10 items-center justify-center rounded-lg bg-himbeere-50 text-himbeere-500 sm:group-data-[size=default]/alert-dialog-content:row-span-2 *:[svg:not([class*='size-'])]:size-5">
+        <AlertDialogMedia variant={blocked ? "neutral" : "destructive"}>
           <IconTrash />
         </AlertDialogMedia>
         <AlertDialogTitle>{title}</AlertDialogTitle>
         {/* Folge und Hinweis stehen in derselben Spalte wie die Frage */}
         <AlertDialogDescription asChild={true}>
           <div className="space-y-3">
-            {description ? <p>{description}</p> : null}
-            {consequence ? (
+            {blocked ? <p>{blocked}</p> : null}
+            {!blocked && description ? <p>{description}</p> : null}
+            {!blocked && consequence ? (
               <p className="rounded-lg bg-himbeere-50 px-3.5 py-2.5 text-himbeere-900">
                 {consequence}
               </p>
             ) : null}
-            {hint ? <p>{hint}</p> : null}
+            {!blocked && hint ? <p>{hint}</p> : null}
           </div>
         </AlertDialogDescription>
       </AlertDialogHeader>
 
       <AlertDialogFooter>
-        <AlertDialogCancel variant="outline">{cancelLabel}</AlertDialogCancel>
-        <AlertDialogAction variant="destructive" onClick={onConfirm}>
-          {confirmLabel}
-        </AlertDialogAction>
+        {blocked ? (
+          <AlertDialogCancel variant="outline">
+            {t("ui.common.action.close")}
+          </AlertDialogCancel>
+        ) : (
+          <>
+            <AlertDialogCancel variant="outline">
+              {cancelLabel}
+            </AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={onConfirm}>
+              {confirmLabel}
+            </AlertDialogAction>
+          </>
+        )}
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

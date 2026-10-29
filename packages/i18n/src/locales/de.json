@@ -632,7 +632,8 @@
         "message": "Seit Sie das Formular geöffnet haben, wurden die Daten an anderer Stelle geändert. Wenn Sie die neue Version laden, gehen Ihre Änderungen verloren. Alternativ machen Sie mit Ihren Änderungen weiter und überschreiben beim Speichern den gespeicherten Stand.",
         "actionReload": "Neu laden",
         "actionKeep": "Meine Änderungen behalten"
-      }
+      },
+      "removeBlockedTitle": "Entfernen nicht möglich"
     },
     "meters": {
       "title": "Zähler",
@@ -1051,7 +1052,13 @@
         "title": "Zahlung nicht gefunden",
         "description": "Diese Zahlung existiert nicht oder wurde gelöscht."
       },
-      "createTitle": "Neue Zahlung",
+      "createTitles": {
+        "any": "Neue Zahlung",
+        "month": "Neue Mietzahlung",
+        "statement": "Neue Zahlung auf NK-Abrechnung",
+        "deposit": "Neue Kautionszahlung",
+        "fee": "Neue Zahlung auf Gebühr"
+      },
       "editTitle": "Zahlung bearbeiten",
       "identityTitle": "Zahlung vom {date}",
       "noTenant": "Kein Mieter",
@@ -1318,7 +1325,7 @@
         },
         "chimney_cleaning": {
           "name": "Schornsteinreinigung",
-          "hint": "Gemeint sind nur Kehrgebühren, die nicht zur zentralen Heizung gehören, zum Beispiel für Kaminöfen. Sonst nehmen Sie „Schornsteinfeger (Zentralheizung)“, nicht beide."
+          "hint": "Gemeint sind nur Kehrgebühren, die nicht zur zentralen Heizung gehören, zum Beispiel für Kaminöfen. Kehrgebühren der Zentralheizung gehören zu „Schornsteinfeger (Zentralheizung)“. Erfassen Sie dieselbe Gebühr nicht in beiden."
         },
         "building_insurance": {
           "name": "Gebäudeversicherung",
@@ -2394,6 +2401,12 @@
         "notes": {
           "title": "Interne Notizen",
           "description": "Diese Notiz ist nur für Sie sichtbar und wird nicht dem Mieter angezeigt."
+        },
+        "sepaMandate": {
+          "title": "Lastschrift"
+        },
+        "validity": {
+          "title": "Zeitraum"
         }
       },
       "hero": {
@@ -2482,7 +2495,7 @@
         "iban": "IBAN",
         "ibanPlaceholder": "DE…",
         "bic": "BIC",
-        "sepaEnabled": "SEPA-Lastschriftmandat erfassen",
+        "sepaEnabled": "Lastschriftmandat liegt vor",
         "mandateReference": "SEPA-Mandatsreferenz",
         "mandateSignedAt": "Datum der Mandatserteilung",
         "address": "Abweichende Anschrift",
@@ -2550,13 +2563,20 @@
         "contractPartyTitle": "Vertragspartner",
         "contractPartyHint": "Weitere Bewohner ergänzen Sie nach dem Anlegen.",
         "rentTitle": "Mietsatz",
-        "rentDescription": "Gilt vom Vertragsbeginn bis zum Vertragsende. Mietänderungen ergänzen Sie nach dem Anlegen."
+        "rentDescription": "Gilt vom Vertragsbeginn bis zum Vertragsende. Mietänderungen ergänzen Sie nach dem Anlegen.",
+        "unitOccupiedOpen": "Die Wohnung ist ab {start} unbefristet vermietet. Wählen Sie einen Zeitraum, der vorher endet, oder tragen Sie im bestehenden Vertrag ein Ende ein.",
+        "unitOccupiedUntil": "Die Wohnung ist vom {start} bis {end} vermietet. Wählen Sie einen Zeitraum davor oder danach."
       },
       "entryTypes": {
         "rent": "Mietsatz",
         "bankAccount": "Bankverbindung",
         "address": "Anschrift"
-      }
+      },
+      "contractPartyLock": {
+        "single": "Dieser Bewohner bleibt Vertragspartner, weil er der einzige Bewohner ist.",
+        "onlyParty": "Dieser Bewohner bleibt Vertragspartner, weil er zeitweise der einzige ist. Um ihn abzuwählen, machen Sie zuerst einen anderen Bewohner zum Vertragspartner."
+      },
+      "removeResidentBlocked": "Der letzte Bewohner lässt sich nicht entfernen, denn ein Vertrag braucht mindestens einen Bewohner. Endet das Mietverhältnis, tragen Sie im Vertrag ein Ende ein."
     },
     "reading": {
       "createTitle": "Zählerstand erfassen",

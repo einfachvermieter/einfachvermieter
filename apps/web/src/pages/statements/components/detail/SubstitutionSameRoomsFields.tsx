@@ -1,6 +1,6 @@
 import type { UseFormReturn } from "react-hook-form";
 import { CheckboxGroupInput } from "@/components/form/CheckboxGroupInput";
-import { DependentFields } from "@/components/form/DependentFields";
+import { Reveal } from "@/components/form/Reveal";
 import { SelectInput } from "@/components/form/SelectInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -68,25 +68,23 @@ export const SubstitutionSameRoomsFields = ({
             name="useOtherReferenceMeters"
             label={t("ui.substitutions.fields.useOtherReferenceMeters")}
           />
-          {values.useOtherReferenceMeters ? (
-            <DependentFields>
-              <CheckboxGroupInput
-                control={form.control}
-                name="referenceMeterIds"
-                label={t("ui.substitutions.fields.referenceMeters")}
-                emptyMessage={t("ui.substitutions.fields.referenceMetersEmpty")}
-                options={(options?.allMeters ?? []).map((meter) => ({
-                  value: meter.id,
-                  label: meter.label,
-                  ...(meter.isActive
-                    ? {}
-                    : {
-                        description: t("ui.substitutions.fields.meterInactive"),
-                      }),
-                }))}
-              />{" "}
-            </DependentFields>
-          ) : null}
+          <Reveal open={values.useOtherReferenceMeters}>
+            <CheckboxGroupInput
+              control={form.control}
+              name="referenceMeterIds"
+              label={t("ui.substitutions.fields.referenceMeters")}
+              emptyMessage={t("ui.substitutions.fields.referenceMetersEmpty")}
+              options={(options?.allMeters ?? []).map((meter) => ({
+                value: meter.id,
+                label: meter.label,
+                ...(meter.isActive
+                  ? {}
+                  : {
+                      description: t("ui.substitutions.fields.meterInactive"),
+                    }),
+              }))}
+            />
+          </Reveal>
         </>
       )}
     </>

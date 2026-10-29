@@ -5,6 +5,7 @@ import {
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { MonthInput } from "@/components/form/MonthInput";
 import { SelectInput } from "@/components/form/SelectInput";
+import { SheetSection } from "@/components/form/SheetSection";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
 import { t } from "../../../lib/i18n";
@@ -39,27 +40,8 @@ export const RentFields = <T extends FieldValues>({
   const withPeriod = variant !== "initial";
   const withChange = variant === "full";
 
-  return (
+  const amounts = (
     <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
-      {withPeriod ? (
-        <>
-          <MonthInput
-            control={control}
-            name={path("startDate")}
-            label={t("ui.tenant.fields.validFrom")}
-            description={t("ui.tenant.fields.rentValidFromHint")}
-            boundary="start"
-            optional={true}
-          />
-          <MonthInput
-            control={control}
-            name={path("endDate")}
-            label={t("ui.tenant.fields.validTo")}
-            boundary="end"
-            optional={true}
-          />
-        </>
-      ) : null}
       <TextInput
         control={control}
         name={path("monthlyBaseRentEuros")}
@@ -98,5 +80,36 @@ export const RentFields = <T extends FieldValues>({
         </div>
       ) : null}
     </FieldGroup>
+  );
+
+  if (!withPeriod) {
+    return amounts;
+  }
+
+  // Der Zeitraum ergänzt den Mietsatz, ist aber nicht der Mietsatz selbst:
+  // daher am Ende
+  return (
+    <>
+      <SheetSection divider={false}>{amounts}</SheetSection>
+      <SheetSection title={t("ui.tenant.sections.validity.title")}>
+        <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
+          <MonthInput
+            control={control}
+            name={path("startDate")}
+            label={t("ui.tenant.fields.validFrom")}
+            description={t("ui.tenant.fields.rentValidFromHint")}
+            boundary="start"
+            optional={true}
+          />
+          <MonthInput
+            control={control}
+            name={path("endDate")}
+            label={t("ui.tenant.fields.validTo")}
+            boundary="end"
+            optional={true}
+          />
+        </FieldGroup>
+      </SheetSection>
+    </>
   );
 };

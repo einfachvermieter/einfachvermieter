@@ -12,6 +12,36 @@ import type { TenantAggregate } from "../../lib/tenants";
 import { useCrudMutation } from "../../lib/useCrudMutation";
 
 /**
+ * Meldungen aller Regeln, die die Formularwerte verletzen
+ */
+const ruleProblems = (values: TenantFormValues): string[] => {
+  const parsed = tenantFormSchemaRefined.safeParse(values);
+  return parsed.success
+    ? []
+    : parsed.error.issues.map(
+        (issue) => translateKey(issue.message) || t("common.saveFailed"),
+      );
+};
+
+/**
+ * Prüft eine Änderung am Aggregat vorab mit denselben Regeln wie beim
+ * Speichern. Liefert die Meldung der ersten Regel, die erst durch die
+ * Änderung verletzt wird, sonst null. Was schon vorher verletzt war, sperrt
+ * die Änderung nicht
+ */
+export const tenantChangeProblem = (
+  aggregate: TenantAggregate,
+  mutate: (values: TenantFormValues) => TenantFormValues,
+): string | null => {
+  const current = tenantAggregateToFormValues(aggregate);
+  const before = new Set(ruleProblems(current));
+  return (
+    ruleProblems(mutate(current)).find((problem) => !before.has(problem)) ??
+    null
+  );
+};
+
+/**
  * Sofort-Speichern eines Teilschritts der Mieter-Stammdaten: nimmt den
  * aktuellen Serverstand, wendet die Änderung an, prüft die Regeln
  * (Kreuzvalidierung, z.B. Vertragspartner-Abdeckung und
@@ -33,11 +63,9 @@ export const useTenantAggregateSave = (
 
   return async (mutate: (values: TenantFormValues) => TenantFormValues) => {
     const next = mutate(tenantAggregateToFormValues(aggregate));
-
-    const parsed = tenantFormSchemaRefined.safeParse(next);
-    if (!parsed.success) {
-      const message = translateKey(parsed.error.issues[0]?.message);
-      throw new Error(message || t("common.saveFailed"));
+    const [problem] = ruleProblems(next);
+    if (problem) {
+      throw new Error(problem);
     }
 
     await mutation.mutateAsync(tenantFormToDto(next));

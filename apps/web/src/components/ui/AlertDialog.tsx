@@ -1,3 +1,4 @@
+import { cva, type VariantProps } from "class-variance-authority";
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui";
 import type {
   ComponentProps,
@@ -93,13 +94,31 @@ const AlertDialogFooter = ({ className, ...props }: ComponentProps<"div">) => (
   />
 );
 
-const AlertDialogMedia = ({ className, ...props }: ComponentProps<"div">) => (
+const alertDialogMediaVariants = cva(
+  "mb-2 inline-flex size-10 items-center justify-center rounded-lg sm:group-data-[size=default]/alert-dialog-content:row-span-2",
+  {
+    variants: {
+      variant: {
+        default: "bg-muted *:[svg:not([class*='size-'])]:size-8",
+        destructive:
+          "bg-himbeere-50 text-himbeere-500 *:[svg:not([class*='size-'])]:size-5",
+        // Löschen geht gerade nicht: dasselbe Icon, aber ohne Warnfarbe
+        neutral:
+          "bg-schiefer-100 text-schiefer-500 *:[svg:not([class*='size-'])]:size-5",
+      },
+    },
+    defaultVariants: { variant: "default" },
+  },
+);
+
+const AlertDialogMedia = ({
+  className,
+  variant,
+  ...props
+}: ComponentProps<"div"> & VariantProps<typeof alertDialogMediaVariants>) => (
   <div
     data-slot="alert-dialog-media"
-    className={cn(
-      "mb-2 inline-flex size-10 items-center justify-center rounded-lg bg-muted sm:group-data-[size=default]/alert-dialog-content:row-span-2 *:[svg:not([class*='size-'])]:size-8",
-      className,
-    )}
+    className={cn(alertDialogMediaVariants({ variant }), className)}
     {...props}
   />
 );

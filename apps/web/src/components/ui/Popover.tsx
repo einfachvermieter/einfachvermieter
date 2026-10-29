@@ -36,12 +36,20 @@ function PopoverContent({
   align = "center",
   sideOffset = 4,
   variant,
+  container,
   children,
   ...props
 }: ComponentProps<typeof PopoverPrimitive.Content> &
-  VariantProps<typeof popoverContentVariants>) {
+  VariantProps<typeof popoverContentVariants> & {
+    /**
+     * Wo das Popover eingehängt wird, sonst am Ende der Seite. Steht der
+     * Auslöser in einem Sheet oder Dialog, gehört es dort hinein: Außerhalb
+     * sperrt das offene Sheet das Scrollen mit dem Mausrad
+     */
+    container?: HTMLElement | null;
+  }) {
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Portal container={container}>
       <PopoverPrimitive.Content
         data-slot="popover-content"
         align={align}
@@ -51,7 +59,7 @@ function PopoverContent({
       >
         {variant === "help" ? (
           <>
-            <div className="max-h-58 space-y-2 overflow-auto overscroll-contain px-3.5 py-3 [scrollbar-color:var(--color-azur-200)_transparent] scrollbar-thin">
+            <div className="max-h-58 space-y-2 overflow-auto overscroll-contain px-3.5 py-3 scroll-fade [scrollbar-color:var(--color-azur-200)_transparent] scrollbar-thin">
               {children}
             </div>
             {/* Radix setzt den Pfeil genau unter das Fragezeichen. Das

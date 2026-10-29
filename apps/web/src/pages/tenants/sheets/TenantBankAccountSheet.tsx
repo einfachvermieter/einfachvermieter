@@ -4,8 +4,9 @@ import { bankDataByIBAN } from "bankdata-germany";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { DateInput } from "@/components/form/DateInput";
-import { DependentFields } from "@/components/form/DependentFields";
 import { FormSheet } from "@/components/form/FormSheet";
+import { Reveal } from "@/components/form/Reveal";
+import { SheetSection } from "@/components/form/SheetSection";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
 import { FieldGroup } from "@/components/ui/Field";
@@ -77,54 +78,40 @@ export const TenantBankAccountSheet = ({
       onSubmit={onSubmit}
       onClose={onClose}
     >
-      <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
-        <DateInput
+      <SheetSection divider={false}>
+        <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
+          <TextInput
+            control={form.control}
+            name="iban"
+            label={t("ui.tenant.fields.iban")}
+            placeholder={t("ui.tenant.fields.ibanPlaceholder")}
+            inputClassName="sm:col-span-2 tabular-nums"
+            description={
+              bankData
+                ? t("ui.tenant.bankNameHint", { name: bankData.bankName })
+                : undefined
+            }
+          />
+          <TextInput
+            control={form.control}
+            name="bic"
+            label={t("ui.tenant.fields.bic")}
+            optional={true}
+          />
+          <TextInput
+            control={form.control}
+            name="accountHolder"
+            label={t("ui.tenant.fields.accountHolder")}
+          />
+        </FieldGroup>
+      </SheetSection>
+      <SheetSection title={t("ui.tenant.sections.sepaMandate.title")}>
+        <SwitchInput
           control={form.control}
-          name="startDate"
-          label={t("ui.tenant.fields.validFrom")}
-          optional={true}
-          startMonth={validityCalendarStart}
-          endMonth={validityCalendarEnd}
+          name="sepaEnabled"
+          label={t("ui.tenant.fields.sepaEnabled")}
         />
-        <DateInput
-          control={form.control}
-          name="endDate"
-          label={t("ui.tenant.fields.validTo")}
-          optional={true}
-          startMonth={validityCalendarStart}
-          endMonth={validityCalendarEnd}
-        />
-        <TextInput
-          control={form.control}
-          name="iban"
-          label={t("ui.tenant.fields.iban")}
-          placeholder={t("ui.tenant.fields.ibanPlaceholder")}
-          inputClassName="sm:col-span-2 tabular-nums"
-          description={
-            bankData
-              ? t("ui.tenant.bankNameHint", { name: bankData.bankName })
-              : undefined
-          }
-        />
-        <TextInput
-          control={form.control}
-          name="bic"
-          label={t("ui.tenant.fields.bic")}
-          optional={true}
-        />
-        <TextInput
-          control={form.control}
-          name="accountHolder"
-          label={t("ui.tenant.fields.accountHolder")}
-        />
-      </FieldGroup>
-      <SwitchInput
-        control={form.control}
-        name="sepaEnabled"
-        label={t("ui.tenant.fields.sepaEnabled")}
-      />
-      {sepaEnabled ? (
-        <DependentFields>
+        <Reveal open={sepaEnabled}>
           <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
             <TextInput
               control={form.control}
@@ -140,8 +127,30 @@ export const TenantBankAccountSheet = ({
               endMonth={today}
             />
           </FieldGroup>
-        </DependentFields>
-      ) : null}
+        </Reveal>
+      </SheetSection>
+      {/* Der Zeitraum ist eine Angabe zur Bankverbindung, nicht die
+          Bankverbindung selbst: daher am Ende */}
+      <SheetSection title={t("ui.tenant.sections.validity.title")}>
+        <FieldGroup className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
+          <DateInput
+            control={form.control}
+            name="startDate"
+            label={t("ui.tenant.fields.validFrom")}
+            optional={true}
+            startMonth={validityCalendarStart}
+            endMonth={validityCalendarEnd}
+          />
+          <DateInput
+            control={form.control}
+            name="endDate"
+            label={t("ui.tenant.fields.validTo")}
+            optional={true}
+            startMonth={validityCalendarStart}
+            endMonth={validityCalendarEnd}
+          />
+        </FieldGroup>
+      </SheetSection>
     </FormSheet>
   );
 };

@@ -15,7 +15,7 @@ import { ResidentFields } from "../fields/ResidentFields";
 export const TenantResidentSheet = ({
   title,
   defaultValues,
-  lockContractParty,
+  contractPartyLock,
   onSubmit,
   onClose,
 }: {
@@ -23,9 +23,9 @@ export const TenantResidentSheet = ({
   defaultValues: ResidentRowValues;
 
   /**
-   * Beim einzigen Bewohner bleibt "Vertragspartner" erzwungen an
+   * Grund, warum "Vertragspartner" nicht abgewählt werden kann, sonst null
    */
-  lockContractParty: boolean;
+  contractPartyLock: string | null;
   onSubmit: (values: ResidentRowValues) => Promise<void>;
   onClose: () => void;
 }) => {
@@ -46,7 +46,7 @@ export const TenantResidentSheet = ({
     >
       <ResidentFields
         control={form.control}
-        lockContractParty={lockContractParty}
+        contractPartyLock={contractPartyLock}
       />
     </FormSheet>
   );

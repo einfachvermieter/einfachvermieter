@@ -136,6 +136,21 @@ export const MonthGridTable = ({
     });
   }, [monthRows]);
 
+  // Der Normalfall ist still: weicht nirgends etwas ab, entfällt die
+  // Statusspalte ganz, statt leer dazustehen
+  const showStatus = monthsByYear.some(
+    (group) =>
+      monthStatus(
+        yearPot(group.baseSollCents, group.baseIstCents),
+        yearPot(group.advanceSollCents, group.advanceIstCents),
+      ) !== "balanced" ||
+      group.rows.some(
+        (row) =>
+          monthStatus(row.baseRent, row.advance, row.forMonth) !== "balanced",
+      ),
+  );
+  const columnCount = showStatus ? 6 : 5;
+
   const latestYear = monthsByYear[0]?.year;
   // Standard: aktuelles (neuestes) Jahr offen, frühere zugeklappt.
   const [yearOverrides, setYearOverrides] = useState<Record<string, boolean>>(
@@ -206,7 +221,9 @@ export const MonthGridTable = ({
             <TableHead className="text-right">
               {t("ui.account.columns.advance")}
             </TableHead>
-            <TableHead>{t("ui.common.columns.status")}</TableHead>
+            {showStatus ? (
+              <TableHead>{t("ui.common.columns.status")}</TableHead>
+            ) : null}
             <TableHead className="w-22" />
           </TableRow>
         </TableHeader>
@@ -215,7 +232,7 @@ export const MonthGridTable = ({
             <TableRow>
               <TableCell
                 className="py-6 text-center text-muted-foreground"
-                colSpan={6}
+                colSpan={columnCount}
               >
                 {t("ui.account.monthsEmpty")}
               </TableCell>
@@ -257,29 +274,38 @@ export const MonthGridTable = ({
                         group.advanceIstCents,
                       )}
                     />
-                    <MonthStatusBadge
-                      base={yearPot(group.baseSollCents, group.baseIstCents)}
-                      advance={yearPot(
-                        group.advanceSollCents,
-                        group.advanceIstCents,
-                      )}
-                    />
+                    {showStatus ? (
+                      <MonthStatusBadge
+                        base={yearPot(group.baseSollCents, group.baseIstCents)}
+                        advance={yearPot(
+                          group.advanceSollCents,
+                          group.advanceIstCents,
+                        )}
+                      />
+                    ) : null}
                     <TableCell />
                   </TableRow>
                   {open
                     ? rows.map((row) => (
                         <TableRow key={row.forMonth}>
-                          <TableCell className="border-l-12 border-l-azur-50 p-0" />
+                          {/* Fläche statt linkem Rahmen: ein Rahmen ragt bei
+                              border-collapse zur Hälfte über die Tabelle
+                              hinaus und rückt Kopf- und Jahreszeilen ein */}
+                          <TableCell className="relative p-0">
+                            <span className="absolute inset-y-0 left-0 w-3 bg-azur-50" />
+                          </TableCell>
                           <TableCell className="py-3 pl-1 align-middle tabular-nums">
                             {formatForMonth(row.forMonth)}
                           </TableCell>
                           <PotIstSollCell pot={row.baseRent} />
                           <PotIstSollCell pot={row.advance} />
-                          <MonthStatusBadge
-                            base={row.baseRent}
-                            advance={row.advance}
-                            forMonth={row.forMonth}
-                          />
+                          {showStatus ? (
+                            <MonthStatusBadge
+                              base={row.baseRent}
+                              advance={row.advance}
+                              forMonth={row.forMonth}
+                            />
+                          ) : null}
                           <TableCell className="py-2 text-right align-middle">
                             {actionsOf(row)}
                           </TableCell>
@@ -292,7 +318,7 @@ export const MonthGridTable = ({
           )}
           {hasHiddenYears ? (
             <TableRow>
-              <TableCell colSpan={6} className="py-2 text-center">
+              <TableCell colSpan={columnCount} className="py-2 text-center">
                 <Button
                   type="button"
                   variant="outline"

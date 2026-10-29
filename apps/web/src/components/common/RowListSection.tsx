@@ -27,6 +27,7 @@ export const RowListSection = <T,>({
   onEditRow,
   onDeleteRow,
   confirmDeleteTitle,
+  deleteBlockedReason,
 }: {
   icon: RemixiconComponentType;
   title: string;
@@ -42,8 +43,18 @@ export const RowListSection = <T,>({
   onEditRow: (index: number) => void;
   onDeleteRow: (index: number) => Promise<void>;
   confirmDeleteTitle: string;
+
+  /**
+   * Warum sich ein Eintrag nicht löschen lässt, sonst null. Der Dialog
+   * erklärt es dann, statt nachzufragen und erst beim Speichern zu scheitern
+   */
+  deleteBlockedReason?: (index: number) => string | null;
 }) => {
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+
+  // Beim Öffnen festhalten: Beim Schließen wird der Index leer, der Dialog
+  // soll während der Ausblendung aber nicht den Titel wechseln
+  const [blockedReason, setBlockedReason] = useState<string | null>(null);
 
   const displayIndices = sortIndex
     ? sortIndex(rows).filter((index) => index >= 0 && index < rows.length)
@@ -71,7 +82,10 @@ export const RowListSection = <T,>({
               <div className="min-w-0 flex-1">{renderRow(row, index)}</div>
               <RowActions
                 onEdit={() => onEditRow(index)}
-                onDelete={() => setDeleteIndex(index)}
+                onDelete={() => {
+                  setBlockedReason(deleteBlockedReason?.(index) ?? null);
+                  setDeleteIndex(index);
+                }}
               />
             </div>
           </Fragment>
@@ -85,7 +99,10 @@ export const RowListSection = <T,>({
             setDeleteIndex(null);
           }
         }}
-        title={confirmDeleteTitle}
+        title={
+          blockedReason ? t("ui.common.removeBlockedTitle") : confirmDeleteTitle
+        }
+        blocked={blockedReason ?? undefined}
         confirmLabel={t("ui.common.action.confirmRemove")}
         onConfirm={() => {
           const index = deleteIndex;

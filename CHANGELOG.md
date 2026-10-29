@@ -5,81 +5,44 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
-- **Sicherheit:** Lücke beim Hochladen von Dateien behoben.
-- **Sicherheit:** Abhängigkeiten aktualisiert, darunter Electron in der
-  Desktop-App.
 - **Neu:** Mietsätze haben Änderungsgrund und Notiz, Mietverträge eine
-  Mietart. Die Mietsatz-Liste zeigt die Änderung der Kaltmiete.
-- **Neu:** Kostenarten lassen sich aus Vorlagen anlegen, auch mehrere auf
-  einmal.
-- **Neu:** Ist für einen Zeitraum schon eine Abrechnung finalisiert, lässt
-  sich die Heizkostenkonfiguration für diesen Zeitraum nicht mehr ändern.
-- **Geändert:** Ändert sich die Heizkostenkonfiguration mitten im
-  Abrechnungszeitraum, gelten die Anteile der ersten Version weiter.
-  Änderungen an der Anlage verhindern das Finalisieren.
-- **Neu:** Die Heizkosten-Seite weist auf Zeiträume hin, für die keine
-  Heizkostenkonfiguration gilt, und zeigt, wie viele Kostenarten für
-  Heizkosten es gibt.
-- **Neu:** Die Heizfläche einer Wohnung darf 0 sein, wenn alle Heizkörper
-  dauerhaft ausgebaut sind und die Wohnung weiter an der zentralen Heizung
-  hängt. Sie braucht dann keinen Zähler für den Heizverbrauch.
-- **Behoben:** Betriebskosten, die sich mangels Fläche auf keine Wohnung
-  verteilen lassen, fallen nicht mehr still aus der Abrechnung, sondern
-  verhindern das Finalisieren.
-- **Geändert:** Gebäude ohne zentrale Heizung und ohne zentrales
-  Warmwasser bekommen keine Heizkostenabrechnung mehr. Option „Dezentrale Heizung“ heißt jetzt „Keine Heizkostenabrechnung“.
-- **Behoben:** Auf dem iPhone vergrößert sich die Seite nicht mehr, wenn
-  man ein Feld antippt.
-- **Geändert:** Neue Gestaltung der ganzen Oberfläche
-- **Behoben:** Im PDF bleiben Tabellen und ihre Fußnoten auf derselben
-  Seite. Passt der Block nicht mehr, beginnt er auf der nächsten Seite.
+  Mietart.
+- **Neu:** Kostenarten lassen sich aus Vorlagen anlegen.
+- **Neu:** Neue Gestaltung der ganzen Oberfläche.
 - **Neu:** Die Grundkosten der Heizung lassen sich nach Wohnfläche oder
-  nach beheizter Fläche verteilen. Bestehende Konfigurationen rechnen wie
-  bisher nach beheizter Fläche.
-- **Behoben:** Der Hinweis zum Warmwasser ohne erfassten Verbrauch nennt
-  die Wohnfläche, nach der auch gerechnet wird.
+  beheizter Fläche verteilen.
+- **Neu:** Die Heizkostenkonfiguration nimmt Beschränkungen nach § 9
+  CO2KostAufG auf, etwa durch Denkmalschutz. Der Anteil des Vermieters an
+  den CO₂-Kosten halbiert sich oder entfällt.
+- **Neu:** Brennstoffrechnungen nehmen Energiegehalt und Emissionsfaktor
+  auf. Die Heizkostenabrechnung weist die Herleitung des CO₂-Kostenanteils
+  aus. Bei bestehenden Rechnungen sind die Werte nachzutragen.
+- **Neu:** Die Heizfläche einer Wohnung darf 0 sein, wenn alle Heizkörper
+  ausgebaut sind.
 - **Neu:** Mit eingeschalteter Versionsprüfung zeigt die App wichtige
-  Mitteilungen zur installierten Version, etwa zu Sicherheitslücken oder
-  bekannten Fehlern.
-- **Geändert:** Ist der Projektserver kurz nicht erreichbar, bleibt der
-  Hinweis auf eine neue Version stehen, und die App fragt nach einer Stunde
-  erneut.
-- **Neu:** Die Heizkostenkonfiguration nimmt Beschränkungen nach § 9
-  CO2KostAufG auf, etwa durch Denkmalschutz oder Anschlusszwang. Der
-  Anteil des Vermieters an den CO₂-Kosten wird dann halbiert oder entfällt.
-- **Sicherheit:** Zwei Bibliotheken des Servers sind aktualisiert. Behoben
-  sind eine Lücke bei der Erkennung der Absenderadresse hinter einem
-  Reverse-Proxy und eine Lücke bei abgebrochenen Datei-Uploads.
+  Mitteilungen zur installierten Version.
 - **Neu:** Schlägt eine Aktualisierung fehl, zeigt die App eine Seite mit
-  dem Weg zurück, statt nicht mehr zu starten.
-- **Geändert:** Die Datenbank wird vor jeder Aktualisierung, die sie
-  umstellt, gesichert, jetzt auch im Docker-Betrieb. Die Sicherung liegt
-  unter `backups` im Datenordner.
+  dem Weg zurück.
+- **Geändert:** Die Datenbank wird vor jeder Aktualisierung gesichert, jetzt
+  auch im Docker-Betrieb (Ordner `backups`).
 - **Geändert:** Als externe Datenbank gilt MariaDB ab 10.11 oder
   PostgreSQL. MySQL wird nicht unterstützt.
-- **Geändert:** Bei einem Abrechnungszeitraum unter einem Jahr werden für
-  die CO₂-Kostenaufteilung die Grenzwerte der Stufen anteilig gekürzt
-  (§ 5 Abs. 1 Satz 4 CO2KostAufG). Der Ausstoß wird nicht mehr auf ein Jahr
-  hochgerechnet. An einer Stufengrenze kann sich der Anteil des Vermieters
-  dadurch um eine Stufe ändern.
-- **Behoben:** Der Hinweis auf eine fehlende Ablesung zur Umstellung der
-  Versorgung zeigt Wohnung, Zähler und Datum statt Platzhaltern.
-- **Geändert:** Bei der CO₂-Kostenaufteilung zählt nur noch die Wohnfläche
-  der Wohnungen, die aus der zentralen Anlage beheizt werden. Der Anteil des
-  Vermieters kann dadurch steigen.
-- **Neu:** Brennstoffrechnungen nehmen Energiegehalt und Emissionsfaktor
-  auf. Die Heizkostenabrechnung weist beide Werte und die Herleitung des
-  CO₂-Kostenanteils aus (§ 7 Abs. 3 CO2KostAufG). Bei bestehenden
-  Brennstoffrechnungen sind die beiden Werte nachzutragen.
-- **Geändert:** Fehlt an einer Brennstoffrechnung die CO₂-Menge oder der
-  CO₂-Kostenanteil, lässt sich die Abrechnung erst finalisieren, wenn der
-  Wert nachgetragen ist.
-- **Geändert:** Gesamt-Wärmemenge und Fernwärme-Werte werden an der
-  Abrechnung eingetragen, für jeden Abrechnungszeitraum neu.
-- **Neu:** Hilfetexte zur Zählerart, zur geschätzten Ablesung und zur
-  Abgrenzung der Energiekosten bei der Rechnungserfassung.
-- **Behoben:** Lange Hilfetexte lassen sich scrollen und laufen nicht mehr
-  aus dem Fenster.
+- **Geändert:** Die CO₂-Kostenaufteilung kürzt bei Zeiträumen unter einem
+  Jahr die Stufengrenzen anteilig und zählt nur die Wohnfläche der zentral
+  beheizten Wohnungen.
+- **Geändert:** Gebäude ohne zentrale Heizung und ohne zentrales Warmwasser
+  bekommen keine Heizkostenabrechnung mehr („Dezentrale Heizung“ heißt jetzt
+  „Keine Heizkostenabrechnung“).
+- **Geändert:** Fehlende CO₂-Angaben an einer Brennstoffrechnung, Kosten
+  ohne verteilbare Fläche und Änderungen an der Anlage verhindern das
+  Finalisieren der Abrechnung.
+- **Behoben:** Im PDF bleiben Tabellen und ihre Fußnoten auf derselben
+  Seite.
+- **Behoben:** Auf dem iPhone vergrößert sich die Seite nicht mehr beim
+  Antippen eines Felds.
+- **Sicherheit:** Lücken beim Datei-Upload und in der Erkennung der
+  Absenderadresse hinter einem Reverse-Proxy behoben, Abhängigkeiten
+  aktualisiert.
 
 ## 2026.1.0-beta.1
 

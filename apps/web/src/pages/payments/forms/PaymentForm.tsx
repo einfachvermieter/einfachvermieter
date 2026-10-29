@@ -278,16 +278,19 @@ export const PaymentForm = ({
           startMonth={calendarStart}
           endMonth={calendarEnd}
         />
-        <SelectInput
-          control={form.control}
-          name="purposeKind"
-          label={t("ui.payments.fields.purposeKind")}
-          disabled={mode === "edit" || lockedPurposeKind !== undefined}
-          options={allowedPurposeKinds.map((value) => ({
-            value,
-            label: t(`ui.payments.purposeKinds.${value}`),
-          }))}
-        />
+        {/* Steht der Zweck fest, nennt ihn der Titel. Ein gesperrtes Feld
+            mit nur einer Möglichkeit würde nur verwirren */}
+        {mode === "edit" || lockedPurposeKind !== undefined ? null : (
+          <SelectInput
+            control={form.control}
+            name="purposeKind"
+            label={t("ui.payments.fields.purposeKind")}
+            options={allowedPurposeKinds.map((value) => ({
+              value,
+              label: t(`ui.payments.purposeKinds.${value}`),
+            }))}
+          />
+        )}
 
         {purposeKind === "month" ? (
           <>

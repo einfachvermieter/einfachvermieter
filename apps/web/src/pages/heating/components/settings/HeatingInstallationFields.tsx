@@ -8,7 +8,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import type { UseFormReturn } from "react-hook-form";
 import { Disclose } from "@/components/common/Disclose";
-import { DependentFields } from "@/components/form/DependentFields";
+import { Reveal } from "@/components/form/Reveal";
 import { SelectInput } from "@/components/form/SelectInput";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -172,11 +172,9 @@ export const HeatingInstallationFields = ({
           labelHelp={t("ui.heating.fields.co2CostShareEnabledHelp")}
         />
       </div>
-      {co2CostShareEnabled ? (
-        <DependentFields>
-          <Co2RestrictionSection form={form} />
-        </DependentFields>
-      ) : null}
+      <Reveal open={co2CostShareEnabled}>
+        <Co2RestrictionSection form={form} />
+      </Reveal>
       {co2FuelMismatch ? (
         <Alert variant="warning">
           <AlertDescription>

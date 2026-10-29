@@ -1,6 +1,7 @@
 import { todayIso, type UnitFormValues } from "@einfachvermieter/shared";
 import { useQuery } from "@tanstack/react-query";
 import { type UseFormReturn, useWatch } from "react-hook-form";
+import { Reveal } from "@/components/form/Reveal";
 import { SheetSection } from "@/components/form/SheetSection";
 import { SwitchInput } from "@/components/form/SwitchInput";
 import { TextInput } from "@/components/form/TextInput";
@@ -101,7 +102,7 @@ export const UnitDataFields = ({
             label={t("ui.units.fields.heatingAreaDiffers")}
             labelHelp={t("ui.units.fields.heatingAreaHelp")}
           />
-          {heatingAreaDiffers ? (
+          <Reveal open={heatingAreaDiffers}>
             <TextInput
               control={form.control}
               name="heatingAreaSqm"
@@ -109,7 +110,7 @@ export const UnitDataFields = ({
               inputMode="decimal"
               suffix={t("ui.common.unitSymbols.sqm")}
             />
-          ) : null}
+          </Reveal>
           {heatingAreaDiffers && heatingAreaUnused ? (
             <Alert variant="info">
               <AlertDescription>

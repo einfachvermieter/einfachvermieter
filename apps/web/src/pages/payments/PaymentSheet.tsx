@@ -169,7 +169,7 @@ export const PaymentSheet = ({
       title={
         request.mode === "edit"
           ? paymentIdentityLabel(request.payment)
-          : t("ui.payments.createTitle")
+          : t(`ui.payments.createTitles.${lockedPurposeKind ?? "any"}`)
       }
       tenantOptions={tenantOptions}
       tenantFieldDisabled={Boolean(fixedTenantId)}

@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { t } from "../../lib/i18n";
 import {
   type GatedDomain,
@@ -6,7 +5,6 @@ import {
   PREREQUISITES,
   usePrerequisite,
 } from "../../lib/prerequisites";
-import { Button } from "../ui/Button";
 import {
   Empty,
   EmptyContent,
@@ -15,6 +13,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "../ui/Empty";
+import { DomainLink } from "./DomainLink";
 
 /**
  * Großer Leer-Hinweis in Listen, deren Anlage-Voraussetzung fürs aktive
@@ -37,9 +36,11 @@ export const PrerequisiteEmpty = ({ domain }: { domain: GatedDomain }) => {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button asChild={true} variant="outline">
-          <Link to={linkTo}>{t(`ui.prerequisites.${needs}.action`)}</Link>
-        </Button>
+        {/* Ein Verweis in einen anderen Bereich, keine Aktion: daher ein
+            Textlink statt eines Buttons */}
+        <DomainLink to={linkTo}>
+          {t(`ui.prerequisites.${needs}.action`)}
+        </DomainLink>
       </EmptyContent>
     </Empty>
   );
