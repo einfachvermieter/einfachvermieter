@@ -5,11 +5,7 @@ import {
   pickRentForDate,
   todayIso,
 } from "@einfachvermieter/shared";
-import {
-  RiBankCard2Line,
-  RiMoneyEuroCircleLine,
-  RiSafe2Line,
-} from "@remixicon/react";
+import { RiMoneyEuroCircleLine, RiSafe2Line } from "@remixicon/react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -106,12 +102,25 @@ export const MieterkontoDetail = () => {
       }),
   });
 
-  // Nicht-Monats-Buchungen (Abrechnung/Kaution/Gebühr). Die Monatsmieten
-  // leben im Monatsraster und tauchen hier nicht doppelt auf.
-  const otherPayments = useMemo(
-    () => payments.filter((payment) => !payment.forMonth),
+  // Jede Buchung steht an genau einer Stelle: Monatsmieten im Monatsraster,
+  // Kautionsbuchungen in der Kaution, Zahlungen auf Abrechnungen und
+  // Gebühren unter ihrer Forderung
+  const depositPayments = useMemo(
+    () => payments.filter((payment) => payment.forDeposit),
     [payments],
   );
+
+  // Wird eine Abrechnung wieder geöffnet, entfällt ihre Forderung, die
+  // Zahlungen darauf bleiben. Sie stehen dann gesondert in der Card
+  const orphanStatementPayments = useMemo(() => {
+    const statementIds = new Set(
+      (settlementRows ?? []).map((row) => row.statementId),
+    );
+    return payments.filter(
+      (payment) =>
+        payment.forStatementId && !statementIds.has(payment.forStatementId),
+    );
+  }, [payments, settlementRows]);
 
   // Mieter-Aggregat für die Soll-Beschreibung der Miete-Card.
   const { data: aggregate } = useQuery(tenantQueryOptions(tenantId));
@@ -124,18 +133,15 @@ export const MieterkontoDetail = () => {
     useState<PaymentSheetRequest | null>(null);
   const [feeSheet, setFeeSheet] = useState<{ fee: FeeRow | null } | null>(null);
 
+  const editPayment = (payment: Payment) =>
+    setPaymentRequest({ mode: "edit", payment });
+
   const openPaymentForm = (preset: MonthGridRow | null) =>
     setPaymentRequest({
       mode: "create",
       tenantId,
       purposeKind: "month",
-      ...(preset
-        ? {
-            forMonth: preset.forMonth,
-            baseRentCents: preset.baseRent.sollCents,
-            advanceCents: preset.advance.sollCents,
-          }
-        : {}),
+      ...(preset ? { forMonth: preset.forMonth } : {}),
     });
 
   if (accountQueries.some((query) => query.isError) || paymentsQuery.isError) {
@@ -185,9 +191,7 @@ export const MieterkontoDetail = () => {
                   payments={payments}
                   deletion={paymentDeletion}
                   onRecordPayment={openPaymentForm}
-                  onEditPayment={(payment) =>
-                    setPaymentRequest({ mode: "edit", payment })
-                  }
+                  onEditPayment={editPayment}
                 />
               </div>
             </SectionCard>
@@ -205,24 +209,12 @@ export const MieterkontoDetail = () => {
               )}
             >
               <DepositSummary row={depositRow ?? null} />
-            </SectionCard>
-
-            <SectionCard
-              icon={RiBankCard2Line}
-              title={t("ui.account.otherPaymentsHeading")}
-              description={t("ui.account.detail.paymentsDescription")}
-              action={addLink(t("ui.payments.add"), () =>
-                setPaymentRequest({ mode: "create", tenantId }),
-              )}
-            >
-              {otherPayments.length > 0 ? (
+              {depositPayments.length > 0 ? (
                 <TableFrame>
                   <AccountPaymentsTable
-                    rows={otherPayments}
+                    rows={depositPayments}
                     deletion={paymentDeletion}
-                    onEditPayment={(payment) =>
-                      setPaymentRequest({ mode: "edit", payment })
-                    }
+                    onEditPayment={editPayment}
                   />
                 </TableFrame>
               ) : null}
@@ -234,9 +226,43 @@ export const MieterkontoDetail = () => {
               description={t("ui.account.detail.settlementsDescription")}
             >
               {settlementRows && settlementRows.length > 0 ? (
-                <TableFrame>
-                  <SettlementsTable rows={settlementRows} />
-                </TableFrame>
+                <SettlementsTable
+                  rows={settlementRows}
+                  payments={payments}
+                  deletion={paymentDeletion}
+                  onEditPayment={editPayment}
+                  onRecordPayment={(row) =>
+                    setPaymentRequest({
+                      mode: "create",
+                      tenantId,
+                      purposeKind: "statement",
+                      forStatementId: row.statementId,
+                      // Bei einem Guthaben zahlt der Vermieter aus
+                      direction: row.pot.sollCents < 0 ? "paidOut" : "received",
+                      title: t("ui.payments.createTitles.statement", {
+                        date: formatDate(row.date),
+                      }),
+                    })
+                  }
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {t("ui.account.settlementsEmpty")}
+                </p>
+              )}
+              {orphanStatementPayments.length > 0 ? (
+                <div className="mt-6 flex flex-col gap-3">
+                  <p className="text-sm text-muted-foreground">
+                    {t("ui.account.orphanStatementPayments")}
+                  </p>
+                  <TableFrame>
+                    <AccountPaymentsTable
+                      rows={orphanStatementPayments}
+                      deletion={paymentDeletion}
+                      onEditPayment={editPayment}
+                    />
+                  </TableFrame>
+                </div>
               ) : null}
             </SectionCard>
 
@@ -249,22 +275,32 @@ export const MieterkontoDetail = () => {
               )}
             >
               {feeRows && feeRows.length > 0 ? (
-                <TableFrame>
-                  <FeesTable
-                    rows={feeRows}
-                    deletion={feeDeletion}
-                    onEditFee={(row) => setFeeSheet({ fee: row })}
-                    onRecordPayment={(row) =>
-                      setPaymentRequest({
-                        mode: "create",
-                        tenantId,
-                        purposeKind: "fee",
-                        forFeeId: row.feeId,
-                      })
-                    }
-                  />
-                </TableFrame>
-              ) : null}
+                <FeesTable
+                  rows={feeRows}
+                  deletion={feeDeletion}
+                  onEditFee={(row) => setFeeSheet({ fee: row })}
+                  onRecordPayment={(row) =>
+                    setPaymentRequest({
+                      mode: "create",
+                      tenantId,
+                      purposeKind: "fee",
+                      forFeeId: row.feeId,
+                      // Bei einer Gutschrift zahlt der Vermieter aus
+                      direction: row.pot.sollCents < 0 ? "paidOut" : "received",
+                      title: t("ui.payments.createTitles.fee", {
+                        date: formatDate(row.date),
+                      }),
+                    })
+                  }
+                  payments={payments}
+                  paymentDeletion={paymentDeletion}
+                  onEditPayment={editPayment}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {t("ui.account.feesEmpty")}
+                </p>
+              )}
             </SectionCard>
           </div>
         )}

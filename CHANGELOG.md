@@ -5,6 +5,10 @@ JAHR.MINOR.PATCH, Vorabversionen mit `-beta.N`.
 
 ## Unveröffentlicht
 
+- **Geändert:** Eine Mietzahlung lässt sich als ein Betrag erfassen, auch
+  wenn sie von der Vertragsmiete abweicht.
+- **Geändert:** Das Mieterkonto zeigt Zahlungen unter dem, wofür sie
+  bestimmt sind.
 - **Neu:** Mietsätze haben Änderungsgrund und Notiz, Mietverträge eine
   Mietart.
 - **Neu:** Kostenarten lassen sich aus Vorlagen anlegen.

@@ -1,13 +1,14 @@
 import type { PotState } from "@einfachvermieter/shared";
 import { Badge } from "@/components/ui/Badge";
 import { t } from "@/lib/i18n";
+import { QuietStatus } from "./QuietStatus";
 
 /**
- * Topf-Status als Badge: ausgeglichen / Guthaben / teilweise / offen.
+ * Topf-Status: ausgeglichen unauffällig, Guthaben / teilweise / offen als Badge
  */
 export const AccountStatusBadge = ({ pot }: { pot: PotState }) => {
   if (pot.status === "balanced") {
-    return <Badge variant="ok">{t("ui.account.status.balanced")}</Badge>;
+    return <QuietStatus label={t("ui.account.status.balanced")} />;
   }
 
   if (pot.status === "credit") {

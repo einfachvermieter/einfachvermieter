@@ -1,25 +1,27 @@
 import {
   centsToEurInput,
-  formatDate,
+  distributeMonthSum,
   formatEur,
   type MonthGridRow,
+  openPotCents,
   type PaymentFormValues,
-  type PaymentPurposeKind,
   pad2,
   pad4,
+  parseEurToCents,
   paymentFormSchema,
-  paymentPurposeKinds,
-  splitSumByContract,
+  unsignedAmountRegex,
 } from "@einfachvermieter/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   type RemixiconComponentType,
+  RiArrowDownCircleLine,
+  RiArrowUpCircleLine,
   RiFlashlightLine,
   RiScissorsCutLine,
 } from "@remixicon/react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { type UseFormReturn, useForm } from "react-hook-form";
 import { ChoiceTilesInput } from "@/components/form/ChoiceTilesInput";
 import { DateInput } from "@/components/form/DateInput";
 import { FormSheet } from "@/components/form/FormSheet";
@@ -31,9 +33,7 @@ import { formatForMonth } from "@/lib/dateInput";
 import {
   type MonthStatus,
   monthStatus,
-  tenantFeesQueryOptions,
   tenantMonthGridQueryOptions,
-  tenantSettlementsQueryOptions,
 } from "../../../lib/accounts";
 import { t } from "../../../lib/i18n";
 
@@ -45,16 +45,15 @@ type Props = {
   icon?: RemixiconComponentType;
   tenantOptions: SelectOption[];
   tenantFieldDisabled?: boolean;
-  lockedPurposeKind?: PaymentPurposeKind;
-  allowedPurposeKinds?: PaymentPurposeKind[];
   defaultValues: PaymentFormValues;
   onSubmit: (values: PaymentFormValues) => Promise<void>;
   onClose: () => void;
 };
 
 /**
- * Zahlungs-Formular im FormSheet: Mieter, Datum, Zweck und die
- * zweckabhängigen Felder (Monat mit Vertrags-Info, Abrechnung, Gebühr).
+ * Zahlungs-Formular im FormSheet. Der Zweck steht beim Öffnen fest (aus
+ * der Zeile, an der gezahlt wird). Mietmonate haben Monat und Aufteilung,
+ * alle übrigen Zwecke Richtung und Betrag
  */
 // biome-ignore lint/complexity/noExcessiveLinesPerFunction: Markup
 export const PaymentForm = ({
@@ -63,8 +62,6 @@ export const PaymentForm = ({
   icon,
   tenantOptions,
   tenantFieldDisabled = false,
-  lockedPurposeKind,
-  allowedPurposeKinds = [...paymentPurposeKinds],
   defaultValues,
   onSubmit,
   onClose,
@@ -88,7 +85,7 @@ export const PaymentForm = ({
     };
   }, []);
 
-  const purposeKind = form.watch("purposeKind");
+  const { purposeKind } = defaultValues;
   const tenantId = form.watch("tenantId");
   const forMonth = form.watch("forMonth");
   const inputMode = form.watch("inputMode");
@@ -105,6 +102,17 @@ export const PaymentForm = ({
     monthQueryEnabled && monthRegex.test(forMonth)
       ? (monthRows?.find((row) => row.forMonth === forMonth) ?? null)
       : null;
+
+  const { openAdvanceCents, openBaseRentCents } = monthOpenAmounts(
+    monthRow,
+    mode === "edit" ? defaultValues : null,
+  );
+  const { openMonthCents, sumDistribution, splitAboveOpen } = useMonthSum({
+    form,
+    monthRow,
+    openAdvanceCents,
+    openBaseRentCents,
+  });
 
   const monthOptions = useMemo<SelectOption[]>(() => {
     const rows = monthRows ?? [];
@@ -136,89 +144,6 @@ export const PaymentForm = ({
     return options;
   }, [monthRows, forMonth]);
 
-  const statementQueryEnabled =
-    purposeKind === "statement" && tenantId.length > 0;
-  const { data: settlementRows } = useQuery({
-    ...tenantSettlementsQueryOptions(tenantId),
-    enabled: statementQueryEnabled,
-  });
-  const forStatementId = form.watch("forStatementId");
-
-  const statementOptions = useMemo<SelectOption[]>(() => {
-    const rows = settlementRows ?? [];
-    const options = rows.map((row) => ({
-      value: row.statementId,
-      label: [formatDate(row.date), formatEur(row.pot.sollCents)].join(
-        t("ui.common.separators.dash"),
-      ),
-    }));
-
-    // Im Edit-Modus die bisher gewählte Abrechnung ergänzen, falls sie nicht
-    // (mehr) in der Liste auftaucht. Sonst zeigt das Select-Feld nichts.
-    if (
-      forStatementId &&
-      !options.some((option) => option.value === forStatementId)
-    ) {
-      options.unshift({ value: forStatementId, label: forStatementId });
-    }
-
-    return options;
-  }, [settlementRows, forStatementId]);
-
-  const forFeeId = form.watch("forFeeId");
-  const { data: feeRows } = useQuery({
-    ...tenantFeesQueryOptions(tenantId),
-    enabled: purposeKind === "fee" && tenantId.length > 0,
-  });
-
-  const feeOptions = useMemo<SelectOption[]>(() => {
-    const options = (feeRows ?? []).map((row) => ({
-      value: row.feeId,
-      label: t("ui.payments.fields.forFeeOption", {
-        reason: row.reason,
-        date: formatDate(row.date),
-      }),
-    }));
-
-    if (forFeeId && !options.some((option) => option.value === forFeeId)) {
-      options.unshift({ value: forFeeId, label: forFeeId });
-    }
-
-    return options;
-  }, [feeRows, forFeeId]);
-
-  // Wechselt der User von "Summe" zu "Getrennt" und die Eingabe-Felder
-  // sind noch leer, übernehmen wir das, was bisher in "sumInput" steht,
-  // sinnvoll: bei passender Vertragssumme aus dem Vertrag, sonst ganzer
-  // Betrag in die Kaltmiete-Spalte als Startpunkt.
-  useEffect(() => {
-    if (purposeKind !== "month" || inputMode !== "split") {
-      return;
-    }
-    if (form.getValues("baseRentInput") || form.getValues("advanceInput")) {
-      return;
-    }
-
-    const sumInputValue = form.getValues("sumInput");
-    if (!sumInputValue || !monthRow) {
-      return;
-    }
-
-    const split = splitSumByContract(
-      sumInputValue,
-      monthRow.baseRent.sollCents,
-      monthRow.advance.sollCents,
-    );
-
-    if (split) {
-      form.setValue("baseRentInput", centsToEurInput(split.baseRentCents));
-      form.setValue("advanceInput", centsToEurInput(split.advanceCents));
-    } else {
-      form.setValue("baseRentInput", sumInputValue);
-      form.setValue("advanceInput", "0,00");
-    }
-  }, [purposeKind, inputMode, monthRow, form]);
-
   const handleSubmit = async (values: PaymentFormValues) => {
     if (values.purposeKind === "month" && values.inputMode === "sum") {
       if (!monthRow) {
@@ -228,15 +153,17 @@ export const PaymentForm = ({
         return;
       }
 
-      const split = splitSumByContract(
-        values.sumInput,
-        monthRow.baseRent.sollCents,
-        monthRow.advance.sollCents,
+      const split = distributeMonthSum(
+        parseEurToCents(values.sumInput),
+        openAdvanceCents,
+        openBaseRentCents,
       );
 
       if (!split) {
         form.setError("sumInput", {
-          message: t("ui.payments.validation.sumMismatch"),
+          message: t("ui.payments.validation.sumAboveOpen", {
+            amount: formatEur(openMonthCents),
+          }),
         });
         return;
       }
@@ -260,6 +187,9 @@ export const PaymentForm = ({
       onSubmit={handleSubmit}
       onClose={onClose}
     >
+      {/* Reihenfolge wie in jedem Zahlungs- und Gebühren-Sheet: erst wofür
+          bzw. in welche Richtung, dann Datum und Betrag nebeneinander, zum
+          Schluss der freie Text */}
       <FieldGroup>
         {/* Steht der Mieter durch den Ort fest (Mieterkonto), entfällt das
             Feld, statt gesperrt angezeigt zu werden */}
@@ -271,27 +201,6 @@ export const PaymentForm = ({
             options={tenantOptions}
           />
         )}
-        <DateInput
-          control={form.control}
-          name="paymentDate"
-          label={t("ui.payments.columns.date")}
-          startMonth={calendarStart}
-          endMonth={calendarEnd}
-        />
-        {/* Steht der Zweck fest, nennt ihn der Titel. Ein gesperrtes Feld
-            mit nur einer Möglichkeit würde nur verwirren */}
-        {mode === "edit" || lockedPurposeKind !== undefined ? null : (
-          <SelectInput
-            control={form.control}
-            name="purposeKind"
-            label={t("ui.payments.fields.purposeKind")}
-            options={allowedPurposeKinds.map((value) => ({
-              value,
-              label: t(`ui.payments.purposeKinds.${value}`),
-            }))}
-          />
-        )}
-
         {purposeKind === "month" ? (
           <>
             <SelectInput
@@ -301,7 +210,13 @@ export const PaymentForm = ({
               options={monthOptions}
               placeholder={t("ui.payments.fields.forMonthPlaceholder")}
             />
-            {monthRow ? <ContractInfo row={monthRow} mode={mode} /> : null}
+            {monthRow ? (
+              <ContractInfo
+                row={monthRow}
+                mode={mode}
+                openCents={openMonthCents}
+              />
+            ) : null}
             <ChoiceTilesInput
               control={form.control}
               name="inputMode"
@@ -320,70 +235,94 @@ export const PaymentForm = ({
                 },
               ]}
             />
-            {inputMode === "sum" ? (
+          </>
+        ) : (
+          <ChoiceTilesInput
+            control={form.control}
+            name="direction"
+            options={[
+              {
+                value: "received",
+                icon: RiArrowDownCircleLine,
+                title: t("ui.payments.fields.directionReceived"),
+                description: t("ui.payments.fields.directionReceivedHint"),
+              },
+              {
+                value: "paidOut",
+                icon: RiArrowUpCircleLine,
+                title: t("ui.payments.fields.directionPaidOut"),
+                description: t("ui.payments.fields.directionPaidOutHint"),
+              },
+            ]}
+          />
+        )}
+
+        <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
+          <DateInput
+            control={form.control}
+            name="paymentDate"
+            label={t("ui.payments.columns.date")}
+            startMonth={calendarStart}
+            endMonth={calendarEnd}
+          />
+          {purposeKind !== "month" ? (
+            <TextInput
+              control={form.control}
+              name="amountInput"
+              inputMode="decimal"
+              placeholder={t("ui.common.placeholders.amount")}
+              label={t("ui.payments.fields.amountEur")}
+              suffix="€"
+            />
+          ) : null}
+          {purposeKind === "month" && inputMode === "sum" ? (
+            <TextInput
+              control={form.control}
+              name="sumInput"
+              inputMode="decimal"
+              placeholder={t("ui.common.placeholders.amount")}
+              label={t("ui.payments.fields.sumEur")}
+              description={
+                sumDistribution
+                  ? t("ui.payments.fields.sumDistribution", {
+                      advance: formatEur(sumDistribution.advanceCents),
+                      baseRent: formatEur(sumDistribution.baseRentCents),
+                    })
+                  : undefined
+              }
+              suffix="€"
+            />
+          ) : null}
+        </div>
+
+        {purposeKind === "month" && inputMode === "split" ? (
+          <>
+            <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
               <TextInput
                 control={form.control}
-                name="sumInput"
+                name="baseRentInput"
                 inputMode="decimal"
                 placeholder={t("ui.common.placeholders.amount")}
-                label={t("ui.payments.fields.sumEur")}
-                description={t("ui.payments.fields.sumHint")}
+                label={t("ui.payments.fields.baseRentEur")}
                 suffix="€"
-                inputClassName="max-w-xs"
               />
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                <TextInput
-                  control={form.control}
-                  name="baseRentInput"
-                  inputMode="decimal"
-                  placeholder={t("ui.common.placeholders.amount")}
-                  label={t("ui.payments.fields.baseRentEur")}
-                  suffix="€"
-                />
-                <TextInput
-                  control={form.control}
-                  name="advanceInput"
-                  inputMode="decimal"
-                  placeholder={t("ui.common.placeholders.amount")}
-                  label={t("ui.payments.fields.advanceEur")}
-                  suffix="€"
-                />
-              </div>
-            )}
+              <TextInput
+                control={form.control}
+                name="advanceInput"
+                inputMode="decimal"
+                placeholder={t("ui.common.placeholders.amount")}
+                label={t("ui.payments.fields.advanceEur")}
+                suffix="€"
+              />
+            </div>
+            {splitAboveOpen ? (
+              <Alert variant="info">
+                <AlertDescription>
+                  {t("ui.payments.fields.splitAboveOpen")}
+                </AlertDescription>
+              </Alert>
+            ) : null}
           </>
-        ) : null}
-
-        {purposeKind === "statement" ? (
-          <SelectInput
-            control={form.control}
-            name="forStatementId"
-            label={t("ui.payments.fields.forStatement")}
-            options={statementOptions}
-            disabled={lockedPurposeKind === "statement"}
-          />
-        ) : null}
-
-        {purposeKind === "fee" ? (
-          <SelectInput
-            control={form.control}
-            name="forFeeId"
-            label={t("ui.payments.fields.forFee")}
-            options={feeOptions}
-            disabled={lockedPurposeKind === "fee"}
-          />
-        ) : null}
-
-        {purposeKind !== "month" ? (
-          <TextInput
-            control={form.control}
-            name="amountInput"
-            inputMode="decimal"
-            placeholder={t("ui.common.placeholders.amount")}
-            label={t("ui.payments.fields.amountEur")}
-            description={t("ui.payments.fields.amountSignHint")}
-            suffix="€"
-          />
         ) : null}
 
         <TextInput
@@ -398,12 +337,109 @@ export const PaymentForm = ({
   );
 };
 
+/**
+ * Offener Betrag des Monats je Topf. Beim Ändern zählt die bearbeitete
+ * Zahlung (ihre ursprünglichen Beträge) nicht zum Ist, damit sie sich
+ * unverändert speichern lässt
+ */
+const monthOpenAmounts = (
+  row: MonthGridRow | null,
+  editedPayment: PaymentFormValues | null,
+) => {
+  if (!row) {
+    return { openAdvanceCents: 0, openBaseRentCents: 0 };
+  }
+
+  // Nur wenn die Zahlung im selben Monat bleibt, steckt sie in dessen Ist
+  const own = editedPayment?.forMonth === row.forMonth ? editedPayment : null;
+
+  return {
+    openAdvanceCents: openPotCents(
+      row.advance.sollCents,
+      row.advance.istCents - parseEurToCents(own?.advanceInput ?? ""),
+    ),
+    openBaseRentCents: openPotCents(
+      row.baseRent.sollCents,
+      row.baseRent.istCents - parseEurToCents(own?.baseRentInput ?? ""),
+    ),
+  };
+};
+
+/**
+ * Ein Betrag für einen Mietmonat: Verteilung auf die Töpfe und Übernahme
+ * in "Getrennt erfassen". Der Monat ist nur bei Mietzahlungen gesetzt
+ */
+const useMonthSum = ({
+  form,
+  monthRow,
+  openAdvanceCents,
+  openBaseRentCents,
+}: {
+  form: UseFormReturn<PaymentFormValues>;
+  monthRow: MonthGridRow | null;
+  openAdvanceCents: number;
+  openBaseRentCents: number;
+}) => {
+  const openMonthCents = openAdvanceCents + openBaseRentCents;
+
+  const sumInput = form.watch("sumInput");
+  const sumDistribution =
+    monthRow && unsignedAmountRegex.test(sumInput)
+      ? distributeMonthSum(
+          parseEurToCents(sumInput),
+          openAdvanceCents,
+          openBaseRentCents,
+        )
+      : null;
+
+  const splitAboveOpen =
+    monthRow !== null &&
+    parseEurToCents(form.watch("baseRentInput")) +
+      parseEurToCents(form.watch("advanceInput")) >
+      openMonthCents;
+
+  // Wechselt der Nutzer zu "Getrennt erfassen", übernehmen die beiden Felder
+  // die Verteilung der Summe. Passt die Summe nicht in den offenen Betrag,
+  // steht sie ganz bei der Kaltmiete
+  useEffect(() => {
+    const subscription = form.watch((values, { name }) => {
+      if (name !== "inputMode" || values.inputMode !== "split" || !monthRow) {
+        return;
+      }
+
+      const sumInputValue = values.sumInput ?? "";
+      if (!unsignedAmountRegex.test(sumInputValue)) {
+        return;
+      }
+
+      const split = distributeMonthSum(
+        parseEurToCents(sumInputValue),
+        openAdvanceCents,
+        openBaseRentCents,
+      );
+      form.setValue(
+        "baseRentInput",
+        split ? centsToEurInput(split.baseRentCents) : sumInputValue,
+      );
+      form.setValue(
+        "advanceInput",
+        split ? centsToEurInput(split.advanceCents) : "0,00",
+      );
+    });
+    return () => subscription.unsubscribe();
+  }, [monthRow, openAdvanceCents, openBaseRentCents, form]);
+
+  return { openMonthCents, sumDistribution, splitAboveOpen };
+};
+
 const ContractInfo = ({
   row,
   mode,
+  openCents,
 }: {
   row: MonthGridRow;
   mode: "create" | "edit";
+  openCents: number;
 }) => {
   const totalSoll = row.baseRent.sollCents + row.advance.sollCents;
   const totalIst = row.baseRent.istCents + row.advance.istCents;
@@ -440,6 +476,14 @@ const ContractInfo = ({
                 total: formatEur(totalIst),
               })}
         </p>
+        {openCents > 0 ? (
+          <p className="tabular-nums">
+            <span className="font-semibold">
+              {t("ui.payments.contract.openHeading")}
+            </span>{" "}
+            {formatEur(openCents)}
+          </p>
+        ) : null}
       </AlertDescription>
     </Alert>
   );

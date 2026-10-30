@@ -1053,11 +1053,10 @@
         "description": "Diese Zahlung existiert nicht oder wurde gelöscht."
       },
       "createTitles": {
-        "any": "Neue Zahlung",
         "month": "Neue Mietzahlung",
-        "statement": "Neue Zahlung auf NK-Abrechnung",
+        "statement": "Zahlung auf Abrechnung vom {date}",
         "deposit": "Neue Kautionszahlung",
-        "fee": "Neue Zahlung auf Gebühr"
+        "fee": "Zahlung auf Gebühr vom {date}"
       },
       "editTitle": "Zahlung bearbeiten",
       "identityTitle": "Zahlung vom {date}",
@@ -1082,36 +1081,28 @@
         "baseRent": "Kaltmiete",
         "advance": "NK-Vorauszahlung",
         "otherAmount": "Sonstiges",
-        "reference": "Referenz",
-        "purpose": "Zuordnung"
+        "reference": "Referenz"
       },
       "fields": {
-        "purposeKind": "Zuordnung",
         "forMonth": "Mietmonat",
         "forMonthPlaceholder": "Monat auswählen …",
-        "forStatement": "Abrechnung",
-        "forFee": "Gebühr",
-        "forFeeOption": "{reason} vom {date}",
-        "inputModeSum": "Gesamtsumme",
-        "inputModeSumHint": "Eine Summe eingeben, Aufteilung in Kaltmiete und Nebenkostenvorauszahlung erfolgt automatisch nach Vertrag.",
+        "inputModeSum": "Ein Betrag",
+        "inputModeSumHint": "Die Zahlung wird zuerst auf die NK-Vorauszahlung und dann auf die Kaltmiete des Monats angerechnet.",
         "inputModeSplit": "Getrennt erfassen",
-        "inputModeSplitHint": "Kaltmiete und Nebenkostenvorauszahlung getrennt eingeben, falls die Zahlung abweicht.",
-        "sumEur": "Gesamtsumme",
-        "sumHint": "Wird nur akzeptiert, wenn sie der vertraglichen Monatsmiete entspricht.",
+        "inputModeSplitHint": "Sie legen beide Beträge selbst fest, zum Beispiel, wenn der Mieter bestimmt hat, worauf er zahlt.",
+        "sumEur": "Eingegangener Betrag",
+        "sumDistribution": "Davon NK-Vorauszahlung {advance}, Kaltmiete {baseRent}",
+        "splitAboveOpen": "Die Zahlung ist höher als der offene Betrag dieses Monats. Der übersteigende Betrag bleibt bei diesem Monat stehen und zählt im Saldo des Mieterkontos als Guthaben. Prüfen Sie bei bestehenden Rückständen, welchem Monat oder welcher Forderung die Zahlung zuzuordnen ist.",
         "baseRentEur": "Kaltmiete",
         "advanceEur": "NK-Vorauszahlung",
         "amountEur": "Betrag",
-        "amountSignHint": "Eingang vom Mieter positiv, Erstattung an den Mieter negativ.",
+        "directionReceived": "Vom Mieter erhalten",
+        "directionReceivedHint": "Der Mieter hat an Sie gezahlt, zum Beispiel die Kaution oder eine Nachzahlung.",
+        "directionPaidOut": "An den Mieter ausgezahlt",
+        "directionPaidOutHint": "Sie haben dem Mieter Geld gezahlt, zum Beispiel ein Guthaben oder die Kaution zurück.",
         "reference": "Referenz",
         "referencePlaceholder": "Verwendungszweck oder Buchungstext"
       },
-      "purposeKinds": {
-        "month": "Laufende Miete",
-        "statement": "NK-Abrechnung",
-        "deposit": "Kaution",
-        "fee": "Gebühr"
-      },
-      "purposeSummaryMonth": "Mietmonat {month}",
       "contract": {
         "heading": "Vertragsmiete {month}",
         "headingWithStatus": "Vertragsmiete {month} – {status}",
@@ -1122,6 +1113,7 @@
         "alreadyPaidHeading": "Bisher erfasst:",
         "alreadyPaidHeadingInclCurrent": "Bisher erfasst (inkl. dieser Buchung):",
         "alreadyPaidNone": "Noch keine Zahlungen erfasst.",
+        "openHeading": "Offen:",
         "alreadyPaidSummary": "{count, plural, one {# Zahlung} other {# Zahlungen}}: {baseRent} Kaltmiete + {advance} NK-Vorauszahlung = {total}"
       },
       "validation": {
@@ -1130,7 +1122,7 @@
         "amountRequired": "Bitte einen Betrag eingeben.",
         "statementRequired": "Bitte eine Abrechnung auswählen.",
         "feeRequired": "Bitte eine Gebühr auswählen.",
-        "sumMismatch": "Die Summe entspricht nicht der vertraglichen Monatsmiete. Bitte auf „Getrennt erfassen“ wechseln und Kaltmiete und Nebenkostenvorauszahlung manuell eingeben."
+        "sumAboveOpen": "Die Summe ist höher als der offene Betrag für diesen Monat ({amount}). Erfassen Sie den übersteigenden Betrag als eigene Zahlung für den Monat oder die Forderung, auf die er angerechnet wird."
       }
     },
     "account": {
@@ -1151,32 +1143,26 @@
         "balanced": "Ausgeglichen"
       },
       "depositLabel": "Kaution (separat)",
-      "sollLabel": "Soll: {amount}",
-      "creditLabel": "Guthaben: {amount}",
       "monthsHeading": "Mieteingänge pro Monat",
       "detail": {
         "mieteDescription": "{base} Kaltmiete + {advance} NK-Vorauszahlung je Monat",
         "mieteDescriptionPlain": "Ist gegen Soll je Monat",
-        "paymentsDescription": "Buchungen außerhalb der laufenden Miete",
-        "settlementsDescription": "Salden aus Nebenkostenabrechnungen",
+        "settlementsDescription": "Nachzahlungen und Guthaben aus Nebenkostenabrechnungen",
         "depositDescription": "Vereinbart laut Vertrag, separat vom Mieterkonto",
-        "feesDescription": "Forderungen und Gutschriften außerhalb der Miete",
+        "feesDescription": "Zum Beispiel Mahngebühren oder Schlüsselersatz, außerhalb der Miete",
         "unitLabel": "Wohnung",
         "baseRentLabel": "Kaltmiete",
         "advanceLabel": "NK-Vorauszahlung",
         "sepaLabel": "SEPA-Mandat",
         "sepaGranted": "erteilt",
         "sepaMissing": "fehlt",
-        "openStatement": "Abrechnung öffnen",
-        "emptyPayments": "Noch keine sonstigen Zahlungen erfasst. Regelmäßige Mieteingänge stehen oben unter „Mieteingänge pro Monat“.",
-        "emptySettlements": "Noch keine Abrechnungen vorhanden.",
-        "emptyFees": "Noch keine Gebühren erfasst."
+        "openStatement": "Abrechnung öffnen"
       },
       "monthsEmpty": "Noch keine Monate im Vertragszeitraum.",
       "recordPayment": "Zahlung erfassen",
-      "otherPaymentsHeading": "Sonstige Zahlungen",
-      "otherPaymentsEmpty": "Keine weiteren Zahlungen erfasst",
-      "settlementsHeading": "Abrechnungs-Salden",
+      "settlementsHeading": "Abrechnungen",
+      "togglePayments": "Zahlungen auf- oder zuklappen",
+      "orphanStatementPayments": "Zahlungen auf Abrechnungen, die nicht mehr finalisiert sind. Ordnen Sie sie neu zu oder löschen Sie sie.",
       "settlementsEmpty": "Noch keine finalisierten Nebenkostenabrechnungen für diesen Mieter.",
       "depositHeading": "Kaution",
       "depositEmpty": "Kautionsdaten konnten nicht geladen werden.",
@@ -1188,11 +1174,12 @@
       "deposit": {
         "record": "Kaution erfassen"
       },
-      "feesHeading": "Gebühren",
-      "feesEmpty": "Keine offenen Gebühren erfasst.",
+      "feesHeading": "Gebühren und Gutschriften",
+      "feesEmpty": "Noch keine Gebühren oder Gutschriften erfasst.",
       "status": {
         "credit": "Guthaben",
         "balanced": "Ausgeglichen",
+        "paid": "Bezahlt",
         "arrears": "Rückstand",
         "partial": "Teilweise offen",
         "open": "Offen",
@@ -1211,6 +1198,7 @@
         "date": "Datum",
         "reason": "Grund",
         "amount": "Betrag",
+        "paid": "Bezahlt",
         "actions": "Aktionen"
       },
       "fee": {
@@ -1226,10 +1214,10 @@
         "identityTitle": "Gebühr vom {date}",
         "description": "Eine Gebühr (z. B. Mahn-/Rücklaufgebühr) erhöht die Mieterschuld; eine Gutschrift schreibt dem Mieter einen Betrag gut. Beides fließt nicht in die Nebenkostenabrechnung.",
         "kindLabel": "Art",
-        "kindCharge": "Gebühr (Forderung)",
-        "kindChargeHint": "z. B. Mahngebühr, Schlüsselersatz",
+        "kindCharge": "Gebühr",
+        "kindChargeHint": "Der Mieter schuldet Ihnen den Betrag, zum Beispiel eine Mahngebühr oder Schlüsselersatz.",
         "kindCredit": "Gutschrift",
-        "kindCreditHint": "Reduziert den offenen Saldo des Mieters.",
+        "kindCreditHint": "Sie schreiben dem Mieter den Betrag gut. Das senkt seinen offenen Saldo.",
         "amountLabel": "Betrag",
         "reason": "Begründung",
         "reasonPlaceholder": "z. B. Mahngebühr Mai",

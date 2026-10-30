@@ -24,6 +24,7 @@ import { t } from "@/lib/i18n";
 import { IconChevronDown, IconPlus } from "@/lib/icons";
 import type { Payment } from "@/lib/payments";
 import type { useDeleteResource } from "@/lib/useDeleteResource";
+import { QuietStatus } from "./QuietStatus";
 
 /**
  * Jahres-Summe je Kategorie: netto über alle Monate addiert (eine Überzahlung
@@ -73,10 +74,11 @@ const MonthStatusBadge = ({
   forMonth?: string;
 }) => {
   const status = monthStatus(base, advance, forMonth);
-  // Der Normalfall ist still: ausgeglichen braucht keinen Status
   return (
     <TableCell className="px-3.5 py-3 align-middle">
-      {status === "balanced" ? null : (
+      {status === "balanced" ? (
+        <QuietStatus label={t("ui.account.status.paid")} />
+      ) : (
         <Badge variant={MONTH_STATUS_VARIANT[status]}>
           {t(`ui.account.status.${status}`)}
         </Badge>
@@ -135,21 +137,6 @@ export const MonthGridTable = ({
       };
     });
   }, [monthRows]);
-
-  // Der Normalfall ist still: weicht nirgends etwas ab, entfällt die
-  // Statusspalte ganz, statt leer dazustehen
-  const showStatus = monthsByYear.some(
-    (group) =>
-      monthStatus(
-        yearPot(group.baseSollCents, group.baseIstCents),
-        yearPot(group.advanceSollCents, group.advanceIstCents),
-      ) !== "balanced" ||
-      group.rows.some(
-        (row) =>
-          monthStatus(row.baseRent, row.advance, row.forMonth) !== "balanced",
-      ),
-  );
-  const columnCount = showStatus ? 6 : 5;
 
   const latestYear = monthsByYear[0]?.year;
   // Standard: aktuelles (neuestes) Jahr offen, frühere zugeklappt.
@@ -221,9 +208,7 @@ export const MonthGridTable = ({
             <TableHead className="text-right">
               {t("ui.account.columns.advance")}
             </TableHead>
-            {showStatus ? (
-              <TableHead>{t("ui.common.columns.status")}</TableHead>
-            ) : null}
+            <TableHead>{t("ui.common.columns.status")}</TableHead>
             <TableHead className="w-22" />
           </TableRow>
         </TableHeader>
@@ -232,7 +217,7 @@ export const MonthGridTable = ({
             <TableRow>
               <TableCell
                 className="py-6 text-center text-muted-foreground"
-                colSpan={columnCount}
+                colSpan={6}
               >
                 {t("ui.account.monthsEmpty")}
               </TableCell>
@@ -274,15 +259,13 @@ export const MonthGridTable = ({
                         group.advanceIstCents,
                       )}
                     />
-                    {showStatus ? (
-                      <MonthStatusBadge
-                        base={yearPot(group.baseSollCents, group.baseIstCents)}
-                        advance={yearPot(
-                          group.advanceSollCents,
-                          group.advanceIstCents,
-                        )}
-                      />
-                    ) : null}
+                    <MonthStatusBadge
+                      base={yearPot(group.baseSollCents, group.baseIstCents)}
+                      advance={yearPot(
+                        group.advanceSollCents,
+                        group.advanceIstCents,
+                      )}
+                    />
                     <TableCell />
                   </TableRow>
                   {open
@@ -299,13 +282,11 @@ export const MonthGridTable = ({
                           </TableCell>
                           <PotIstSollCell pot={row.baseRent} />
                           <PotIstSollCell pot={row.advance} />
-                          {showStatus ? (
-                            <MonthStatusBadge
-                              base={row.baseRent}
-                              advance={row.advance}
-                              forMonth={row.forMonth}
-                            />
-                          ) : null}
+                          <MonthStatusBadge
+                            base={row.baseRent}
+                            advance={row.advance}
+                            forMonth={row.forMonth}
+                          />
                           <TableCell className="py-2 text-right align-middle">
                             {actionsOf(row)}
                           </TableCell>
@@ -318,7 +299,7 @@ export const MonthGridTable = ({
           )}
           {hasHiddenYears ? (
             <TableRow>
-              <TableCell colSpan={columnCount} className="py-2 text-center">
+              <TableCell colSpan={6} className="py-2 text-center">
                 <Button
                   type="button"
                   variant="outline"

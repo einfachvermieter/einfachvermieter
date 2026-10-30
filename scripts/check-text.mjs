@@ -76,6 +76,8 @@ const codeWords = [
   [/\bSchalter\w*/gu, "Switch"],
   [/\bUnterseite\w*/gu, "SubSheet"],
   [/\bHinweiskasten\w*/gu, "Alert"],
+  [/\bKapsel\w*/gu, "Badge"],
+  [/\b[Ll]eise[nrs]?\b/gu, "unauffällig"],
   [/\breturnt\b/gu, "deutsches Verb (liefert)"],
 ];
 

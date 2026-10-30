@@ -1,7 +1,6 @@
 import { formatDate } from "@einfachvermieter/shared";
 import { queryOptions } from "@tanstack/react-query";
 import { api } from "./api";
-import { formatForMonth } from "./dateInput";
 import { t } from "./i18n";
 
 export type {
@@ -112,24 +111,3 @@ export const paymentIdentityLabel = (
   payment: Pick<Payment, "paymentDate">,
 ): string =>
   t("ui.payments.identityTitle", { date: formatDate(payment.paymentDate) });
-
-/**
- * Anzeige-Label des Zahlungszwecks (Monat / Abrechnung / Kaution / Gebühr).
- */
-export const paymentPurposeLabel = (payment: Payment): string => {
-  if (payment.forMonth) {
-    return t("ui.payments.purposeSummaryMonth", {
-      month: formatForMonth(payment.forMonth),
-    });
-  }
-  if (payment.forStatementId) {
-    return t("ui.payments.purposeKinds.statement");
-  }
-  if (payment.forDeposit) {
-    return t("ui.payments.purposeKinds.deposit");
-  }
-  if (payment.forFeeId) {
-    return t("ui.payments.purposeKinds.fee");
-  }
-  return t("common.unknown");
-};

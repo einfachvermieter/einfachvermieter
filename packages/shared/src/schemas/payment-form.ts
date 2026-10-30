@@ -1,10 +1,6 @@
 import { messageKey } from "@einfachvermieter/i18n";
 import { z } from "zod";
-import {
-  amountRegex,
-  parseEurToCents,
-  unsignedAmountRegex,
-} from "../format.js";
+import { parseEurToCents, unsignedAmountRegex } from "../format.js";
 import { ISO_DATE_REGEX } from "./common.js";
 import {
   type PaymentCreateDto,
@@ -18,13 +14,18 @@ export const monthInputModes = ["sum", "split"] as const;
 export type MonthInputMode = (typeof monthInputModes)[number];
 
 /**
+ * Richtung einer Zahlung außerhalb der Monatsmiete: vom Mieter erhalten
+ * oder an ihn ausgezahlt (Erstattung, Kautionsrückzahlung)
+ */
+export const paymentDirections = ["received", "paidOut"] as const;
+export type PaymentDirection = (typeof paymentDirections)[number];
+
+/**
  * Form-Werte für eine Zahlung. Bei `purposeKind === "month"`:
  *
  * - `inputMode = "sum"`: User gibt nur die Gesamtsumme ein
- *   (`sumInput`). Die Aufteilung Kalt/NK übernimmt die Form aus dem
- *   Mietvertrag, sofern die eingegebene Summe genau der vertraglich
- *   geschuldeten Monatsmiete entspricht. Stimmt sie nicht, muss der
- *   User auf `split` wechseln.
+ *   (`sumInput`). Das Formular verteilt sie mit `distributeMonthSum` auf
+ *   den offenen Betrag des Monats.
  * - `inputMode = "split"`: User gibt Kaltmiete und NK-Voraus getrennt
  *   ein (`baseRentInput` + `advanceInput`).
  */
@@ -41,6 +42,7 @@ export const paymentFormSchema = z
     forStatementId: z.string(),
     forFeeId: z.string(),
     inputMode: z.enum(monthInputModes),
+    direction: z.enum(paymentDirections),
     sumInput: z.string(),
     baseRentInput: z.string(),
     advanceInput: z.string(),
@@ -124,7 +126,7 @@ export const paymentFormSchema = z
       });
     }
 
-    if (!amountRegex.test(data.amountInput)) {
+    if (!unsignedAmountRegex.test(data.amountInput)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["amountInput"],
@@ -165,7 +167,8 @@ export const paymentFormToDto = (
     };
   }
 
-  const amountCents = parseEurToCents(values.amountInput);
+  const magnitude = parseEurToCents(values.amountInput);
+  const amountCents = values.direction === "paidOut" ? -magnitude : magnitude;
 
   if (values.purposeKind === "statement") {
     return {
@@ -205,6 +208,7 @@ export const emptyPaymentFormValues = (overrides: {
   forStatementId: "",
   forFeeId: "",
   inputMode: "sum",
+  direction: "received",
   sumInput: "",
   baseRentInput: "",
   advanceInput: "",
@@ -212,24 +216,27 @@ export const emptyPaymentFormValues = (overrides: {
 });
 
 /**
- * Helper: für eine Form-Eingabe im Modus "Summe" liefert er die
- * Aufteilung in Kalt + NK gemäß Vertragswerten, oder null, wenn die
- * Summe nicht zum Vertrag passt. Die PaymentForm verwendet das vor
- * dem Submit; Schema kennt die Vertragssumme nicht.
+ * Verteilt eine Gesamtsumme innerhalb eines Monats: zuerst auf die offene
+ * NK-Vorauszahlung, der Rest auf die offene Kaltmiete (BGH VIII ZR 68/17,
+ * ohne Tilgungsbestimmung des Mieters). Liegt die Summe über dem offenen
+ * Betrag des Monats, gibt es kein Ergebnis
  */
-export const splitSumByContract = (
-  sumInput: string,
-  contractBaseRentCents: number,
-  contractAdvanceCents: number,
+export const distributeMonthSum = (
+  sumCents: number,
+  openAdvanceCents: number,
+  openBaseRentCents: number,
 ): { baseRentCents: number; advanceCents: number } | null => {
-  const sumCents = parseEurToCents(sumInput);
-
-  if (sumCents !== contractBaseRentCents + contractAdvanceCents) {
+  if (sumCents > openAdvanceCents + openBaseRentCents) {
     return null;
   }
 
-  return {
-    baseRentCents: contractBaseRentCents,
-    advanceCents: contractAdvanceCents,
-  };
+  const advanceCents = Math.min(sumCents, openAdvanceCents);
+  return { advanceCents, baseRentCents: sumCents - advanceCents };
 };
+
+/**
+ * Offener Betrag eines Topfs, nie unter 0: eine Überzahlung mindert den
+ * anderen Topf nicht
+ */
+export const openPotCents = (sollCents: number, istCents: number): number =>
+  Math.max(0, sollCents - istCents);

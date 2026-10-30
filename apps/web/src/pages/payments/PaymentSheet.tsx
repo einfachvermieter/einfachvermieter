@@ -1,4 +1,5 @@
 import type {
+  PaymentDirection,
   PaymentPurposeKind,
   PaymentUpdateDto,
 } from "@einfachvermieter/shared";
@@ -23,7 +24,8 @@ import { PaymentForm } from "./forms/PaymentForm";
 
 /**
  * Was das Zahlungs-Sheet erfassen bzw. bearbeiten soll. Beim Erfassen
- * legt ein gesetzter Zweck (z. B. Kaution, Gebühr) den Zweck fest
+ * steht der Zweck fest: ohne Angabe ist es eine Mietzahlung, Abrechnung
+ * und Gebühr kommen aus ihrer Zeile im Mieterkonto
  */
 export type PaymentSheetRequest =
   | {
@@ -31,9 +33,16 @@ export type PaymentSheetRequest =
       tenantId?: string;
       purposeKind?: PaymentPurposeKind;
       forMonth?: string;
-      baseRentCents?: number;
-      advanceCents?: number;
+      forStatementId?: string;
       forFeeId?: string;
+      /**
+       * Vorgewählte Richtung, etwa "ausgezahlt" bei einem Guthaben
+       */
+      direction?: PaymentDirection;
+      /**
+       * Titel, der die Forderung nennt (Abrechnung, Gebühr)
+       */
+      title?: string;
     }
   | { mode: "edit"; payment: Payment };
 
@@ -74,10 +83,12 @@ const buildEditDefaults = (payment: Payment) => {
     defaults.baseRentInput = centsToEurInput(payment.baseRentCents ?? 0);
     defaults.advanceInput = centsToEurInput(payment.advanceCents ?? 0);
   } else {
-    defaults.amountInput = centsToEurInput(payment.amountCents ?? 0);
+    const amountCents = payment.amountCents ?? 0;
+    defaults.direction = amountCents < 0 ? "paidOut" : "received";
+    defaults.amountInput = centsToEurInput(Math.abs(amountCents));
   }
 
-  return { purposeKind, defaults };
+  return defaults;
 };
 
 /**
@@ -99,14 +110,9 @@ export const PaymentSheet = ({
   const fixedTenantId =
     request.mode === "edit" ? request.payment.tenantId : request.tenantId;
 
-  const { defaults, lockedPurposeKind, allowedPurposeKinds } = useMemo(() => {
+  const defaults = useMemo(() => {
     if (request.mode === "edit") {
-      const edit = buildEditDefaults(request.payment);
-      return {
-        defaults: edit.defaults,
-        lockedPurposeKind: edit.purposeKind,
-        allowedPurposeKinds: undefined,
-      };
+      return buildEditDefaults(request.payment);
     }
 
     const today = todayIso();
@@ -116,27 +122,10 @@ export const PaymentSheet = ({
       purposeKind: request.purposeKind ?? "month",
       forMonth: request.forMonth ?? today.slice(0, 7),
     });
-
-    if (request.baseRentCents !== undefined) {
-      values.baseRentInput = centsToEurInput(request.baseRentCents);
-    }
-
-    if (request.advanceCents !== undefined) {
-      values.advanceInput = centsToEurInput(request.advanceCents);
-    }
-
-    if (request.purposeKind === "fee" && request.forFeeId) {
-      values.forFeeId = request.forFeeId;
-    }
-
-    return {
-      defaults: values,
-      lockedPurposeKind: request.purposeKind,
-      // Kaution und Gebühr kommen nur über den festen Zweck herein
-      allowedPurposeKinds: request.purposeKind
-        ? [request.purposeKind]
-        : (["month", "statement"] as PaymentPurposeKind[]),
-    };
+    values.forStatementId = request.forStatementId ?? "";
+    values.forFeeId = request.forFeeId ?? "";
+    values.direction = request.direction ?? "received";
+    return values;
   }, [request, fixedTenantId, tenants]);
 
   const savePayment = useCrudMutation({
@@ -169,12 +158,11 @@ export const PaymentSheet = ({
       title={
         request.mode === "edit"
           ? paymentIdentityLabel(request.payment)
-          : t(`ui.payments.createTitles.${lockedPurposeKind ?? "any"}`)
+          : (request.title ??
+            t(`ui.payments.createTitles.${request.purposeKind ?? "month"}`))
       }
       tenantOptions={tenantOptions}
       tenantFieldDisabled={Boolean(fixedTenantId)}
-      lockedPurposeKind={lockedPurposeKind}
-      allowedPurposeKinds={allowedPurposeKinds}
       defaultValues={defaults}
       onSubmit={async (values) => {
         await savePayment.mutateAsync(paymentFormToDto(values));

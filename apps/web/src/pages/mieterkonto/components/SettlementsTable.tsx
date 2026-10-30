@@ -1,50 +1,48 @@
 import type { SettlementRow } from "@einfachvermieter/shared";
-import { formatDate } from "@einfachvermieter/shared";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/Table";
+import { RowActionButton } from "@/components/RowActions";
 import { t } from "@/lib/i18n";
-import { PotCell } from "./PotCell";
+import { IconPlus } from "@/lib/icons";
+import type { Payment } from "@/lib/payments";
+import type { useDeleteResource } from "@/lib/useDeleteResource";
+import { ClaimTable } from "./ClaimTable";
+
+type SettlementsTableProps = {
+  rows: SettlementRow[];
+  payments: Payment[];
+  deletion: ReturnType<typeof useDeleteResource<Payment>>;
+  onEditPayment: (payment: Payment) => void;
+  onRecordPayment: (row: SettlementRow) => void;
+};
 
 /**
- * Abrechnungs-Solls (Settlements) des Mieterkontos
+ * Nachzahlungen und Guthaben aus finalisierten Nebenkostenabrechnungen,
+ * darunter die Zahlungen darauf
  */
-export const SettlementsTable = ({ rows }: { rows: SettlementRow[] }) => {
-  if (rows.length === 0) {
-    return (
-      <p className="px-4 py-6 text-center text-muted-foreground">
-        {t("ui.account.settlementsEmpty")}
-      </p>
-    );
-  }
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="px-4">{t("ui.account.columns.date")}</TableHead>
-          <TableHead className="px-4 text-right">
-            {t("ui.account.columns.amount")}
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.statementId}>
-            <TableCell className="px-4 py-3 tabular-nums">
-              {formatDate(row.date)}
-            </TableCell>
-            <TableCell className="px-4 py-3 text-right">
-              <PotCell pot={row.pot} />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-};
+export const SettlementsTable = ({
+  rows,
+  payments,
+  deletion,
+  onEditPayment,
+  onRecordPayment,
+}: SettlementsTableProps) => (
+  <ClaimTable
+    claims={rows.map((row) => ({
+      id: row.statementId,
+      date: row.date,
+      pot: row.pot,
+      paymentIds: row.paymentIds,
+      actions: (
+        <div className="flex justify-end">
+          <RowActionButton
+            label={t("ui.account.recordPayment")}
+            icon={<IconPlus />}
+            onSelect={() => onRecordPayment(row)}
+          />
+        </div>
+      ),
+    }))}
+    payments={payments}
+    deletion={deletion}
+    onEditPayment={onEditPayment}
+  />
+);
